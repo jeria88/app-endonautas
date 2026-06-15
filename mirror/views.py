@@ -1,9 +1,11 @@
+import datetime
+
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from .models import ChatMessage, ChatSession
+from .models import ChatMessage, ChatSession, DreamEntry
 
 
 @login_required
@@ -47,6 +49,39 @@ def chat_message(request, pk):
     credit_mission(request.user, 'first_espejo')
 
     return JsonResponse({'reply': reply, 'created_at': msg.created_at.isoformat()})
+
+
+@login_required
+def regulacion(request):
+    return render(request, 'mirror/regulacion.html')
+
+
+@login_required
+def suenos_list(request):
+    entries = DreamEntry.objects.filter(user=request.user)
+    return render(request, 'mirror/suenos_list.html', {'entries': entries})
+
+
+@login_required
+def sueno_create(request):
+    if request.method == 'POST':
+        DreamEntry.objects.create(
+            user=request.user,
+            title=request.POST.get('title', '').strip(),
+            content=request.POST.get('content', '').strip(),
+            is_lucid='is_lucid' in request.POST,
+            reality_check='reality_check' in request.POST,
+            dream_date=request.POST.get('dream_date') or datetime.date.today(),
+            tags=request.POST.get('tags', '').strip(),
+        )
+        return redirect('suenos_list')
+    return render(request, 'mirror/sueno_form.html', {'today': datetime.date.today()})
+
+
+@login_required
+def sueno_detail(request, pk):
+    entry = get_object_or_404(DreamEntry, pk=pk, user=request.user)
+    return render(request, 'mirror/sueno_detail.html', {'entry': entry})
 
 
 def _get_reply(session, user_content):

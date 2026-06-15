@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ entry.title|default:"Sueño" }} — Endonautas{% endblock %}
+{% block content %}
+<div style="max-width:640px">
+  <a href="/suenos/" onclick="spaGo(event,this)" style="color:var(--calipso);text-decoration:none;font-size:0.82rem;font-family:var(--font-display)">← Diario de Sueños</a>
+  <div class="panel" style="margin-top:1.25rem">
+    <div style="font-size:0.72rem;font-family:var(--font-display);letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">{{ entry.dream_date|date:"d M Y" }}</div>
+    <h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:700;color:#fff;margin-bottom:1rem;letter-spacing:-0.02em">{{ entry.title|default:"Sin título" }}</h1>
+    {% if entry.is_lucid or entry.reality_check %}
+    <div style="display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap">
+      {% if entry.is_lucid %}<span style="background:var(--violet-glow);color:var(--violet);border:1px solid rgba(155,142,196,0.3);border-radius:20px;padding:3px 12px;font-size:0.72rem;font-family:var(--font-display);font-weight:600">Lúcido</span>{% endif %}
+      {% if entry.reality_check %}<span style="background:var(--calipso-glow);color:var(--calipso);border:1px solid rgba(126,204,205,0.3);border-radius:20px;padding:3px 12px;font-size:0.72rem;font-family:var(--font-display);font-weight:600">Chequeo de Realidad</span>{% endif %}
+    </div>
+    {% endif %}
+    <div style="font-size:0.95rem;line-height:1.8;color:var(--text)">{{ entry.content|linebreaksbr }}</div>
+    {% if entry.tags %}
+    <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);font-size:0.8rem;color:var(--muted)">{{ entry.tags }}</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

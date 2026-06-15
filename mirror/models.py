@@ -43,3 +43,20 @@ class ChatMessage(models.Model):
 
     def __str__(self):
         return f'[{self.role}] {self.content[:60]}'
+
+
+class DreamEntry(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='dreams')
+    title = models.CharField(max_length=200, blank=True)
+    content = models.TextField()
+    is_lucid = models.BooleanField(default=False)
+    dream_date = models.DateField()
+    tags = models.CharField(max_length=200, blank=True)
+    reality_check = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-dream_date', '-created_at']
+
+    def __str__(self):
+        return f'{self.user.email} — {self.title or str(self.dream_date)}'

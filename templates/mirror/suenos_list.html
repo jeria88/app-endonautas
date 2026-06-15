@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Diario de Sueños — Endonautas{% endblock %}
+{% block content %}
+<style data-page-style>
+.suenos-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem; }
+.suenos-title { font-family:var(--font-display);font-size:1.6rem;font-weight:700;color:#fff;letter-spacing:-0.02em; }
+.suenos-sub { font-size:0.85rem;color:var(--muted);margin-top:4px; }
+.dream-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-top:1.5rem; }
+.dream-card { background:var(--surface);backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:16px;padding:20px;text-decoration:none;color:inherit;display:block;transition:border-color 0.2s; }
+.dream-card:hover { border-color:var(--border-active); }
+.dream-date { font-size:0.72rem;font-family:var(--font-display);letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px; }
+.dream-title { font-family:var(--font-display);font-size:1rem;font-weight:600;color:#fff;margin-bottom:6px; }
+.dream-excerpt { font-size:0.82rem;color:var(--muted);line-height:1.6; }
+.dream-badges { display:flex;gap:6px;margin-top:12px;flex-wrap:wrap; }
+.badge-lucido { background:var(--violet-glow);color:var(--violet);border:1px solid rgba(155,142,196,0.3);border-radius:20px;padding:2px 10px;font-size:0.7rem;font-family:var(--font-display);font-weight:600; }
+.badge-rc { background:var(--calipso-glow);color:var(--calipso);border:1px solid rgba(126,204,205,0.3);border-radius:20px;padding:2px 10px;font-size:0.7rem;font-family:var(--font-display);font-weight:600; }
+.empty-state { text-align:center;padding:5rem 2rem; }
+.empty-glyph { font-size:3rem;margin-bottom:1.5rem;display:block;opacity:0.4; }
+</style>
+
+<div class="suenos-header">
+  <div>
+    <h1 class="suenos-title">Diario de Sueños</h1>
+    <p class="suenos-sub">Registra y explora tus sueños para descubrir patrones del inconsciente.</p>
+  </div>
+  <a href="/suenos/nuevo/" onclick="spaGo(event,this)" class="btn btn-primary">+ Registrar sueño</a>
+</div>
+
+{% if entries %}
+<div class="dream-grid">
+  {% for e in entries %}
+  <a class="dream-card" href="/suenos/{{ e.pk }}/" onclick="spaGo(event,this)">
+    <div class="dream-date">{{ e.dream_date|date:"d M Y" }}</div>
+    <div class="dream-title">{{ e.title|default:"Sin título" }}</div>
+    <div class="dream-excerpt">{{ e.content|truncatechars:100 }}</div>
+    {% if e.is_lucid or e.reality_check or e.tags %}
+    <div class="dream-badges">
+      {% if e.is_lucid %}<span class="badge-lucido">Lúcido</span>{% endif %}
+      {% if e.reality_check %}<span class="badge-rc">Chequeo RR</span>{% endif %}
+      {% if e.tags %}<span style="font-size:0.7rem;color:var(--dim)">{{ e.tags }}</span>{% endif %}
+    </div>
+    {% endif %}
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <span class="empty-glyph">🌙</span>
+  <p style="color:var(--muted);font-size:0.95rem;margin-bottom:1.5rem">Aún no hay sueños registrados.</p>
+  <a href="/suenos/nuevo/" onclick="spaGo(event,this)" class="btn btn-primary">Registrar mi primer sueño</a>
+</div>
+{% endif %}
+{% endblock %}

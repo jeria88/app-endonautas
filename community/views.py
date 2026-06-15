@@ -40,6 +40,16 @@ def post_detail(request, pk):
 
 
 @login_required
+def foros(request):
+    return render(request, 'community/foros.html')
+
+
+@login_required
+def mensajes(request):
+    return render(request, 'community/mensajes.html')
+
+
+@login_required
 @require_POST
 def post_react(request, pk):
     from django.http import JsonResponse

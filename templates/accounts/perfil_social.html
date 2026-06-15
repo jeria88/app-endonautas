@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ target.first_name|default:target.email }} — Endonautas{% endblock %}
+{% block content %}
+<style data-page-style>
+.social-profile { max-width:680px; }
+.profile-hero { background:var(--surface);backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:20px;padding:28px;margin-bottom:1.25rem;display:flex;align-items:center;gap:20px; }
+.profile-avatar-big { width:72px;height:72px;border-radius:50%;background:var(--surface2);border:2px solid var(--border-active);display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:700;color:var(--calipso);flex-shrink:0;font-family:var(--font-display); }
+.profile-name { font-family:var(--font-display);font-size:1.3rem;font-weight:700;color:#fff;letter-spacing:-0.01em; }
+.profile-plan-tag { font-size:0.72rem;font-family:var(--font-display);font-weight:600;color:var(--calipso);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px; }
+.profile-bio { font-size:0.85rem;color:var(--muted);margin-top:8px;line-height:1.6; }
+.profile-stats { display:flex;gap:24px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border); }
+.ps { text-align:center; }
+.ps-val { font-family:var(--font-display);font-size:1.2rem;font-weight:700;color:#fff;display:block; }
+.ps-lbl { font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em; }
+.posts-label { font-family:var(--font-display);font-size:0.65rem;font-weight:700;letter-spacing:0.15em;color:var(--dim);text-transform:uppercase;padding:4px 0 12px; }
+.post-card-s { background:var(--surface);backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:10px;transition:border-color 0.2s; }
+.post-card-s:hover { border-color:var(--border-active); }
+.post-content-s { font-size:0.9rem;line-height:1.7;color:var(--text); }
+.post-date-s { font-size:0.72rem;color:var(--muted);margin-bottom:8px;font-family:var(--font-display); }
+</style>
+
+<div class="social-profile">
+  <div class="profile-hero">
+    <div class="profile-avatar-big">{{ target.first_name|first|default:target.email|first|upper }}</div>
+    <div style="flex:1">
+      <div class="profile-name">{{ target.first_name|default:target.email }}</div>
+      {% if target.profile.plan != 'free' %}
+      <div class="profile-plan-tag">{{ target.profile.get_plan_display }}</div>
+      {% endif %}
+      {% if target.profile.bio %}
+      <p class="profile-bio">{{ target.profile.bio }}</p>
+      {% endif %}
+      <div class="profile-stats">
+        <div class="ps"><span class="ps-val">{{ posts.count }}</span><span class="ps-lbl">Posts</span></div>
+        <div class="ps"><span class="ps-val">{{ target.test_results.count }}</span><span class="ps-lbl">Tests</span></div>
+      </div>
+    </div>
+    {% if target == request.user %}
+    <a href="/configuracion/" onclick="spaGo(event,this)" class="btn btn-outline btn-sm">Editar perfil</a>
+    {% endif %}
+  </div>
+
+  {% if posts %}
+  <div class="posts-label">Publicaciones</div>
+  {% for post in posts %}
+  <div class="post-card-s">
+    <div class="post-date-s">{{ post.created_at|date:"d M Y" }}{% if post.somatic_tag %} · <span style="color:var(--calipso)">{{ post.somatic_tag }}</span>{% endif %}</div>
+    <div class="post-content-s">{{ post.content|linebreaksbr|truncatechars:300 }}</div>
+    {% if post.image %}<img src="{{ post.image.url }}" style="width:100%;border-radius:10px;margin-top:10px">{% endif %}
+  </div>
+  {% endfor %}
+  {% else %}
+  <div style="text-align:center;padding:3rem;color:var(--muted);font-size:0.85rem">
+    {% if target == request.user %}Aún no has publicado nada. <a href="/comunidad/publicar/" onclick="spaGo(event,this)" style="color:var(--calipso)">Crear publicación →</a>{% else %}Sin publicaciones aún.{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

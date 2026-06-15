@@ -73,6 +73,25 @@ def perfil(request):
 
 
 @login_required
+def configuracion(request):
+    """Alias de perfil para mantener la URL /configuracion/ del sidebar."""
+    return perfil(request)
+
+
+@login_required
+def perfil_social(request, username=None):
+    from django.contrib.auth import get_user_model
+    from community.models import Post
+    User = get_user_model()
+    if username:
+        target = get_object_or_404(User, email=username)
+    else:
+        target = request.user
+    posts = Post.objects.filter(author=target).order_by('-created_at')[:20]
+    return render(request, 'accounts/perfil_social.html', {'target': target, 'posts': posts})
+
+
+@login_required
 def onboarding(request):
     profile = request.user.profile
     if profile.onboarding_complete:

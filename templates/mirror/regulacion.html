@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Regulación Somática — Endonautas{% endblock %}
+{% block content %}
+<style data-page-style>
+.reg-grid { display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-top:1.5rem; }
+@media(max-width:700px){ .reg-grid { grid-template-columns:1fr; } }
+.reg-card { background:var(--surface);backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:16px;padding:24px; }
+.reg-card-title { font-family:var(--font-display);font-size:1rem;font-weight:600;color:#fff;margin-bottom:6px; }
+.reg-card-sub { font-size:0.8rem;color:var(--muted);margin-bottom:1.25rem; }
+/* Body map */
+.body-map { position:relative;width:200px;height:340px;margin:0 auto; }
+.body-svg { width:100%;height:100%; }
+.hotspot { cursor:pointer;transition:all 0.2s; }
+.hotspot circle { fill:rgba(126,204,205,0.15);stroke:var(--calipso);stroke-width:1.5; }
+.hotspot:hover circle { fill:rgba(126,204,205,0.35); }
+.hotspot text { fill:var(--muted);font-size:9px;font-family:var(--font-display);text-anchor:middle; }
+.hotspot.active circle { fill:rgba(126,204,205,0.4);stroke:var(--calipso);stroke-width:2.5; }
+.hotspot.active text { fill:var(--calipso); }
+.tension-label { font-size:0.8rem;color:var(--muted);margin:6px 0; }
+.tension-bar-wrap { height:5px;background:rgba(255,255,255,0.06);border-radius:100px;overflow:hidden;margin-bottom:10px; }
+.tension-bar { height:100%;border-radius:100px;transition:width 0.8s ease; }
+/* Breathing */
+.breath-circle-wrap { display:flex;flex-direction:column;align-items:center;gap:20px; }
+.breath-ring { width:140px;height:140px;border-radius:50%;border:2px solid rgba(126,204,205,0.2);display:flex;align-items:center;justify-content:center;position:relative; }
+.breath-inner { width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(126,204,205,0.3),rgba(126,204,205,0.05));animation:breathe 8s ease-in-out infinite; }
+@keyframes breathe {
+  0%,100% { transform:scale(0.75);opacity:0.5; }
+  40%,60%  { transform:scale(1.25);opacity:1; }
+}
+.breath-label { font-family:var(--font-display);font-size:0.78rem;color:var(--calipso);text-transform:uppercase;letter-spacing:0.1em; }
+.breath-phase { font-family:var(--font-display);font-size:1rem;color:#fff;font-weight:600; }
+.status-badge { display:inline-flex;align-items:center;gap:6px;background:var(--calipso-glow);border:1px solid rgba(126,204,205,0.3);border-radius:20px;padding:4px 14px;font-size:0.72rem;font-family:var(--font-display);font-weight:700;color:var(--calipso);letter-spacing:0.08em; }
+.status-dot { width:6px;height:6px;border-radius:50%;background:var(--calipso);animation:pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+</style>
+
+<div style="margin-bottom:2rem">
+  <h1 style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;color:#fff;letter-spacing:-0.02em">Regulación Somática</h1>
+  <p style="font-size:0.85rem;color:var(--muted);margin-top:4px">Detecta puntos de tensión en tu cuerpo y calibra tu sistema nervioso.</p>
+</div>
+
+<div class="reg-grid">
+
+  <!-- Mapa corporal -->
+  <div class="reg-card">
+    <div class="reg-card-title">Sensores de Tensión</div>
+    <div class="reg-card-sub">Toca las zonas para registrar tensión percibida</div>
+    <div class="body-map">
+      <svg class="body-svg" viewBox="0 0 200 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Silueta cuerpo -->
+        <ellipse cx="100" cy="38" rx="26" ry="30" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+        <path d="M74 65 Q60 80 58 130 L142 130 Q140 80 126 65" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" fill="none"/>
+        <path d="M58 130 L50 200 L70 200 L80 160 L120 160 L130 200 L150 200 L142 130" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" fill="none"/>
+        <path d="M50 200 L45 270 L60 270 L70 200" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" fill="none"/>
+        <path d="M130 200 L140 270 L155 270 L150 200" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" fill="none"/>
+        <!-- Brazos -->
+        <path d="M74 72 Q50 90 40 130 L55 135 Q62 100 80 85" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" fill="none"/>
+        <path d="M126 72 Q150 90 160 130 L145 135 Q138 100 120 85" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" fill="none"/>
+
+        <!-- Hotspot: Mandíbula -->
+        <g class="hotspot" id="hs-mandibula" onclick="toggleHotspot(this,'#e9b46c')">
+          <circle cx="100" cy="58" r="14"/>
+          <text y="75">Mandíbula</text>
+        </g>
+        <!-- Hotspot: Diafragma -->
+        <g class="hotspot" id="hs-diafragma" onclick="toggleHotspot(this,'#7ECCCD')">
+          <circle cx="100" cy="110" r="14"/>
+          <text y="127">Diafragma</text>
+        </g>
+        <!-- Hotspot: Plexo Solar -->
+        <g class="hotspot" id="hs-plexo" onclick="toggleHotspot(this,'#c97b84')">
+          <circle cx="100" cy="147" r="14"/>
+          <text y="164">Plexo Solar</text>
+        </g>
+        <!-- Hotspot: Extremidades -->
+        <g class="hotspot" id="hs-ext" onclick="toggleHotspot(this,'#9b8ec4')">
+          <circle cx="100" cy="240" r="14"/>
+          <text y="257">Extremidades</text>
+        </g>
+      </svg>
+    </div>
+    <div id="tension-readout" style="margin-top:1rem"></div>
+  </div>
+
+  <!-- Respiración -->
+  <div class="reg-card">
+    <div class="reg-card-title">Calibración O₂/Cortisol</div>
+    <div class="reg-card-sub">Respiración 4-7-8 para bajar el cortisol</div>
+    <div class="breath-circle-wrap" style="margin-top:1rem">
+      <div class="status-badge"><span class="status-dot"></span> CALIBRANDO</div>
+      <div class="breath-ring">
+        <div class="breath-inner"></div>
+      </div>
+      <div style="text-align:center">
+        <div class="breath-phase" id="breath-phase">Inhala</div>
+        <div class="breath-label" style="margin-top:4px">4 · 7 · 8 respiraciones</div>
+      </div>
+      <button class="btn btn-outline btn-sm" id="breath-toggle" onclick="toggleBreath(this)">Iniciar ciclo</button>
+    </div>
+    <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border)">
+      <div class="tension-label">Tensión acumulada</div>
+      <div class="tension-bar-wrap"><div class="tension-bar" id="tension-overall" style="width:0%;background:var(--calipso)"></div></div>
+      <div style="font-size:0.72rem;color:var(--dim)" id="tension-pct">Selecciona zonas para medir</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const tensions = {};
+const colors = {'hs-mandibula':'#e9b46c','hs-diafragma':'#7ECCCD','hs-plexo':'#c97b84','hs-ext':'#9b8ec4'};
+const labels  = {'hs-mandibula':'Mandíbula','hs-diafragma':'Diafragma','hs-plexo':'Plexo Solar','hs-ext':'Extremidades'};
+
+function toggleHotspot(el, color) {
+  const id = el.id;
+  el.classList.toggle('active');
+  tensions[id] = el.classList.contains('active') ? 1 : 0;
+  updateTension();
+}
+
+function updateTension() {
+  const active = Object.values(tensions).filter(Boolean).length;
+  const pct = Math.min(active * 25, 100);
+  document.getElementById('tension-overall').style.width = pct + '%';
+  document.getElementById('tension-overall').style.background =
+    pct > 60 ? 'var(--rose)' : pct > 30 ? 'var(--amber)' : 'var(--calipso)';
+  document.getElementById('tension-pct').textContent =
+    active === 0 ? 'Sin tensión detectada' : `${active} zona${active>1?'s':''} activa${active>1?'s':''}`;
+}
+
+// Breath animation
+const phases = [
+  {name:'Inhala',dur:4000},
+  {name:'Retén',dur:7000},
+  {name:'Exhala',dur:8000},
+];
+let breathing = false, phaseIdx = 0, timer = null;
+function toggleBreath(btn) {
+  breathing = !breathing;
+  btn.textContent = breathing ? 'Detener' : 'Iniciar ciclo';
+  if (breathing) runPhase(); else { clearTimeout(timer); document.getElementById('breath-phase').textContent = 'Inhala'; }
+}
+function runPhase() {
+  if (!breathing) return;
+  const p = phases[phaseIdx % phases.length];
+  document.getElementById('breath-phase').textContent = p.name;
+  phaseIdx++;
+  timer = setTimeout(runPhase, p.dur);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Nuevo sueño — Endonautas{% endblock %}
+{% block content %}
+<div style="max-width:600px">
+  <a href="/suenos/" onclick="spaGo(event,this)" style="color:var(--calipso);text-decoration:none;font-size:0.82rem;font-family:var(--font-display)">← Diario de Sueños</a>
+  <h1 style="font-family:var(--font-display);font-size:1.5rem;font-weight:700;color:#fff;margin:1.25rem 0 1.5rem;letter-spacing:-0.02em">Registrar sueño</h1>
+  <div class="panel">
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Fecha del sueño</label>
+        <input type="date" name="dream_date" class="form-input" value="{{ today }}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Título (opcional)</label>
+        <input type="text" name="title" class="form-input" placeholder="¿Cómo llamarías este sueño?">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descripción del sueño</label>
+        <textarea name="content" class="form-input" rows="6" placeholder="Describe todo lo que recuerdas..." required></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Etiquetas (separadas por coma)</label>
+        <input type="text" name="tags" class="form-input" placeholder="agua, persecución, vuelo...">
+      </div>
+      <div style="display:flex;gap:1.5rem;margin-bottom:1.25rem">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.88rem;color:var(--text)">
+          <input type="checkbox" name="is_lucid" style="accent-color:var(--violet)">
+          <span>Sueño lúcido</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.88rem;color:var(--text)">
+          <input type="checkbox" name="reality_check" style="accent-color:var(--calipso)">
+          <span>Hice chequeo de realidad</span>
+        </label>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button type="submit" class="btn btn-primary">Guardar sueño</button>
+        <a href="/suenos/" onclick="spaGo(event,this)" class="btn btn-outline">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

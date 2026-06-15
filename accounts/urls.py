@@ -10,5 +10,8 @@ urlpatterns = [
     path('registro/', views.register_view, name='register'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('perfil/', views.perfil, name='perfil'),
+    path('configuracion/', views.configuracion, name='configuracion'),
+    path('perfil-social/', views.perfil_social, name='perfil_social'),
+    path('perfil-social/<str:username>/', views.perfil_social, name='perfil_social_user'),
     path('onboarding/', views.onboarding, name='onboarding'),
 ]
