@@ -10,6 +10,21 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'dev-insecure-key')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
+# Railway agrega el dominio público automáticamente
+_railway_domain = os.getenv('RAILWAY_PUBLIC_DOMAIN', '')
+if _railway_domain and _railway_domain not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(_railway_domain)
+
+CSRF_TRUSTED_ORIGINS = [
+    f'https://{h}' for h in ALLOWED_HOSTS
+    if h not in ('localhost', '127.0.0.1', '')
+]
+
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -91,9 +106,10 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# DeepSeek
-DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY', '')
-DEEPSEEK_MODEL = 'deepseek-chat'
+# AI — DeepSeek directo o vía OpenRouter
+DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY', '') or os.getenv('OPENROUTER_API_KEY', '')
+DEEPSEEK_MODEL = os.getenv('AI_MODEL', 'deepseek-chat')
+OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '')
 
 # Email
 EMAIL_BACKEND = 'post_office.EmailBackend'
