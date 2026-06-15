@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import UserProfile
 
@@ -60,7 +60,7 @@ def dashboard(request):
 
 @login_required
 def perfil(request):
-    profile = request.user.profile
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
         profile.map_aesthetic = request.POST.get('map_aesthetic', profile.map_aesthetic)
         profile.bio = request.POST.get('bio', profile.bio)
@@ -93,7 +93,7 @@ def perfil_social(request, username=None):
 
 @login_required
 def onboarding(request):
-    profile = request.user.profile
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
     if profile.onboarding_complete:
         return redirect('dashboard')
     if request.method == 'POST':
