@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Carta Astral — Endonautas{% endblock %}
+{% block content %}
+<div style="max-width:640px">
+  <a href="/nacimiento/" onclick="spaGo(event,this)" style="color:var(--accent);text-decoration:none;font-size:0.85rem">← Nacimiento</a>
+  <h1 style="font-size:1.3rem;font-weight:700;margin:1.25rem 0 0.25rem">Carta Astral</h1>
+  <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem">{{ birth.birth_date }} · {{ birth.city }}</p>
+
+  {% if report.status == 'done' %}
+  <div class="panel" style="margin-bottom:1.5rem">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem">
+      {% for planet, sign in report.raw_data.items %}
+      <div style="background:var(--surface2);border-radius:10px;padding:0.85rem 1rem">
+        <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.25rem">{{ planet }}</div>
+        <div style="font-weight:600;font-size:1rem">{{ sign }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if report.ai_reading %}
+  <div style="background:rgba(78,205,196,0.06);border:1px solid rgba(78,205,196,0.2);border-radius:14px;padding:1.25rem;font-size:0.9rem;line-height:1.7">
+    <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);margin-bottom:0.75rem">✦ Lectura endonauta</div>
+    {{ report.ai_reading|linebreaksbr }}
+  </div>
+  {% endif %}
+
+  {% elif report.status == 'processing' %}
+  <div class="panel" style="text-align:center;padding:2rem;color:var(--muted)">Calculando carta astral...</div>
+  {% elif report.status == 'error' %}
+  <div class="alert alert-error">{{ report.error_message|default:"Error al calcular la carta." }}</div>
+  {% else %}
+  <div class="panel" style="text-align:center;padding:2rem;color:var(--muted)">Calculando...</div>
+  {% endif %}
+</div>
+{% endblock %}

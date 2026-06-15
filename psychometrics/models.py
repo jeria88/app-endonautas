@@ -5,13 +5,18 @@ from django.utils.text import slugify
 
 class Test(models.Model):
     DIMENSION_CHOICES = [
-        ('mente', 'Mente'),
+        ('identidad', 'Identidad'),
         ('emociones', 'Emociones'),
         ('cuerpo', 'Cuerpo'),
         ('vinculos', 'Vínculos'),
-        ('proposito', 'Propósito'),
         ('sombra', 'Sombra'),
-        ('tipologia', 'Tipología'),
+        ('espiritualidad', 'Espiritualidad'),
+        ('suenos', 'Sueños'),
+        ('proposito', 'Propósito'),
+        ('comunidad', 'Comunidad'),
+        ('abundancia', 'Abundancia'),
+        ('creatividad', 'Creatividad'),
+        ('mente', 'Mente'),
     ]
     INSTRUMENT_CHOICES = [
         ('clinical', 'Clínico validado'),

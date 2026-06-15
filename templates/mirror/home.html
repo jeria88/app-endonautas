@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Espejo de Conflictos — Endonautas{% endblock %}
+{% block content %}
+<style data-page-style>
+.espejo-header { margin-bottom:2rem; }
+.espejo-title { font-size:1.3rem;font-weight:700; }
+.espejo-sub { font-size:0.85rem;color:var(--muted);margin-top:0.25rem;max-width:480px;line-height:1.6; }
+.session-list { display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem; }
+.session-card { background:rgba(0,0,0,0.88);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.25rem;text-decoration:none;color:inherit;display:flex;align-items:center;justify-content:space-between;transition:border-color 0.15s; }
+.session-card:hover { border-color:rgba(78,205,196,0.4); }
+.session-title { font-size:0.92rem;font-weight:500; }
+.session-meta { font-size:0.75rem;color:var(--muted); }
+</style>
+
+<div class="espejo-header">
+  <h1 class="espejo-title">Espejo de Conflictos</h1>
+  <p class="espejo-sub">Un espacio de conversación profunda para explorar tensiones internas. Cada mensaje consume 4 fractones.</p>
+</div>
+
+<a href="/espejo/chat/" onclick="spaGo(event,this)" class="btn btn-primary" style="margin-bottom:1.5rem">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  Nueva conversación
+</a>
+
+{% if sessions %}
+<div>
+  <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.75rem">Conversaciones anteriores</div>
+  <div class="session-list">
+    {% for s in sessions %}
+    <a class="session-card" href="/espejo/chat/{{ s.pk }}/" onclick="spaGo(event,this)">
+      <div>
+        <div class="session-title">{{ s.title|default:"Conversación sin título" }}</div>
+        <div class="session-meta">{{ s.updated_at|date:"d M Y · H:i" }} · {{ s.messages.count }} mensajes</div>
+      </div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="color:var(--muted)"><polyline points="9 18 15 12 9 6"/></svg>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

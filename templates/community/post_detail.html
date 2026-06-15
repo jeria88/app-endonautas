@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}{{ post.content|truncatechars:40 }} — Endonautas{% endblock %}
+{% block content %}
+<div style="max-width:640px">
+  <a href="/comunidad/" onclick="spaGo(event,this)" style="color:var(--accent);text-decoration:none;font-size:0.85rem">← Comunidad</a>
+  <div class="panel" style="margin-top:1.25rem;margin-bottom:1.5rem">
+    <div style="font-size:0.8rem;color:var(--muted);margin-bottom:0.75rem">
+      <strong style="color:var(--text)">{{ post.author.first_name|default:post.author.email }}</strong> · {{ post.created_at|date:"d M Y" }}
+    </div>
+    <div style="font-size:0.95rem;line-height:1.7;margin-bottom:0.75rem">{{ post.content|linebreaksbr }}</div>
+    {% if post.image %}<img src="{{ post.image.url }}" style="width:100%;border-radius:10px">{% endif %}
+  </div>
+
+  <div style="margin-bottom:1.5rem">
+    <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.75rem">Comentarios ({{ post.comments.count }})</div>
+    {% for c in post.comments.all %}
+    <div style="padding:0.75rem 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:0.25rem">{{ c.author.first_name|default:c.author.email }} · {{ c.created_at|date:"d M" }}</div>
+      <div style="font-size:0.9rem">{{ c.content }}</div>
+    </div>
+    {% empty %}
+    <div style="color:var(--muted);font-size:0.85rem">Sin comentarios aún.</div>
+    {% endfor %}
+  </div>
+
+  <div class="panel panel-sm">
+    <form method="post">
+      {% csrf_token %}
+      <textarea name="content" class="form-input" rows="3" placeholder="Tu comentario..." required></textarea>
+      <button type="submit" class="btn btn-primary" style="margin-top:0.75rem">Comentar</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Saju / BaZi — Endonautas{% endblock %}
+{% block content %}
+<div style="max-width:640px">
+  <a href="/nacimiento/" onclick="spaGo(event,this)" style="color:var(--accent);text-decoration:none;font-size:0.85rem">← Nacimiento</a>
+  <h1 style="font-size:1.3rem;font-weight:700;margin:1.25rem 0 0.25rem">Saju / BaZi</h1>
+  <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem">{{ birth.birth_date }} · {{ birth.city }}</p>
+
+  {% if report.status == 'done' %}
+  <div class="panel" style="margin-bottom:1.5rem">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1rem">
+      {% for key, val in report.raw_data.items %}
+      <div style="background:var(--surface2);border-radius:10px;padding:1rem;text-align:center">
+        <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.5rem">{{ key|cut:"_pillar" }}</div>
+        <div style="font-size:1.8rem;line-height:1">{{ val }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% elif report.status == 'error' %}
+  <div class="alert alert-error">{{ report.error_message|default:"Error al calcular Saju." }}</div>
+  {% else %}
+  <div class="panel" style="text-align:center;padding:2rem;color:var(--muted)">Calculando...</div>
+  {% endif %}
+</div>
+{% endblock %}

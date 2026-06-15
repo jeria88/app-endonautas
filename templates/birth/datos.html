@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Datos de nacimiento — Endonautas{% endblock %}
+{% block content %}
+<div style="max-width:520px">
+  <a href="/nacimiento/" onclick="spaGo(event,this)" style="color:var(--accent);text-decoration:none;font-size:0.85rem">← Nacimiento</a>
+  <h1 style="font-size:1.3rem;font-weight:700;margin:1.25rem 0 0.5rem">Tus datos de nacimiento</h1>
+  <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1.5rem">La hora exacta mejora la precisión del ascendente y el Human Design.</p>
+
+  <div class="panel">
+    <form method="post" id="birth-form">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Fecha de nacimiento</label>
+        <input type="date" name="birth_date" class="form-input" required value="{{ birth.birth_date|date:'Y-m-d'|default:'' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Hora de nacimiento (opcional)</label>
+        <input type="time" name="birth_time" class="form-input" value="{{ birth.birth_time|time:'H:i'|default:'' }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ciudad de nacimiento</label>
+        <input type="text" name="city" id="city-input" class="form-input" required value="{{ birth.city|default:'' }}" placeholder="Santiago, Chile" autocomplete="off">
+        <div id="city-suggestions" style="position:relative"></div>
+      </div>
+      <input type="hidden" name="country" id="country-input" value="{{ birth.country|default:'' }}">
+      <input type="hidden" name="lat" id="lat-input" value="{{ birth.latitude|default:'' }}">
+      <input type="hidden" name="lon" id="lon-input" value="{{ birth.longitude|default:'' }}">
+
+      <div style="display:flex;gap:0.75rem;margin-top:0.5rem">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a href="/nacimiento/" onclick="spaGo(event,this)" class="btn btn-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// Simple nominatim geocoder
+let debounce;
+document.getElementById('city-input').addEventListener('input', function() {
+  clearTimeout(debounce);
+  const q = this.value.trim();
+  if (q.length < 3) return;
+  debounce = setTimeout(async () => {
+    try {
+      const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&featuretype=city`);
+      const data = await r.json();
+      const sug = document.getElementById('city-suggestions');
+      sug.innerHTML = '';
+      if (!data.length) return;
+      const list = document.createElement('div');
+      list.style.cssText = 'position:absolute;background:#111118;border:1px solid var(--border);border-radius:10px;width:100%;z-index:100;margin-top:4px';
+      data.forEach(item => {
+        const opt = document.createElement('div');
+        opt.style.cssText = 'padding:0.6rem 1rem;cursor:pointer;font-size:0.85rem;border-bottom:1px solid var(--border)';
+        opt.textContent = item.display_name;
+        opt.addEventListener('mouseenter', () => opt.style.background = 'rgba(78,205,196,0.1)');
+        opt.addEventListener('mouseleave', () => opt.style.background = '');
+        opt.addEventListener('click', () => {
+          document.getElementById('city-input').value = item.display_name.split(',')[0];
+          document.getElementById('lat-input').value = item.lat;
+          document.getElementById('lon-input').value = item.lon;
+          document.getElementById('country-input').value = item.display_name.split(',').pop().trim();
+          sug.innerHTML = '';
+        });
+        list.appendChild(opt);
+      });
+      sug.appendChild(list);
+    } catch(e) {}
+  }, 400);
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('#city-input')) document.getElementById('city-suggestions').innerHTML = '';
+});
+</script>
+{% endblock %}
