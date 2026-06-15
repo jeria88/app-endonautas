@@ -33,7 +33,7 @@
     <div class="report-desc">Sol, Luna, Ascendente y planetas personales</div>
     {% for r in reports %}{% if r.report_type == 'astral' %}
     <span class="report-status badge {% if r.status == 'done' %}badge-validado{% elif r.status == 'error' %}badge-adaptado{% else %}badge-endonauta{% endif %}">{{ r.get_status_display }}</span>
-    {% endfor %}
+    {% endif %}{% endfor %}
   </a>
   <a class="report-card" href="/nacimiento/hd/" onclick="spaGo(event,this)">
     <div class="report-icon">◈</div>
@@ -41,7 +41,7 @@
     <div class="report-desc">Tipo, Autoridad, Perfil y Centros definidos</div>
     {% for r in reports %}{% if r.report_type == 'hd' %}
     <span class="report-status badge {% if r.status == 'done' %}badge-validado{% elif r.status == 'error' %}badge-adaptado{% else %}badge-endonauta{% endif %}">{{ r.get_status_display }}</span>
-    {% endfor %}
+    {% endif %}{% endfor %}
   </a>
   <a class="report-card" href="/nacimiento/saju/" onclick="spaGo(event,this)">
     <div class="report-icon">◎</div>
@@ -49,7 +49,7 @@
     <div class="report-desc">Los 4 pilares del destino chino</div>
     {% for r in reports %}{% if r.report_type == 'saju' %}
     <span class="report-status badge {% if r.status == 'done' %}badge-validado{% elif r.status == 'error' %}badge-adaptado{% else %}badge-endonauta{% endif %}">{{ r.get_status_display }}</span>
-    {% endfor %}
+    {% endif %}{% endfor %}
   </a>
   {% endwith %}
 </div>

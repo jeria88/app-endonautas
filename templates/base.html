@@ -12,183 +12,346 @@
       }
     }
   </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
   <style data-global>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
 
     :root {
-      --bg: #000000;
-      --surface: #111118;
-      --surface2: #1a1a26;
-      --border: #2a2a3a;
-      --text: #e2e2f0;
-      --muted: #7070a0;
-      --accent: #4ecdc4;
-      --accent2: #7c6dfa;
+      --bg: #030306;
+      --bg-deep: #010103;
+      --surface: rgba(12,10,20,0.76);
+      --surface2: rgba(20,17,35,0.85);
+      --border: rgba(255,255,255,0.08);
+      --border-active: rgba(255,255,255,0.18);
+
+      --text: #eceaef;
+      --muted: #848296;
+      --dim: #484658;
+
+      --calipso: #7ECCCD;
+      --calipso-glow: rgba(126,204,205,0.15);
+      --amber: #d4a056;
+      --amber-glow: rgba(212,160,86,0.15);
+      --rose: #c97b84;
+      --rose-glow: rgba(201,123,132,0.15);
+      --violet: #9b8ec4;
+      --violet-glow: rgba(155,142,196,0.15);
+      --green: #7ec49b;
+
+      /* Aliases usados en templates de polaridad */
+      --accent: var(--calipso);
+      --accent2: var(--violet);
       --luz-intensa: #f0c040;
-      --luz: #4ecdc4;
-      --transicion: #f4a035;
-      --sombra: #7c6dfa;
-      --sombra-dom: #e05050;
-      --sidebar-w: 220px;
+      --luz: var(--calipso);
+      --transicion: var(--amber);
+      --sombra: var(--violet);
+      --sombra-dom: var(--rose);
+
+      --font-ui: 'Plus Jakarta Sans', system-ui, sans-serif;
+      --font-display: 'Space Grotesk', system-ui, sans-serif;
+      --font-editorial: 'EB Garamond', Georgia, serif;
+      --sidebar-w: 280px;
       --radius: 16px;
     }
 
-    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; font-size: 15px; }
+    html, body {
+      height: 100%; width: 100vw;
+      background: var(--bg); color: var(--text);
+      font-family: var(--font-ui); font-size: 15px;
+    }
+    /* App shell (logueado): sin overflow en body */
+    body.app-mode { overflow: hidden; height: 100vh; }
 
-    /* ── Canvas cosmos ─────────────────────────────────────── */
-    #cosmos-bg-container { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    /* ── Cosmos background ─────────────────────────────────── */
+    #cosmos-bg-container { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
     #cosmos-bg-container canvas { display: block; }
+    #cosmos-overlay {
+      position: absolute; inset: 0; z-index: 2; pointer-events: none;
+      background: rgba(3,3,6,0.45);
+      backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+      transition: background 0.5s ease;
+    }
 
-    /* ── Layout shell ──────────────────────────────────────── */
-    .app-shell { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+    /* ── App shell ─────────────────────────────────────────── */
+    .app-shell { display: flex; height: 100vh; width: 100vw; position: relative; z-index: 2; }
 
     /* ── Sidebar ───────────────────────────────────────────── */
     .sidebar {
       width: var(--sidebar-w); flex-shrink: 0;
-      background: rgba(0,0,0,0.72); backdrop-filter: blur(12px);
+      background: rgba(8,6,12,0.85);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
       border-right: 1px solid var(--border);
       display: flex; flex-direction: column;
-      padding: 1.5rem 1rem;
-      position: fixed; top: 0; left: 0; height: 100vh; z-index: 10;
+      height: 100vh; z-index: 10; overflow: hidden;
+      transition: transform 0.6s cubic-bezier(0.16,1,0.3,1);
     }
-    .sidebar-logo { font-size: 1.1rem; font-weight: 700; color: var(--accent); letter-spacing: 0.03em; margin-bottom: 2rem; padding-left: 0.25rem; text-decoration: none; }
-    .sidebar-logo span { color: var(--muted); font-weight: 400; }
 
-    .nav-group { margin-bottom: 1.5rem; }
-    .nav-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.5rem; padding-left: 0.5rem; }
+    .sidebar-logo {
+      padding: 22px 20px;
+      display: flex; align-items: center; gap: 11px;
+      border-bottom: 1px solid var(--border);
+      text-decoration: none;
+    }
+    .sidebar-logo-icon {
+      width: 36px; height: 36px; flex-shrink: 0;
+    }
+    .sidebar-logo-text h1 {
+      font-family: var(--font-display); font-size: 1.1rem; font-weight: 700;
+      letter-spacing: -0.01em; color: #fff;
+    }
+    .sidebar-logo-text span {
+      font-size: 0.62rem; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--muted); display: block;
+    }
+
+    .nav-group { padding: 6px 12px; }
+    .nav-label {
+      font-family: var(--font-display); font-size: 0.65rem; font-weight: 700;
+      letter-spacing: 0.15em; color: var(--dim);
+      padding: 14px 4px 6px; text-transform: uppercase;
+    }
     .nav-link {
-      display: flex; align-items: center; gap: 0.6rem;
-      padding: 0.5rem 0.75rem; border-radius: 10px;
-      color: var(--text); text-decoration: none; font-size: 0.88rem;
-      transition: background 0.15s, color 0.15s;
-      cursor: pointer; border: none; background: none; width: 100%; text-align: left;
+      display: flex; align-items: center; gap: 11px;
+      padding: 10px 12px; border-radius: 8px;
+      color: var(--muted); text-decoration: none; font-size: 0.875rem; font-weight: 500;
+      transition: all 0.22s ease; cursor: pointer;
+      border: none; background: none; width: 100%; text-align: left; position: relative;
     }
-    .nav-link:hover, .nav-link.active { background: rgba(78,205,196,0.12); color: var(--accent); }
-    .nav-link svg { width: 16px; height: 16px; opacity: 0.7; flex-shrink: 0; }
-
-    .sidebar-bottom { margin-top: auto; border-top: 1px solid var(--border); padding-top: 1rem; }
-    .sidebar-user { font-size: 0.8rem; color: var(--muted); padding: 0.25rem 0.5rem; }
-    .sidebar-user strong { color: var(--text); display: block; }
-    .token-badge { display: inline-flex; align-items: center; gap: 0.3rem; background: rgba(78,205,196,0.1); border: 1px solid rgba(78,205,196,0.25); border-radius: 20px; padding: 0.2rem 0.6rem; font-size: 0.75rem; color: var(--accent); margin-top: 0.4rem; }
-
-    /* ── Main ──────────────────────────────────────────────── */
-    .main-content { margin-left: var(--sidebar-w); flex: 1; padding: 2rem; min-height: 100vh; }
-
-    /* ── Cuarzo panels ─────────────────────────────────────── */
-    .panel {
-      background: rgba(0,0,0,0.88);
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: var(--radius);
-      padding: 1.5rem;
+    .nav-link svg { width: 17px; height: 17px; opacity: 0.6; flex-shrink: 0; transition: opacity 0.2s; }
+    .nav-link:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+    .nav-link:hover svg { opacity: 0.9; }
+    .nav-link.active {
+      background: rgba(126,204,205,0.09); color: var(--calipso); font-weight: 600;
+      border-left: 2.5px solid var(--calipso);
     }
-    .panel-sm { padding: 1rem; border-radius: 12px; }
+    .nav-link.active svg { color: var(--calipso); opacity: 1; }
+
+    .sidebar-bottom { margin-top: auto; border-top: 1px solid var(--border); padding: 16px 12px 12px; }
+    .sidebar-user { font-size: 0.82rem; color: var(--muted); padding: 4px 4px 8px; }
+    .sidebar-user strong { color: #fff; display: block; font-size: 0.9rem; font-weight: 600; font-family: var(--font-display); }
+    .sidebar-user .plan-tag { font-size: 0.7rem; color: var(--calipso); font-weight: 500; }
+    .token-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--calipso-glow); border: 1px solid rgba(126,204,205,0.25);
+      border-radius: 20px; padding: 2px 10px; font-size: 0.72rem; color: var(--calipso); margin-top: 5px;
+      font-family: var(--font-display); font-weight: 600;
+    }
+
+    /* ── Main content ──────────────────────────────────────── */
+    .main-content {
+      flex: 1; height: 100vh; overflow-y: auto;
+      padding: 36px 40px; position: relative;
+    }
+
+    /* ── Cards / Panels ────────────────────────────────────── */
+    .panel, .card {
+      background: var(--surface);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px;
+      transition: border-color 0.3s;
+    }
+    .panel:hover, .card:hover { border-color: var(--border-active); }
+    .panel-sm, .card-sm { padding: 14px; border-radius: 10px; }
+
+    .card-tag {
+      display: inline-block; padding: 3px 9px; border-radius: 4px;
+      font-family: var(--font-display); font-size: 0.63rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px;
+    }
+    .tag-calipso { background: var(--calipso-glow); color: var(--calipso); border: 1px solid rgba(126,204,205,0.2); }
+    .tag-amber   { background: var(--amber-glow);   color: var(--amber);   border: 1px solid rgba(212,160,86,0.2);  }
+    .tag-violet  { background: var(--violet-glow);  color: var(--violet);  border: 1px solid rgba(155,142,196,0.2); }
+    .tag-rose    { background: var(--rose-glow);    color: var(--rose);    border: 1px solid rgba(201,123,132,0.2); }
 
     /* ── Buttons ───────────────────────────────────────────── */
-    .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.55rem 1.1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; cursor: pointer; border: none; transition: opacity 0.15s, transform 0.1s; text-decoration: none; }
-    .btn:active { transform: scale(0.97); }
-    .btn-primary { background: var(--accent); color: #000; }
-    .btn-secondary { background: rgba(255,255,255,0.08); color: var(--text); border: 1px solid var(--border); }
-    .btn-ghost { background: transparent; color: var(--accent); border: 1px solid rgba(78,205,196,0.3); }
-    .btn:hover { opacity: 0.85; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 10px 22px; border-radius: 8px;
+      font-family: var(--font-display); font-size: 0.875rem; font-weight: 600;
+      cursor: pointer; border: none; transition: all 0.22s ease; text-decoration: none;
+    }
+    .btn-sm { padding: 6px 14px; font-size: 0.8rem; border-radius: 6px; }
+    .btn-lg { padding: 14px 28px; font-size: 1rem; }
+    .btn-primary { background: var(--calipso); color: var(--bg); }
+    .btn-primary:hover { background: #95e1e0; box-shadow: 0 0 16px rgba(126,204,205,0.3); }
+    .btn-secondary, .btn-outline {
+      background: transparent; border: 1px solid var(--border-active); color: var(--text);
+    }
+    .btn-secondary:hover, .btn-outline:hover { border-color: #fff; background: rgba(255,255,255,0.05); }
+    .btn-ghost, .btn-calipso {
+      background: var(--calipso-glow); color: var(--calipso); border: 1px solid rgba(126,204,205,0.3);
+    }
+    .btn-ghost:hover, .btn-calipso:hover { background: rgba(126,204,205,0.25); border-color: var(--calipso); }
+    .btn-gold { background: var(--amber); color: var(--bg); }
+    .btn-gold:hover { background: #e9b46c; box-shadow: 0 0 16px rgba(212,160,86,0.3); }
 
     /* ── Forms ─────────────────────────────────────────────── */
     .form-group { margin-bottom: 1rem; }
-    .form-label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.35rem; }
-    .form-input {
-      width: 100%; padding: 0.6rem 0.9rem; border-radius: 10px;
-      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-      color: var(--text); font-size: 0.9rem; outline: none;
-      transition: border-color 0.15s;
+    .form-label {
+      display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em;
+      color: var(--muted); margin-bottom: 6px; font-family: var(--font-display);
     }
-    .form-input:focus { border-color: var(--accent); }
+    .form-input {
+      width: 100%; padding: 10px 14px; border-radius: 8px;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      color: var(--text); font-size: 0.9rem; font-family: var(--font-ui);
+      outline: none; transition: border-color 0.2s;
+    }
+    .form-input:focus { border-color: var(--calipso); }
+    .form-input::placeholder { color: var(--dim); }
     textarea.form-input { resize: vertical; min-height: 80px; }
+    select.form-input { cursor: pointer; }
 
     /* ── Badges ────────────────────────────────────────────── */
-    .badge { display: inline-block; padding: 0.15rem 0.55rem; border-radius: 20px; font-size: 0.72rem; font-weight: 600; }
-    .badge-validado { background: rgba(78,205,196,0.15); color: var(--accent); border: 1px solid rgba(78,205,196,0.3); }
-    .badge-adaptado { background: rgba(244,160,53,0.15); color: var(--transicion); border: 1px solid rgba(244,160,53,0.3); }
-    .badge-endonauta { background: rgba(124,109,250,0.15); color: var(--accent2); border: 1px solid rgba(124,109,250,0.3); }
+    .badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; font-family: var(--font-display); }
+    .badge-validado  { background: var(--calipso-glow); color: var(--calipso); border: 1px solid rgba(126,204,205,0.3); }
+    .badge-adaptado  { background: var(--amber-glow);   color: var(--amber);   border: 1px solid rgba(212,160,86,0.3);  }
+    .badge-endonauta { background: var(--violet-glow);  color: var(--violet);  border: 1px solid rgba(155,142,196,0.3); }
 
     /* ── Alerts ────────────────────────────────────────────── */
-    .alert { padding: 0.75rem 1rem; border-radius: 10px; font-size: 0.88rem; margin-bottom: 1rem; }
-    .alert-error { background: rgba(224,80,80,0.12); border: 1px solid rgba(224,80,80,0.3); color: #f08080; }
-    .alert-success { background: rgba(78,205,196,0.1); border: 1px solid rgba(78,205,196,0.25); color: var(--accent); }
+    .alert { padding: 12px 16px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 1rem; }
+    .alert-error   { background: rgba(201,123,132,0.12); border: 1px solid rgba(201,123,132,0.3); color: #e09098; }
+    .alert-success { background: var(--calipso-glow);    border: 1px solid rgba(126,204,205,0.25); color: var(--calipso); }
+
+    /* ── Typography helpers ────────────────────────────────── */
+    h1,h2,h3,h4 { font-family: var(--font-display); }
+    .page-header { margin-bottom: 28px; }
+    .page-header h2 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; color: #fff; margin-bottom: 6px; }
+    .page-header p { color: var(--muted); font-size: 0.92rem; }
+    .eyebrow {
+      font-family: var(--font-display); font-size: 0.72rem; font-weight: 700;
+      letter-spacing: 0.18em; color: var(--calipso); text-transform: uppercase;
+      display: block; margin-bottom: 10px;
+    }
 
     /* ── Polarity bars ─────────────────────────────────────── */
-    .bar-wrap { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
-    .bar { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+    .bar-wrap { height: 6px; background: rgba(255,255,255,0.04); border-radius: 100px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+    .bar { height: 100%; border-radius: 100px; transition: width 0.6s ease; }
     .bar-luz-intensa { background: var(--luz-intensa); }
-    .bar-luz { background: var(--luz); }
-    .bar-transicion { background: var(--transicion); }
-    .bar-sombra { background: var(--sombra); }
-    .bar-sombra-dominante { background: var(--sombra-dom); }
+    .bar-luz { background: var(--calipso); }
+    .bar-transicion { background: var(--amber); }
+    .bar-sombra { background: var(--violet); }
+    .bar-sombra-dominante { background: var(--rose); }
+
+    /* ── Stats ─────────────────────────────────────────────── */
+    .stat-value { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; color: #fff; display: block; }
+    .stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* ── Public navbar (landing) ───────────────────────────── */
+    .public-navbar {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(3,3,6,0.75); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border); padding: 0 40px;
+    }
+    .navbar-container { display: flex; align-items: center; gap: 24px; height: 60px; }
+    .navbar-logo { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: #fff; text-decoration: none; }
+    .navbar-links { display: flex; gap: 8px; flex: 1; }
+    .navbar-links a { color: var(--muted); text-decoration: none; font-size: 0.88rem; padding: 6px 12px; border-radius: 6px; transition: color 0.2s; }
+    .navbar-links a:hover { color: var(--text); }
+    .navbar-actions { display: flex; gap: 10px; margin-left: auto; }
 
     /* ── Responsive ────────────────────────────────────────── */
     @media (max-width: 768px) {
-      .sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+      .sidebar { position: fixed; top: 0; left: 0; transform: translateX(-100%); }
       .sidebar.open { transform: translateX(0); }
-      .main-content { margin-left: 0; padding: 1rem; }
-      .mobile-nav-toggle { display: flex; }
+      .main-content { margin-left: 0; padding: 1.25rem; }
+      .mobile-nav-toggle { display: flex !important; }
     }
-    .mobile-nav-toggle { display: none; position: fixed; top: 1rem; left: 1rem; z-index: 20; background: rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; color: var(--text); }
+    .mobile-nav-toggle {
+      display: none; position: fixed; top: 14px; left: 14px; z-index: 30;
+      background: rgba(8,6,12,0.9); border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 10px; cursor: pointer; color: var(--text);
+    }
   </style>
   {% block extra_head %}{% endblock %}
 </head>
-<body data-aesthetic="{{ map_aesthetic|default:'cosmos' }}">
+<body data-aesthetic="{{ map_aesthetic|default:'cosmos' }}"{% if user.is_authenticated %} class="app-mode"{% endif %}>
 
-<div id="cosmos-bg-container"></div>
+<div id="cosmos-bg-container"><div id="cosmos-overlay"></div></div>
 
 {% if user.is_authenticated %}
-<button class="mobile-nav-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+<button class="mobile-nav-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
 <div class="app-shell">
   <nav class="sidebar">
-    <a href="/" class="sidebar-logo" onclick="spaGo(event,this)">endonautas <span>·</span></a>
+    <a href="/" class="sidebar-logo" onclick="spaGo(event,this)">
+      <svg class="sidebar-logo-icon" viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="20" r="18" stroke="rgba(126,204,205,0.3)" stroke-width="1.5" stroke-dasharray="6 4" style="transform-origin:center;animation:spin 30s linear infinite"/>
+        <circle cx="20" cy="20" r="5" fill="#9b8ec4" style="filter:drop-shadow(0 0 6px #9b8ec4)"/>
+        <circle cx="31" cy="14" r="2.5" fill="#d4a056"/>
+        <circle cx="10" cy="28" r="1.8" fill="#c97b84"/>
+      </svg>
+      <div class="sidebar-logo-text">
+        <h1>Endonautas</h1>
+        <span>Soma y Consciencia</span>
+      </div>
+    </a>
 
-    <div class="nav-group">
-      <div class="nav-label">Principal</div>
-      <a class="nav-link" href="/dashboard/" onclick="spaGo(event,this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        Dashboard
-      </a>
-      <a class="nav-link" href="/tests/" onclick="spaGo(event,this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-        Tests
-      </a>
-      <a class="nav-link" href="/espejo/" onclick="spaGo(event,this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Espejo
-      </a>
-      <a class="nav-link" href="/nacimiento/" onclick="spaGo(event,this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"/><path d="M2 12h20"/></svg>
-        Nacimiento
-      </a>
-      <a class="nav-link" href="/comunidad/" onclick="spaGo(event,this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        Comunidad
-      </a>
-    </div>
+    <div style="flex:1;overflow-y:auto;padding:8px 14px">
 
-    {% if user.profile.is_practicante %}
-    <div class="nav-group">
-      <div class="nav-label">Terapeuta</div>
-      <a class="nav-link" href="/practicantes/" onclick="spaGo(event,this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
-        Clientes
-      </a>
-      <a class="nav-link" href="/practicantes/agenda/" onclick="spaGo(event,this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-        Agenda
-      </a>
+      <div class="nav-group">
+        <div class="nav-label">Social</div>
+        <a class="nav-link" href="/dashboard/" onclick="spaGo(event,this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Inicio
+        </a>
+        <a class="nav-link" href="/comunidad/" onclick="spaGo(event,this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Comunidad
+        </a>
+        <a class="nav-link" href="/perfil/" onclick="spaGo(event,this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+          Mi Perfil
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">Espacio Personal</div>
+        <a class="nav-link" href="/espejo/" onclick="spaGo(event,this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Espejo IA
+        </a>
+        <a class="nav-link" href="/tests/" onclick="spaGo(event,this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+          Tests y Métricas
+        </a>
+        <a class="nav-link" href="/nacimiento/" onclick="spaGo(event,this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"/><path d="M2 12h20"/></svg>
+          Mapa de Origen
+        </a>
+        <a class="nav-link" href="/tokens/balance/" onclick="spaGo(event,this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Fractones
+        </a>
+      </div>
+
+      {% if user.profile.is_practicante %}
+      <div class="nav-group">
+        <div class="nav-label">Profesionales</div>
+        <a class="nav-link" href="/practicantes/" onclick="spaGo(event,this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Portal del Terapeuta
+        </a>
+        <a class="nav-link" href="/practicantes/agenda/" onclick="spaGo(event,this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Agenda
+        </a>
+      </div>
+      {% endif %}
+
     </div>
-    {% endif %}
 
     <div class="sidebar-bottom">
       <div class="sidebar-user">
         <strong>{{ user.first_name|default:user.email }}</strong>
-        {{ user.profile.get_plan_display }}
+        <span class="plan-tag">{{ user.profile.get_plan_display }}</span>
         <div><span class="token-badge">⬡ {{ token_balance }} fractones</span></div>
       </div>
-      <a class="nav-link" href="/perfil/" onclick="spaGo(event,this)" style="margin-top:0.5rem">
+      <a class="nav-link" href="/perfil/" onclick="spaGo(event,this)" style="margin-top:4px">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
         Perfil
       </a>
@@ -204,10 +367,14 @@
   </main>
 </div>
 {% else %}
-<div id="page-content">
+<div id="page-content" style="position:relative;z-index:2;min-height:100vh;">
   {% block public_content %}{% endblock %}
 </div>
 {% endif %}
+
+<style data-global>
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+</style>
 
 <script type="module" data-global>
 // ── Cosmos Three.js — Agujero Negro Kepleriano ──────────────────────────────
@@ -403,7 +570,6 @@ function spaGo(e, el) {
         document.querySelectorAll('.nav-link').forEach(l => {
           l.classList.toggle('active', l.getAttribute('href') === url);
         });
-        // swap page styles
         document.querySelectorAll('style[data-page-style]').forEach(s => s.remove());
         doc.querySelectorAll('style[data-page-style]').forEach(s => {
           document.head.appendChild(s.cloneNode(true));
@@ -413,6 +579,7 @@ function spaGo(e, el) {
     })
     .catch(() => { window.location.href = url; });
 }
+window.spaGo = spaGo;
 window.addEventListener('popstate', () => { window.location.reload(); });
 </script>
 
