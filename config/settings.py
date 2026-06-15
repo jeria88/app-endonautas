@@ -10,14 +10,17 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'dev-insecure-key')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
-# Railway agrega el dominio público automáticamente
+# Railway: allow all hosts for internal healthchecks; trust proxy for HTTPS
 _railway_domain = os.getenv('RAILWAY_PUBLIC_DOMAIN', '')
-if _railway_domain and _railway_domain not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append(_railway_domain)
+if _railway_domain:
+    if _railway_domain not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_railway_domain)
+    if '*' not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append('*')
 
 CSRF_TRUSTED_ORIGINS = [
     f'https://{h}' for h in ALLOWED_HOSTS
-    if h not in ('localhost', '127.0.0.1', '')
+    if h not in ('localhost', '127.0.0.1', '', '*')
 ]
 
 if not DEBUG:
