@@ -278,7 +278,7 @@
 </button>
 <div class="app-shell">
   <nav class="sidebar">
-    <a href="/" class="sidebar-logo" onclick="spaGo(event,this)">
+    <a href="/" class="sidebar-logo" data-preset="general" onclick="spaGo(event,this)">
       <img src="{% static 'img/logo-alt.png' %}" alt="Endonautas" class="sidebar-logo-icon" style="width:32px;height:32px;object-fit:contain;flex-shrink:0">
       <div class="sidebar-logo-text">
         <h1>Endonautas</h1>
@@ -290,19 +290,19 @@
 
       <div class="nav-group">
         <div class="nav-label">Social</div>
-        <a class="nav-link" href="/comunidad/" onclick="spaGo(event,this)">
+        <a class="nav-link" href="/comunidad/" data-preset="comunidad" onclick="spaGo(event,this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           Inicio
         </a>
-        <a class="nav-link" href="/perfil-social/" onclick="spaGo(event,this)">
+        <a class="nav-link" href="/perfil-social/" data-preset="perfil" onclick="spaGo(event,this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
           Perfil
         </a>
-        <a class="nav-link" href="/foros/" onclick="spaGo(event,this)">
+        <a class="nav-link" href="/foros/" data-preset="foros" onclick="spaGo(event,this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4c0-1.1.9-2 2-2h8a2 2 0 0 1 2 2v5Z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
           Foros
         </a>
-        <a class="nav-link" href="/mensajes/" onclick="spaGo(event,this)">
+        <a class="nav-link" href="/mensajes/" data-preset="mensajes" onclick="spaGo(event,this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
           Mensajes
         </a>
@@ -310,23 +310,23 @@
 
       <div class="nav-group">
         <div class="nav-label">Espacio Personal</div>
-        <a class="nav-link" href="/configuracion/" onclick="spaGo(event,this)">
+        <a class="nav-link" href="/configuracion/" data-preset="configuracion" onclick="spaGo(event,this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           Configuración
         </a>
-        <a class="nav-link" href="/tests/" onclick="spaGo(event,this)">
+        <a class="nav-link" href="/tests/" data-preset="tests" onclick="spaGo(event,this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
           Mapa Interior
         </a>
-        <a class="nav-link" href="/espejo/" onclick="spaGo(event,this)">
+        <a class="nav-link" href="/espejo/" data-preset="espejo" onclick="spaGo(event,this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           Espejo
         </a>
-        <a class="nav-link" href="/regulacion/" onclick="spaGo(event,this)">
+        <a class="nav-link" href="/regulacion/" data-preset="regulacion" onclick="spaGo(event,this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>
           Regulación
         </a>
-        <a class="nav-link" href="/suenos/" onclick="spaGo(event,this)">
+        <a class="nav-link" href="/suenos/" data-preset="suenos" onclick="spaGo(event,this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           Diario de Sueños
         </a>
@@ -335,11 +335,11 @@
       {% if user.profile.is_practicante %}
       <div class="nav-group">
         <div class="nav-label">Profesionales</div>
-        <a class="nav-link" href="/practicantes/" onclick="spaGo(event,this)">
+        <a class="nav-link" href="/practicantes/" data-preset="practicantes" onclick="spaGo(event,this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           Portal del Terapeuta
         </a>
-        <a class="nav-link" href="/practicantes/agenda/" onclick="spaGo(event,this)">
+        <a class="nav-link" href="/practicantes/agenda/" data-preset="practicantes" onclick="spaGo(event,this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           Agenda
         </a>
@@ -393,19 +393,49 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 const aesthetic = document.body.dataset.aesthetic || 'cosmos';
 if (aesthetic !== 'cosmos') return;
 
+// ── Presets por sección ────────────────────────────────────────────────
 const PRESETS = {
-  general:    { bhr:4.0, density:0.32, sizeMult:1.80, bloom:6.0, speedInner:3.05, speedOuter:0.05, camZ:149, camAng:16 },
-  espejo:     { bhr:4.0, density:0.18, sizeMult:2.40, bloom:9.5, speedInner:4.50, speedOuter:0.05, camZ:149, camAng:85 },
-  onboarding: { bhr:4.0, density:0.32, sizeMult:0.90, bloom:6.0, speedInner:3.05, speedOuter:0.05, camZ:149, camAng:4  },
-  tests:      { bhr:4.0, density:0.35, sizeMult:1.70, bloom:6.5, speedInner:2.10, speedOuter:0.04, camZ:140, camAng:20 },
-  perfil:     { bhr:4.0, density:0.28, sizeMult:1.90, bloom:7.0, speedInner:1.50, speedOuter:0.03, camZ:160, camAng:12 },
+  landing:      { bhr:4.0, density:0.22, sizeMult:2.20, bloom:7.5, speedInner:1.80, speedOuter:0.04, camZ:180, camAng:8  },
+  onboarding:   { bhr:4.0, density:0.32, sizeMult:0.90, bloom:6.0, speedInner:3.05, speedOuter:0.05, camZ:149, camAng:4  },
+  comunidad:    { bhr:4.0, density:0.35, sizeMult:1.70, bloom:6.5, speedInner:2.10, speedOuter:0.04, camZ:140, camAng:20 },
+  perfil:       { bhr:4.0, density:0.25, sizeMult:2.00, bloom:8.5, speedInner:2.20, speedOuter:0.05, camZ:145, camAng:72 },
+  foros:        { bhr:4.0, density:0.40, sizeMult:1.60, bloom:5.5, speedInner:2.40, speedOuter:0.05, camZ:128, camAng:28 },
+  mensajes:     { bhr:4.0, density:0.25, sizeMult:1.70, bloom:6.0, speedInner:2.10, speedOuter:0.04, camZ:140, camAng:20 },
+  configuracion:{ bhr:4.0, density:0.32, sizeMult:1.80, bloom:6.0, speedInner:3.05, speedOuter:0.05, camZ:149, camAng:16 },
+  tests:        { bhr:4.0, density:0.55, sizeMult:1.40, bloom:5.0, speedInner:2.00, speedOuter:0.05, camZ:118, camAng:32 },
+  espejo:       { bhr:4.0, density:0.18, sizeMult:2.40, bloom:9.5, speedInner:4.50, speedOuter:0.05, camZ:149, camAng:85 },
+  regulacion:   { bhr:4.0, density:0.15, sizeMult:2.50, bloom:8.5, speedInner:1.00, speedOuter:0.02, camZ:130, camAng:45 },
+  suenos:       { bhr:4.0, density:0.20, sizeMult:2.00, bloom:7.0, speedInner:1.50, speedOuter:0.03, camZ:160, camAng:22 },
+  nacimiento:   { bhr:4.0, density:0.20, sizeMult:1.60, bloom:7.5, speedInner:1.20, speedOuter:0.03, camZ:220, camAng:4  },
+  practicantes: { bhr:4.0, density:0.50, sizeMult:1.65, bloom:5.8, speedInner:2.30, speedOuter:0.05, camZ:125, camAng:35 },
+  general:      { bhr:4.0, density:0.32, sizeMult:1.80, bloom:6.0, speedInner:3.05, speedOuter:0.05, camZ:149, camAng:16 },
 };
+
+function presetForPath(path) {
+  if (path === '/' || path === '')                              return 'landing';
+  if (/\/(login|registro|bienvenido)/.test(path))              return 'onboarding';
+  if (/\/espejo/.test(path))                                   return 'espejo';
+  if (/\/(tests|psychometrics|mapa)/.test(path))               return 'tests';
+  if (/\/nacimiento/.test(path))                               return 'nacimiento';
+  if (/\/regulacion/.test(path))                               return 'regulacion';
+  if (/\/suenos/.test(path))                                   return 'suenos';
+  if (/\/perfil-social/.test(path))                            return 'perfil';
+  if (/\/comunidad/.test(path))                                return 'comunidad';
+  if (/\/foros/.test(path))                                    return 'foros';
+  if (/\/mensajes/.test(path))                                 return 'mensajes';
+  if (/\/configuracion/.test(path))                            return 'configuracion';
+  if (/\/practicantes/.test(path))                             return 'practicantes';
+  return 'general';
+}
+
+const _initialPreset = PRESETS[presetForPath(location.pathname)] || PRESETS.general;
 
 let scene, camera, renderer, composer, bloomPass, particleMaterial, clock;
 let mouseX = 0, mouseY = 0, targetX = 0, targetY = 0;
-let currentPreset = { ...PRESETS.general };
-let targetPreset  = { ...PRESETS.general };
+let currentPreset = { ..._initialPreset };
+let targetPreset  = { ..._initialPreset };
 let lerpBoost = 0;
+let cosmosScrollY = 0;  // scroll+zoom landing (actualizado por listeners)
 
 const container = document.getElementById('cosmos-bg-container');
 if (!container) return;
@@ -524,6 +554,15 @@ window.addEventListener('resize', () => {
   composer.setSize(window.innerWidth, window.innerHeight);
 });
 
+// ── Scroll listeners para landing zoom ────────────────────────────────────────
+// Captura scroll en lp-wrap (overflow interno) Y en window (fallback)
+window.addEventListener('scroll', () => { cosmosScrollY = window.scrollY; }, { passive: true });
+document.addEventListener('scroll', e => {
+  const t = e.target;
+  if (t && t.id === 'lp-wrap') cosmosScrollY = t.scrollTop;
+  else if (!t || t === document || t === document.documentElement) cosmosScrollY = window.scrollY;
+}, { passive: true, capture: true });
+
 function lerp(a, b, t) { return a + (b - a) * t; }
 
 (function animate() {
@@ -531,8 +570,8 @@ function lerp(a, b, t) { return a + (b - a) * t; }
   const elapsed = clock.getElapsedTime();
   targetX += (mouseX - targetX) * 0.038;
   targetY += (mouseY - targetY) * 0.038;
-  lerpBoost = Math.max(0, lerpBoost - 0.008);
-  const L = 0.018 + (0.12 - 0.018) * lerpBoost;
+  lerpBoost = Math.max(0, lerpBoost - 0.005);
+  const L = 0.018 + (0.50 - 0.018) * lerpBoost;
   currentPreset.bhr        = lerp(currentPreset.bhr,        targetPreset.bhr,        L);
   currentPreset.density    = lerp(currentPreset.density,    targetPreset.density,    L);
   currentPreset.sizeMult   = lerp(currentPreset.sizeMult,   targetPreset.sizeMult,   L);
@@ -547,18 +586,35 @@ function lerp(a, b, t) { return a + (b - a) * t; }
   particleMaterial.uniforms.uSpeedInner.value = currentPreset.speedInner;
   particleMaterial.uniforms.uSpeedOuter.value = currentPreset.speedOuter;
   bloomPass.strength = currentPreset.bloom;
+  // Scroll+zoom landing: mismo cálculo que la plantilla de referencia
+  const lp = document.getElementById('lp-wrap');
+  let effectiveZ = currentPreset.camZ;
+  if (lp) {
+    const maxScroll = Math.max(
+      lp.scrollHeight - lp.clientHeight,
+      document.documentElement.scrollHeight - window.innerHeight,
+      1
+    );
+    const ratio = Math.max(0, Math.min(cosmosScrollY / maxScroll, 1));
+    effectiveZ = 180 - (ratio * 130);  // idéntico a la plantilla: 180→50
+  } else {
+    cosmosScrollY = 0;  // reset al salir de la landing
+  }
   const angRad = currentPreset.camAng * Math.PI / 180;
   camera.position.x = Math.sin(elapsed * 0.036) * 3.0 + targetX * 4.5;
-  camera.position.y = currentPreset.camZ * Math.sin(angRad) + Math.sin(elapsed * 0.022) * 1.5 - targetY * 2.5;
-  camera.position.z = currentPreset.camZ * Math.cos(angRad);
+  camera.position.y = effectiveZ * Math.sin(angRad) + Math.sin(elapsed * 0.022) * 1.5 - targetY * 2.5;
+  camera.position.z = effectiveZ * Math.cos(angRad);
   camera.lookAt(0, 0, 0);
   particleMaterial.uniforms.uTime.value = elapsed;
   composer.render();
 })();
 
 window.updateCosmosPreset = function(name) {
-  if (PRESETS[name]) { targetPreset = { ...PRESETS[name] }; lerpBoost = 1.0; }
+  const p = PRESETS[name] || PRESETS.general;
+  targetPreset = { ...p };
+  lerpBoost = 1.0;
 };
+window.presetForPath = presetForPath;
 
 })();
 
@@ -572,18 +628,31 @@ function spaGo(e, el) {
     .then(html => {
       const doc = new DOMParser().parseFromString(html, 'text/html');
       const content = doc.getElementById('page-content');
-      if (content) {
-        document.getElementById('page-content').innerHTML = content.innerHTML;
-        history.pushState({}, '', url);
-        document.querySelectorAll('.nav-link').forEach(l => {
-          l.classList.toggle('active', l.getAttribute('href') === url);
-        });
-        document.querySelectorAll('style[data-page-style]').forEach(s => s.remove());
-        doc.querySelectorAll('style[data-page-style]').forEach(s => {
-          document.head.appendChild(s.cloneNode(true));
-        });
-        window.scrollTo(0, 0);
-      }
+      if (!content) { window.location.href = url; return; }
+      const target = document.getElementById('page-content');
+      target.innerHTML = content.innerHTML;
+      history.pushState({}, '', url);
+      // Cosmos preset
+      const preset = el.dataset.preset ||
+        (window.presetForPath ? window.presetForPath(new URL(url, location.origin).pathname) : null);
+      if (preset && window.updateCosmosPreset) window.updateCosmosPreset(preset);
+      // Nav active state
+      const path = new URL(url, location.origin).pathname;
+      document.querySelectorAll('.nav-link').forEach(l => {
+        l.classList.toggle('active', l.getAttribute('href') === path);
+      });
+      // Page-specific styles
+      document.querySelectorAll('style[data-page-style]').forEach(s => s.remove());
+      doc.querySelectorAll('style[data-page-style]').forEach(s => {
+        document.head.appendChild(s.cloneNode(true));
+      });
+      // Execute page-specific scripts (innerHTML doesn't run them)
+      target.querySelectorAll('script').forEach(old => {
+        const ns = document.createElement('script');
+        ns.textContent = old.textContent;
+        old.replaceWith(ns);
+      });
+      window.scrollTo(0, 0);
     })
     .catch(() => { window.location.href = url; });
 }
