@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% load static %}<!DOCTYPE html>
 <html lang="es" data-aesthetic="{{ map_aesthetic|default:'cosmos' }}">
 <head>
   <meta charset="UTF-8">
@@ -65,13 +65,13 @@
     body.app-mode { overflow: hidden; height: 100vh; }
 
     /* ── Cosmos background ─────────────────────────────────── */
-    #cosmos-bg-container { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
-    #cosmos-bg-container canvas { display: block; }
+    #cosmos-bg-container { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+    #bh-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
     #cosmos-overlay {
-      position: absolute; inset: 0; z-index: 2; pointer-events: none;
+      position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none;
       background: rgba(3,3,6,0.45);
       backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
-      transition: background 0.5s ease;
+      transition: background 0.5s ease, backdrop-filter 0.5s ease;
     }
 
     /* ── App shell ─────────────────────────────────────────── */
@@ -344,6 +344,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           Portal del Terapeuta
         </a>
+        <a class="nav-link" href="/practicantes/agenda/" onclick="spaGo(event,this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Agenda
+        </a>
       </div>
       {% endif %}
 
@@ -417,6 +421,7 @@ camera.position.set(0, 20, 149);
 renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.domElement.id = 'bh-canvas';
 container.appendChild(renderer.domElement);
 
 composer = new EffectComposer(renderer);

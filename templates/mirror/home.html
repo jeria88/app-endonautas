@@ -2,40 +2,216 @@
 {% block title %}Espejo de Conflictos — Endonautas{% endblock %}
 {% block content %}
 <style data-page-style>
-.espejo-header { margin-bottom:2rem; }
-.espejo-title { font-size:1.3rem;font-weight:700; }
-.espejo-sub { font-size:0.85rem;color:var(--muted);margin-top:0.25rem;max-width:480px;line-height:1.6; }
-.session-list { display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem; }
-.session-card { background:rgba(0,0,0,0.88);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.25rem;text-decoration:none;color:inherit;display:flex;align-items:center;justify-content:space-between;transition:border-color 0.15s; }
-.session-card:hover { border-color:rgba(78,205,196,0.4); }
-.session-title { font-size:0.92rem;font-weight:500; }
-.session-meta { font-size:0.75rem;color:var(--muted); }
+.espejo-shell { display:grid;grid-template-columns:260px 1fr;height:calc(100vh - 5rem);border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--surface);backdrop-filter:blur(14px); }
+.sessions-panel { border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden; }
+.sessions-header { padding:14px;border-bottom:1px solid var(--border);flex-shrink:0; }
+.sessions-list { flex:1;overflow-y:auto; }
+.session-row { display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;transition:background 0.15s;border-bottom:1px solid rgba(255,255,255,0.03); }
+.session-row:hover { background:rgba(126,204,205,0.05); }
+.session-row.active { background:rgba(126,204,205,0.09);border-left:2.5px solid var(--calipso); }
+.session-icon { width:32px;height:32px;border-radius:8px;background:var(--calipso-glow);border:1px solid rgba(126,204,205,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+.session-info { flex:1;min-width:0; }
+.session-name { font-size:0.82rem;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.session-meta { font-size:0.68rem;color:var(--dim);margin-top:1px; }
+.chat-area { display:flex;flex-direction:column;overflow:hidden; }
+.chat-topbar { padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0; }
+.chat-messages { flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px; }
+.chat-empty { flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--dim); }
+.msg { max-width:82%; }
+.msg-user { align-self:flex-end; }
+.msg-assistant { align-self:flex-start; }
+.msg-bubble { padding:0.8rem 1rem;border-radius:14px;font-size:0.88rem;line-height:1.65; }
+.msg-user .msg-bubble { background:rgba(126,204,205,0.12);border:1px solid rgba(126,204,205,0.22);border-bottom-right-radius:4px; }
+.msg-assistant .msg-bubble { background:rgba(0,0,0,0.5);border:1px solid var(--border);border-bottom-left-radius:4px; }
+.msg-time { font-size:0.65rem;color:var(--dim);margin-top:3px; }
+.msg-user .msg-time { text-align:right; }
+.chat-input-area { padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:flex-end;flex-shrink:0; }
+.chat-input-area textarea { flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-size:0.88rem;resize:none;font-family:var(--font-ui);outline:none;min-height:44px;max-height:120px;transition:border-color 0.2s; }
+.chat-input-area textarea:focus { border-color:var(--calipso); }
+.send-btn { width:44px;height:44px;background:var(--calipso);border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#000;flex-shrink:0;transition:opacity 0.15s; }
+.send-btn:hover { opacity:0.85; }
+.send-btn:disabled { opacity:0.4;cursor:not-allowed; }
+.typing-row { display:none;align-items:center;gap:5px;color:var(--muted);font-size:0.8rem;padding:4px 0;align-self:flex-start; }
+.typing-row.show { display:flex; }
+.dot { width:5px;height:5px;background:var(--muted);border-radius:50%;animation:bounce 1.4s infinite both; }
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+@media(max-width:768px){ .espejo-shell{grid-template-columns:1fr}.sessions-panel{display:none} }
 </style>
 
-<div class="espejo-header">
-  <h1 class="espejo-title">Espejo de Conflictos</h1>
-  <p class="espejo-sub">Un espacio de conversación profunda para explorar tensiones internas. Cada mensaje consume 4 fractones.</p>
-</div>
+<div class="espejo-shell">
 
-<a href="/espejo/chat/" onclick="spaGo(event,this)" class="btn btn-primary" style="margin-bottom:1.5rem">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-  Nueva conversación
-</a>
-
-{% if sessions %}
-<div>
-  <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.75rem">Conversaciones anteriores</div>
-  <div class="session-list">
-    {% for s in sessions %}
-    <a class="session-card" href="/espejo/chat/{{ s.pk }}/" onclick="spaGo(event,this)">
-      <div>
-        <div class="session-title">{{ s.title|default:"Conversación sin título" }}</div>
-        <div class="session-meta">{{ s.updated_at|date:"d M Y · H:i" }} · {{ s.messages.count }} mensajes</div>
+  <div class="sessions-panel">
+    <div class="sessions-header">
+      <button class="btn btn-primary btn-sm" style="width:100%;justify-content:center" id="btn-new-chat" onclick="newChat()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nueva conversación
+      </button>
+    </div>
+    <div class="sessions-list" id="sessions-list">
+      {% for s in sessions %}
+      <div class="session-row" data-pk="{{ s.pk }}" onclick="loadSession({{ s.pk }}, this)">
+        <div class="session-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--calipso)" stroke-width="1.8" width="14" height="14"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div class="session-info">
+          <div class="session-name">{{ s.title|default:"Conversación" }}</div>
+          <div class="session-meta">{{ s.updated_at|date:"d M · H:i" }} · {{ s.messages.count }} msg</div>
+        </div>
       </div>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="color:var(--muted)"><polyline points="9 18 15 12 9 6"/></svg>
-    </a>
-    {% endfor %}
+      {% empty %}
+      <div id="empty-sessions-msg" style="padding:24px 16px;text-align:center;font-size:0.75rem;color:var(--dim);line-height:1.6">Sin conversaciones aún.<br>Inicia una nueva.</div>
+      {% endfor %}
+    </div>
   </div>
+
+  <div class="chat-area">
+    <div class="chat-topbar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--calipso)" stroke-width="1.8" width="20" height="20"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <div>
+        <div id="chat-title" style="font-family:var(--font-display);font-size:0.92rem;font-weight:600;color:#fff">Espejo de Conflictos</div>
+        <div id="chat-subtitle" style="font-size:0.7rem;color:var(--muted)">Selecciona una sesión o inicia una nueva</div>
+      </div>
+      <span class="token-badge" style="margin-left:auto">⬡ {{ token_balance }}</span>
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-empty" id="chat-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="48" height="48" style="color:var(--border)"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <div style="text-align:center">
+          <p style="font-size:0.9rem;color:var(--muted)">El espejo está listo</p>
+          <p style="font-size:0.75rem;color:var(--dim);margin-top:4px;line-height:1.5">Inicia una conversación o selecciona<br>una anterior desde el historial</p>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="newChat()">Nueva conversación</button>
+      </div>
+      <div class="typing-row" id="typing-row">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        <span style="font-size:0.78rem">Procesando...</span>
+      </div>
+    </div>
+
+    <div class="chat-input-area">
+      <textarea id="chat-input" placeholder="Escribe tu mensaje..." rows="1" disabled></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendMessage()" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="17" height="17"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+    <div style="padding:4px 20px 12px;font-size:0.68rem;color:var(--dim)">Cada intercambio consume ⬡ 4 fractones</div>
+  </div>
+
 </div>
-{% endif %}
+
+<script>
+let activeSessionPk = null;
+const csrf = () => document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+
+function enableChat(on) {
+  document.getElementById('chat-input').disabled = !on;
+  document.getElementById('send-btn').disabled = !on;
+}
+
+function scrollBottom() {
+  const m = document.getElementById('chat-messages');
+  m.scrollTop = m.scrollHeight;
+}
+
+function addBubble(role, content, time) {
+  const empty = document.getElementById('chat-empty');
+  if (empty) empty.remove();
+  const typing = document.getElementById('typing-row');
+  const div = document.createElement('div');
+  div.className = `msg msg-${role}`;
+  div.innerHTML = `<div class="msg-bubble">${content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div><div class="msg-time">${time}</div>`;
+  document.getElementById('chat-messages').insertBefore(div, typing);
+  scrollBottom();
+}
+
+async function newChat() {
+  const btn = document.getElementById('btn-new-chat');
+  btn.disabled = true;
+  try {
+    const fd = new FormData();
+    fd.append('csrfmiddlewaretoken', csrf());
+    const r = await fetch('/espejo/chat/', {method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'}});
+    const data = await r.json();
+    if (r.status === 402) { alert('Sin fractones suficientes.'); return; }
+    activeSessionPk = data.pk;
+    // Add row to list
+    const list = document.getElementById('sessions-list');
+    const emptyMsg = document.getElementById('empty-sessions-msg');
+    if (emptyMsg) emptyMsg.remove();
+    document.querySelectorAll('.session-row').forEach(r => r.classList.remove('active'));
+    const row = document.createElement('div');
+    row.className = 'session-row active';
+    row.dataset.pk = data.pk;
+    row.onclick = function() { loadSession(data.pk, this); };
+    row.innerHTML = `<div class="session-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--calipso)" stroke-width="1.8" width="14" height="14"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="session-info"><div class="session-name">Nueva conversación</div><div class="session-meta">ahora · 0 msg</div></div>`;
+    list.prepend(row);
+    // Reset chat panel
+    document.getElementById('chat-messages').innerHTML = `<div class="typing-row" id="typing-row"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span style="font-size:0.78rem">Procesando...</span></div>`;
+    document.getElementById('chat-title').textContent = 'Nueva conversación';
+    document.getElementById('chat-subtitle').textContent = 'Sesión activa';
+    enableChat(true);
+    document.getElementById('chat-input').focus();
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function loadSession(pk, el) {
+  document.querySelectorAll('.session-row').forEach(r => r.classList.remove('active'));
+  el.classList.add('active');
+  activeSessionPk = pk;
+  document.getElementById('chat-messages').innerHTML = `<div class="typing-row show" id="typing-row"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span style="font-size:0.78rem">Cargando...</span></div>`;
+  try {
+    const r = await fetch(`/espejo/api/${pk}/`, {headers:{'X-Requested-With':'XMLHttpRequest'}});
+    const data = await r.json();
+    document.getElementById('chat-messages').innerHTML = `<div class="typing-row" id="typing-row"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span style="font-size:0.78rem">Procesando...</span></div>`;
+    document.getElementById('chat-title').textContent = data.title;
+    document.getElementById('chat-subtitle').textContent = `${data.messages.length} mensajes`;
+    data.messages.forEach(m => addBubble(m.role, m.content, m.created_at));
+    enableChat(true);
+    scrollBottom();
+  } catch(e) { console.error(e); }
+}
+
+const inputEl = document.getElementById('chat-input');
+inputEl.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+inputEl.addEventListener('input', () => {
+  inputEl.style.height = 'auto';
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+});
+
+async function sendMessage() {
+  if (!activeSessionPk) return;
+  const content = inputEl.value.trim();
+  if (!content) return;
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true; inputEl.disabled = true;
+  inputEl.value = ''; inputEl.style.height = 'auto';
+  const now = new Date().toLocaleTimeString('es-CL', {hour:'2-digit',minute:'2-digit'});
+  addBubble('user', content, now);
+  document.getElementById('typing-row').classList.add('show');
+  scrollBottom();
+  try {
+    const fd = new FormData();
+    fd.append('content', content);
+    fd.append('csrfmiddlewaretoken', csrf());
+    const r = await fetch(`/espejo/chat/${activeSessionPk}/mensaje/`, {method:'POST', body:fd});
+    const data = await r.json();
+    if (r.status === 402) { alert('Sin fractones suficientes.'); }
+    else if (data.reply) {
+      const t = new Date(data.created_at).toLocaleTimeString('es-CL', {hour:'2-digit',minute:'2-digit'});
+      addBubble('assistant', data.reply, t);
+    }
+  } catch(e) { addBubble('assistant', 'Error de conexión.', '—'); }
+  finally {
+    document.getElementById('typing-row').classList.remove('show');
+    btn.disabled = false; inputEl.disabled = false; inputEl.focus();
+    scrollBottom();
+  }
+}
+</script>
 {% endblock %}

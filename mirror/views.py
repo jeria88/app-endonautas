@@ -10,16 +10,21 @@ from .models import ChatMessage, ChatSession, DreamEntry
 
 @login_required
 def espejo_home(request):
-    sessions = ChatSession.objects.filter(user=request.user)[:10]
+    sessions = ChatSession.objects.filter(user=request.user).prefetch_related('messages').order_by('-updated_at')[:20]
     return render(request, 'mirror/home.html', {'sessions': sessions})
 
 
 @login_required
 def chat_new(request):
-    from tokens.service import has_balance, spend
+    from tokens.service import has_balance
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     if not has_balance(request.user, 'espejo_exchange'):
+        if is_ajax:
+            return JsonResponse({'error': 'sin_fractones', 'redirect': '/tokens/'}, status=402)
         return redirect('tokens_balance')
     session = ChatSession.objects.create(user=request.user)
+    if is_ajax:
+        return JsonResponse({'pk': session.pk, 'title': session.title or 'Nueva conversación'})
     return redirect('espejo_chat', pk=session.pk)
 
 
@@ -27,6 +32,16 @@ def chat_new(request):
 def chat_session(request, pk):
     session = get_object_or_404(ChatSession, pk=pk, user=request.user)
     return render(request, 'mirror/chat.html', {'session': session})
+
+
+@login_required
+def chat_session_api(request, pk):
+    session = get_object_or_404(ChatSession, pk=pk, user=request.user)
+    messages = [
+        {'role': m.role, 'content': m.content, 'created_at': m.created_at.strftime('%H:%M')}
+        for m in session.messages.all()
+    ]
+    return JsonResponse({'pk': session.pk, 'title': session.title or 'Conversación', 'messages': messages})
 
 
 @login_required
