@@ -279,12 +279,7 @@
 <div class="app-shell">
   <nav class="sidebar">
     <a href="/" class="sidebar-logo" onclick="spaGo(event,this)">
-      <svg class="sidebar-logo-icon" viewBox="0 0 40 40" fill="none">
-        <circle cx="20" cy="20" r="18" stroke="rgba(126,204,205,0.3)" stroke-width="1.5" stroke-dasharray="6 4" style="transform-origin:center;animation:spin 30s linear infinite"/>
-        <circle cx="20" cy="20" r="5" fill="#9b8ec4" style="filter:drop-shadow(0 0 6px #9b8ec4)"/>
-        <circle cx="31" cy="14" r="2.5" fill="#d4a056"/>
-        <circle cx="10" cy="28" r="1.8" fill="#c97b84"/>
-      </svg>
+      <img src="{% static 'img/logo-alt.png' %}" alt="Endonautas" class="sidebar-logo-icon" style="width:32px;height:32px;object-fit:contain;flex-shrink:0">
       <div class="sidebar-logo-text">
         <h1>Endonautas</h1>
         <span>Soma y Consciencia</span>
@@ -394,8 +389,9 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
+(function() {
 const aesthetic = document.body.dataset.aesthetic || 'cosmos';
-if (aesthetic === 'cosmos') {
+if (aesthetic !== 'cosmos') return;
 
 const PRESETS = {
   general:    { bhr:4.0, density:0.32, sizeMult:1.80, bloom:6.0, speedInner:3.05, speedOuter:0.05, camZ:149, camAng:16 },
@@ -564,7 +560,7 @@ window.updateCosmosPreset = function(name) {
   if (PRESETS[name]) { targetPreset = { ...PRESETS[name] }; lerpBoost = 1.0; }
 };
 
-}
+})();
 
 // ── SPA Navigation ──────────────────────────────────────────────────────────
 function spaGo(e, el) {
