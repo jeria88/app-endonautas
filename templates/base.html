@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Endonautas{% endblock %}</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
   <style data-global>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -28,7 +36,8 @@
     html, body { height: 100%; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; font-size: 15px; }
 
     /* ── Canvas cosmos ─────────────────────────────────────── */
-    #cosmos-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    #cosmos-bg-container { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    #cosmos-bg-container canvas { display: block; }
 
     /* ── Layout shell ──────────────────────────────────────── */
     .app-shell { display: flex; min-height: 100vh; position: relative; z-index: 1; }
@@ -127,7 +136,7 @@
 </head>
 <body data-aesthetic="{{ map_aesthetic|default:'cosmos' }}">
 
-<canvas id="cosmos-bg"></canvas>
+<div id="cosmos-bg-container"></div>
 
 {% if user.is_authenticated %}
 <button class="mobile-nav-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
@@ -200,82 +209,183 @@
 </div>
 {% endif %}
 
-<script data-global>
-// ── Cosmos Three.js ─────────────────────────────────────────────────────────
-(function() {
-  const aesthetic = document.body.dataset.aesthetic || 'cosmos';
-  if (aesthetic !== 'cosmos') return;
+<script type="module" data-global>
+// ── Cosmos Three.js — Agujero Negro Kepleriano ──────────────────────────────
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
-  const canvas = document.getElementById('cosmos-bg');
-  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-  if (!gl) return;
+const aesthetic = document.body.dataset.aesthetic || 'cosmos';
+if (aesthetic === 'cosmos') {
 
-  function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    gl.viewport(0, 0, canvas.width, canvas.height);
-  }
-  window.addEventListener('resize', resize);
-  resize();
+const PRESETS = {
+  general:    { bhr:4.0, density:0.32, sizeMult:1.80, bloom:6.0, speedInner:3.05, speedOuter:0.05, camZ:149, camAng:16 },
+  espejo:     { bhr:4.0, density:0.18, sizeMult:2.40, bloom:9.5, speedInner:4.50, speedOuter:0.05, camZ:149, camAng:85 },
+  onboarding: { bhr:4.0, density:0.32, sizeMult:0.90, bloom:6.0, speedInner:3.05, speedOuter:0.05, camZ:149, camAng:4  },
+  tests:      { bhr:4.0, density:0.35, sizeMult:1.70, bloom:6.5, speedInner:2.10, speedOuter:0.04, camZ:140, camAng:20 },
+  perfil:     { bhr:4.0, density:0.28, sizeMult:1.90, bloom:7.0, speedInner:1.50, speedOuter:0.03, camZ:160, camAng:12 },
+};
 
-  const vs = `attribute vec2 a; void main(){gl_Position=vec4(a,0,1);}`;
-  const fs = `
-  precision mediump float;
-  uniform vec2 u_res; uniform float u_t;
-  float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
-  float star(vec2 uv,vec2 p,float s){float d=length(uv-p);return smoothstep(s,0.,d);}
-  void main(){
-    vec2 uv=(gl_FragCoord.xy/u_res)*2.-1.;
-    uv.x*=u_res.x/u_res.y;
-    float bh=0.;
-    float r=length(uv);
-    float theta=atan(uv.y,uv.x)+u_t*0.15;
-    float disk=smoothstep(0.38,0.08,abs(r-0.18))*smoothstep(0.06,0.2,r);
-    disk*=smoothstep(0.,6.28,mod(theta*2.+r*8.-u_t*2.,6.28));
-    bh=smoothstep(0.06,0.0,r)*0.95;
-    vec2 g=uv+vec2(0.5);
-    float stars=0.;
-    for(int i=0;i<80;i++){
-      vec2 p=vec2(hash(vec2(float(i),1.)),hash(vec2(float(i),2.)))*2.-1.;
-      p.x*=u_res.x/u_res.y;
-      float tw=sin(u_t*hash(vec2(float(i),3.))*3.+float(i))*0.5+0.5;
-      stars+=star(uv,p,0.004+tw*0.002)*tw;
+let scene, camera, renderer, composer, bloomPass, particleMaterial, clock;
+let mouseX = 0, mouseY = 0, targetX = 0, targetY = 0;
+let currentPreset = { ...PRESETS.general };
+let targetPreset  = { ...PRESETS.general };
+let lerpBoost = 0;
+
+const container = document.getElementById('cosmos-bg-container');
+if (!container) return;
+
+scene  = new THREE.Scene();
+camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.1, 3000);
+camera.position.set(0, 20, 149);
+
+renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+renderer.setSize(window.innerWidth, window.innerHeight);
+container.appendChild(renderer.domElement);
+
+composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 6.0, 0.70, 0.04);
+composer.addPass(bloomPass);
+
+const BH_R = 8, N = 190000, R_MIN = BH_R * 1.15, R_MAX = 130;
+const geometry = new THREE.BufferGeometry();
+const positions = new Float32Array(N*3), colors   = new Float32Array(N*3);
+const angles    = new Float32Array(N),   radii    = new Float32Array(N);
+const speeds    = new Float32Array(N),   sizes    = new Float32Array(N);
+const randoms   = new Float32Array(N);
+
+for (let i = 0; i < N; i++) {
+  const r = Math.random() < 0.72
+    ? R_MIN + Math.pow(Math.random(), 2.0) * 52
+    : 52 + Math.random() * (R_MAX - 52);
+  const a    = Math.random() * Math.PI * 2;
+  const norm = (r - R_MIN) / (R_MAX - R_MIN);
+  const y    = (Math.random() - 0.5) * r * (0.04 + norm * 0.55);
+  positions[i*3]   = Math.cos(a) * r;
+  positions[i*3+1] = y;
+  positions[i*3+2] = Math.sin(a) * r;
+  const brightness = Math.max(0.18, 1.0 - norm * 0.82);
+  colors[i*3] = colors[i*3+1] = colors[i*3+2] = brightness;
+  angles[i]  = a;
+  radii[i]   = r;
+  speeds[i]  = (1.0 / Math.sqrt(r)) * 2.4 * (0.85 + Math.random() * 0.30);
+  sizes[i]   = 0.10 + norm * norm * 2.80 + Math.random() * (0.20 + norm * 1.0);
+  randoms[i] = Math.random();
+}
+
+geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+geometry.setAttribute('color',    new THREE.BufferAttribute(colors,    3));
+geometry.setAttribute('aAngle',   new THREE.BufferAttribute(angles,    1));
+geometry.setAttribute('aRadius',  new THREE.BufferAttribute(radii,     1));
+geometry.setAttribute('aSpeed',   new THREE.BufferAttribute(speeds,    1));
+geometry.setAttribute('aSize',    new THREE.BufferAttribute(sizes,     1));
+geometry.setAttribute('aRand',    new THREE.BufferAttribute(randoms,   1));
+
+particleMaterial = new THREE.ShaderMaterial({
+  uniforms: {
+    uTime:       { value: 0 },
+    uBHR:        { value: currentPreset.bhr },
+    uSpeedInner: { value: currentPreset.speedInner },
+    uSpeedOuter: { value: currentPreset.speedOuter },
+    uSizeMult:   { value: currentPreset.sizeMult },
+    uDensity:    { value: currentPreset.density }
+  },
+  vertexShader: `
+    uniform float uTime, uBHR, uSpeedInner, uSpeedOuter, uSizeMult, uDensity;
+    attribute float aAngle, aRadius, aSpeed, aSize, aRand;
+    varying vec3 vColor;
+    void main() {
+      if (aRand > uDensity || aRadius < uBHR) {
+        gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+        gl_PointSize = 0.0;
+        return;
+      }
+      vColor = color;
+      float norm = clamp((aRadius - 9.2) / (130.0 - 9.2), 0.0, 1.0);
+      float speedMult = mix(uSpeedInner, uSpeedOuter, norm);
+      float a = aAngle - uTime * aSpeed * speedMult;
+      vec3 p = position;
+      p.x = cos(a) * aRadius;
+      p.z = sin(a) * aRadius;
+      p.y += sin(a * 3.0 + aRadius * 0.10) * (aRadius * 0.006);
+      vec4 mv = modelViewMatrix * vec4(p, 1.0);
+      gl_PointSize = aSize * uSizeMult * (120.0 / -mv.z);
+      gl_Position = projectionMatrix * mv;
     }
-    vec3 col=vec3(0.02,0.02,0.06);
-    col+=vec3(1.0,0.7,0.3)*disk*0.6;
-    col+=vec3(stars*0.9,stars*0.9,stars);
-    col*=1.-bh;
-    gl_FragColor=vec4(col,1.0);
-  }`;
+  `,
+  fragmentShader: `
+    varying vec3 vColor;
+    void main() {
+      vec2 uv = gl_PointCoord - 0.5;
+      float d = length(uv);
+      if (d > 0.5) discard;
+      gl_FragColor = vec4(vColor, smoothstep(0.5, 0.04, d) * 0.92);
+    }
+  `,
+  transparent: true,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false,
+  vertexColors: true
+});
 
-  function shader(type, src) {
-    const s = gl.createShader(type);
-    gl.shaderSource(s, src); gl.compileShader(s); return s;
-  }
-  const prog = gl.createProgram();
-  gl.attachShader(prog, shader(gl.VERTEX_SHADER, vs));
-  gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, fs));
-  gl.linkProgram(prog); gl.useProgram(prog);
+const field = new THREE.Points(geometry, particleMaterial);
+field.rotation.x = 0.10;
+field.rotation.z = -0.03;
+scene.add(field);
 
-  const buf = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,3,-1,-1,3]), gl.STATIC_DRAW);
-  const loc = gl.getAttribLocation(prog, 'a');
-  gl.enableVertexAttribArray(loc);
-  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+clock = new THREE.Clock();
 
-  const uRes = gl.getUniformLocation(prog, 'u_res');
-  const uT = gl.getUniformLocation(prog, 'u_t');
+document.addEventListener('mousemove', e => {
+  mouseX = (e.clientX / window.innerWidth  - 0.5) * 2;
+  mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+});
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
+});
 
-  let t0 = performance.now();
-  function draw(now) {
-    gl.uniform2f(uRes, canvas.width, canvas.height);
-    gl.uniform1f(uT, (now - t0) / 1000);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
-    requestAnimationFrame(draw);
-  }
-  requestAnimationFrame(draw);
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+(function animate() {
+  requestAnimationFrame(animate);
+  const elapsed = clock.getElapsedTime();
+  targetX += (mouseX - targetX) * 0.038;
+  targetY += (mouseY - targetY) * 0.038;
+  lerpBoost = Math.max(0, lerpBoost - 0.008);
+  const L = 0.018 + (0.12 - 0.018) * lerpBoost;
+  currentPreset.bhr        = lerp(currentPreset.bhr,        targetPreset.bhr,        L);
+  currentPreset.density    = lerp(currentPreset.density,    targetPreset.density,    L);
+  currentPreset.sizeMult   = lerp(currentPreset.sizeMult,   targetPreset.sizeMult,   L);
+  currentPreset.bloom      = lerp(currentPreset.bloom,      targetPreset.bloom,      L);
+  currentPreset.speedInner = lerp(currentPreset.speedInner, targetPreset.speedInner, L);
+  currentPreset.speedOuter = lerp(currentPreset.speedOuter, targetPreset.speedOuter, L);
+  currentPreset.camZ       = lerp(currentPreset.camZ,       targetPreset.camZ,       L);
+  currentPreset.camAng     = lerp(currentPreset.camAng,     targetPreset.camAng,     L);
+  particleMaterial.uniforms.uBHR.value        = currentPreset.bhr;
+  particleMaterial.uniforms.uDensity.value    = currentPreset.density;
+  particleMaterial.uniforms.uSizeMult.value   = currentPreset.sizeMult;
+  particleMaterial.uniforms.uSpeedInner.value = currentPreset.speedInner;
+  particleMaterial.uniforms.uSpeedOuter.value = currentPreset.speedOuter;
+  bloomPass.strength = currentPreset.bloom;
+  const angRad = currentPreset.camAng * Math.PI / 180;
+  camera.position.x = Math.sin(elapsed * 0.036) * 3.0 + targetX * 4.5;
+  camera.position.y = currentPreset.camZ * Math.sin(angRad) + Math.sin(elapsed * 0.022) * 1.5 - targetY * 2.5;
+  camera.position.z = currentPreset.camZ * Math.cos(angRad);
+  camera.lookAt(0, 0, 0);
+  particleMaterial.uniforms.uTime.value = elapsed;
+  composer.render();
 })();
+
+window.updateCosmosPreset = function(name) {
+  if (PRESETS[name]) { targetPreset = { ...PRESETS[name] }; lerpBoost = 1.0; }
+};
+
+}
 
 // ── SPA Navigation ──────────────────────────────────────────────────────────
 function spaGo(e, el) {
