@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Agenda — Endonautas{% endblock %}
+
+{% block content %}
+<style data-page-style>
+.agenda-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+.agenda-title { font-size: 1.3rem; font-weight: 700; }
+.session-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.session-card { background: rgba(0,0,0,0.88); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.session-card:hover { border-color: rgba(78,205,196,0.3); }
+.session-date { font-size: 1.5rem; font-weight: 700; color: var(--accent); min-width: 48px; text-align: center; line-height: 1; }
+.session-month { font-size: 0.68rem; text-transform: uppercase; color: var(--muted); text-align: center; }
+</style>
+
+<div class="agenda-head">
+  <div>
+    <a href="/practicantes/" onclick="spaGo(event,this)" style="color:var(--accent);text-decoration:none;font-size:0.82rem">← Clientes</a>
+    <h1 class="agenda-title" style="margin-top:0.75rem">Agenda</h1>
+  </div>
+  <a href="/practicantes/agenda/nueva/" onclick="spaGo(event,this)" class="btn btn-primary">+ Nueva sesión</a>
+</div>
+
+{% if sessions %}
+<div class="session-list">
+  {% for s in sessions %}
+  <div class="session-card">
+    <div style="display:flex;align-items:center;gap:1rem">
+      <div>
+        <div class="session-date">{{ s.datetime|date:"d" }}</div>
+        <div class="session-month">{{ s.datetime|date:"M" }}</div>
+      </div>
+      <div>
+        <div style="font-weight:600;font-size:0.95rem">{{ s.profile.alias }}</div>
+        <div style="font-size:0.8rem;color:var(--muted)">{{ s.datetime|date:"H:i" }} · {{ s.duration_minutes }} min · {{ s.get_session_type_display }}</div>
+        {% if s.meeting_url %}<a href="{{ s.meeting_url }}" target="_blank" style="font-size:0.78rem;color:var(--accent)">Abrir sala →</a>{% endif %}
+      </div>
+    </div>
+    <span class="badge {% if s.status == 'completed' %}badge-validado{% elif s.status == 'confirmed' %}badge-endonauta{% elif s.status == 'cancelled' %}badge-adaptado{% else %}badge-adaptado{% endif %}">{{ s.get_status_display }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="panel" style="text-align:center;padding:3rem">
+  <div style="font-size:2rem;margin-bottom:1rem">◎</div>
+  <div style="color:var(--muted)">Sin sesiones programadas.</div>
+  <a href="/practicantes/agenda/nueva/" onclick="spaGo(event,this)" class="btn btn-primary" style="margin-top:1.5rem">Programar sesión</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Nuevo cliente — Endonautas{% endblock %}
+
+{% block content %}
+<style data-page-style>
+.form-wrap { max-width: 520px; }
+.form-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.25rem; }
+.form-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 2rem; }
+</style>
+<div class="form-wrap">
+  <a href="/practicantes/" onclick="spaGo(event,this)" style="color:var(--accent);text-decoration:none;font-size:0.85rem">← Clientes</a>
+  <h1 class="form-title" style="margin-top:1.25rem">Nuevo cliente</h1>
+  <p class="form-sub">Crea un perfil temporal. Puedes invitar a tu cliente por email para que vincule su cuenta.</p>
+
+  <div class="panel">
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Alias o nombre</label>
+        <input type="text" name="alias" class="form-input" required autofocus placeholder="Nombre con el que trabajas">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email (para invitación)</label>
+        <input type="email" name="email" class="form-input" placeholder="Opcional">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notas iniciales</label>
+        <textarea name="notes" class="form-input" rows="4" placeholder="Motivo de consulta, antecedentes..."></textarea>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem">
+        <input type="checkbox" name="send_invite" id="send_invite" style="width:16px;height:16px;accent-color:var(--accent)">
+        <label for="send_invite" style="font-size:0.85rem;color:var(--muted);cursor:pointer">Enviar email de invitación</label>
+      </div>
+      <div style="display:flex;gap:0.75rem">
+        <button type="submit" class="btn btn-primary">Crear perfil</button>
+        <a href="/practicantes/" onclick="spaGo(event,this)" class="btn btn-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Tests — Endonautas{% endblock %}
+{% block content %}
+<style data-page-style>
+.list-header { margin-bottom:2rem; }
+.list-title { font-size:1.3rem;font-weight:700; }
+.dim-section { margin-bottom:2rem; }
+.dim-title { font-size:0.8rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.75rem; }
+.test-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0.75rem; }
+.test-card { background:rgba(0,0,0,0.88);border:1px solid var(--border);border-radius:14px;padding:1.1rem;text-decoration:none;color:inherit;transition:border-color 0.15s;display:block; }
+.test-card:hover { border-color:rgba(78,205,196,0.4); }
+.test-name { font-weight:600;font-size:0.92rem;margin-bottom:0.4rem; }
+.test-meta { font-size:0.75rem;color:var(--muted);display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center; }
+</style>
+<div class="list-header">
+  <h1 class="list-title">Tests psicométricos</h1>
+</div>
+{% for dimension, tests in by_dimension.items %}
+<div class="dim-section">
+  <div class="dim-title">{{ dimension }}</div>
+  <div class="test-grid">
+    {% for t in tests %}
+    <a class="test-card" href="/tests/{{ t.slug }}/responder/" onclick="spaGo(event,this)">
+      <div class="test-name">{{ t.name }}</div>
+      <div class="test-meta">
+        <span class="badge {% if t.instrument_type == 'clinical' %}badge-validado{% elif t.instrument_type == 'adapted' %}badge-adaptado{% else %}badge-endonauta{% endif %}">
+          {{ t.get_instrument_type_display }}
+        </span>
+        <span>~{{ t.estimated_minutes }} min</span>
+        {% if t.token_cost %}<span>⬡ {{ t.token_cost }}</span>{% endif %}
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

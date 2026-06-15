@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Disponibilidad — Endonautas{% endblock %}
+
+{% block content %}
+<div style="max-width:560px">
+  <a href="/practicantes/" onclick="spaGo(event,this)" style="color:var(--accent);text-decoration:none;font-size:0.85rem">← Clientes</a>
+  <h1 style="font-size:1.3rem;font-weight:700;margin:1.25rem 0 0.5rem">Mi disponibilidad</h1>
+  <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1.5rem">Define los horarios en que atiendes sesiones.</p>
+
+  <div class="panel">
+    <form method="post" id="avail-form">
+      {% csrf_token %}
+      <div id="slots-container">
+        {% for slot in slots %}
+        <div class="slot-row" style="display:grid;grid-template-columns:auto 1fr 1fr auto;gap:0.75rem;align-items:center;margin-bottom:0.75rem">
+          <select name="day_of_week" class="form-input" style="padding:0.5rem">
+            {% for i, day in slot.DAY_CHOICES %}
+            <option value="{{ i }}" {% if slot.day_of_week == i %}selected{% endif %}>{{ day }}</option>
+            {% endfor %}
+          </select>
+          <input type="time" name="start_time" class="form-input" value="{{ slot.start_time|time:'H:i' }}">
+          <input type="time" name="end_time" class="form-input" value="{{ slot.end_time|time:'H:i' }}">
+          <button type="button" onclick="this.closest('.slot-row').remove()" style="color:var(--sombra-dom);background:none;border:none;cursor:pointer;font-size:1.1rem">✕</button>
+        </div>
+        {% endfor %}
+      </div>
+
+      <button type="button" class="btn btn-ghost" style="font-size:0.82rem;margin-bottom:1.5rem" onclick="addSlot()">+ Agregar horario</button>
+
+      <div style="display:flex;gap:0.75rem">
+        <button type="submit" class="btn btn-primary">Guardar disponibilidad</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const DAYS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+function addSlot() {
+  const opts = DAYS.map((d,i) => `<option value="${i}">${d}</option>`).join('');
+  const row = document.createElement('div');
+  row.className = 'slot-row';
+  row.style.cssText = 'display:grid;grid-template-columns:auto 1fr 1fr auto;gap:0.75rem;align-items:center;margin-bottom:0.75rem';
+  row.innerHTML = `
+    <select name="day_of_week" class="form-input" style="padding:0.5rem">${opts}</select>
+    <input type="time" name="start_time" class="form-input" value="09:00">
+    <input type="time" name="end_time" class="form-input" value="18:00">
+    <button type="button" onclick="this.closest('.slot-row').remove()" style="color:var(--sombra-dom);background:none;border:none;cursor:pointer;font-size:1.1rem">✕</button>
+  `;
+  document.getElementById('slots-container').appendChild(row);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Endonautas — Autoconocimiento profundo{% endblock %}
+
+{% block public_content %}
+<style data-page-style>
+.landing { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; }
+.landing-logo { font-size: 2.5rem; font-weight: 800; color: var(--accent); letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+.landing-tagline { font-size: 1.15rem; color: var(--muted); max-width: 480px; line-height: 1.6; margin-bottom: 2.5rem; }
+.landing-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+.landing-panel { background: rgba(0,0,0,0.78); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 3rem 2rem; max-width: 560px; width: 100%; }
+.features { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-top: 3rem; max-width: 720px; }
+.feature { background: rgba(0,0,0,0.65); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; text-align: left; }
+.feature-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+.feature-title { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; }
+.feature-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+</style>
+<div class="landing">
+  <div class="landing-panel">
+    <div class="landing-logo">endonautas</div>
+    <p class="landing-tagline">Una plataforma de autoconocimiento profundo. Tests validados, espejo de conflictos, lecturas de nacimiento.</p>
+    <div class="landing-actions">
+      <a href="/registro/" class="btn btn-primary">Comenzar gratis</a>
+      <a href="/login/" class="btn btn-secondary">Iniciar sesión</a>
+    </div>
+  </div>
+
+  <div class="features">
+    <div class="feature">
+      <div class="feature-icon">◎</div>
+      <div class="feature-title">35 Tests</div>
+      <div class="feature-desc">Tests psicométricos clínicos y de autoconocimiento</div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">⬡</div>
+      <div class="feature-title">Fractones</div>
+      <div class="feature-desc">Sistema de tokens por exploración y misiones</div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">◈</div>
+      <div class="feature-title">Espejo de Conflictos</div>
+      <div class="feature-desc">Diálogo profundo con IA para explorar tensiones</div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">✦</div>
+      <div class="feature-title">Nacimiento</div>
+      <div class="feature-desc">Carta astral, Human Design, Saju</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Clientes — Endonautas{% endblock %}
+
+{% block content %}
+<style data-page-style>
+.pract-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+.pract-title { font-size: 1.3rem; font-weight: 700; }
+.client-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.client-card { background: rgba(0,0,0,0.88); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; transition: border-color 0.15s; }
+.client-card:hover { border-color: rgba(78,205,196,0.4); }
+.client-alias { font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem; }
+.client-meta { font-size: 0.78rem; color: var(--muted); margin-bottom: 0.75rem; }
+.client-status { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.4rem; }
+.status-claimed { background: var(--accent); }
+.status-pending { background: var(--muted); }
+.upcoming-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.session-item { background: rgba(0,0,0,0.88); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.session-who { font-weight: 500; font-size: 0.92rem; }
+.session-when { font-size: 0.8rem; color: var(--accent); }
+.session-type { font-size: 0.75rem; color: var(--muted); }
+</style>
+
+<div class="pract-header">
+  <div>
+    <h1 class="pract-title">Mis clientes</h1>
+    <div style="font-size:0.82rem;color:var(--muted)">{{ clients|length }} perfiles activos</div>
+  </div>
+  <a href="/practicantes/cliente/nuevo/" onclick="spaGo(event,this)" class="btn btn-primary">+ Nuevo cliente</a>
+</div>
+
+{% if clients %}
+<div class="client-grid">
+  {% for client in clients %}
+  <a href="/practicantes/cliente/{{ client.pk }}/" onclick="spaGo(event,this)" style="text-decoration:none;color:inherit">
+    <div class="client-card">
+      <div class="client-alias">
+        <span class="client-status {% if client.claimed_by %}status-claimed{% else %}status-pending{% endif %}"></span>
+        {{ client.alias }}
+      </div>
+      <div class="client-meta">
+        {% if client.claimed_by %}Conectado · {{ client.claimed_by.email }}{% else %}Sin conectar{% endif %}
+        {% if client.email %} · {{ client.email }}{% endif %}
+      </div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+        <span style="font-size:0.75rem;color:var(--muted)">{{ client.test_results.count }} tests</span>
+        <span style="font-size:0.75rem;color:var(--muted)">· {{ client.session_notes.count }} notas</span>
+      </div>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="panel" style="text-align:center;padding:3rem">
+  <div style="font-size:2rem;margin-bottom:1rem">◉</div>
+  <div style="color:var(--muted);margin-bottom:1.5rem">Aún no tienes clientes.<br>Crea un perfil y comparte el enlace de invitación.</div>
+  <a href="/practicantes/cliente/nuevo/" onclick="spaGo(event,this)" class="btn btn-primary">Crear primer cliente</a>
+</div>
+{% endif %}
+
+{% if upcoming %}
+<div class="panel">
+  <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:1rem">Próximas sesiones</div>
+  <div class="upcoming-list">
+    {% for s in upcoming %}
+    <div class="session-item">
+      <div>
+        <div class="session-who">{{ s.profile.alias }}</div>
+        <div class="session-type">{{ s.get_session_type_display }} · {{ s.duration_minutes }} min</div>
+      </div>
+      <div style="text-align:right">
+        <div class="session-when">{{ s.datetime|date:"d M · H:i" }}</div>
+        <span class="badge {% if s.status == 'confirmed' %}badge-validado{% else %}badge-adaptado{% endif %}">{{ s.get_status_display }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <a href="/practicantes/agenda/" onclick="spaGo(event,this)" class="btn btn-ghost" style="margin-top:1rem;font-size:0.8rem">Ver agenda completa →</a>
+</div>
+{% endif %}
+{% endblock %}

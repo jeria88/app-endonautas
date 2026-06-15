@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Onboarding — Endonautas{% endblock %}
+
+{% block public_content %}
+<style data-page-style>
+.onb-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+.onb-box { background: rgba(0,0,0,0.88); border: 1px solid rgba(255,255,255,0.14); border-radius: 20px; padding: 2.5rem 2rem; width: 100%; max-width: 500px; }
+.onb-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; }
+.onb-sub { font-size: 0.88rem; color: var(--muted); margin-bottom: 2rem; line-height: 1.6; }
+.option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+.option-card { border: 1px solid var(--border); border-radius: 12px; padding: 1rem; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.option-card:hover, .option-card.selected { border-color: var(--accent); background: rgba(78,205,196,0.08); }
+.option-card input { display: none; }
+.option-label { font-size: 0.88rem; font-weight: 500; display: block; }
+.option-desc { font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }
+</style>
+<div class="onb-wrap">
+  <div class="onb-box">
+    <div style="color:var(--accent);font-size:0.85rem;margin-bottom:1.25rem">endonautas ✦</div>
+    <h1 class="onb-title">¿Desde dónde llegas?</h1>
+    <p class="onb-sub">Esto nos ayuda a personalizar tu experiencia. Puedes cambiarlo después.</p>
+
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="step" value="final">
+
+      <div style="margin-bottom:1.5rem">
+        <div class="form-label" style="margin-bottom:0.75rem">¿Cuál es tu área de ruido interno principal?</div>
+        <div class="option-grid">
+          {% for val, label in entry_points %}
+          <label class="option-card">
+            <input type="radio" name="entry_point" value="{{ val }}">
+            <span class="option-label">{{ label }}</span>
+          </label>
+          {% empty %}
+          <label class="option-card"><input type="radio" name="entry_point" value="ansiedad"><span class="option-label">Ansiedad</span></label>
+          <label class="option-card"><input type="radio" name="entry_point" value="relaciones"><span class="option-label">Relaciones</span></label>
+          <label class="option-card"><input type="radio" name="entry_point" value="proposito"><span class="option-label">Propósito</span></label>
+          <label class="option-card"><input type="radio" name="entry_point" value="autocuidado"><span class="option-label">Autocuidado</span></label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">¿Hay algo que quieras explorar en particular?</label>
+        <textarea name="noise_area" class="form-input" rows="3" placeholder="Opcional — escribe con libertad"></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">Comenzar exploración →</button>
+    </form>
+  </div>
+</div>
+<script>
+document.querySelectorAll('.option-card').forEach(card => {
+  card.addEventListener('click', () => {
+    card.closest('.option-grid').querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+  });
+});
+</script>
+{% endblock %}

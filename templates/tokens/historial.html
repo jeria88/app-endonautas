@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Historial — Endonautas{% endblock %}
+{% block content %}
+<div style="max-width:560px">
+  <a href="/tokens/balance/" onclick="spaGo(event,this)" style="color:var(--accent);text-decoration:none;font-size:0.85rem">← Balance</a>
+  <h1 style="font-size:1.3rem;font-weight:700;margin:1.25rem 0 1.5rem">Historial de fractones</h1>
+  <div class="panel">
+    {% for t in transactions %}
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0.7rem 0;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-size:0.88rem">{{ t.reason|default:"Transacción" }}</div>
+        <div style="font-size:0.72rem;color:var(--muted)">{{ t.created_at|date:"d M Y · H:i" }}</div>
+      </div>
+      <div style="font-weight:600;font-size:0.95rem;color:{% if t.amount > 0 %}var(--accent){% else %}var(--sombra-dom){% endif %}">
+        {% if t.amount > 0 %}+{% endif %}{{ t.amount }}
+      </div>
+    </div>
+    {% empty %}
+    <div style="color:var(--muted);text-align:center;padding:2rem">Sin transacciones aún.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

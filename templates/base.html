@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es" data-aesthetic="{{ map_aesthetic|default:'cosmos' }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Endonautas{% endblock %}</title>
+  <style data-global>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #000000;
+      --surface: #111118;
+      --surface2: #1a1a26;
+      --border: #2a2a3a;
+      --text: #e2e2f0;
+      --muted: #7070a0;
+      --accent: #4ecdc4;
+      --accent2: #7c6dfa;
+      --luz-intensa: #f0c040;
+      --luz: #4ecdc4;
+      --transicion: #f4a035;
+      --sombra: #7c6dfa;
+      --sombra-dom: #e05050;
+      --sidebar-w: 220px;
+      --radius: 16px;
+    }
+
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; font-size: 15px; }
+
+    /* ── Canvas cosmos ─────────────────────────────────────── */
+    #cosmos-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+    /* ── Layout shell ──────────────────────────────────────── */
+    .app-shell { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+
+    /* ── Sidebar ───────────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w); flex-shrink: 0;
+      background: rgba(0,0,0,0.72); backdrop-filter: blur(12px);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      padding: 1.5rem 1rem;
+      position: fixed; top: 0; left: 0; height: 100vh; z-index: 10;
+    }
+    .sidebar-logo { font-size: 1.1rem; font-weight: 700; color: var(--accent); letter-spacing: 0.03em; margin-bottom: 2rem; padding-left: 0.25rem; text-decoration: none; }
+    .sidebar-logo span { color: var(--muted); font-weight: 400; }
+
+    .nav-group { margin-bottom: 1.5rem; }
+    .nav-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.5rem; padding-left: 0.5rem; }
+    .nav-link {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.5rem 0.75rem; border-radius: 10px;
+      color: var(--text); text-decoration: none; font-size: 0.88rem;
+      transition: background 0.15s, color 0.15s;
+      cursor: pointer; border: none; background: none; width: 100%; text-align: left;
+    }
+    .nav-link:hover, .nav-link.active { background: rgba(78,205,196,0.12); color: var(--accent); }
+    .nav-link svg { width: 16px; height: 16px; opacity: 0.7; flex-shrink: 0; }
+
+    .sidebar-bottom { margin-top: auto; border-top: 1px solid var(--border); padding-top: 1rem; }
+    .sidebar-user { font-size: 0.8rem; color: var(--muted); padding: 0.25rem 0.5rem; }
+    .sidebar-user strong { color: var(--text); display: block; }
+    .token-badge { display: inline-flex; align-items: center; gap: 0.3rem; background: rgba(78,205,196,0.1); border: 1px solid rgba(78,205,196,0.25); border-radius: 20px; padding: 0.2rem 0.6rem; font-size: 0.75rem; color: var(--accent); margin-top: 0.4rem; }
+
+    /* ── Main ──────────────────────────────────────────────── */
+    .main-content { margin-left: var(--sidebar-w); flex: 1; padding: 2rem; min-height: 100vh; }
+
+    /* ── Cuarzo panels ─────────────────────────────────────── */
+    .panel {
+      background: rgba(0,0,0,0.88);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+    }
+    .panel-sm { padding: 1rem; border-radius: 12px; }
+
+    /* ── Buttons ───────────────────────────────────────────── */
+    .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.55rem 1.1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; cursor: pointer; border: none; transition: opacity 0.15s, transform 0.1s; text-decoration: none; }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-secondary { background: rgba(255,255,255,0.08); color: var(--text); border: 1px solid var(--border); }
+    .btn-ghost { background: transparent; color: var(--accent); border: 1px solid rgba(78,205,196,0.3); }
+    .btn:hover { opacity: 0.85; }
+
+    /* ── Forms ─────────────────────────────────────────────── */
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.35rem; }
+    .form-input {
+      width: 100%; padding: 0.6rem 0.9rem; border-radius: 10px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: var(--text); font-size: 0.9rem; outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-input:focus { border-color: var(--accent); }
+    textarea.form-input { resize: vertical; min-height: 80px; }
+
+    /* ── Badges ────────────────────────────────────────────── */
+    .badge { display: inline-block; padding: 0.15rem 0.55rem; border-radius: 20px; font-size: 0.72rem; font-weight: 600; }
+    .badge-validado { background: rgba(78,205,196,0.15); color: var(--accent); border: 1px solid rgba(78,205,196,0.3); }
+    .badge-adaptado { background: rgba(244,160,53,0.15); color: var(--transicion); border: 1px solid rgba(244,160,53,0.3); }
+    .badge-endonauta { background: rgba(124,109,250,0.15); color: var(--accent2); border: 1px solid rgba(124,109,250,0.3); }
+
+    /* ── Alerts ────────────────────────────────────────────── */
+    .alert { padding: 0.75rem 1rem; border-radius: 10px; font-size: 0.88rem; margin-bottom: 1rem; }
+    .alert-error { background: rgba(224,80,80,0.12); border: 1px solid rgba(224,80,80,0.3); color: #f08080; }
+    .alert-success { background: rgba(78,205,196,0.1); border: 1px solid rgba(78,205,196,0.25); color: var(--accent); }
+
+    /* ── Polarity bars ─────────────────────────────────────── */
+    .bar-wrap { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .bar { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+    .bar-luz-intensa { background: var(--luz-intensa); }
+    .bar-luz { background: var(--luz); }
+    .bar-transicion { background: var(--transicion); }
+    .bar-sombra { background: var(--sombra); }
+    .bar-sombra-dominante { background: var(--sombra-dom); }
+
+    /* ── Responsive ────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; padding: 1rem; }
+      .mobile-nav-toggle { display: flex; }
+    }
+    .mobile-nav-toggle { display: none; position: fixed; top: 1rem; left: 1rem; z-index: 20; background: rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; color: var(--text); }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body data-aesthetic="{{ map_aesthetic|default:'cosmos' }}">
+
+<canvas id="cosmos-bg"></canvas>
+
+{% if user.is_authenticated %}
+<button class="mobile-nav-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+<div class="app-shell">
+  <nav class="sidebar">
+    <a href="/" class="sidebar-logo" onclick="spaGo(event,this)">endonautas <span>·</span></a>
+
+    <div class="nav-group">
+      <div class="nav-label">Principal</div>
+      <a class="nav-link" href="/dashboard/" onclick="spaGo(event,this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-link" href="/tests/" onclick="spaGo(event,this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        Tests
+      </a>
+      <a class="nav-link" href="/espejo/" onclick="spaGo(event,this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Espejo
+      </a>
+      <a class="nav-link" href="/nacimiento/" onclick="spaGo(event,this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"/><path d="M2 12h20"/></svg>
+        Nacimiento
+      </a>
+      <a class="nav-link" href="/comunidad/" onclick="spaGo(event,this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Comunidad
+      </a>
+    </div>
+
+    {% if user.profile.is_practicante %}
+    <div class="nav-group">
+      <div class="nav-label">Terapeuta</div>
+      <a class="nav-link" href="/practicantes/" onclick="spaGo(event,this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+        Clientes
+      </a>
+      <a class="nav-link" href="/practicantes/agenda/" onclick="spaGo(event,this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Agenda
+      </a>
+    </div>
+    {% endif %}
+
+    <div class="sidebar-bottom">
+      <div class="sidebar-user">
+        <strong>{{ user.first_name|default:user.email }}</strong>
+        {{ user.profile.get_plan_display }}
+        <div><span class="token-badge">⬡ {{ token_balance }} fractones</span></div>
+      </div>
+      <a class="nav-link" href="/perfil/" onclick="spaGo(event,this)" style="margin-top:0.5rem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+        Perfil
+      </a>
+      <a class="nav-link" href="/logout/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Salir
+      </a>
+    </div>
+  </nav>
+
+  <main class="main-content" id="page-content">
+    {% block content %}{% endblock %}
+  </main>
+</div>
+{% else %}
+<div id="page-content">
+  {% block public_content %}{% endblock %}
+</div>
+{% endif %}
+
+<script data-global>
+// ── Cosmos Three.js ─────────────────────────────────────────────────────────
+(function() {
+  const aesthetic = document.body.dataset.aesthetic || 'cosmos';
+  if (aesthetic !== 'cosmos') return;
+
+  const canvas = document.getElementById('cosmos-bg');
+  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  if (!gl) return;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    gl.viewport(0, 0, canvas.width, canvas.height);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const vs = `attribute vec2 a; void main(){gl_Position=vec4(a,0,1);}`;
+  const fs = `
+  precision mediump float;
+  uniform vec2 u_res; uniform float u_t;
+  float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+  float star(vec2 uv,vec2 p,float s){float d=length(uv-p);return smoothstep(s,0.,d);}
+  void main(){
+    vec2 uv=(gl_FragCoord.xy/u_res)*2.-1.;
+    uv.x*=u_res.x/u_res.y;
+    float bh=0.;
+    float r=length(uv);
+    float theta=atan(uv.y,uv.x)+u_t*0.15;
+    float disk=smoothstep(0.38,0.08,abs(r-0.18))*smoothstep(0.06,0.2,r);
+    disk*=smoothstep(0.,6.28,mod(theta*2.+r*8.-u_t*2.,6.28));
+    bh=smoothstep(0.06,0.0,r)*0.95;
+    vec2 g=uv+vec2(0.5);
+    float stars=0.;
+    for(int i=0;i<80;i++){
+      vec2 p=vec2(hash(vec2(float(i),1.)),hash(vec2(float(i),2.)))*2.-1.;
+      p.x*=u_res.x/u_res.y;
+      float tw=sin(u_t*hash(vec2(float(i),3.))*3.+float(i))*0.5+0.5;
+      stars+=star(uv,p,0.004+tw*0.002)*tw;
+    }
+    vec3 col=vec3(0.02,0.02,0.06);
+    col+=vec3(1.0,0.7,0.3)*disk*0.6;
+    col+=vec3(stars*0.9,stars*0.9,stars);
+    col*=1.-bh;
+    gl_FragColor=vec4(col,1.0);
+  }`;
+
+  function shader(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src); gl.compileShader(s); return s;
+  }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, shader(gl.VERTEX_SHADER, vs));
+  gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(prog); gl.useProgram(prog);
+
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,3,-1,-1,3]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, 'a');
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+  const uRes = gl.getUniformLocation(prog, 'u_res');
+  const uT = gl.getUniformLocation(prog, 'u_t');
+
+  let t0 = performance.now();
+  function draw(now) {
+    gl.uniform2f(uRes, canvas.width, canvas.height);
+    gl.uniform1f(uT, (now - t0) / 1000);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+
+// ── SPA Navigation ──────────────────────────────────────────────────────────
+function spaGo(e, el) {
+  if (e) e.preventDefault();
+  const url = el.href || el.dataset.href;
+  if (!url) return;
+  fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+    .then(r => r.text())
+    .then(html => {
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const content = doc.getElementById('page-content');
+      if (content) {
+        document.getElementById('page-content').innerHTML = content.innerHTML;
+        history.pushState({}, '', url);
+        document.querySelectorAll('.nav-link').forEach(l => {
+          l.classList.toggle('active', l.getAttribute('href') === url);
+        });
+        // swap page styles
+        document.querySelectorAll('style[data-page-style]').forEach(s => s.remove());
+        doc.querySelectorAll('style[data-page-style]').forEach(s => {
+          document.head.appendChild(s.cloneNode(true));
+        });
+        window.scrollTo(0, 0);
+      }
+    })
+    .catch(() => { window.location.href = url; });
+}
+window.addEventListener('popstate', () => { window.location.reload(); });
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

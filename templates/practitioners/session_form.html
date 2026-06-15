@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Nueva sesión — Endonautas{% endblock %}
+
+{% block content %}
+<div style="max-width:500px">
+  <a href="/practicantes/agenda/" onclick="spaGo(event,this)" style="color:var(--accent);text-decoration:none;font-size:0.85rem">← Agenda</a>
+  <h1 style="font-size:1.3rem;font-weight:700;margin:1.25rem 0 1.5rem">Nueva sesión</h1>
+  <div class="panel">
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Cliente</label>
+        <select name="client" class="form-input" required>
+          <option value="">Seleccionar...</option>
+          {% for c in clients %}
+          <option value="{{ c.pk }}">{{ c.alias }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha y hora</label>
+        <input type="datetime-local" name="datetime" class="form-input" required>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+        <div class="form-group">
+          <label class="form-label">Duración (min)</label>
+          <input type="number" name="duration" class="form-input" value="60" min="15" step="15">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Modalidad</label>
+          <select name="session_type" class="form-input">
+            <option value="online">Online</option>
+            <option value="presencial">Presencial</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Link sala (opcional)</label>
+        <input type="url" name="meeting_url" class="form-input" placeholder="https://meet.google.com/...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notas</label>
+        <textarea name="notes" class="form-input" rows="3"></textarea>
+      </div>
+      <div style="display:flex;gap:0.75rem">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a href="/practicantes/agenda/" onclick="spaGo(event,this)" class="btn btn-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Resultado — {{ result.test.name }}{% endblock %}
+{% block content %}
+<style data-page-style>
+.result-wrap { max-width:640px;margin:0 auto; }
+.result-title { font-size:1.2rem;font-weight:700;margin-bottom:0.25rem; }
+.result-meta { font-size:0.8rem;color:var(--muted);margin-bottom:1.5rem; }
+.score-block { display:flex;flex-direction:column;gap:0.75rem;margin-bottom:1.5rem; }
+.score-row { display:flex;flex-direction:column;gap:0.3rem; }
+.score-label { font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);display:flex;justify-content:space-between; }
+.insight-box { background:rgba(78,205,196,0.06);border:1px solid rgba(78,205,196,0.2);border-radius:14px;padding:1.25rem;font-size:0.9rem;line-height:1.7;margin-bottom:1.5rem; }
+</style>
+<div class="result-wrap">
+  <a href="/tests/" onclick="spaGo(event,this)" style="color:var(--accent);text-decoration:none;font-size:0.82rem">← Tests</a>
+  <h1 class="result-title" style="margin-top:0.75rem">{{ result.test.name }}</h1>
+  <div class="result-meta">Completado el {{ result.completed_at|date:"d M Y · H:i" }}</div>
+
+  <div class="panel score-block" style="margin-bottom:1.5rem">
+    <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.75rem">Resultados</div>
+    {% for key, data in result.evaluation.items %}
+    {% if key != '_total' %}
+    <div class="score-row">
+      <div class="score-label"><span>{{ key }}</span><span>{{ data.total }}</span></div>
+      <div class="bar-wrap"><div class="bar bar-luz" style="width:{% widthratio data.avg 7 100 %}%"></div></div>
+    </div>
+    {% endif %}
+    {% endfor %}
+    <div style="margin-top:0.5rem;font-size:0.85rem;color:var(--muted)">Total: <strong style="color:var(--text)">{{ result.evaluation._total }}</strong></div>
+  </div>
+
+  {% if result.ai_insight %}
+  <div class="insight-box">
+    <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);margin-bottom:0.75rem">✦ Insight</div>
+    {{ result.ai_insight|linebreaksbr }}
+  </div>
+  {% else %}
+  <div style="margin-bottom:1.5rem">
+    <a href="?ai=1" class="btn btn-ghost">✦ Generar insight IA (⬡ 20)</a>
+  </div>
+  {% endif %}
+
+  <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+    <a href="/tests/" onclick="spaGo(event,this)" class="btn btn-secondary">Volver a tests</a>
+    <a href="/tests/mis-resultados/" onclick="spaGo(event,this)" class="btn btn-ghost">Mis resultados</a>
+  </div>
+</div>
+{% endblock %}

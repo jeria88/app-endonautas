@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Nueva nota — {{ client.alias }}{% endblock %}
+
+{% block content %}
+<div style="max-width:500px">
+  <a href="/practicantes/cliente/{{ client.pk }}/" onclick="spaGo(event,this)" style="color:var(--accent);text-decoration:none;font-size:0.85rem">← {{ client.alias }}</a>
+  <h1 style="font-size:1.3rem;font-weight:700;margin:1.25rem 0 1.5rem">Nota de sesión</h1>
+  <div class="panel">
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Fecha de sesión</label>
+        <input type="date" name="session_date" class="form-input" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contenido</label>
+        <textarea name="content" class="form-input" rows="8" required autofocus placeholder="Evolución del proceso, observaciones, intervenciones..."></textarea>
+      </div>
+      <div style="display:flex;gap:0.75rem">
+        <button type="submit" class="btn btn-primary">Guardar nota</button>
+        <a href="/practicantes/cliente/{{ client.pk }}/" onclick="spaGo(event,this)" class="btn btn-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

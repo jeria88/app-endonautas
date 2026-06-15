@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Perfil — Endonautas{% endblock %}
+
+{% block content %}
+<style data-page-style>
+.perfil-wrap { max-width: 600px; }
+.perfil-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem; }
+.aesthetic-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1rem; }
+.aes-card { border: 1px solid var(--border); border-radius: 12px; padding: 0.75rem 0.5rem; text-align: center; cursor: pointer; transition: border-color 0.15s; }
+.aes-card.active, .aes-card:hover { border-color: var(--accent); }
+.aes-card input { display: none; }
+.aes-icon { font-size: 1.4rem; display: block; margin-bottom: 0.3rem; }
+.aes-name { font-size: 0.75rem; color: var(--muted); }
+</style>
+<div class="perfil-wrap">
+  <h1 class="perfil-title">Mi perfil</h1>
+
+  <div class="panel" style="margin-bottom:1.5rem">
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Nombre</label>
+        <input type="text" name="first_name" class="form-input" value="{{ user.first_name }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" value="{{ user.email }}" disabled>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Bio</label>
+        <textarea name="bio" class="form-input">{{ profile.bio }}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" style="margin-bottom:0.75rem">Fondo visual</label>
+        <div class="aesthetic-grid">
+          {% for val, label in profile.AESTHETIC_CHOICES %}
+          <label class="aes-card {% if profile.map_aesthetic == val %}active{% endif %}">
+            <input type="radio" name="map_aesthetic" value="{{ val }}" {% if profile.map_aesthetic == val %}checked{% endif %}>
+            <span class="aes-icon">{% if val == 'cosmos' %}✦{% elif val == 'mandala' %}◎{% elif val == 'archipielago' %}◈{% else %}⬡{% endif %}</span>
+            <span class="aes-name">{{ label }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Guardar cambios</button>
+    </form>
+  </div>
+
+  <div class="panel panel-sm" style="font-size:0.85rem;">
+    <div style="color:var(--muted);margin-bottom:0.5rem;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em">Plan actual</div>
+    <strong>{{ profile.get_plan_display }}</strong>
+    {% if profile.plan == 'free' %}
+    <a href="/tokens/balance/" onclick="spaGo(event,this)" class="btn btn-ghost" style="margin-left:1rem;font-size:0.78rem">Ver fractones</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
