@@ -16,7 +16,7 @@ class Command(BaseCommand):
 
     # (app, migration_name, dependent_apps) — clear app + dependents if migration not recorded
     MIGRATIONS_TO_VERIFY = [
-        ('practitioners', '0002_initial', ['psychometrics']),
+        ('practitioners', '0002_initial', ['psychometrics', 'birth']),
     ]
 
     def _drop_app_tables_and_migrations(self, cursor, app):
