@@ -78,7 +78,7 @@ class TestResult(models.Model):
     )
     temp_profile = models.ForeignKey(
         'practitioners.TemporaryProfile', on_delete=models.SET_NULL,
-        null=True, blank=True, related_name='test_results'
+        null=True, blank=True, related_name='temp_test_results'
     )
     test = models.ForeignKey(Test, on_delete=models.CASCADE)
     raw_scores = models.JSONField(default=dict)
