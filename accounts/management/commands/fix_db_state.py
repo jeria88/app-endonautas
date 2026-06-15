@@ -14,9 +14,9 @@ class Command(BaseCommand):
         ('tokens', 'tokens_tokenbalance'),
     ]
 
-    # Clear app if this specific migration is NOT recorded (handles orphaned M2M through tables)
+    # (app, migration_name, dependent_apps) — clear app + dependents if migration not recorded
     MIGRATIONS_TO_VERIFY = [
-        ('practitioners', '0002_initial'),
+        ('practitioners', '0002_initial', ['psychometrics']),
     ]
 
     def _drop_app_tables_and_migrations(self, cursor, app):
@@ -44,7 +44,7 @@ class Command(BaseCommand):
                     self._drop_app_tables_and_migrations(cursor, app)
                     self.stdout.write(f'Cleared migration state for {app} (anchor table {anchor_table} was missing)')
 
-                for app, migration_name in self.MIGRATIONS_TO_VERIFY:
+                for app, migration_name, dependents in self.MIGRATIONS_TO_VERIFY:
                     cursor.execute(
                         "SELECT EXISTS(SELECT 1 FROM django_migrations WHERE app=%s AND name=%s)",
                         [app, migration_name],
@@ -53,5 +53,8 @@ class Command(BaseCommand):
                         continue
                     self._drop_app_tables_and_migrations(cursor, app)
                     self.stdout.write(f'Cleared migration state for {app} (migration {migration_name} was not recorded)')
+                    for dep_app in dependents:
+                        self._drop_app_tables_and_migrations(cursor, dep_app)
+                        self.stdout.write(f'Cleared migration state for {dep_app} (dependency on {app} was cleared)')
         except OperationalError:
             self.stdout.write('django_migrations not found — fresh database, skipping fix')
