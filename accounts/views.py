@@ -32,11 +32,11 @@ def register_view(request):
             return render(request, 'accounts/register.html', {'error': 'Email ya registrado'})
         user = User.objects.create_user(email=email, password=password,
                                         first_name=request.POST.get('first_name', ''))
-        UserProfile.objects.create(user=user)
         from tokens.models import TokenBalance
         from django.conf import settings
-        balance = TokenBalance.objects.create(user=user)
-        balance.credit_monthly(settings.PLAN_MONTHLY_TOKENS['free'], reason='signup')
+        balance, created_balance = TokenBalance.objects.get_or_create(user=user)
+        if created_balance:
+            balance.credit_monthly(settings.PLAN_MONTHLY_TOKENS['free'], reason='signup')
 
         claimed_code = request.session.pop('claim_code', None)
         if claimed_code:
