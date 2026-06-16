@@ -8,10 +8,23 @@ from django.views.decorators.http import require_POST
 from .models import ChatMessage, ChatSession, DreamEntry
 
 
+def _get_token_balance(user):
+    if user.is_superuser:
+        return '∞'
+    try:
+        from tokens.models import TokenBalance
+        return TokenBalance.objects.get(user=user).balance
+    except Exception:
+        return 0
+
+
 @login_required
 def espejo_home(request):
     sessions = ChatSession.objects.filter(user=request.user).prefetch_related('messages').order_by('-updated_at')[:20]
-    return render(request, 'mirror/home.html', {'sessions': sessions})
+    return render(request, 'mirror/home.html', {
+        'sessions': sessions,
+        'token_balance': _get_token_balance(request.user),
+    })
 
 
 @login_required
@@ -31,7 +44,10 @@ def chat_new(request):
 @login_required
 def chat_session(request, pk):
     session = get_object_or_404(ChatSession, pk=pk, user=request.user)
-    return render(request, 'mirror/chat.html', {'session': session})
+    return render(request, 'mirror/chat.html', {
+        'session': session,
+        'token_balance': _get_token_balance(request.user),
+    })
 
 
 @login_required
