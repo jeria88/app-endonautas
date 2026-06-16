@@ -4,6 +4,25 @@ from django.shortcuts import redirect, render
 from .models import BirthData, BirthReport
 
 
+def _ensure_timezone(bp):
+    """Re-derive timezone from coordinates and fix in DB if wrong.
+
+    If timezone_str was stored as 'UTC' (TimezoneFinder unavailable at save
+    time), kerykeion misinterprets local birth time as UTC and shifts the
+    ascendant by hours. Called before every chart calculation.
+    """
+    if not (bp.latitude and bp.longitude):
+        return
+    try:
+        from timezonefinder import TimezoneFinder
+        tz = TimezoneFinder().timezone_at(lat=bp.latitude, lng=bp.longitude)
+        if tz and tz != 'UTC' and bp.timezone_str != tz:
+            bp.timezone_str = tz
+            bp.save(update_fields=['timezone_str'])
+    except Exception:
+        pass
+
+
 @login_required
 def birth_home(request):
     try:
@@ -104,6 +123,7 @@ def _compute_report(report):
     report.save()
     try:
         bp = report.birth_data
+        _ensure_timezone(bp)
         if report.report_type == 'astral':
             data = calculate_astral_chart(bp)
         elif report.report_type == 'hd':
