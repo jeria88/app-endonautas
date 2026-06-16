@@ -31,24 +31,28 @@
     <div class="panel" style="padding:1rem 1.25rem">
       <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--calipso);margin-bottom:0.4rem">Ascendente (ASC)</div>
       <div style="font-size:1.3rem;font-weight:700" class="elem-{{ report.raw_data.ascendant.element }}">{{ report.raw_data.ascendant.sign }}</div>
-      <div style="font-size:0.78rem;color:var(--dim)">{{ report.raw_data.ascendant.degree }}°</div>
+      <div style="font-size:0.78rem;color:var(--dim);margin-bottom:0.5rem">{{ report.raw_data.ascendant.degree }}°</div>
+      {% if report.raw_data.ascendant.meaning %}<div style="font-size:0.78rem;color:var(--muted);line-height:1.5">{{ report.raw_data.ascendant.meaning }}</div>{% endif %}
     </div>
     <div class="panel" style="padding:1rem 1.25rem">
       <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--violet);margin-bottom:0.4rem">Medio Cielo (MC)</div>
       <div style="font-size:1.3rem;font-weight:700">{{ report.raw_data.midheaven.sign }}</div>
-      <div style="font-size:0.78rem;color:var(--dim)">{{ report.raw_data.midheaven.degree }}°</div>
+      <div style="font-size:0.78rem;color:var(--dim);margin-bottom:0.5rem">{{ report.raw_data.midheaven.degree }}°</div>
+      {% if report.raw_data.midheaven.meaning %}<div style="font-size:0.78rem;color:var(--muted);line-height:1.5">{{ report.raw_data.midheaven.meaning }}</div>{% endif %}
     </div>
   </div>
 
   <!-- Planetas -->
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.75rem;margin-bottom:1.5rem">
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.75rem;margin-bottom:1.5rem">
     {% for planet in report.raw_data.planets %}
     <div class="astral-planet">
       <div class="p-label">{{ planet.label }}</div>
       <div class="p-sign elem-{{ planet.element }}">
         {{ planet.sign }}{% if planet.retrograde %}<span class="retro-tag">℞</span>{% endif %}
       </div>
-      <div class="p-meta">Casa {{ planet.house }} · {{ planet.degree }}°</div>
+      <div class="p-meta" style="margin-bottom:0.4rem">Casa {{ planet.house }} · {{ planet.degree }}°</div>
+      {% if planet.planet_meaning %}<div style="font-size:0.73rem;color:var(--muted);line-height:1.45;margin-bottom:0.3rem">{{ planet.planet_meaning }}</div>{% endif %}
+      {% if planet.sign_meaning %}<div style="font-size:0.72rem;color:var(--dim);line-height:1.4;border-top:1px solid var(--border);padding-top:0.35rem;margin-top:0.1rem">{{ planet.sign_meaning }}</div>{% endif %}
     </div>
     {% endfor %}
   </div>

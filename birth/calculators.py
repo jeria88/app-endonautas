@@ -13,6 +13,13 @@ Approach per system:
 from datetime import timedelta
 
 from .models import SIGN_ES, HOUSE_NUM, SIGN_ELEMENT
+from .meanings import (
+    PLANET_MEANINGS, SIGN_MEANINGS, ASC_MEANINGS, MC_MEANINGS,
+    HD_TYPE_MEANINGS, HD_PROFILE_MEANINGS, HD_AUTHORITY_MEANINGS,
+    HD_DEFINITION_MEANINGS, HD_CENTER_MEANINGS,
+    SAJU_PILLAR_MEANINGS, SAJU_ELEMENT_MEANINGS,
+    SAJU_DAYMASTER_MEANINGS, SAJU_ANIMAL_MEANINGS,
+)
 
 
 # ── Astral chart ──────────────────────────────────────────────────────────────
@@ -48,25 +55,31 @@ def calculate_astral_chart(bp):
         p = getattr(subject, attr)
         sign = SIGN_ES.get(p.sign, p.sign)
         planets.append({
-            'key':        attr,
-            'label':      label,
-            'sign':       sign,
-            'element':    SIGN_ELEMENT.get(sign, ''),
-            'degree':     round(float(p.position), 2),
-            'house':      HOUSE_NUM.get(p.house, 0),
-            'retrograde': bool(p.retrograde),
+            'key':            attr,
+            'label':          label,
+            'sign':           sign,
+            'element':        SIGN_ELEMENT.get(sign, ''),
+            'degree':         round(float(p.position), 2),
+            'house':          HOUSE_NUM.get(p.house, 0),
+            'retrograde':     bool(p.retrograde),
+            'planet_meaning': PLANET_MEANINGS.get(attr, ''),
+            'sign_meaning':   SIGN_MEANINGS.get(sign, ''),
         })
 
+    asc_sign = SIGN_ES.get(subject.first_house.sign, subject.first_house.sign)
+    mc_sign  = SIGN_ES.get(subject.tenth_house.sign, subject.tenth_house.sign)
     return {
         'planets': planets,
         'ascendant': {
-            'sign':    SIGN_ES.get(subject.first_house.sign, subject.first_house.sign),
-            'element': SIGN_ELEMENT.get(SIGN_ES.get(subject.first_house.sign, ''), ''),
+            'sign':    asc_sign,
+            'element': SIGN_ELEMENT.get(asc_sign, ''),
             'degree':  round(float(subject.first_house.position), 2),
+            'meaning': ASC_MEANINGS.get(asc_sign, ''),
         },
         'midheaven': {
-            'sign':   SIGN_ES.get(subject.tenth_house.sign, subject.tenth_house.sign),
-            'degree': round(float(subject.tenth_house.position), 2),
+            'sign':    mc_sign,
+            'degree':  round(float(subject.tenth_house.position), 2),
+            'meaning': MC_MEANINGS.get(mc_sign, ''),
         },
         'birth_time_known': bp.birth_time is not None,
     }
@@ -323,7 +336,8 @@ def calculate_hd_chart(bp):
         hd_type, strategy = 'Reflector', 'Esperar un ciclo lunar completo (29 días)'
         not_self, signature = 'Decepción', 'Sorpresa'
 
-    profile = HD_PROFILES.get((p_sun_l, d_sun_l), f'{p_sun_l}/{d_sun_l}')
+    profile_key = f'{p_sun_l}/{d_sun_l}'
+    profile = HD_PROFILES.get((p_sun_l, d_sun_l), profile_key)
     if 'Plexo Solar'  in defined_centers: authority = 'Emocional — Plexo Solar'
     elif 'Sacral'     in defined_centers: authority = 'Sacral'
     elif 'Bazo'       in defined_centers: authority = 'Esplénico — Bazo'
@@ -363,7 +377,14 @@ def calculate_hd_chart(bp):
         'profile':          profile,
         'authority':        authority,
         'definition':       definition,
-        'defined_centers':  sorted(defined_centers),
+        'type_meaning':       HD_TYPE_MEANINGS.get(hd_type, ''),
+        'profile_meaning':    HD_PROFILE_MEANINGS.get(profile_key, ''),
+        'authority_meaning':  HD_AUTHORITY_MEANINGS.get(authority, ''),
+        'definition_meaning': HD_DEFINITION_MEANINGS.get(definition, ''),
+        'defined_centers':  [
+            {'name': c, 'meaning': HD_CENTER_MEANINGS.get(c, '')}
+            for c in sorted(defined_centers)
+        ],
         'active_gates':     sorted(active_gates),
         'defined_channels': defined_channels,
         'cross_gates': [
@@ -514,6 +535,7 @@ def calculate_saju_chart(bp):
     def gz_info(gz, label):
         elem_full = TIAN_ES[gz.tg]
         elem_name = elem_full.split()[0]
+        animal    = DI_ANIMAL[gz.dz]
         return {
             'label':          label,
             'stem':           TIANGAN[gz.tg],
@@ -522,8 +544,11 @@ def calculate_saju_chart(bp):
             'rom_branch':     DI_ROM[gz.dz],
             'elem_stem':      elem_full,
             'elem_stem_name': elem_name,
-            'animal':         DI_ANIMAL[gz.dz],
+            'animal':         animal,
             'elem_branch':    DI_ELEM[gz.dz],
+            'pillar_meaning': SAJU_PILLAR_MEANINGS.get(label, ''),
+            'elem_meaning':   SAJU_ELEMENT_MEANINGS.get(elem_name, ''),
+            'animal_meaning': SAJU_ANIMAL_MEANINGS.get(animal, ''),
         }
 
     pillars = [gz_info(yr, 'Año'), gz_info(mo, 'Mes'), gz_info(dy, 'Día')]
@@ -543,16 +568,20 @@ def calculate_saju_chart(bp):
 
     daewoon = _calculate_daewoon(bp, mo.tg, mo.dz, yr.tg)
 
+    day_master_str = TIAN_ES[dy.tg]
     return {
-        'pillars':              pillars,
-        'element_count':        full_count,
-        'dominant_element':     dominant,
-        'weakest_element':      weakest,
-        'day_master':           TIAN_ES[dy.tg],
-        'hour_known':           hour_known,
-        'lunar_year_animal':    DI_ANIMAL[yr.dz],
-        'solar_correction_min': correction_min,
-        'solar_hour':           solar_h,
-        'solar_minute':         solar_m,
-        'daewoon':              daewoon,
+        'pillars':                 pillars,
+        'element_count':           full_count,
+        'dominant_element':        dominant,
+        'weakest_element':         weakest,
+        'day_master':              day_master_str,
+        'day_master_meaning':      SAJU_DAYMASTER_MEANINGS.get(day_master_str, ''),
+        'dominant_element_meaning': SAJU_ELEMENT_MEANINGS.get(dominant, ''),
+        'hour_known':              hour_known,
+        'lunar_year_animal':       DI_ANIMAL[yr.dz],
+        'lunar_year_animal_meaning': SAJU_ANIMAL_MEANINGS.get(DI_ANIMAL[yr.dz], ''),
+        'solar_correction_min':    correction_min,
+        'solar_hour':              solar_h,
+        'solar_minute':            solar_m,
+        'daewoon':                 daewoon,
     }

@@ -22,11 +22,27 @@
   {% if report.status == 'done' %}
 
   <!-- Datos clave -->
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.75rem;margin-bottom:1.5rem">
-    <div class="hd-kv"><div class="k">Tipo</div><div class="v" style="color:var(--calipso)">{{ report.raw_data.type }}</div></div>
-    <div class="hd-kv"><div class="k">Perfil</div><div class="v">{{ report.raw_data.profile }}</div></div>
-    <div class="hd-kv"><div class="k">Autoridad</div><div class="v">{{ report.raw_data.authority }}</div></div>
-    <div class="hd-kv"><div class="k">Definición</div><div class="v">{{ report.raw_data.definition }}</div></div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0.75rem;margin-bottom:1.5rem">
+    <div class="hd-kv">
+      <div class="k">Tipo</div>
+      <div class="v" style="color:var(--calipso);margin-bottom:0.35rem">{{ report.raw_data.type }}</div>
+      {% if report.raw_data.type_meaning %}<div style="font-size:0.75rem;color:var(--muted);line-height:1.5">{{ report.raw_data.type_meaning }}</div>{% endif %}
+    </div>
+    <div class="hd-kv">
+      <div class="k">Perfil</div>
+      <div class="v" style="margin-bottom:0.35rem">{{ report.raw_data.profile }}</div>
+      {% if report.raw_data.profile_meaning %}<div style="font-size:0.75rem;color:var(--muted);line-height:1.5">{{ report.raw_data.profile_meaning }}</div>{% endif %}
+    </div>
+    <div class="hd-kv">
+      <div class="k">Autoridad</div>
+      <div class="v" style="margin-bottom:0.35rem">{{ report.raw_data.authority }}</div>
+      {% if report.raw_data.authority_meaning %}<div style="font-size:0.75rem;color:var(--muted);line-height:1.5">{{ report.raw_data.authority_meaning }}</div>{% endif %}
+    </div>
+    <div class="hd-kv">
+      <div class="k">Definición</div>
+      <div class="v" style="margin-bottom:0.35rem">{{ report.raw_data.definition }}</div>
+      {% if report.raw_data.definition_meaning %}<div style="font-size:0.75rem;color:var(--muted);line-height:1.5">{{ report.raw_data.definition_meaning }}</div>{% endif %}
+    </div>
     <div class="hd-kv"><div class="k">Estrategia</div><div class="v">{{ report.raw_data.strategy }}</div></div>
     <div class="hd-kv"><div class="k">Tema del No-Yo</div><div class="v" style="color:var(--rose)">{{ report.raw_data.not_self_theme }}</div></div>
     <div class="hd-kv"><div class="k">Firma</div><div class="v" style="color:var(--green)">{{ report.raw_data.signature }}</div></div>
@@ -52,7 +68,14 @@
   {% if report.raw_data.defined_centers %}
   <div class="panel" style="margin-bottom:1.5rem">
     <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.75rem">Centros Definidos</div>
-    <div>{% for c in report.raw_data.defined_centers %}<span class="hd-center">{{ c }}</span>{% endfor %}</div>
+    <div style="display:flex;flex-direction:column;gap:0.5rem">
+      {% for c in report.raw_data.defined_centers %}
+      <div style="background:rgba(126,204,205,0.06);border:1px solid rgba(126,204,205,0.2);border-radius:8px;padding:0.6rem 0.9rem">
+        <span style="color:var(--calipso);font-weight:600;font-size:0.88rem">{{ c.name }}</span>
+        {% if c.meaning %}<div style="font-size:0.75rem;color:var(--muted);margin-top:0.2rem;line-height:1.45">{{ c.meaning }}</div>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
   </div>
   {% endif %}
 

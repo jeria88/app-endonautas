@@ -101,6 +101,19 @@ def birth_saju(request):
     return _birth_report_view(request, 'saju', 'birth/saju.html')
 
 
+def _needs_recalc(report):
+    """Return True if the cached report predates the meanings update."""
+    data = report.raw_data or {}
+    if report.report_type == 'astral':
+        planets = data.get('planets', [])
+        return bool(planets) and 'planet_meaning' not in planets[0]
+    if report.report_type == 'hd':
+        return 'type_meaning' not in data
+    if report.report_type == 'saju':
+        return 'day_master_meaning' not in data
+    return False
+
+
 def _birth_report_view(request, report_type, template):
     try:
         birth = request.user.birth_data
@@ -109,6 +122,10 @@ def _birth_report_view(request, report_type, template):
 
     report, _ = BirthReport.objects.get_or_create(birth_data=birth, report_type=report_type)
     if report.status == 'pending':
+        _compute_report(report)
+        report.refresh_from_db()
+    elif report.status == 'done' and _needs_recalc(report):
+        report.status = 'pending'
         _compute_report(report)
         report.refresh_from_db()
 

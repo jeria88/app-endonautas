@@ -30,17 +30,33 @@
     <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:1rem">Los Cuatro Pilares</div>
     <div style="display:flex;gap:0.75rem;flex-wrap:wrap;justify-content:center">
       {% for p in report.raw_data.pillars %}
-      <div class="pillar">
+      <div class="pillar" style="max-width:160px">
         <div class="pillar-label">{{ p.label }}</div>
         <div class="pillar-chars" title="{{ p.rom_stem }} / {{ p.rom_branch }}">{{ p.stem }}{{ p.branch }}</div>
         <div class="pillar-stem">{{ p.elem_stem }}</div>
         <div class="pillar-branch">{{ p.animal }} · {{ p.elem_branch }}</div>
+        {% if p.pillar_meaning %}<div style="font-size:0.68rem;color:var(--muted);margin-top:0.5rem;line-height:1.4;text-align:left">{{ p.pillar_meaning }}</div>{% endif %}
       </div>
       {% endfor %}
     </div>
     {% if report.raw_data.solar_correction_min %}
     <div style="font-size:0.72rem;color:var(--dim);margin-top:0.75rem;text-align:center">Hora solar verdadera — corrección: {{ report.raw_data.solar_correction_min }} min</div>
     {% endif %}
+  </div>
+
+  <!-- Significados de pilares -->
+  <div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1.5rem">
+    {% for p in report.raw_data.pillars %}
+    <div style="background:var(--surface2);border-radius:10px;padding:0.75rem 1rem">
+      <div style="display:flex;align-items:baseline;gap:0.75rem;margin-bottom:0.3rem">
+        <span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)">{{ p.label }}</span>
+        <span style="color:var(--calipso);font-weight:600;font-size:0.88rem">{{ p.elem_stem }}</span>
+        <span style="color:var(--violet);font-size:0.85rem">{{ p.animal }}</span>
+      </div>
+      {% if p.elem_meaning %}<div style="font-size:0.78rem;color:var(--muted);line-height:1.5;margin-bottom:0.25rem">Elemento: {{ p.elem_meaning }}</div>{% endif %}
+      {% if p.animal_meaning %}<div style="font-size:0.78rem;color:var(--dim);line-height:1.5">Animal: {{ p.animal_meaning }}</div>{% endif %}
+    </div>
+    {% endfor %}
   </div>
 
   <!-- Resumen elemental -->
@@ -62,6 +78,18 @@
       {% endif %}
       <div>Animal del año: <span style="font-weight:600">{{ report.raw_data.lunar_year_animal }}</span></div>
     </div>
+    {% if report.raw_data.day_master_meaning %}
+    <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--border)">
+      <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.3rem">Tu Señor del Día</div>
+      <div style="font-size:0.82rem;color:var(--muted);line-height:1.55">{{ report.raw_data.day_master_meaning }}</div>
+    </div>
+    {% endif %}
+    {% if report.raw_data.dominant_element_meaning %}
+    <div style="margin-top:0.5rem">
+      <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.3rem">Elemento Dominante</div>
+      <div style="font-size:0.82rem;color:var(--muted);line-height:1.55">{{ report.raw_data.dominant_element_meaning }}</div>
+    </div>
+    {% endif %}
   </div>
 
   <!-- Daewoon -->
