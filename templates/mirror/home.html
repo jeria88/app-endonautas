@@ -6,13 +6,30 @@
 .sessions-panel { border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden; }
 .sessions-header { padding:14px;border-bottom:1px solid var(--border);flex-shrink:0; }
 .sessions-list { flex:1;overflow-y:auto; }
-.session-row { display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;transition:background 0.15s;border-bottom:1px solid rgba(255,255,255,0.03); }
+.session-row { display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;transition:background 0.15s;border-bottom:1px solid rgba(255,255,255,0.03);position:relative; }
 .session-row:hover { background:rgba(126,204,205,0.05); }
 .session-row.active { background:rgba(126,204,205,0.09);border-left:2.5px solid var(--calipso); }
 .session-icon { width:32px;height:32px;border-radius:8px;background:var(--calipso-glow);border:1px solid rgba(126,204,205,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0; }
 .session-info { flex:1;min-width:0; }
 .session-name { font-size:0.82rem;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
 .session-meta { font-size:0.68rem;color:var(--dim);margin-top:1px; }
+
+/* Three-dot menu */
+.session-kebab { width:26px;height:26px;background:none;border:none;color:var(--muted);cursor:pointer;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:0;transition:opacity 0.15s,background 0.15s;font-size:1rem;line-height:1; }
+.session-row:hover .session-kebab { opacity:1; }
+.session-kebab:hover { background:rgba(255,255,255,0.08);color:var(--text); }
+
+.session-dropdown { position:fixed;background:#1a1a1a;border:1px solid var(--border);border-radius:10px;padding:4px;z-index:200;display:none;min-width:160px;box-shadow:0 8px 32px rgba(0,0,0,0.5); }
+.session-dropdown.open { display:block; }
+.session-dropdown button, .session-dropdown a { display:block;width:100%;padding:8px 12px;background:none;border:none;color:var(--text);font-size:0.83rem;text-align:left;cursor:pointer;border-radius:6px;text-decoration:none;transition:background 0.1s;font-family:var(--font-ui); }
+.session-dropdown button:hover, .session-dropdown a:hover { background:rgba(255,255,255,0.07); }
+.session-dropdown .menu-danger { color:var(--rose); }
+.session-dropdown .menu-danger:hover { background:rgba(201,123,132,0.1); }
+.menu-sep { height:1px;background:var(--border);margin:4px 0; }
+
+/* Rename inline input */
+.session-rename-input { font-size:0.82rem;font-weight:500;color:var(--text);background:rgba(255,255,255,0.06);border:1px solid var(--calipso);border-radius:5px;padding:2px 6px;width:100%;outline:none;font-family:var(--font-ui); }
+
 .chat-area { display:flex;flex-direction:column;overflow:hidden; }
 .chat-topbar { padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0; }
 .chat-messages { flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px; }
@@ -39,6 +56,14 @@
 @media(max-width:768px){ .espejo-shell{grid-template-columns:1fr}.sessions-panel{display:none} }
 </style>
 
+<!-- Global dropdown (singleton, repositioned on open) -->
+<div class="session-dropdown" id="global-dropdown">
+  <button onclick="dropdownAction('rename')">Renombrar</button>
+  <button onclick="dropdownAction('export')">Exportar</button>
+  <div class="menu-sep"></div>
+  <button class="menu-danger" onclick="dropdownAction('delete')">Eliminar</button>
+</div>
+
 <div class="espejo-shell">
 
   <div class="sessions-panel">
@@ -58,6 +83,7 @@
           <div class="session-name">{{ s.title|default:"Conversación" }}</div>
           <div class="session-meta">{{ s.updated_at|date:"d M · H:i" }} · {{ s.messages.count }} msg</div>
         </div>
+        <button class="session-kebab" onclick="openMenu(event, {{ s.pk }})" title="Opciones">⋯</button>
       </div>
       {% empty %}
       <div id="empty-sessions-msg" style="padding:24px 16px;text-align:center;font-size:0.75rem;color:var(--dim);line-height:1.6">Sin conversaciones aún.<br>Inicia una nueva.</div>
@@ -104,8 +130,96 @@
 
 <script>
 let activeSessionPk = null;
+let menuTargetPk = null;
 const csrf = () => document.getElementById('csrf-holder').querySelector('[name=csrfmiddlewaretoken]').value;
 
+// ── Dropdown menu ──────────────────────────────────────────────
+const dropdown = document.getElementById('global-dropdown');
+
+function openMenu(e, pk) {
+  e.stopPropagation();
+  menuTargetPk = pk;
+  const btn = e.currentTarget;
+  const rect = btn.getBoundingClientRect();
+  dropdown.style.top = (rect.bottom + 4) + 'px';
+  dropdown.style.left = Math.min(rect.left, window.innerWidth - 180) + 'px';
+  dropdown.classList.add('open');
+}
+
+function closeMenu() {
+  dropdown.classList.remove('open');
+  menuTargetPk = null;
+}
+
+document.addEventListener('click', closeMenu);
+dropdown.addEventListener('click', e => e.stopPropagation());
+
+async function dropdownAction(action) {
+  const pk = menuTargetPk;
+  closeMenu();
+  if (!pk) return;
+
+  if (action === 'rename') {
+    const row = document.querySelector(`.session-row[data-pk="${pk}"]`);
+    if (!row) return;
+    const nameEl = row.querySelector('.session-name');
+    const current = nameEl.textContent.trim();
+    const input = document.createElement('input');
+    input.className = 'session-rename-input';
+    input.value = current;
+    nameEl.replaceWith(input);
+    input.focus();
+    input.select();
+    const commit = async () => {
+      const newTitle = input.value.trim() || current;
+      const div = document.createElement('div');
+      div.className = 'session-name';
+      div.textContent = newTitle;
+      input.replaceWith(div);
+      if (newTitle === current) return;
+      const fd = new FormData();
+      fd.append('csrfmiddlewaretoken', csrf());
+      fd.append('title', newTitle);
+      await fetch(`/espejo/chat/${pk}/renombrar/`, { method: 'POST', body: fd });
+      if (activeSessionPk === pk) {
+        document.getElementById('chat-title').textContent = newTitle;
+      }
+    };
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+      if (e.key === 'Escape') { input.value = current; input.blur(); }
+    });
+  }
+
+  if (action === 'delete') {
+    const row = document.querySelector(`.session-row[data-pk="${pk}"]`);
+    const name = row?.querySelector('.session-name')?.textContent || 'esta conversación';
+    if (!confirm(`¿Eliminar "${name}"? Esta acción no se puede deshacer.`)) return;
+    const fd = new FormData();
+    fd.append('csrfmiddlewaretoken', csrf());
+    const r = await fetch(`/espejo/chat/${pk}/eliminar/`, { method: 'POST', body: fd });
+    if (r.ok) {
+      row?.remove();
+      if (activeSessionPk === pk) {
+        activeSessionPk = null;
+        document.getElementById('chat-messages').innerHTML = `<div class="chat-empty" id="chat-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="48" height="48" style="color:var(--border)"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><div style="text-align:center"><p style="font-size:0.9rem;color:var(--muted)">El espejo está listo</p></div></div><div class="typing-row" id="typing-row"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span style="font-size:0.78rem">Procesando...</span></div>`;
+        document.getElementById('chat-title').textContent = 'Espejo de Conflictos';
+        document.getElementById('chat-subtitle').textContent = 'Selecciona una sesión o inicia una nueva';
+      }
+      if (!document.querySelector('.session-row')) {
+        const list = document.getElementById('sessions-list');
+        list.innerHTML = '<div id="empty-sessions-msg" style="padding:24px 16px;text-align:center;font-size:0.75rem;color:var(--dim);line-height:1.6">Sin conversaciones aún.<br>Inicia una nueva.</div>';
+      }
+    }
+  }
+
+  if (action === 'export') {
+    window.location.href = `/espejo/chat/${pk}/exportar/`;
+  }
+}
+
+// ── Chat core ──────────────────────────────────────────────────
 function enableChat(on) {
   document.getElementById('chat-input').disabled = !on;
   document.getElementById('send-btn').disabled = !on;
@@ -127,6 +241,10 @@ function addBubble(role, content, time) {
   scrollBottom();
 }
 
+function buildSessionRowHTML(pk, title) {
+  return `<div class="session-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--calipso)" stroke-width="1.8" width="14" height="14"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="session-info"><div class="session-name">${title}</div><div class="session-meta">ahora · 0 msg</div></div><button class="session-kebab" onclick="openMenu(event, ${pk})" title="Opciones">⋯</button>`;
+}
+
 async function newChat() {
   const btn = document.getElementById('btn-new-chat');
   btn.disabled = true;
@@ -137,7 +255,6 @@ async function newChat() {
     const data = await r.json();
     if (r.status === 402) { alert('Sin fractones suficientes.'); return; }
     activeSessionPk = data.pk;
-    // Add row to list
     const list = document.getElementById('sessions-list');
     const emptyMsg = document.getElementById('empty-sessions-msg');
     if (emptyMsg) emptyMsg.remove();
@@ -145,10 +262,9 @@ async function newChat() {
     const row = document.createElement('div');
     row.className = 'session-row active';
     row.dataset.pk = data.pk;
-    row.onclick = function() { loadSession(data.pk, this); };
-    row.innerHTML = `<div class="session-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--calipso)" stroke-width="1.8" width="14" height="14"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="session-info"><div class="session-name">Nueva conversación</div><div class="session-meta">ahora · 0 msg</div></div>`;
+    row.onclick = function(e) { if (!e.target.closest('.session-kebab')) loadSession(data.pk, this); };
+    row.innerHTML = buildSessionRowHTML(data.pk, data.title || 'Nueva conversación');
     list.prepend(row);
-    // Reset chat panel
     document.getElementById('chat-messages').innerHTML = `<div class="typing-row" id="typing-row"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span style="font-size:0.78rem">Procesando...</span></div>`;
     document.getElementById('chat-title').textContent = 'Nueva conversación';
     document.getElementById('chat-subtitle').textContent = 'Sesión activa';
@@ -160,6 +276,7 @@ async function newChat() {
 }
 
 async function loadSession(pk, el) {
+  if (el.querySelector && el.querySelector('input.session-rename-input')) return;
   document.querySelectorAll('.session-row').forEach(r => r.classList.remove('active'));
   el.classList.add('active');
   activeSessionPk = pk;
@@ -175,6 +292,15 @@ async function loadSession(pk, el) {
     scrollBottom();
   } catch(e) { console.error(e); }
 }
+
+// Prevent kebab click from triggering row click on server-rendered rows
+document.querySelectorAll('.session-row').forEach(row => {
+  row.addEventListener('click', function(e) {
+    if (e.target.closest('.session-kebab')) return;
+    loadSession(parseInt(this.dataset.pk), this);
+  });
+  row.removeAttribute('onclick');
+});
 
 const inputEl = document.getElementById('chat-input');
 inputEl.addEventListener('keydown', e => {

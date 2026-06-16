@@ -1,7 +1,7 @@
 import datetime
 
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -146,3 +146,43 @@ def _get_reply(session, user_content):
         return r.json()['choices'][0]['message']['content']
     except Exception:
         return 'No pude conectar con el espejo en este momento.'
+
+
+@login_required
+@require_POST
+def chat_session_rename(request, pk):
+    session = get_object_or_404(ChatSession, pk=pk, user=request.user)
+    title = request.POST.get('title', '').strip()[:200]
+    if title:
+        session.title = title
+        session.save(update_fields=['title'])
+    return JsonResponse({'ok': True, 'title': session.title})
+
+
+@login_required
+@require_POST
+def chat_session_delete(request, pk):
+    session = get_object_or_404(ChatSession, pk=pk, user=request.user)
+    session.delete()
+    return JsonResponse({'ok': True})
+
+
+@login_required
+def chat_session_export(request, pk):
+    session = get_object_or_404(ChatSession, pk=pk, user=request.user)
+    messages = session.messages.all().order_by('created_at')
+    lines = [
+        f'# {session.title or "Conversación"}',
+        f'Exportado: {datetime.date.today()}',
+        '',
+    ]
+    for m in messages:
+        label = 'Tú' if m.role == 'user' else 'Espejo'
+        lines.append(f'[{m.created_at.strftime("%H:%M")}] {label}:')
+        lines.append(m.content)
+        lines.append('')
+    content = '\n'.join(lines)
+    filename = (session.title or 'conversacion').replace(' ', '_')[:60]
+    response = HttpResponse(content, content_type='text/plain; charset=utf-8')
+    response['Content-Disposition'] = f'attachment; filename="{filename}.txt"'
+    return response
