@@ -9,7 +9,7 @@ class Command(BaseCommand):
     APPS_TO_CHECK = [
         ('birth', 'birth_birthdata'),
         ('community', 'community_post'),
-        ('mirror', 'mirror_mirrorentry'),
+        ('mirror', 'mirror_chatsession'),
         ('psychometrics', 'psychometrics_test'),
         ('tokens', 'tokens_tokenbalance'),
     ]
@@ -33,6 +33,16 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         try:
             with connection.cursor() as cursor:
+                # Drop accounts tables if stale schema has username NOT NULL (from old project)
+                cursor.execute(
+                    "SELECT EXISTS(SELECT 1 FROM information_schema.columns "
+                    "WHERE table_schema='public' AND table_name='accounts_user' "
+                    "AND column_name='username' AND is_nullable='NO')"
+                )
+                if cursor.fetchone()[0]:
+                    self._drop_app_tables_and_migrations(cursor, 'accounts')
+                    self.stdout.write('Cleared accounts (stale username NOT NULL column detected)')
+
                 for app, anchor_table in self.APPS_TO_CHECK:
                     cursor.execute(
                         "SELECT EXISTS(SELECT 1 FROM information_schema.tables "
