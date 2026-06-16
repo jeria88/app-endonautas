@@ -2,17 +2,33 @@
 {% block title %}Saju / BaZi — Endonautas{% endblock %}
 {% block content %}
 <style data-page-style>
-.pillar { background:var(--surface2);border-radius:12px;padding:1rem;text-align:center;min-width:100px; }
+.pillar {
+  background:var(--surface);
+  backdrop-filter:blur(14px);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:1rem;
+  text-align:center;
+  min-width:120px;
+  transition:border-color 0.3s;
+}
+.pillar:hover { border-color:var(--border-active); }
 .pillar-label { font-size:0.65rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:0.5rem; }
 .pillar-chars { font-size:2rem;line-height:1;margin-bottom:0.5rem; }
 .pillar-stem  { font-size:0.72rem;color:var(--calipso); }
 .pillar-branch { font-size:0.72rem;color:var(--violet); }
-.elem-bar { height:4px;border-radius:4px;margin-top:3px; }
-.dw-cycle { border-radius:8px;padding:6px 12px;font-size:0.82rem;border:1px solid var(--border);display:flex;gap:10px;align-items:center; }
+.dw-cycle {
+  border-radius:10px;
+  padding:0.75rem 1rem;
+  font-size:0.82rem;
+  border:1px solid var(--border);
+  background:var(--surface);
+  transition:border-color 0.3s;
+}
 .dw-cycle.current { border-color:rgba(126,204,205,0.4);background:rgba(126,204,205,0.06); }
 </style>
 
-<div style="max-width:700px">
+<div>
   <a href="/nacimiento/" onclick="spaGo(event,this)" style="color:var(--accent);text-decoration:none;font-size:0.85rem">← Nacimiento</a>
   <h1 style="font-size:1.3rem;font-weight:700;margin:1.25rem 0 0.25rem">Saju / BaZi</h1>
   <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem">{{ birth.birth_date }} · {{ birth.city }}</p>
@@ -97,13 +113,17 @@
   <div class="panel" style="margin-bottom:1.5rem">
     <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.25rem">Grandes Ciclos (Daewoon)</div>
     <div style="font-size:0.78rem;color:var(--dim);margin-bottom:0.75rem">Comienzan a los {{ report.raw_data.daewoon.start_age }} años · dirección {{ report.raw_data.daewoon.direction }}</div>
-    <div style="display:flex;flex-direction:column;gap:0.4rem">
+    <div style="display:flex;flex-direction:column;gap:0.5rem">
       {% for cycle in report.raw_data.daewoon.cycles %}
       <div class="dw-cycle {% if cycle.is_current %}current{% endif %}">
-        <span style="font-size:1.2rem;font-weight:700">{{ cycle.stem }}{{ cycle.branch }}</span>
-        <span style="color:var(--muted);font-size:0.78rem">{{ cycle.elem_stem }} / {{ cycle.animal }} · {{ cycle.elem_branch }}</span>
-        <span style="margin-left:auto;color:var(--dim);font-size:0.75rem">{{ cycle.age_start }}–{{ cycle.age_end }} ({{ cycle.year_start }}–{{ cycle.year_end }})</span>
-        {% if cycle.is_current %}<span style="font-size:0.7rem;color:var(--calipso);font-weight:600">Ahora</span>{% endif %}
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:1.3rem;font-weight:700;font-family:var(--font-display)">{{ cycle.stem }}{{ cycle.branch }}</span>
+          <span style="color:var(--calipso);font-size:0.8rem">{{ cycle.elem_stem }}</span>
+          <span style="color:var(--violet);font-size:0.8rem">{{ cycle.animal }} · {{ cycle.elem_branch }}</span>
+          <span style="margin-left:auto;color:var(--dim);font-size:0.75rem;white-space:nowrap">{{ cycle.age_start }}–{{ cycle.age_end }} años · {{ cycle.year_start }}–{{ cycle.year_end }}</span>
+          {% if cycle.is_current %}<span style="font-size:0.7rem;color:var(--calipso);font-weight:600;background:rgba(126,204,205,0.12);padding:2px 8px;border-radius:20px">Ahora</span>{% endif %}
+        </div>
+        {% if cycle.meaning %}<div style="font-size:0.77rem;color:var(--muted);line-height:1.5;margin-top:0.4rem;padding-top:0.4rem;border-top:1px solid var(--border)">{{ cycle.meaning }}</div>{% endif %}
       </div>
       {% endfor %}
     </div>

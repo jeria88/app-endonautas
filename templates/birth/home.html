@@ -6,8 +6,18 @@
 .birth-title { font-size:1.3rem;font-weight:700; }
 .birth-sub { font-size:0.85rem;color:var(--muted);margin-top:0.25rem;line-height:1.6; }
 .report-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin-top:1.5rem; }
-.report-card { background:rgba(0,0,0,0.88);border:1px solid var(--border);border-radius:14px;padding:1.5rem;text-decoration:none;color:inherit;transition:border-color 0.15s;display:block; }
-.report-card:hover { border-color:rgba(78,205,196,0.4); }
+.report-card {
+  background:var(--surface);
+  backdrop-filter:blur(14px);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:1.5rem;
+  text-decoration:none;
+  color:inherit;
+  transition:border-color 0.3s;
+  display:block;
+}
+.report-card:hover { border-color:rgba(126,204,205,0.4); }
 .report-icon { font-size:1.8rem;margin-bottom:0.75rem; }
 .report-name { font-weight:600;font-size:0.95rem;margin-bottom:0.3rem; }
 .report-desc { font-size:0.75rem;color:var(--muted);line-height:1.5; }
@@ -55,7 +65,7 @@
 </div>
 
 {% else %}
-<div class="panel" style="text-align:center;padding:3rem;max-width:400px">
+<div class="panel" style="text-align:center;padding:3rem;max-width:480px">
   <div style="font-size:2rem;margin-bottom:1rem">✦</div>
   <div style="color:var(--muted);margin-bottom:1.5rem;font-size:0.9rem;line-height:1.7">Ingresa tu fecha, hora y lugar de nacimiento para generar tus lecturas.</div>
   <a href="/nacimiento/datos/" onclick="spaGo(event,this)" class="btn btn-primary">Ingresar datos</a>

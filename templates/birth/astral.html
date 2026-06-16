@@ -2,8 +2,16 @@
 {% block title %}Carta Astral — Endonautas{% endblock %}
 {% block content %}
 <style data-page-style>
-.astral-planet { background:var(--surface2);border-radius:10px;padding:0.9rem 1rem; }
-.astral-planet .p-label { font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.2rem; }
+.astral-planet {
+  background:var(--surface);
+  backdrop-filter:blur(14px);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:1rem 1.1rem;
+  transition:border-color 0.3s;
+}
+.astral-planet:hover { border-color:var(--border-active); }
+.astral-planet .p-label { font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.25rem; }
 .astral-planet .p-sign { font-weight:700;font-size:1rem;margin-bottom:0.2rem; }
 .astral-planet .p-meta { font-size:0.72rem;color:var(--dim); }
 .elem-fire  { color:#e07060; }
@@ -13,7 +21,7 @@
 .retro-tag { font-size:0.65rem;color:var(--rose);margin-left:4px; }
 </style>
 
-<div style="max-width:700px">
+<div>
   <a href="/nacimiento/" onclick="spaGo(event,this)" style="color:var(--accent);text-decoration:none;font-size:0.85rem">← Nacimiento</a>
   <h1 style="font-size:1.3rem;font-weight:700;margin:1.25rem 0 0.25rem">Carta Astral</h1>
   <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem">{{ birth.birth_date }} · {{ birth.city }}{% if birth.birth_time %} · {{ birth.birth_time }}{% endif %}</p>
@@ -27,7 +35,7 @@
   {% endif %}
 
   <!-- Puntos angulares -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-bottom:1.5rem">
     <div class="panel" style="padding:1rem 1.25rem">
       <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--calipso);margin-bottom:0.4rem">Ascendente (ASC)</div>
       <div style="font-size:1.3rem;font-weight:700" class="elem-{{ report.raw_data.ascendant.element }}">{{ report.raw_data.ascendant.sign }}</div>
@@ -43,7 +51,7 @@
   </div>
 
   <!-- Planetas -->
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.75rem;margin-bottom:1.5rem">
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0.75rem;margin-bottom:1.5rem">
     {% for planet in report.raw_data.planets %}
     <div class="astral-planet">
       <div class="p-label">{{ planet.label }}</div>

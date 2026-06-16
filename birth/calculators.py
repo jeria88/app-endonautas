@@ -18,8 +18,9 @@ from .meanings import (
     HD_TYPE_MEANINGS, HD_PROFILE_MEANINGS, HD_AUTHORITY_MEANINGS,
     HD_NOT_SELF_MEANINGS, HD_SIGNATURE_MEANINGS,
     HD_DEFINITION_MEANINGS, HD_CENTER_MEANINGS, HD_CHANNEL_MEANINGS,
+    HD_PLANET_MEANINGS, HD_PERSONALITY_DESIGN_INTRO,
     SAJU_PILLAR_MEANINGS, SAJU_ELEMENT_MEANINGS,
-    SAJU_DAYMASTER_MEANINGS, SAJU_ANIMAL_MEANINGS,
+    SAJU_DAYMASTER_MEANINGS, SAJU_ANIMAL_MEANINGS, SAJU_STEM_SHORT,
 )
 
 
@@ -241,7 +242,8 @@ def calculate_hd_chart(bp):
     def make_planet(label, symbol, lon):
         g, l = _lon_to_gate_line(lon)
         return {'label': label, 'symbol': symbol, 'gate': g, 'line': l,
-                'name': HD_GATE_NAMES.get(g, '')}
+                'name': HD_GATE_NAMES.get(g, ''),
+                'meaning': HD_PLANET_MEANINGS.get(label, '')}
 
     personality_planets = [
         make_planet('Sol',        '⊙', p.sun.abs_pos),
@@ -398,8 +400,9 @@ def calculate_hd_chart(bp):
             {'gate': d_earth_g, 'name': HD_GATE_NAMES.get(d_earth_g, ''), 'role': 'D ⊕'},
         ],
         'cross_str':      f'{p_sun_g}/{p_earth_g} | {d_sun_g}/{d_earth_g}',
-        'cross_name':     cross_name,
-        'design_date':    design_utc.strftime('%Y-%m-%d'),
+        'cross_name':                   cross_name,
+        'design_date':                  design_utc.strftime('%Y-%m-%d'),
+        'personality_design_intro':     HD_PERSONALITY_DESIGN_INTRO,
         'planets_paired': [{'p': pp, 'd': dp} for pp, dp in zip(personality_planets, design_planets)],
         'personality': {
             'sun':   {'gate': p_sun_g,   'line': p_sun_l,   'name': HD_GATE_NAMES.get(p_sun_g,   '')},
@@ -508,6 +511,7 @@ def _calculate_daewoon(bp, mo_tg, mo_dz, yr_tg):
             'year_start':  birth_date.year + age_start,
             'year_end':    birth_date.year + age_end,
             'is_current':  age_start <= current_age <= age_end,
+            'meaning':     SAJU_STEM_SHORT.get(TIAN_ES[tg], ''),
         })
 
     current_cycle = next((c for c in cycles if c['is_current']), None)
