@@ -22,31 +22,47 @@ def birth_datos(request):
         birth = None
 
     if request.method == 'POST':
-        from timezonefinder import TimezoneFinder
-        tf = TimezoneFinder()
-        city = request.POST.get('city', '')
-        lat = float(request.POST.get('lat') or 0)
-        lon = float(request.POST.get('lon') or 0)
-        tz = tf.timezone_at(lat=lat, lng=lon) or 'America/Santiago'
+        import logging
+        import traceback as _tb
+        logger = logging.getLogger(__name__)
+        try:
+            from timezonefinder import TimezoneFinder
+            tf = TimezoneFinder()
+            city = request.POST.get('city', '')
+            lat_raw = request.POST.get('lat', '') or '0'
+            lon_raw = request.POST.get('lon', '') or '0'
+            try:
+                lat = float(lat_raw)
+                lon = float(lon_raw)
+            except (ValueError, TypeError):
+                lat, lon = 0.0, 0.0
+            try:
+                tz = tf.timezone_at(lat=lat, lng=lon) or 'America/Santiago'
+            except Exception:
+                tz = 'America/Santiago'
 
-        data = dict(
-            birth_date=request.POST['birth_date'],
-            birth_time=request.POST.get('birth_time') or None,
-            city=city,
-            country=request.POST.get('country', ''),
-            latitude=lat,
-            longitude=lon,
-            timezone_str=tz,
-            gender=request.POST.get('gender', ''),
-        )
-        if birth:
-            for k, v in data.items():
-                setattr(birth, k, v)
-            birth.save()
-            BirthReport.objects.filter(birth_data=birth).delete()
-        else:
-            BirthData.objects.create(user=request.user, **data)
-        return redirect('birth_home')
+            data = dict(
+                birth_date=request.POST['birth_date'],
+                birth_time=request.POST.get('birth_time') or None,
+                city=city,
+                country=request.POST.get('country', ''),
+                latitude=lat,
+                longitude=lon,
+                timezone_str=tz,
+                gender=request.POST.get('gender', ''),
+            )
+            if birth:
+                for k, v in data.items():
+                    setattr(birth, k, v)
+                birth.save()
+                BirthReport.objects.filter(birth_data=birth).delete()
+            else:
+                BirthData.objects.create(user=request.user, **data)
+            return redirect('birth_home')
+        except Exception as exc:
+            logger.error('birth_datos POST error: %s\n%s', exc, _tb.format_exc())
+            error_msg = f'{type(exc).__name__}: {exc}'
+            return render(request, 'birth/datos.html', {'birth': birth, 'save_error': error_msg})
 
     return render(request, 'birth/datos.html', {'birth': birth})
 

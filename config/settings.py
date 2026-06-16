@@ -109,6 +109,32 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
+
 # AI — DeepSeek directo o vía OpenRouter
 DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY', '') or os.getenv('OPENROUTER_API_KEY', '')
 DEEPSEEK_MODEL = os.getenv('AI_MODEL', 'deepseek-chat')
