@@ -100,10 +100,11 @@
   </div>
 
 </div>
+<form id="csrf-holder" hidden>{% csrf_token %}</form>
 
 <script>
 let activeSessionPk = null;
-const csrf = () => document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+const csrf = () => document.getElementById('csrf-holder').querySelector('[name=csrfmiddlewaretoken]').value;
 
 function enableChat(on) {
   document.getElementById('chat-input').disabled = !on;
