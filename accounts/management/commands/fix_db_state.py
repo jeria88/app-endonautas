@@ -43,8 +43,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         try:
             with connection.cursor() as cursor:
-                # Drop accounts + all Django built-in tables if stale schema detected
-                # (old project had accounts_user with username NOT NULL)
+                # Detect stale accounts_user schema (username NOT NULL from old project)
                 cursor.execute(
                     "SELECT EXISTS(SELECT 1 FROM information_schema.columns "
                     "WHERE table_schema='public' AND table_name='accounts_user' "
@@ -54,6 +53,16 @@ class Command(BaseCommand):
                     self._drop_app_tables_and_migrations(cursor, 'accounts')
                     self._drop_django_builtins(cursor)
                     self.stdout.write('Cleared accounts + Django builtins (stale username NOT NULL column detected)')
+
+                # Detect InconsistentMigrationHistory: admin recorded but accounts not
+                cursor.execute(
+                    "SELECT EXISTS(SELECT 1 FROM django_migrations WHERE app='admin' AND name='0001_initial') "
+                    "AND NOT EXISTS(SELECT 1 FROM django_migrations WHERE app='accounts' AND name='0001_initial')"
+                )
+                if cursor.fetchone()[0]:
+                    self._drop_app_tables_and_migrations(cursor, 'accounts')
+                    self._drop_django_builtins(cursor)
+                    self.stdout.write('Cleared accounts + Django builtins (admin recorded before accounts)')
 
                 for app, anchor_table in self.APPS_TO_CHECK:
                     cursor.execute(
