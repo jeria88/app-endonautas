@@ -40,6 +40,19 @@ class Command(BaseCommand):
         for app in ('admin', 'contenttypes', 'sessions'):
             cursor.execute("DELETE FROM django_migrations WHERE app=%s", [app])
 
+    ALL_CUSTOM_APPS = [
+        'accounts', 'tokens', 'birth', 'community', 'mirror',
+        'psychometrics', 'practitioners', 'post_office',
+    ]
+
+    def _full_reset(self, cursor, reason):
+        """Drop all known app tables and wipe django_migrations completely."""
+        for app in self.ALL_CUSTOM_APPS:
+            self._drop_app_tables_and_migrations(cursor, app)
+        self._drop_django_builtins(cursor)
+        cursor.execute("DELETE FROM django_migrations")
+        self.stdout.write(f'Full migration reset: {reason}')
+
     def handle(self, *args, **options):
         try:
             with connection.cursor() as cursor:
@@ -50,19 +63,17 @@ class Command(BaseCommand):
                     "AND column_name='username' AND is_nullable='NO')"
                 )
                 if cursor.fetchone()[0]:
-                    self._drop_app_tables_and_migrations(cursor, 'accounts')
-                    self._drop_django_builtins(cursor)
-                    self.stdout.write('Cleared accounts + Django builtins (stale username NOT NULL column detected)')
+                    self._full_reset(cursor, 'stale username NOT NULL column in accounts_user')
+                    return
 
-                # Detect InconsistentMigrationHistory: admin recorded but accounts not
+                # Detect any app recorded before accounts.0001_initial exists
                 cursor.execute(
-                    "SELECT EXISTS(SELECT 1 FROM django_migrations WHERE app='admin' AND name='0001_initial') "
-                    "AND NOT EXISTS(SELECT 1 FROM django_migrations WHERE app='accounts' AND name='0001_initial')"
+                    "SELECT NOT EXISTS(SELECT 1 FROM django_migrations WHERE app='accounts') "
+                    "AND EXISTS(SELECT 1 FROM django_migrations LIMIT 1)"
                 )
                 if cursor.fetchone()[0]:
-                    self._drop_app_tables_and_migrations(cursor, 'accounts')
-                    self._drop_django_builtins(cursor)
-                    self.stdout.write('Cleared accounts + Django builtins (admin recorded before accounts)')
+                    self._full_reset(cursor, 'accounts missing from django_migrations with non-empty history')
+                    return
 
                 for app, anchor_table in self.APPS_TO_CHECK:
                     cursor.execute(
