@@ -4,20 +4,28 @@ from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
-    help = 'Create or update admin superuser from env vars ADMIN_EMAIL / ADMIN_PASSWORD'
+    help = 'Create or update admin superuser. Safe to run on every deploy.'
 
     def handle(self, *args, **options):
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
+        try:
+            from django.contrib.auth import get_user_model
+            from accounts.models import UserProfile
+            from tokens.models import TokenBalance
 
-        email = os.getenv('ADMIN_EMAIL', 'admin@endonautas.cl')
-        password = os.getenv('ADMIN_PASSWORD', 'endonautas2026')
+            User = get_user_model()
+            email = os.getenv('ADMIN_EMAIL', 'admin@endonautas.cl')
+            password = os.getenv('ADMIN_PASSWORD', 'endonautas2026')
 
-        user, created = User.objects.get_or_create(email=email)
-        user.set_password(password)
-        user.is_staff = True
-        user.is_superuser = True
-        user.save()
+            user, created = User.objects.get_or_create(email=email)
+            user.set_password(password)
+            user.is_staff = True
+            user.is_superuser = True
+            user.save()
 
-        action = 'Creado' if created else 'Actualizado'
-        self.stdout.write(f'{action}: {email}')
+            UserProfile.objects.get_or_create(user=user)
+            TokenBalance.objects.get_or_create(user=user)
+
+            action = 'Creado' if created else 'Actualizado'
+            self.stdout.write(f'{action}: {email}')
+        except Exception as e:
+            self.stdout.write(f'create_admin skipped: {e}')

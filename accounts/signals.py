@@ -7,8 +7,10 @@ from django.dispatch import receiver
 def create_user_profile_and_balance(sender, instance, created, **kwargs):
     if not created:
         return
-    from accounts.models import UserProfile
-    from tokens.models import TokenBalance
-
-    UserProfile.objects.get_or_create(user=instance)
-    TokenBalance.objects.get_or_create(user=instance)
+    try:
+        from accounts.models import UserProfile
+        from tokens.models import TokenBalance
+        UserProfile.objects.get_or_create(user=instance)
+        TokenBalance.objects.get_or_create(user=instance)
+    except Exception:
+        pass
