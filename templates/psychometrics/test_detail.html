@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}{{ test.name }} — Endonautas{% endblock %}
+{% block extra_head %}
+<style data-page-style>
+.detail-wrap { max-width:600px; }
+.detail-title { font-size:1.3rem;font-weight:700;margin-bottom:0.5rem; }
+.detail-meta { display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;margin-bottom:1.5rem; }
+.detail-panel {
+  background:var(--surface);
+  backdrop-filter:blur(14px);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:1.5rem;
+  margin-bottom:1.25rem;
+}
+.detail-label { font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.5rem; }
+.detail-desc { font-size:0.9rem;line-height:1.7;color:var(--text); }
+.detail-instructions { font-size:0.88rem;line-height:1.7;color:var(--muted); }
+.detail-info-row { display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border); }
+.detail-info-item { font-size:0.82rem;color:var(--muted); }
+.detail-info-item strong { color:var(--text); }
+.disclaimer {
+  font-size:0.78rem;
+  color:var(--muted);
+  line-height:1.5;
+  padding:0.75rem 1rem;
+  border:1px solid var(--border);
+  border-radius:8px;
+  margin-bottom:1.5rem;
+}
+.start-btn { padding:0.8rem 2.5rem;font-size:1rem; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="detail-wrap">
+  <a href="/tests/" onclick="spaGo(event,this)" style="color:var(--calipso);text-decoration:none;font-size:0.82rem">← Tests</a>
+  <h1 class="detail-title" style="margin-top:0.75rem">{{ test.name }}</h1>
+  <div class="detail-meta">
+    {% if test.instrument_type == 'clinical' %}
+      <span class="badge badge-validado">Clínico</span>
+    {% elif test.instrument_type == 'adapted' %}
+      <span class="badge badge-adaptado">Adaptado</span>
+    {% else %}
+      <span class="badge badge-endonauta">Endonauta</span>
+    {% endif %}
+    <span style="font-size:0.8rem;color:var(--muted)">{{ test.get_dimension_display }}</span>
+  </div>
+
+  <div class="detail-panel">
+    {% if test.description %}
+    <div class="detail-label">Qué mide</div>
+    <div class="detail-desc">{{ test.description }}</div>
+    {% endif %}
+    <div class="detail-info-row">
+      {% if test.estimated_minutes %}
+      <div class="detail-info-item">Duración estimada: <strong>~{{ test.estimated_minutes }} min</strong></div>
+      {% endif %}
+      {% if test.token_cost %}
+      <div class="detail-info-item">Costo: <strong>⬡ {{ test.token_cost }} Fractones</strong></div>
+      {% else %}
+      <div class="detail-info-item">Costo: <strong>Gratuito</strong></div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if test.instructions %}
+  <div class="detail-panel">
+    <div class="detail-label">Instrucciones</div>
+    <div class="detail-instructions">{{ test.instructions }}</div>
+  </div>
+  {% endif %}
+
+  {% if test.instrument_type == 'adapted' %}
+  <div class="disclaimer">
+    ⚠️ Este instrumento es una adaptación con fines reflexivos. Los resultados son orientativos y no constituyen diagnóstico clínico.
+  </div>
+  {% elif test.instrument_type == 'custom' %}
+  <div class="disclaimer">
+    ⚠️ Este instrumento es una herramienta de reflexión endonauta. No es un diagnóstico psicológico.
+  </div>
+  {% endif %}
+
+  <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center">
+    <a href="/tests/{{ test.slug }}/responder/" onclick="spaGo(event,this)" class="btn btn-primary start-btn">Iniciar test →</a>
+    <a href="/tests/" onclick="spaGo(event,this)" style="color:var(--muted);text-decoration:none;font-size:0.85rem">Volver</a>
+  </div>
+</div>
+{% endblock %}

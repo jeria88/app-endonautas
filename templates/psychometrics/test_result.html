@@ -1,47 +1,203 @@
 {% extends "base.html" %}
 {% block title %}Resultado — {{ result.test.name }}{% endblock %}
-{% block content %}
+{% block extra_head %}
 <style data-page-style>
-.result-wrap { max-width:640px;margin:0 auto; }
-.result-title { font-size:1.2rem;font-weight:700;margin-bottom:0.25rem; }
+.result-wrap { max-width:720px; }
+.result-title { font-size:1.3rem;font-weight:700;margin-bottom:0.25rem; }
 .result-meta { font-size:0.8rem;color:var(--muted);margin-bottom:1.5rem; }
-.score-block { display:flex;flex-direction:column;gap:0.75rem;margin-bottom:1.5rem; }
-.score-row { display:flex;flex-direction:column;gap:0.3rem; }
-.score-label { font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);display:flex;justify-content:space-between; }
-.insight-box { background:rgba(78,205,196,0.06);border:1px solid rgba(78,205,196,0.2);border-radius:14px;padding:1.25rem;font-size:0.9rem;line-height:1.7;margin-bottom:1.5rem; }
-</style>
-<div class="result-wrap">
-  <a href="/tests/" onclick="spaGo(event,this)" style="color:var(--accent);text-decoration:none;font-size:0.82rem">← Tests</a>
-  <h1 class="result-title" style="margin-top:0.75rem">{{ result.test.name }}</h1>
-  <div class="result-meta">Completado el {{ result.completed_at|date:"d M Y · H:i" }}</div>
 
-  <div class="panel score-block" style="margin-bottom:1.5rem">
-    <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.75rem">Resultados</div>
-    {% for key, data in result.evaluation.items %}
-    {% if key != '_total' %}
-    <div class="score-row">
-      <div class="score-label"><span>{{ key }}</span><span>{{ data.total }}</span></div>
-      <div class="bar-wrap"><div class="bar bar-luz" style="width:{% widthratio data.avg 7 100 %}%"></div></div>
-    </div>
-    {% endif %}
-    {% endfor %}
-    <div style="margin-top:0.5rem;font-size:0.85rem;color:var(--muted)">Total: <strong style="color:var(--text)">{{ result.evaluation._total }}</strong></div>
+/* Crisis alert */
+.crisis-alert {
+  background:rgba(201,123,132,0.1);
+  border:1px solid rgba(201,123,132,0.35);
+  border-radius:var(--radius);
+  padding:1.25rem 1.5rem;
+  margin-bottom:1.5rem;
+  font-size:0.88rem;
+  line-height:1.6;
+}
+.crisis-alert strong { color:#c97b84; }
+
+/* Dimension cards */
+.dim-card {
+  background:var(--surface);
+  backdrop-filter:blur(14px);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:1.25rem 1.5rem;
+  margin-bottom:1rem;
+}
+.dim-card-top {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1rem;
+  margin-bottom:0.75rem;
+  flex-wrap:wrap;
+}
+.dim-name { font-weight:600;font-size:0.95rem; }
+.dim-nivel { font-size:0.75rem;color:var(--muted); }
+.polarity-badge {
+  font-size:0.7rem;
+  font-weight:600;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  padding:0.2rem 0.6rem;
+  border-radius:6px;
+}
+.pol-luz_intensa  { background:rgba(240,192,64,0.15);color:#f0c040; }
+.pol-luz          { background:rgba(126,204,205,0.15);color:var(--calipso); }
+.pol-transicion   { background:rgba(212,160,86,0.15);color:var(--amber); }
+.pol-sombra       { background:rgba(155,142,196,0.15);color:var(--violet); }
+.pol-sombra_dominante { background:rgba(201,123,132,0.15);color:var(--rose); }
+
+.bar-section { margin-bottom:0.75rem; }
+.bar-meta { display:flex;justify-content:space-between;font-size:0.72rem;color:var(--muted);margin-bottom:0.3rem; }
+.bar-wrap { height:5px;background:var(--border);border-radius:3px;overflow:hidden; }
+.bar-inner { height:100%;border-radius:3px;transition:width 0.6s ease; }
+.bar-luz_intensa  { background:#f0c040; }
+.bar-luz          { background:var(--calipso); }
+.bar-transicion   { background:var(--amber); }
+.bar-sombra       { background:var(--violet); }
+.bar-sombra_dominante { background:var(--rose); }
+.bar-default      { background:var(--calipso); }
+
+.dim-descripcion { font-size:0.8rem;color:var(--muted);line-height:1.5;margin-bottom:0.5rem; }
+.dim-analisis { font-size:0.88rem;line-height:1.6;margin-bottom:0.5rem; }
+.dim-msg { font-size:0.82rem;color:var(--muted);line-height:1.5;margin-bottom:0.4rem; }
+.dim-accion {
+  font-size:0.8rem;
+  color:var(--calipso);
+  line-height:1.5;
+  padding-top:0.4rem;
+  border-top:1px solid var(--border);
+  margin-top:0.5rem;
+}
+
+/* Conclusion box */
+.conclusion-box {
+  background:var(--surface);
+  backdrop-filter:blur(14px);
+  border:1px solid var(--border);
+  border-left:3px solid var(--calipso);
+  border-radius:var(--radius);
+  padding:1.25rem 1.5rem;
+  margin-top:1.5rem;
+  margin-bottom:1.5rem;
+}
+.conclusion-label { font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--calipso);margin-bottom:0.6rem; }
+.conclusion-text { font-size:0.9rem;line-height:1.7;color:var(--muted); }
+
+/* AI insight */
+.insight-box {
+  background:rgba(126,204,205,0.05);
+  border:1px solid rgba(126,204,205,0.2);
+  border-radius:var(--radius);
+  padding:1.25rem 1.5rem;
+  font-size:0.9rem;
+  line-height:1.7;
+  margin-bottom:1.5rem;
+}
+</style>
+{% endblock %}
+{% block content %}
+{% with ev=result.evaluation %}
+<div class="result-wrap">
+  <a href="/tests/" onclick="spaGo(event,this)" style="color:var(--calipso);text-decoration:none;font-size:0.82rem">← Tests</a>
+  <h1 class="result-title" style="margin-top:0.75rem">{{ result.test.name }}</h1>
+  <div class="result-meta">
+    Completado el {{ result.completed_at|date:"d M Y · H:i" }}
+    {% if result.test.instrument_type == 'clinical' %}&nbsp;<span class="badge badge-validado">Clínico</span>{% elif result.test.instrument_type == 'adapted' %}&nbsp;<span class="badge badge-adaptado">Adaptado</span>{% else %}&nbsp;<span class="badge badge-endonauta">Endonauta</span>{% endif %}
   </div>
+
+  {# Crisis alerts para PHQ-9 y GAD-7 #}
+  {% if 'PHQ-9' in result.test.name or 'Salud del Paciente' in result.test.name %}
+    {% for dim in ev.dimensiones %}
+      {% if dim.puntos >= 20 %}
+      <div class="crisis-alert">
+        <strong>Nota importante:</strong> Tu puntaje indica síntomas severos. Si tienes pensamientos de hacerte daño, por favor comunícate con apoyo profesional ahora.
+        En Chile: <strong>SALUD RESPONDE 600 360 7777</strong> (24/7, gratuito).
+      </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+  {% if 'GAD-7' in result.test.name or 'Ansiedad' in result.test.name %}
+    {% for dim in ev.dimensiones %}
+      {% if dim.puntos >= 15 %}
+      <div class="crisis-alert">
+        <strong>Nota importante:</strong> Tu puntaje indica ansiedad severa. Consultar con un profesional de salud mental es recomendable.
+        En Chile: <strong>SALUD RESPONDE 600 360 7777</strong> (24/7, gratuito).
+      </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  {# Dimensiones #}
+  {% for dim in ev.dimensiones %}
+  <div class="dim-card">
+    <div class="dim-card-top">
+      <div>
+        <div class="dim-name">{{ dim.nombre }}</div>
+        {% if dim.nivel %}<div class="dim-nivel">{{ dim.nivel }}</div>{% endif %}
+      </div>
+      {% if dim.polaridad %}
+      <span class="polarity-badge pol-{{ dim.polaridad }}">
+        {% if dim.polaridad == 'luz_intensa' %}Luz Intensa{% elif dim.polaridad == 'luz' %}Luz{% elif dim.polaridad == 'transicion' %}Transición{% elif dim.polaridad == 'sombra' %}Sombra{% else %}Sombra Dom.{% endif %}
+      </span>
+      {% endif %}
+    </div>
+
+    <div class="bar-section">
+      <div class="bar-meta">
+        <span>{{ dim.puntos }} / {{ dim.max }}</span>
+        <span>{{ dim.pct|floatformat:0 }}%</span>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-inner {% if dim.polaridad %}bar-{{ dim.polaridad }}{% else %}bar-default{% endif %}" style="width:{{ dim.pct|floatformat:0 }}%"></div>
+      </div>
+    </div>
+
+    {% if dim.descripcion %}<div class="dim-descripcion">{{ dim.descripcion }}</div>{% endif %}
+    {% if dim.analisis %}<div class="dim-analisis">{{ dim.analisis }}</div>{% endif %}
+    {% if dim.mensaje_polaridad %}<div class="dim-msg">{{ dim.mensaje_polaridad }}</div>{% endif %}
+    {% if dim.accion_sugerida %}<div class="dim-accion">→ {{ dim.accion_sugerida }}</div>{% endif %}
+  </div>
+  {% endfor %}
+
+  {% if ev.conclusion %}
+  <div class="conclusion-box">
+    <div class="conclusion-label">✦ Lectura Endonáutica</div>
+    <div class="conclusion-text">{{ ev.conclusion }}</div>
+  </div>
+  {% endif %}
+
+  {% if result.test.instrument_type == 'adapted' %}
+  <div style="font-size:0.75rem;color:var(--muted);margin-bottom:1.5rem;padding:0.75rem;border:1px solid var(--border);border-radius:8px;line-height:1.5;">
+    ⚠️ Este instrumento es una adaptación del original. Los resultados son orientativos y no reemplazan evaluación clínica formal.
+  </div>
+  {% endif %}
+  {% if result.test.instrument_type == 'custom' %}
+  <div style="font-size:0.75rem;color:var(--muted);margin-bottom:1.5rem;padding:0.75rem;border:1px solid var(--border);border-radius:8px;line-height:1.5;">
+    ⚠️ Este instrumento es una herramienta de reflexión endonauta. No es un diagnóstico psicológico.
+  </div>
+  {% endif %}
 
   {% if result.ai_insight %}
   <div class="insight-box">
-    <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);margin-bottom:0.75rem">✦ Insight</div>
+    <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--calipso);margin-bottom:0.75rem">✦ Insight IA</div>
     {{ result.ai_insight|linebreaksbr }}
   </div>
   {% else %}
   <div style="margin-bottom:1.5rem">
-    <a href="?ai=1" class="btn btn-ghost">✦ Generar insight IA (⬡ 20)</a>
+    <a href="?ai=1" class="btn btn-ghost" style="font-size:0.85rem">✦ Generar insight IA (⬡ 20)</a>
   </div>
   {% endif %}
 
-  <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
-    <a href="/tests/" onclick="spaGo(event,this)" class="btn btn-secondary">Volver a tests</a>
+  <div style="display:flex;gap:0.75rem;flex-wrap:wrap;padding-bottom:3rem">
+    <a href="/tests/{{ result.test.slug }}/responder/" onclick="spaGo(event,this)" class="btn btn-secondary">Repetir test</a>
+    <a href="/tests/" onclick="spaGo(event,this)" class="btn btn-ghost">Volver a tests</a>
     <a href="/tests/mis-resultados/" onclick="spaGo(event,this)" class="btn btn-ghost">Mis resultados</a>
   </div>
 </div>
+{% endwith %}
 {% endblock %}

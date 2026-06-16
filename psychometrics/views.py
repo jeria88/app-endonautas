@@ -24,6 +24,7 @@ def test_take(request, slug):
 
     if request.method == 'POST':
         raw_scores = {}
+        dim_scores = {}
         for q in questions:
             val = request.POST.get(f'q_{q.pk}')
             if val is not None:
@@ -31,9 +32,11 @@ def test_take(request, slug):
                 if q.reverse_scored:
                     score = _reverse(score, q.scale)
                 raw_scores[str(q.pk)] = score
+                key = q.dimension_key or 'total'
+                dim_scores[key] = dim_scores.get(key, 0) + score
 
-        from psychometrics.evaluator import evaluate
-        evaluation = evaluate(test, raw_scores, questions)
+        from psychometrics.evaluator import evaluate_test
+        evaluation = evaluate_test(test.name, dim_scores)
 
         result = TestResult.objects.create(
             user=request.user,
