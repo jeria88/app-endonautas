@@ -115,6 +115,16 @@ def sueno_detail(request, pk):
     return render(request, 'mirror/sueno_detail.html', {'entry': entry})
 
 
+def _load_system_prompt():
+    import os
+    path = os.path.join(os.path.dirname(__file__), 'prompts', 'espejo_system.txt')
+    try:
+        with open(path, encoding='utf-8') as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        return 'Eres el Espejo de Conflictos, un acompañante de autoconocimiento.'
+
+
 def _get_reply(session, user_content):
     import requests
     from django.conf import settings
@@ -122,7 +132,7 @@ def _get_reply(session, user_content):
         return 'El espejo no puede responder ahora (configura DEEPSEEK_API_KEY).'
 
     history = list(session.messages.values('role', 'content'))
-    messages = [{'role': 'system', 'content': 'Eres el Espejo de Conflictos, un acompañante de autoconocimiento.'}]
+    messages = [{'role': 'system', 'content': _load_system_prompt()}]
     messages += [{'role': m['role'] if m['role'] == 'user' else 'assistant', 'content': m['content']} for m in history[-10:]]
     messages.append({'role': 'user', 'content': user_content})
 
