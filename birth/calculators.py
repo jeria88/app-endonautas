@@ -16,7 +16,8 @@ from .models import SIGN_ES, HOUSE_NUM, SIGN_ELEMENT
 from .meanings import (
     PLANET_MEANINGS, SIGN_MEANINGS, ASC_MEANINGS, MC_MEANINGS,
     HD_TYPE_MEANINGS, HD_PROFILE_MEANINGS, HD_AUTHORITY_MEANINGS,
-    HD_DEFINITION_MEANINGS, HD_CENTER_MEANINGS,
+    HD_NOT_SELF_MEANINGS, HD_SIGNATURE_MEANINGS,
+    HD_DEFINITION_MEANINGS, HD_CENTER_MEANINGS, HD_CHANNEL_MEANINGS,
     SAJU_PILLAR_MEANINGS, SAJU_ELEMENT_MEANINGS,
     SAJU_DAYMASTER_MEANINGS, SAJU_ANIMAL_MEANINGS,
 )
@@ -300,8 +301,9 @@ def calculate_hd_chart(bp):
                 center_adj.setdefault(ctr_a, set()).add(ctr_b)
                 center_adj.setdefault(ctr_b, set()).add(ctr_a)
                 defined_channels.append({
-                    'gates': f'{g_a}–{g_b}',
-                    'name':  f'{HD_GATE_NAMES.get(g_a,"")} / {HD_GATE_NAMES.get(g_b,"")}',
+                    'gates':   f'{g_a}–{g_b}',
+                    'name':    f'{HD_GATE_NAMES.get(g_a,"")} / {HD_GATE_NAMES.get(g_b,"")}',
+                    'meaning': HD_CHANNEL_MEANINGS.get(f'{g_a}–{g_b}', ''),
                 })
 
     reachable_from_throat = set()
@@ -380,6 +382,8 @@ def calculate_hd_chart(bp):
         'type_meaning':       HD_TYPE_MEANINGS.get(hd_type, ''),
         'profile_meaning':    HD_PROFILE_MEANINGS.get(profile_key, ''),
         'authority_meaning':  HD_AUTHORITY_MEANINGS.get(authority, ''),
+        'not_self_meaning':   HD_NOT_SELF_MEANINGS.get(not_self, ''),
+        'signature_meaning':  HD_SIGNATURE_MEANINGS.get(signature, ''),
         'definition_meaning': HD_DEFINITION_MEANINGS.get(definition, ''),
         'defined_centers':  [
             {'name': c, 'meaning': HD_CENTER_MEANINGS.get(c, '')}

@@ -44,8 +44,16 @@
       {% if report.raw_data.definition_meaning %}<div style="font-size:0.75rem;color:var(--muted);line-height:1.5">{{ report.raw_data.definition_meaning }}</div>{% endif %}
     </div>
     <div class="hd-kv"><div class="k">Estrategia</div><div class="v">{{ report.raw_data.strategy }}</div></div>
-    <div class="hd-kv"><div class="k">Tema del No-Yo</div><div class="v" style="color:var(--rose)">{{ report.raw_data.not_self_theme }}</div></div>
-    <div class="hd-kv"><div class="k">Firma</div><div class="v" style="color:var(--green)">{{ report.raw_data.signature }}</div></div>
+    <div class="hd-kv">
+      <div class="k">Tema del No-Yo</div>
+      <div class="v" style="color:var(--rose);margin-bottom:0.35rem">{{ report.raw_data.not_self_theme }}</div>
+      {% if report.raw_data.not_self_meaning %}<div style="font-size:0.75rem;color:var(--muted);line-height:1.5">{{ report.raw_data.not_self_meaning }}</div>{% endif %}
+    </div>
+    <div class="hd-kv">
+      <div class="k">Firma</div>
+      <div class="v" style="color:var(--green);margin-bottom:0.35rem">{{ report.raw_data.signature }}</div>
+      {% if report.raw_data.signature_meaning %}<div style="font-size:0.75rem;color:var(--muted);line-height:1.5">{{ report.raw_data.signature_meaning }}</div>{% endif %}
+    </div>
     <div class="hd-kv"><div class="k">Fecha de Diseño</div><div class="v">{{ report.raw_data.design_date }}</div></div>
   </div>
 
@@ -84,9 +92,12 @@
   <div class="panel" style="margin-bottom:1.5rem">
     <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.75rem">Canales Definidos</div>
     {% for ch in report.raw_data.defined_channels %}
-    <div class="hd-channel">
-      <span style="color:var(--calipso);font-weight:600;white-space:nowrap">{{ ch.gates }}</span>
-      <span style="color:var(--muted)">{{ ch.name }}</span>
+    <div style="padding:0.6rem 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;gap:10px;align-items:baseline;margin-bottom:{% if ch.meaning %}0.3rem{% else %}0{% endif %}">
+        <span style="color:var(--calipso);font-weight:600;white-space:nowrap;font-size:0.82rem">{{ ch.gates }}</span>
+        <span style="color:var(--dim);font-size:0.82rem">{{ ch.name }}</span>
+      </div>
+      {% if ch.meaning %}<div style="font-size:0.75rem;color:var(--muted);line-height:1.5">{{ ch.meaning }}</div>{% endif %}
     </div>
     {% endfor %}
   </div>
