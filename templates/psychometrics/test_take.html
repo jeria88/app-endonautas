@@ -104,7 +104,6 @@
 
       {% if q.scale == 'likert5' %}
       <div class="scale-row">
-        {% for val,lbl in '1:Nunca,2:Pocas veces,3:A veces,4:Frecuentemente,5:Siempre'|safe %}{% endfor %}
         <div class="scale-btn-wrap"><input type="radio" name="q_{{ q.pk }}" value="1" required><label class="scale-btn" for="r_{{ q.pk }}_1" onclick="this.previousElementSibling.checked=true;updateQ({{ q.pk }})">1</label><span class="scale-label">Nunca</span></div>
         <div class="scale-btn-wrap"><input type="radio" name="q_{{ q.pk }}" value="2"><label class="scale-btn" onclick="this.previousElementSibling.checked=true;updateQ({{ q.pk }})">2</label><span class="scale-label">Pocas veces</span></div>
         <div class="scale-btn-wrap"><input type="radio" name="q_{{ q.pk }}" value="3"><label class="scale-btn" onclick="this.previousElementSibling.checked=true;updateQ({{ q.pk }})">3</label><span class="scale-label">A veces</span></div>
