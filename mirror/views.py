@@ -18,7 +18,7 @@ def espejo_home(request):
 def chat_new(request):
     from tokens.service import has_balance
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-    if not has_balance(request.user, 'espejo_exchange'):
+    if not request.user.is_superuser and not has_balance(request.user, 'espejo_exchange'):
         if is_ajax:
             return JsonResponse({'error': 'sin_fractones', 'redirect': '/tokens/'}, status=402)
         return redirect('tokens_balance')
@@ -49,7 +49,7 @@ def chat_session_api(request, pk):
 def chat_message(request, pk):
     session = get_object_or_404(ChatSession, pk=pk, user=request.user)
     from tokens.service import spend
-    if not spend(request.user, 'espejo_exchange'):
+    if not request.user.is_superuser and not spend(request.user, 'espejo_exchange'):
         return JsonResponse({'error': 'Sin fractones'}, status=402)
 
     content = request.POST.get('content', '').strip()
