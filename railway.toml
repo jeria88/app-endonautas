@@ -3,7 +3,7 @@ builder = "nixpacks"
 buildCommand = "pip install -r requirements.txt && python manage.py collectstatic --noinput"
 
 [deploy]
-startCommand = "echo 'Starting fix_db_state' && python manage.py fix_db_state && echo 'Starting migrate' && python manage.py migrate --noinput && echo 'Starting create_admin' && python manage.py create_admin && echo 'Starting gunicorn' && gunicorn config.wsgi --workers 2 --threads 2 --timeout 60 --bind 0.0.0.0:$PORT"
+startCommand = "echo 'Starting fix_db_state' && python manage.py fix_db_state && echo 'Starting migrate' && python manage.py migrate --noinput && echo 'Starting create_admin' && python manage.py create_admin && echo 'Starting seed_tests' && python manage.py seed_tests && echo 'Starting gunicorn' && gunicorn config.wsgi --workers 2 --threads 2 --timeout 60 --bind 0.0.0.0:$PORT"
 healthcheckPath = "/"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
