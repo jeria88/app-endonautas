@@ -30,10 +30,21 @@ class Command(BaseCommand):
             self.stdout.write(f'Dropped orphaned table {table}')
         cursor.execute("DELETE FROM django_migrations WHERE app=%s", [app])
 
+    def _drop_django_builtins(self, cursor):
+        # Django built-in apps use non-standard table names (django_*, not app_*)
+        for table in ('django_admin_log', 'django_content_type', 'django_session'):
+            cursor.execute(f'DROP TABLE IF EXISTS "{table}" CASCADE')
+            self.stdout.write(f'Dropped table {table}')
+        # auth_* tables follow the app_ pattern so the generic method works
+        self._drop_app_tables_and_migrations(cursor, 'auth')
+        for app in ('admin', 'contenttypes', 'sessions'):
+            cursor.execute("DELETE FROM django_migrations WHERE app=%s", [app])
+
     def handle(self, *args, **options):
         try:
             with connection.cursor() as cursor:
-                # Drop accounts tables if stale schema has username NOT NULL (from old project)
+                # Drop accounts + all Django built-in tables if stale schema detected
+                # (old project had accounts_user with username NOT NULL)
                 cursor.execute(
                     "SELECT EXISTS(SELECT 1 FROM information_schema.columns "
                     "WHERE table_schema='public' AND table_name='accounts_user' "
@@ -41,7 +52,8 @@ class Command(BaseCommand):
                 )
                 if cursor.fetchone()[0]:
                     self._drop_app_tables_and_migrations(cursor, 'accounts')
-                    self.stdout.write('Cleared accounts (stale username NOT NULL column detected)')
+                    self._drop_django_builtins(cursor)
+                    self.stdout.write('Cleared accounts + Django builtins (stale username NOT NULL column detected)')
 
                 for app, anchor_table in self.APPS_TO_CHECK:
                     cursor.execute(
