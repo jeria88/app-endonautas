@@ -1,36 +1,70 @@
 {% extends "base.html" %}
 {% block title %}Carta Astral — Endonautas{% endblock %}
 {% block content %}
-<div style="max-width:640px">
+<style data-page-style>
+.astral-planet { background:var(--surface2);border-radius:10px;padding:0.9rem 1rem; }
+.astral-planet .p-label { font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.2rem; }
+.astral-planet .p-sign { font-weight:700;font-size:1rem;margin-bottom:0.2rem; }
+.astral-planet .p-meta { font-size:0.72rem;color:var(--dim); }
+.elem-fire  { color:#e07060; }
+.elem-earth { color:#b0a060; }
+.elem-air   { color:#7cc0c0; }
+.elem-water { color:#6080c0; }
+.retro-tag { font-size:0.65rem;color:var(--rose);margin-left:4px; }
+</style>
+
+<div style="max-width:700px">
   <a href="/nacimiento/" onclick="spaGo(event,this)" style="color:var(--accent);text-decoration:none;font-size:0.85rem">← Nacimiento</a>
   <h1 style="font-size:1.3rem;font-weight:700;margin:1.25rem 0 0.25rem">Carta Astral</h1>
-  <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem">{{ birth.birth_date }} · {{ birth.city }}</p>
+  <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem">{{ birth.birth_date }} · {{ birth.city }}{% if birth.birth_time %} · {{ birth.birth_time }}{% endif %}</p>
 
   {% if report.status == 'done' %}
-  <div class="panel" style="margin-bottom:1.5rem">
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem">
-      {% for planet, sign in report.raw_data.items %}
-      <div style="background:var(--surface2);border-radius:10px;padding:0.85rem 1rem">
-        <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.25rem">{{ planet }}</div>
-        <div style="font-weight:600;font-size:1rem">{{ sign }}</div>
-      </div>
-      {% endfor %}
+
+  {% if not report.raw_data.birth_time_known %}
+  <div class="alert" style="background:rgba(212,160,86,0.1);border:1px solid rgba(212,160,86,0.3);color:var(--amber);margin-bottom:1.5rem;font-size:0.83rem">
+    Sin hora de nacimiento — el Ascendente y el Medio Cielo son aproximados (se usó mediodía).
+  </div>
+  {% endif %}
+
+  <!-- Puntos angulares -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+    <div class="panel" style="padding:1rem 1.25rem">
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--calipso);margin-bottom:0.4rem">Ascendente (ASC)</div>
+      <div style="font-size:1.3rem;font-weight:700" class="elem-{{ report.raw_data.ascendant.element }}">{{ report.raw_data.ascendant.sign }}</div>
+      <div style="font-size:0.78rem;color:var(--dim)">{{ report.raw_data.ascendant.degree }}°</div>
+    </div>
+    <div class="panel" style="padding:1rem 1.25rem">
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--violet);margin-bottom:0.4rem">Medio Cielo (MC)</div>
+      <div style="font-size:1.3rem;font-weight:700">{{ report.raw_data.midheaven.sign }}</div>
+      <div style="font-size:0.78rem;color:var(--dim)">{{ report.raw_data.midheaven.degree }}°</div>
     </div>
   </div>
 
+  <!-- Planetas -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.75rem;margin-bottom:1.5rem">
+    {% for planet in report.raw_data.planets %}
+    <div class="astral-planet">
+      <div class="p-label">{{ planet.label }}</div>
+      <div class="p-sign elem-{{ planet.element }}">
+        {{ planet.sign }}{% if planet.retrograde %}<span class="retro-tag">℞</span>{% endif %}
+      </div>
+      <div class="p-meta">Casa {{ planet.house }} · {{ planet.degree }}°</div>
+    </div>
+    {% endfor %}
+  </div>
+
   {% if report.ai_reading %}
-  <div style="background:rgba(78,205,196,0.06);border:1px solid rgba(78,205,196,0.2);border-radius:14px;padding:1.25rem;font-size:0.9rem;line-height:1.7">
-    <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);margin-bottom:0.75rem">✦ Lectura endonauta</div>
+  <div style="background:rgba(126,204,205,0.06);border:1px solid rgba(126,204,205,0.2);border-radius:14px;padding:1.25rem;font-size:0.9rem;line-height:1.7">
+    <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--calipso);margin-bottom:0.75rem">✦ Lectura endonauta</div>
     {{ report.ai_reading|linebreaksbr }}
   </div>
   {% endif %}
 
-  {% elif report.status == 'processing' %}
-  <div class="panel" style="text-align:center;padding:2rem;color:var(--muted)">Calculando carta astral...</div>
   {% elif report.status == 'error' %}
   <div class="alert alert-error">{{ report.error_message|default:"Error al calcular la carta." }}</div>
+  <a href="/nacimiento/" onclick="spaGo(event,this)" class="btn btn-secondary btn-sm" style="margin-top:1rem">Volver</a>
   {% else %}
-  <div class="panel" style="text-align:center;padding:2rem;color:var(--muted)">Calculando...</div>
+  <div class="panel" style="text-align:center;padding:2.5rem;color:var(--muted)">Calculando carta astral…</div>
   {% endif %}
 </div>
 {% endblock %}

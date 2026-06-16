@@ -2,7 +2,29 @@ from django.conf import settings
 from django.db import models
 
 
+SIGN_ES = {
+    'Ari': 'Aries', 'Tau': 'Tauro', 'Gem': 'Géminis', 'Can': 'Cáncer',
+    'Leo': 'Leo', 'Vir': 'Virgo', 'Lib': 'Libra', 'Sco': 'Escorpio',
+    'Sag': 'Sagitario', 'Cap': 'Capricornio', 'Aqu': 'Acuario', 'Pis': 'Piscis',
+}
+
+HOUSE_NUM = {
+    'First_House': 1, 'Second_House': 2, 'Third_House': 3, 'Fourth_House': 4,
+    'Fifth_House': 5, 'Sixth_House': 6, 'Seventh_House': 7, 'Eighth_House': 8,
+    'Ninth_House': 9, 'Tenth_House': 10, 'Eleventh_House': 11, 'Twelfth_House': 12,
+}
+
+SIGN_ELEMENT = {
+    'Aries': 'fire', 'Leo': 'fire', 'Sagitario': 'fire',
+    'Tauro': 'earth', 'Virgo': 'earth', 'Capricornio': 'earth',
+    'Géminis': 'air', 'Libra': 'air', 'Acuario': 'air',
+    'Cáncer': 'water', 'Escorpio': 'water', 'Piscis': 'water',
+}
+
+
 class BirthData(models.Model):
+    GENDER_CHOICES = [('M', 'Masculino'), ('F', 'Femenino')]
+
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
         related_name='birth_data', null=True, blank=True
@@ -18,6 +40,7 @@ class BirthData(models.Model):
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
     timezone_str = models.CharField(max_length=60, blank=True)
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

@@ -4,7 +4,7 @@
 <div style="max-width:520px">
   <a href="/nacimiento/" onclick="spaGo(event,this)" style="color:var(--accent);text-decoration:none;font-size:0.85rem">← Nacimiento</a>
   <h1 style="font-size:1.3rem;font-weight:700;margin:1.25rem 0 0.5rem">Tus datos de nacimiento</h1>
-  <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1.5rem">La hora exacta mejora la precisión del ascendente y el Human Design.</p>
+  <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1.5rem">La hora exacta mejora la precisión del ascendente, Human Design y Saju.</p>
 
   <div class="panel">
     <form method="post" id="birth-form">
@@ -14,7 +14,7 @@
         <input type="date" name="birth_date" class="form-input" required value="{{ birth.birth_date|date:'Y-m-d'|default:'' }}">
       </div>
       <div class="form-group">
-        <label class="form-label">Hora de nacimiento (opcional)</label>
+        <label class="form-label">Hora de nacimiento <span style="color:var(--dim);font-weight:400">(opcional)</span></label>
         <input type="time" name="birth_time" class="form-input" value="{{ birth.birth_time|time:'H:i'|default:'' }}">
       </div>
       <div class="form-group">
@@ -26,6 +26,18 @@
       <input type="hidden" name="lat" id="lat-input" value="{{ birth.latitude|default:'' }}">
       <input type="hidden" name="lon" id="lon-input" value="{{ birth.longitude|default:'' }}">
 
+      <div class="form-group">
+        <label class="form-label">Género al nacer <span style="color:var(--dim);font-weight:400">(necesario para Saju / BaZi)</span></label>
+        <div style="display:flex;gap:1rem;margin-top:4px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.9rem;padding:10px 18px;border-radius:8px;border:1px solid var(--border);flex:1;justify-content:center;transition:all 0.2s" id="lbl-m">
+            <input type="radio" name="gender" value="M" style="accent-color:var(--calipso)" {% if birth.gender == 'M' %}checked{% endif %}> Masculino
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.9rem;padding:10px 18px;border-radius:8px;border:1px solid var(--border);flex:1;justify-content:center;transition:all 0.2s" id="lbl-f">
+            <input type="radio" name="gender" value="F" style="accent-color:var(--calipso)" {% if birth.gender == 'F' %}checked{% endif %}> Femenino
+          </label>
+        </div>
+      </div>
+
       <div style="display:flex;gap:0.75rem;margin-top:0.5rem">
         <button type="submit" class="btn btn-primary">Guardar</button>
         <a href="/nacimiento/" onclick="spaGo(event,this)" class="btn btn-secondary">Cancelar</a>
@@ -35,7 +47,7 @@
 </div>
 
 <script>
-// Simple nominatim geocoder
+// Geocoder
 let debounce;
 document.getElementById('city-input').addEventListener('input', function() {
   clearTimeout(debounce);
@@ -54,7 +66,7 @@ document.getElementById('city-input').addEventListener('input', function() {
         const opt = document.createElement('div');
         opt.style.cssText = 'padding:0.6rem 1rem;cursor:pointer;font-size:0.85rem;border-bottom:1px solid var(--border)';
         opt.textContent = item.display_name;
-        opt.addEventListener('mouseenter', () => opt.style.background = 'rgba(78,205,196,0.1)');
+        opt.addEventListener('mouseenter', () => opt.style.background = 'rgba(126,204,205,0.1)');
         opt.addEventListener('mouseleave', () => opt.style.background = '');
         opt.addEventListener('click', () => {
           document.getElementById('city-input').value = item.display_name.split(',')[0];
@@ -71,6 +83,22 @@ document.getElementById('city-input').addEventListener('input', function() {
 });
 document.addEventListener('click', e => {
   if (!e.target.closest('#city-input')) document.getElementById('city-suggestions').innerHTML = '';
+});
+
+// Gender radio highlight
+document.querySelectorAll('input[name="gender"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    document.querySelectorAll('input[name="gender"]').forEach(r => {
+      r.closest('label').style.borderColor = '';
+      r.closest('label').style.color = '';
+    });
+    radio.closest('label').style.borderColor = 'var(--calipso)';
+    radio.closest('label').style.color = 'var(--calipso)';
+  });
+  if (radio.checked) {
+    radio.closest('label').style.borderColor = 'var(--calipso)';
+    radio.closest('label').style.color = 'var(--calipso)';
+  }
 });
 </script>
 {% endblock %}

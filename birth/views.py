@@ -37,6 +37,7 @@ def birth_datos(request):
             latitude=lat,
             longitude=lon,
             timezone_str=tz,
+            gender=request.POST.get('gender', ''),
         )
         if birth:
             for k, v in data.items():
@@ -81,15 +82,18 @@ def _birth_report_view(request, report_type, template):
 
 def _compute_report(report):
     from django.utils import timezone
+    from .calculators import calculate_astral_chart, calculate_hd_chart, calculate_saju_chart
+
     report.status = 'processing'
     report.save()
     try:
+        bp = report.birth_data
         if report.report_type == 'astral':
-            data = _astral_data(report.birth_data)
+            data = calculate_astral_chart(bp)
         elif report.report_type == 'hd':
-            data = _hd_data(report.birth_data)
+            data = calculate_hd_chart(bp)
         else:
-            data = _saju_data(report.birth_data)
+            data = calculate_saju_chart(bp)
         report.raw_data = data
         report.status = 'done'
         report.completed_at = timezone.now()
@@ -97,31 +101,3 @@ def _compute_report(report):
         report.status = 'error'
         report.error_message = str(e)
     report.save()
-
-
-def _astral_data(birth):
-    from kerykeion import AstrologicalSubject
-    dt = birth.birth_date
-    t = birth.birth_time
-    subj = AstrologicalSubject(
-        'user', dt.year, dt.month, dt.day,
-        t.hour if t else 12, t.minute if t else 0,
-        lng=birth.longitude or 0, lat=birth.latitude or 0,
-        tz_str=birth.timezone_str or 'UTC',
-    )
-    return {
-        'sun': subj.sun.sign,
-        'moon': subj.moon.sign,
-        'rising': subj.first_house.sign,
-        'mercury': subj.mercury.sign,
-        'venus': subj.venus.sign,
-        'mars': subj.mars.sign,
-    }
-
-
-def _hd_data(birth):
-    return {'type': 'Generador', 'profile': '2/4', 'authority': 'Emocional'}
-
-
-def _saju_data(birth):
-    return {'year_pillar': '甲子', 'month_pillar': '丙午', 'day_pillar': '戊申'}

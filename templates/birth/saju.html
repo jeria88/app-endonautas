@@ -1,26 +1,104 @@
 {% extends "base.html" %}
 {% block title %}Saju / BaZi — Endonautas{% endblock %}
 {% block content %}
-<div style="max-width:640px">
+<style data-page-style>
+.pillar { background:var(--surface2);border-radius:12px;padding:1rem;text-align:center;min-width:100px; }
+.pillar-label { font-size:0.65rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:0.5rem; }
+.pillar-chars { font-size:2rem;line-height:1;margin-bottom:0.5rem; }
+.pillar-stem  { font-size:0.72rem;color:var(--calipso); }
+.pillar-branch { font-size:0.72rem;color:var(--violet); }
+.elem-bar { height:4px;border-radius:4px;margin-top:3px; }
+.dw-cycle { border-radius:8px;padding:6px 12px;font-size:0.82rem;border:1px solid var(--border);display:flex;gap:10px;align-items:center; }
+.dw-cycle.current { border-color:rgba(126,204,205,0.4);background:rgba(126,204,205,0.06); }
+</style>
+
+<div style="max-width:700px">
   <a href="/nacimiento/" onclick="spaGo(event,this)" style="color:var(--accent);text-decoration:none;font-size:0.85rem">← Nacimiento</a>
   <h1 style="font-size:1.3rem;font-weight:700;margin:1.25rem 0 0.25rem">Saju / BaZi</h1>
   <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem">{{ birth.birth_date }} · {{ birth.city }}</p>
 
   {% if report.status == 'done' %}
+
+  {% if not report.raw_data.hour_known %}
+  <div class="alert" style="background:rgba(212,160,86,0.1);border:1px solid rgba(212,160,86,0.3);color:var(--amber);margin-bottom:1.5rem;font-size:0.83rem">
+    Sin hora de nacimiento — se muestran 3 pilares. Ingresa la hora para ver el Pilar de la Hora.
+  </div>
+  {% endif %}
+
+  <!-- 4 Pilares -->
   <div class="panel" style="margin-bottom:1.5rem">
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1rem">
-      {% for key, val in report.raw_data.items %}
-      <div style="background:var(--surface2);border-radius:10px;padding:1rem;text-align:center">
-        <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.5rem">{{ key|cut:"_pillar" }}</div>
-        <div style="font-size:1.8rem;line-height:1">{{ val }}</div>
+    <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:1rem">Los Cuatro Pilares</div>
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;justify-content:center">
+      {% for p in report.raw_data.pillars %}
+      <div class="pillar">
+        <div class="pillar-label">{{ p.label }}</div>
+        <div class="pillar-chars" title="{{ p.rom_stem }} / {{ p.rom_branch }}">{{ p.stem }}{{ p.branch }}</div>
+        <div class="pillar-stem">{{ p.elem_stem }}</div>
+        <div class="pillar-branch">{{ p.animal }} · {{ p.elem_branch }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% if report.raw_data.solar_correction_min %}
+    <div style="font-size:0.72rem;color:var(--dim);margin-top:0.75rem;text-align:center">Hora solar verdadera — corrección: {{ report.raw_data.solar_correction_min }} min</div>
+    {% endif %}
+  </div>
+
+  <!-- Resumen elemental -->
+  <div class="panel" style="margin-bottom:1.5rem">
+    <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.75rem">Balance de elementos</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0.5rem;text-align:center">
+      {% for elem, count in report.raw_data.element_count.items %}
+      <div>
+        <div style="font-weight:700;font-size:1.1rem">{{ count }}</div>
+        <div style="font-size:0.72rem;color:var(--muted)">{{ elem }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <div style="margin-top:1rem;font-size:0.85rem;display:flex;gap:1.5rem;flex-wrap:wrap">
+      <div>Señor del Día: <span style="color:var(--calipso);font-weight:600">{{ report.raw_data.day_master }}</span></div>
+      <div>Dominante: <span style="color:var(--amber);font-weight:600">{{ report.raw_data.dominant_element }}</span></div>
+      {% if report.raw_data.weakest_element %}
+      <div>Más débil: <span style="color:var(--rose);font-weight:600">{{ report.raw_data.weakest_element }}</span></div>
+      {% endif %}
+      <div>Animal del año: <span style="font-weight:600">{{ report.raw_data.lunar_year_animal }}</span></div>
+    </div>
+  </div>
+
+  <!-- Daewoon -->
+  {% if report.raw_data.daewoon %}
+  <div class="panel" style="margin-bottom:1.5rem">
+    <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.25rem">Grandes Ciclos (Daewoon)</div>
+    <div style="font-size:0.78rem;color:var(--dim);margin-bottom:0.75rem">Comienzan a los {{ report.raw_data.daewoon.start_age }} años · dirección {{ report.raw_data.daewoon.direction }}</div>
+    <div style="display:flex;flex-direction:column;gap:0.4rem">
+      {% for cycle in report.raw_data.daewoon.cycles %}
+      <div class="dw-cycle {% if cycle.is_current %}current{% endif %}">
+        <span style="font-size:1.2rem;font-weight:700">{{ cycle.stem }}{{ cycle.branch }}</span>
+        <span style="color:var(--muted);font-size:0.78rem">{{ cycle.elem_stem }} / {{ cycle.animal }} · {{ cycle.elem_branch }}</span>
+        <span style="margin-left:auto;color:var(--dim);font-size:0.75rem">{{ cycle.age_start }}–{{ cycle.age_end }} ({{ cycle.year_start }}–{{ cycle.year_end }})</span>
+        {% if cycle.is_current %}<span style="font-size:0.7rem;color:var(--calipso);font-weight:600">Ahora</span>{% endif %}
       </div>
       {% endfor %}
     </div>
   </div>
+  {% elif not birth.gender %}
+  <div class="panel" style="text-align:center;padding:1.5rem">
+    <p style="color:var(--muted);font-size:0.88rem;margin-bottom:1rem">Los grandes ciclos (Daewoon) requieren el género de nacimiento.</p>
+    <a href="/nacimiento/datos/" onclick="spaGo(event,this)" class="btn btn-calipso btn-sm">Agregar género →</a>
+  </div>
+  {% endif %}
+
+  {% if report.ai_reading %}
+  <div style="background:rgba(126,204,205,0.06);border:1px solid rgba(126,204,205,0.2);border-radius:14px;padding:1.25rem;font-size:0.9rem;line-height:1.7">
+    <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--calipso);margin-bottom:0.75rem">◎ Lectura endonauta</div>
+    {{ report.ai_reading|linebreaksbr }}
+  </div>
+  {% endif %}
+
   {% elif report.status == 'error' %}
   <div class="alert alert-error">{{ report.error_message|default:"Error al calcular Saju." }}</div>
+  <a href="/nacimiento/" onclick="spaGo(event,this)" class="btn btn-secondary btn-sm" style="margin-top:1rem">Volver</a>
   {% else %}
-  <div class="panel" style="text-align:center;padding:2rem;color:var(--muted)">Calculando...</div>
+  <div class="panel" style="text-align:center;padding:2.5rem;color:var(--muted)">Calculando Saju / BaZi…</div>
   {% endif %}
 </div>
 {% endblock %}

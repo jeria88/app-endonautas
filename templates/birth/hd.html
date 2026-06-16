@@ -1,26 +1,108 @@
 {% extends "base.html" %}
 {% block title %}Human Design — Endonautas{% endblock %}
 {% block content %}
-<div style="max-width:640px">
+<style data-page-style>
+.hd-kv { background:var(--surface2);border-radius:10px;padding:0.85rem 1rem; }
+.hd-kv .k { font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.2rem; }
+.hd-kv .v { font-weight:600;font-size:0.95rem;line-height:1.3; }
+.hd-tag { display:inline-block;padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;font-family:var(--font-display); }
+.hd-center { display:inline-block;padding:3px 10px;border-radius:6px;font-size:0.8rem;background:rgba(126,204,205,0.1);border:1px solid rgba(126,204,205,0.25);color:var(--calipso);margin:3px; }
+.hd-channel { font-size:0.82rem;padding:5px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:baseline; }
+.hd-channel:last-child { border-bottom:none; }
+.planet-row { display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px;font-size:0.82rem; }
+.planet-p { background:rgba(126,204,205,0.08);border-radius:6px;padding:5px 8px; }
+.planet-d { background:rgba(155,142,196,0.08);border-radius:6px;padding:5px 8px; }
+</style>
+
+<div style="max-width:700px">
   <a href="/nacimiento/" onclick="spaGo(event,this)" style="color:var(--accent);text-decoration:none;font-size:0.85rem">← Nacimiento</a>
   <h1 style="font-size:1.3rem;font-weight:700;margin:1.25rem 0 0.25rem">Human Design</h1>
   <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem">{{ birth.birth_date }} · {{ birth.city }}</p>
 
   {% if report.status == 'done' %}
+
+  <!-- Datos clave -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.75rem;margin-bottom:1.5rem">
+    <div class="hd-kv"><div class="k">Tipo</div><div class="v" style="color:var(--calipso)">{{ report.raw_data.type }}</div></div>
+    <div class="hd-kv"><div class="k">Perfil</div><div class="v">{{ report.raw_data.profile }}</div></div>
+    <div class="hd-kv"><div class="k">Autoridad</div><div class="v">{{ report.raw_data.authority }}</div></div>
+    <div class="hd-kv"><div class="k">Definición</div><div class="v">{{ report.raw_data.definition }}</div></div>
+    <div class="hd-kv"><div class="k">Estrategia</div><div class="v">{{ report.raw_data.strategy }}</div></div>
+    <div class="hd-kv"><div class="k">Tema del No-Yo</div><div class="v" style="color:var(--rose)">{{ report.raw_data.not_self_theme }}</div></div>
+    <div class="hd-kv"><div class="k">Firma</div><div class="v" style="color:var(--green)">{{ report.raw_data.signature }}</div></div>
+    <div class="hd-kv"><div class="k">Fecha de Diseño</div><div class="v">{{ report.raw_data.design_date }}</div></div>
+  </div>
+
+  <!-- Cruz de Encarnación -->
   <div class="panel" style="margin-bottom:1.5rem">
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem">
-      {% for key, val in report.raw_data.items %}
-      <div style="background:var(--surface2);border-radius:10px;padding:0.85rem 1rem">
-        <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.25rem">{{ key }}</div>
-        <div style="font-weight:600;font-size:1rem">{{ val }}</div>
+    <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--violet);margin-bottom:0.75rem">Cruz de Encarnación</div>
+    <div style="font-weight:600;font-size:0.95rem;margin-bottom:0.75rem">{{ report.raw_data.cross_name }}</div>
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+      {% for cg in report.raw_data.cross_gates %}
+      <div style="background:var(--surface2);border-radius:8px;padding:6px 12px;font-size:0.82rem">
+        <span style="color:var(--muted);font-size:0.7rem">{{ cg.role }} </span>
+        <span style="font-weight:600">{{ cg.gate }}</span>
+        <span style="color:var(--muted)"> · {{ cg.name }}</span>
       </div>
       {% endfor %}
     </div>
   </div>
+
+  <!-- Centros definidos -->
+  {% if report.raw_data.defined_centers %}
+  <div class="panel" style="margin-bottom:1.5rem">
+    <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.75rem">Centros Definidos</div>
+    <div>{% for c in report.raw_data.defined_centers %}<span class="hd-center">{{ c }}</span>{% endfor %}</div>
+  </div>
+  {% endif %}
+
+  <!-- Canales activos -->
+  {% if report.raw_data.defined_channels %}
+  <div class="panel" style="margin-bottom:1.5rem">
+    <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.75rem">Canales Definidos</div>
+    {% for ch in report.raw_data.defined_channels %}
+    <div class="hd-channel">
+      <span style="color:var(--calipso);font-weight:600;white-space:nowrap">{{ ch.gates }}</span>
+      <span style="color:var(--muted)">{{ ch.name }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Planetas Personalidad vs Diseño -->
+  <div class="panel" style="margin-bottom:1.5rem">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+      <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--calipso)">Personalidad (Consciente)</div>
+      <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--violet)">Diseño (Inconsciente)</div>
+    </div>
+    {% for pair in report.raw_data.planets_paired %}
+    <div class="planet-row">
+      <div class="planet-p">
+        <span style="color:var(--muted);margin-right:4px">{{ pair.p.symbol }}</span>{{ pair.p.label }}
+        <span style="color:var(--calipso);margin-left:6px;font-weight:600">{{ pair.p.gate }}.{{ pair.p.line }}</span>
+        <span style="color:var(--dim);font-size:0.75rem"> {{ pair.p.name }}</span>
+      </div>
+      <div class="planet-d">
+        <span style="color:var(--muted);margin-right:4px">{{ pair.d.symbol }}</span>{{ pair.d.label }}
+        <span style="color:var(--violet);margin-left:6px;font-weight:600">{{ pair.d.gate }}.{{ pair.d.line }}</span>
+        <span style="color:var(--dim);font-size:0.75rem"> {{ pair.d.name }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if report.ai_reading %}
+  <div style="background:rgba(126,204,205,0.06);border:1px solid rgba(126,204,205,0.2);border-radius:14px;padding:1.25rem;font-size:0.9rem;line-height:1.7">
+    <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--calipso);margin-bottom:0.75rem">◈ Lectura endonauta</div>
+    {{ report.ai_reading|linebreaksbr }}
+  </div>
+  {% endif %}
+
   {% elif report.status == 'error' %}
   <div class="alert alert-error">{{ report.error_message|default:"Error al calcular Human Design." }}</div>
+  <a href="/nacimiento/" onclick="spaGo(event,this)" class="btn btn-secondary btn-sm" style="margin-top:1rem">Volver</a>
   {% else %}
-  <div class="panel" style="text-align:center;padding:2rem;color:var(--muted)">Calculando...</div>
+  <div class="panel" style="text-align:center;padding:2.5rem;color:var(--muted)">Calculando Human Design…</div>
   {% endif %}
 </div>
 {% endblock %}
