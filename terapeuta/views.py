@@ -17,7 +17,7 @@ from .constants import (
     get_all_tecnicas,
     get_tecnica_to_framework_map,
 )
-from .forms import Paso0Form, Paso1Form, Paso5ResultadoForm
+from .forms import Paso1Form, Paso5ResultadoForm
 from .models import (
     Consulta,
     DiagnosticoPropuesto,
@@ -121,15 +121,10 @@ def recomendar_frameworks_por_keywords(motivo: str) -> list[str]:
 # ─── Wizard views ─────────────────────────────────────────────────────────────
 
 def wizard_paso0(request: HttpRequest) -> HttpResponse:
-    if request.method == "POST":
-        form = Paso0Form(request.POST)
-        if form.is_valid():
-            usuario = request.user if request.user.is_authenticated else None
-            consulta = Consulta.objects.create(modo=form.cleaned_data["modo"], paso_actual=1, usuario=usuario)
-            return redirect("terapeuta:paso1", consulta_id=consulta.id)
-    else:
-        form = Paso0Form()
-    return render(request, "terapeuta/paso0.html", {"form": form, "paso": 0, "total_pasos": 5})
+    if not request.user.is_authenticated:
+        return redirect("account_login")
+    consulta = Consulta.objects.create(modo="autoconsulta", paso_actual=1, usuario=request.user)
+    return redirect("terapeuta:paso1", consulta_id=consulta.id)
 
 
 def wizard_paso1(request: HttpRequest, consulta_id: int) -> HttpResponse:

@@ -32,8 +32,9 @@
       {% if client.email %} · {{ client.email }}{% endif %}
     </div>
   </div>
-  <div style="display:flex;gap:0.5rem">
+  <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
     <a href="/practicantes/cliente/{{ client.pk }}/nota/" onclick="spaGo(event,this)" class="btn btn-ghost" style="font-size:0.82rem">+ Nota</a>
+    <a href="/practicantes/fichas/nueva/{{ client.pk }}/" class="btn btn-ghost" style="font-size:0.82rem">+ Ficha</a>
     <a href="/practicantes/agenda/nueva/" onclick="spaGo(event,this)" class="btn btn-primary" style="font-size:0.82rem">+ Sesión</a>
   </div>
 </div>
@@ -48,9 +49,31 @@
 
 <div class="tabs">
   <button class="tab active" onclick="showTab('notas')">Notas ({{ notes|length }})</button>
+  <button class="tab" onclick="showTab('fichas')">Fichas ({{ fichas|length }})</button>
   <button class="tab" onclick="showTab('resultados')">Resultados ({{ results|length }})</button>
   <button class="tab" onclick="showTab('sesiones')">Sesiones ({{ sessions|length }})</button>
   <button class="tab" onclick="showTab('resumen')">Resumen clínico</button>
+</div>
+
+<div id="tab-fichas" class="tab-content">
+  {% for ficha in fichas %}
+  <div class="result-row">
+    <div>
+      <div style="font-size:0.88rem;font-weight:500">{{ ficha.motivo|truncatechars:80|default:"Sin motivo" }}</div>
+      <div style="font-size:0.72rem;color:var(--muted)">
+        {{ ficha.fecha_creacion|date:"d M Y" }}
+        {% if ficha.paso_actual >= 5 %}
+        · <span style="color:var(--calipso)">Completada</span>
+        {% else %}
+        · <span style="color:var(--amber)">Paso {{ ficha.paso_actual }}/5</span>
+        {% endif %}
+      </div>
+    </div>
+    <a href="/terapeuta/{{ ficha.id }}/detalle/" onclick="spaGo(event,this)" class="btn btn-ghost" style="font-size:0.78rem">Ver →</a>
+  </div>
+  {% empty %}
+  <div style="color:var(--muted);font-size:0.88rem;padding:1rem 0">Sin fichas clínicas. Usa el botón "+ Ficha" para crear una.</div>
+  {% endfor %}
 </div>
 
 <div id="tab-notas" class="tab-content active">

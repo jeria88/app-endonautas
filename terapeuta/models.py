@@ -39,6 +39,12 @@ class Consulta(models.Model):
         related_name="consultas_terapeuta",
         null=True, blank=True,
     )
+    perfil_cliente = models.ForeignKey(
+        'practitioners.TemporaryProfile',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='consultas',
+    )
     modo = models.CharField(max_length=20, choices=MODO_CHOICES, default="autoconsulta")
     nombre_paciente = models.CharField(max_length=200, blank=True)
     edad = models.PositiveIntegerField(null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(150)])

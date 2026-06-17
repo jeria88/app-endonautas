@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Fichas Clínicas — Endonautas{% endblock %}
+{% block extra_head %}
+<style data-page-style>
+.ficha-card {
+  background:var(--surface);backdrop-filter:blur(14px);border:1px solid var(--border);
+  border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:0.6rem;
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  text-decoration:none;color:inherit;transition:border-color 0.15s;
+}
+.ficha-card:hover { border-color:var(--border-active); }
+.ficha-paciente { font-weight:600;font-size:0.9rem;margin-bottom:0.15rem; }
+.ficha-meta { font-size:0.72rem;color:var(--muted); }
+.ficha-paso {
+  font-size:0.65rem;font-weight:700;letter-spacing:0.04em;
+  padding:2px 8px;border-radius:12px;white-space:nowrap;
+}
+.paso-done { background:var(--calipso-glow);color:var(--calipso);border:1px solid rgba(126,204,205,0.2); }
+.paso-wip  { background:var(--amber-glow);color:var(--amber);border:1px solid rgba(212,160,86,0.2); }
+.client-selector { display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.25rem; }
+.client-chip {
+  display:flex;align-items:center;gap:0.4rem;padding:0.35rem 0.85rem;
+  background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  font-size:0.78rem;color:var(--muted);text-decoration:none;transition:all 0.15s;
+}
+.client-chip:hover { border-color:var(--calipso);color:var(--calipso); }
+.client-chip .avatar { width:18px;height:18px;border-radius:50%;background:var(--calipso-glow);display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:700;color:var(--calipso); }
+</style>
+{% endblock %}
+{% block content %}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+  <div>
+    <a href="/practicantes/" onclick="spaGo(event,this)" style="color:var(--calipso);text-decoration:none;font-size:0.82rem">← Portal</a>
+    <div class="eyebrow" style="margin-top:0.75rem">Profesionales</div>
+    <h1 style="font-size:1.2rem;font-weight:700">Fichas Clínicas</h1>
+  </div>
+</div>
+
+{% if clients %}
+<div style="margin-bottom:1.25rem">
+  <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.6rem">Nueva ficha para</div>
+  <div class="client-selector">
+    {% for client in clients %}
+    <a href="/practicantes/fichas/nueva/{{ client.pk }}/" class="client-chip" title="Nueva ficha para {{ client.alias }}">
+      <span class="avatar">{{ client.alias|first|upper }}</span>
+      {{ client.alias }}
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% if fichas %}
+<div style="font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.75rem">Fichas guardadas</div>
+{% for ficha in fichas %}
+<a href="/terapeuta/{{ ficha.id }}/detalle/" onclick="spaGo(event,this)" class="ficha-card">
+  <div style="flex:1;min-width:0">
+    <div class="ficha-paciente">{{ ficha.nombre_paciente|default:"Sin nombre" }}</div>
+    <div class="ficha-meta">
+      {{ ficha.fecha_creacion|date:"d M Y" }}
+      {% if ficha.perfil_cliente %} · {{ ficha.perfil_cliente.alias }}{% endif %}
+      {% if ficha.motivo %} · {{ ficha.motivo|truncatechars:60 }}{% endif %}
+    </div>
+  </div>
+  <span class="ficha-paso {% if ficha.paso_actual >= 5 %}paso-done{% else %}paso-wip{% endif %}">
+    {% if ficha.paso_actual >= 5 %}Completada{% else %}Paso {{ ficha.paso_actual }} / 5{% endif %}
+  </span>
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;color:var(--dim)"><polyline points="9 18 15 12 9 6"/></svg>
+</a>
+{% endfor %}
+{% else %}
+<div class="panel" style="text-align:center;padding:3rem;color:var(--muted)">
+  <div style="font-size:1.5rem;opacity:0.15;margin-bottom:0.75rem">♥</div>
+  <p style="font-size:0.9rem;margin-bottom:1.5rem">Aún no hay fichas. Selecciona un cliente arriba para crear la primera.</p>
+  {% if not clients %}
+  <a href="/practicantes/cliente/nuevo/" onclick="spaGo(event,this)" class="btn btn-primary">Crear primer cliente</a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

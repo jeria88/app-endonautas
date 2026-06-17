@@ -55,8 +55,10 @@ def client_detail(request, pk):
     notes = client.session_notes.all()
     sessions = client.sessions.all()
     results = client.test_results.select_related('test').all()
+    fichas = client.consultas.select_related('usuario').order_by('-fecha_creacion')
     return render(request, 'practitioners/client_detail.html', {
-        'client': client, 'notes': notes, 'sessions': sessions, 'results': results,
+        'client': client, 'notes': notes, 'sessions': sessions,
+        'results': results, 'fichas': fichas,
     })
 
 
@@ -122,6 +124,37 @@ def availability(request):
                 )
         return redirect('practitioners_availability')
     return render(request, 'practitioners/availability.html', {'slots': slots})
+
+
+@login_required
+def fichas_list(request):
+    if not request.user.profile.is_practicante:
+        return redirect('dashboard')
+    from terapeuta.models import Consulta
+    fichas = (
+        Consulta.objects
+        .filter(usuario=request.user, modo='terapeuta')
+        .select_related('perfil_cliente')
+        .order_by('-fecha_creacion')
+    )
+    clients = TemporaryProfile.objects.filter(practitioner=request.user)
+    return render(request, 'practitioners/fichas_list.html', {'fichas': fichas, 'clients': clients})
+
+
+@login_required
+def ficha_create(request, profile_pk):
+    if not request.user.profile.is_practicante:
+        return redirect('dashboard')
+    from terapeuta.models import Consulta
+    client = get_object_or_404(TemporaryProfile, pk=profile_pk, practitioner=request.user)
+    consulta = Consulta.objects.create(
+        modo='terapeuta',
+        usuario=request.user,
+        perfil_cliente=client,
+        nombre_paciente=client.alias,
+        paso_actual=1,
+    )
+    return redirect('terapeuta:paso1', consulta_id=consulta.id)
 
 
 def claim_profile(request, code):

@@ -10,5 +10,7 @@ urlpatterns = [
     path('agenda/', views.agenda, name='practitioners_agenda'),
     path('agenda/nueva/', views.session_create, name='practitioners_session_create'),
     path('disponibilidad/', views.availability, name='practitioners_availability'),
+    path('fichas/', views.fichas_list, name='practitioners_fichas'),
+    path('fichas/nueva/<int:profile_pk>/', views.ficha_create, name='practitioners_ficha_create'),
     path('invitar/<uuid:code>/', views.claim_profile, name='practitioners_claim'),
 ]
