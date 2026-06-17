@@ -17,7 +17,7 @@ from .constants import (
     get_all_tecnicas,
     get_tecnica_to_framework_map,
 )
-from .forms import Paso0Form, Paso1Form, Paso4ConfirmacionForm, Paso5ResultadoForm
+from .forms import Paso0Form, Paso1Form, Paso5ResultadoForm
 from .models import (
     Consulta,
     DiagnosticoPropuesto,
@@ -307,9 +307,19 @@ def wizard_paso4(request: HttpRequest, consulta_id: int) -> HttpResponse:
             consulta.save(update_fields=["paso_actual"])
         return redirect("terapeuta:paso5", consulta_id=consulta.id)
 
-    diagnosticos = _seleccionar_diagnosticos_ia(consulta, tecnicas_codigos, respuestas)
-    form = Paso4ConfirmacionForm(diagnosticos=diagnosticos)
-    return render(request, "terapeuta/paso4.html", {"consulta": consulta, "diagnosticos": diagnosticos, "form": form, "respuestas": respuestas, "paso": 4, "total_pasos": 5})
+    # Solo generar si no existen aún — evita borrar confirmaciones al volver desde paso5
+    diagnosticos = list(
+        DiagnosticoPropuesto.objects.filter(consulta=consulta)
+        .select_related("marco_asociado", "tecnica_asociada")
+        .order_by("orden")
+    )
+    if not diagnosticos:
+        diagnosticos = _seleccionar_diagnosticos_ia(consulta, tecnicas_codigos, respuestas)
+
+    return render(request, "terapeuta/paso4.html", {
+        "consulta": consulta, "diagnosticos": diagnosticos,
+        "respuestas": respuestas, "paso": 4, "total_pasos": 5,
+    })
 
 
 def _seleccionar_diagnosticos_ia(consulta: Consulta, tecnicas_codigos: list, respuestas) -> list:
