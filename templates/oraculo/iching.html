@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+{% block title %}I Ching — Oráculo — Endonautas{% endblock %}
+{% block content %}
+<style data-page-style>
+.ic-back {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+  margin-bottom: 1.5rem;
+  transition: color 0.2s;
+}
+.ic-back:hover { color: var(--text); }
+
+.ic-layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+@media (max-width: 960px) { .ic-layout { grid-template-columns: 1fr; } }
+
+.ic-form {
+  background: var(--surface);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.75rem;
+  position: sticky;
+  top: 0;
+}
+.ic-eyebrow {
+  font-family: var(--font-display);
+  font-size: 0.62rem; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--violet); margin-bottom: 0.5rem;
+}
+.ic-title {
+  font-family: var(--font-editorial);
+  font-size: 1.65rem; font-weight: 400; line-height: 1.2; margin-bottom: 0.4rem;
+}
+.ic-sub { font-size: 0.82rem; color: var(--muted); line-height: 1.6; margin-bottom: 1.5rem; }
+.form-label {
+  display: block; font-family: var(--font-display); font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 0.06em; color: var(--muted); margin-bottom: 0.4rem;
+}
+.form-textarea {
+  width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.75rem; color: var(--text); font-family: var(--font-ui);
+  font-size: 0.9rem; resize: vertical; min-height: 80px; outline: none;
+  transition: border-color 0.2s; box-sizing: border-box; margin-bottom: 1.25rem;
+}
+.form-textarea:focus { border-color: var(--violet); }
+.form-textarea::placeholder { color: var(--dim); }
+
+/* Result area */
+.ic-result { min-height: 200px; }
+.result-empty {
+  background: var(--surface); border: 1px dashed var(--border);
+  border-radius: var(--radius); padding: 3rem 2rem; text-align: center; color: var(--muted);
+}
+.result-empty-icon { font-size: 2.5rem; opacity: 0.2; margin-bottom: 0.75rem; }
+.loader-block { display: none; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 3rem 2rem; text-align: center;
+  color: var(--muted); font-size: 0.85rem; }
+.loader-block.active { display: block; }
+.dots span {
+  display: inline-block; width: 5px; height: 5px; background: var(--violet);
+  border-radius: 50%; margin: 0 3px; opacity: 0.3; animation: blink 1.2s infinite ease-in-out;
+}
+.dots span:nth-child(2) { animation-delay: 0.2s; }
+.dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%,80%,100% { opacity:0.3; transform:scale(1); } 40% { opacity:1; transform:scale(1.35); } }
+
+/* Hexagrama */
+.hex-panel {
+  background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--violet);
+  border-radius: var(--radius); padding: 2rem; margin-bottom: 1rem;
+  opacity: 0; animation: fadeUp 0.4s ease forwards;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+/* Lines */
+.hex-lines {
+  display: flex; flex-direction: column-reverse; gap: 7px;
+  width: 140px; margin: 0 auto 1.75rem;
+}
+.hex-line {
+  display: flex; gap: 7px; align-items: center; height: 9px;
+  opacity: 0; transition: opacity 0.22s ease;
+}
+.hex-line.visible { opacity: 1; }
+.barra { height: 100%; border-radius: 2px; background: var(--text); }
+.barra-yang .barra { flex: 1; }
+.barra-yin .barra:first-child,
+.barra-yin .barra:last-child { flex: 0 0 43%; }
+.hex-line.movil .barra { background: var(--violet); box-shadow: 0 0 7px rgba(155,142,196,0.45); }
+.movil-marker { font-size: 0.6rem; color: var(--violet); margin-left: 3px; opacity:0; transition: opacity 0.3s; }
+.hex-line.visible .movil-marker { opacity: 1; }
+
+/* Nombre hexagrama */
+.hex-name {
+  text-align: center; opacity: 0; transition: opacity 0.4s;
+  margin-bottom: 1.5rem;
+}
+.hex-name.visible { opacity: 1; }
+.hex-chars { font-size: 2.2rem; color: var(--violet); font-family: serif; margin-bottom: 0.2rem; }
+.hex-nombre { font-family: var(--font-editorial); font-size: 1.6rem; font-weight: 400; margin-bottom: 0.2rem; }
+.hex-num {
+  font-family: var(--font-display); font-size: 0.65rem; font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+}
+
+/* Secciones */
+.hex-sec { opacity: 0; transition: opacity 0.4s; margin-bottom: 1.25rem; }
+.hex-sec.visible { opacity: 1; }
+.hex-sec-label {
+  font-family: var(--font-display); font-size: 0.62rem; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+  margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.5rem;
+}
+.hex-sec-label::after { content:''; flex:1; height:1px; background: var(--border); }
+.hex-sec-text { font-size: 0.88rem; line-height: 1.7; color: var(--text); font-style: italic; }
+
+/* Líneas móviles */
+.movil-list { display: flex; flex-direction: column; gap: 0.6rem; }
+.movil-item {
+  background: var(--violet-glow); border: 1px solid rgba(155,142,196,0.2);
+  border-radius: 8px; padding: 0.75rem 1rem;
+}
+.movil-item-num {
+  font-family: var(--font-display); font-size: 0.62rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--violet); margin-bottom: 0.25rem;
+}
+.movil-item-text { font-size: 0.85rem; color: var(--text); line-height: 1.6; }
+
+/* Secundario */
+.sec-block {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1rem 1.25rem;
+  display: flex; align-items: center; gap: 1.25rem;
+}
+.sec-arrow { font-size: 1.2rem; color: var(--muted); opacity: 0.4; flex-shrink: 0; }
+.sec-nombre { font-family: var(--font-editorial); font-size: 1.15rem; font-weight: 400; margin-bottom: 0.2rem; }
+.sec-dictamen { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+
+/* Interpretación */
+.ic-interp {
+  background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--violet);
+  border-radius: var(--radius); padding: 1.5rem;
+  opacity: 0; transition: opacity 0.5s;
+}
+.ic-interp.visible { opacity: 1; }
+.interp-label {
+  font-family: var(--font-display); font-size: 0.62rem; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--violet);
+  margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;
+}
+.interp-label::after { content:''; flex:1; height:1px; background: rgba(155,142,196,0.15); }
+.interp-text { font-size: 0.9rem; line-height: 1.8; color: var(--text); }
+.interp-text p { margin-bottom: 0.7em; }
+.interp-text strong { color: var(--violet); font-weight: 600; }
+.source-line {
+  margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border);
+  font-size: 0.68rem; color: var(--dim); display: flex; align-items: center; gap: 0.4rem;
+}
+.source-dot { width:5px; height:5px; border-radius:50%; background:var(--violet); opacity:0.5; }
+</style>
+
+<a class="ic-back" href="/oraculo/" onclick="spaGo(event,this)" data-preset="oraculo">← Oráculo</a>
+
+<div class="ic-layout">
+  <div class="ic-form">
+    <div class="ic-eyebrow">I Ching · El Libro de los Cambios</div>
+    <h1 class="ic-title">El principio<br>en movimiento</h1>
+    <p class="ic-sub">El I Ching no responde la pregunta — revela la naturaleza de la situación.</p>
+
+    <label class="form-label" for="pregunta">Tu pregunta o situación</label>
+    <textarea id="pregunta" class="form-textarea" rows="3" placeholder="¿Qué principio rige esta situación?"></textarea>
+
+    <button class="btn btn-primary" id="tirarBtn" style="width:100%;background:var(--violet);color:#fff">
+      Consultar el I Ching
+    </button>
+  </div>
+
+  <div class="ic-result" id="resultPanel">
+    <div class="result-empty" id="emptyState">
+      <div class="result-empty-icon">☯</div>
+      <p>El hexagrama espera tu pregunta.</p>
+    </div>
+
+    <div class="loader-block" id="loader">
+      <div class="dots"><span></span><span></span><span></span></div>
+      <p style="margin-top:0.75rem">El I Ching construye el hexagrama…</p>
+    </div>
+
+    <div id="resultContent" style="display:none">
+      <div class="hex-panel" id="hexPanel">
+        <div class="hex-lines" id="hexLines"></div>
+        <div class="hex-name" id="hexName">
+          <div class="hex-chars" id="hexChars"></div>
+          <div class="hex-nombre" id="hexNombre"></div>
+          <div class="hex-num" id="hexNum"></div>
+        </div>
+
+        <div class="hex-sec" id="dictSec">
+          <div class="hex-sec-label">Dictamen</div>
+          <div class="hex-sec-text" id="dictText"></div>
+        </div>
+
+        <div class="hex-sec" id="imgSec">
+          <div class="hex-sec-label">Imagen</div>
+          <div class="hex-sec-text" id="imgText"></div>
+        </div>
+      </div>
+
+      <div class="hex-sec" id="movilSec" style="display:none">
+        <div class="hex-sec-label" style="margin-bottom:0.75rem">Líneas en movimiento</div>
+        <div class="movil-list" id="movilList"></div>
+      </div>
+
+      <div class="hex-sec" id="secSec" style="display:none">
+        <div class="hex-sec-label" style="margin-bottom:0.75rem">Hexagrama de transformación</div>
+        <div class="sec-block">
+          <span class="sec-arrow">→</span>
+          <div>
+            <div class="sec-nombre" id="secNombre"></div>
+            <div class="sec-dictamen" id="secDictamen"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ic-interp" id="interpBlock">
+        <div class="interp-label">Lectura del principio</div>
+        <div class="interp-text" id="interpText"></div>
+        <div class="source-line">
+          <span class="source-dot"></span>
+          <span id="sourceLabel"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function md2html(txt) {
+  if (!txt) return '';
+  return txt.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/\n\n/g,'</p><p>').replace(/^/,'<p>').replace(/$/,'</p>');
+}
+function getCsrf() {
+  const m = document.cookie.match(/csrftoken=([^;]+)/); return m ? m[1] : '';
+}
+function separarNombre(n) {
+  const m = n.match(/^([一-鿿㐀-䶿]+)\s*[—\-]\s*(.+)$/);
+  return m ? {chars:m[1], es:m[2]} : {chars:'', es:n};
+}
+
+function dibujarLineas(lineas) {
+  const c = document.getElementById('hexLines');
+  c.innerHTML = '';
+  lineas.forEach((l, i) => {
+    const div = document.createElement('div');
+    const yang = l.tipo === 'yang';
+    div.className = 'hex-line' + (yang ? ' barra-yang' : ' barra-yin') + (l.movil ? ' movil' : '');
+    if (yang) div.innerHTML = '<div class="barra"></div>';
+    else       div.innerHTML = '<div class="barra"></div><div class="barra"></div>';
+    if (l.movil) {
+      const mk = document.createElement('span');
+      mk.className = 'movil-marker'; mk.textContent = yang ? '○' : '✕';
+      div.appendChild(mk);
+    }
+    c.appendChild(div);
+    setTimeout(() => div.classList.add('visible'), (5 - i) * 260);
+  });
+}
+
+document.getElementById('tirarBtn').addEventListener('click', async () => {
+  const pregunta = document.getElementById('pregunta').value.trim();
+  if (!pregunta) { document.getElementById('pregunta').focus(); return; }
+
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('resultContent').style.display = 'none';
+  document.getElementById('loader').classList.add('active');
+  document.getElementById('tirarBtn').disabled = true;
+
+  // Reset visibility
+  ['hexName','dictSec','imgSec','movilSec','secSec','interpBlock'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.classList.remove('visible'); el.style.display = ''; }
+  });
+
+  try {
+    const resp = await fetch('/oraculo/api/iching/', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':getCsrf()},
+      body: JSON.stringify({pregunta}),
+    });
+    const data = await resp.json();
+    if (!data.success) throw new Error(data.error||'Error');
+    mostrar(data);
+  } catch(e) {
+    document.getElementById('emptyState').style.display = '';
+    document.getElementById('emptyState').innerHTML = '<div class="result-empty-icon">☯</div><p style="color:var(--rose)">Error al consultar.</p>';
+  } finally {
+    document.getElementById('loader').classList.remove('active');
+    document.getElementById('tirarBtn').disabled = false;
+  }
+});
+
+function mostrar(data) {
+  const res = data.resultado;
+  const hp = res.hexagrama_primario;
+  const hs = res.hexagrama_secundario;
+  const interp = data.interpretacion;
+  const BASE = 1800;
+
+  document.getElementById('resultContent').style.display = '';
+  dibujarLineas(hp.lineas);
+
+  const p = separarNombre(hp.nombre);
+  document.getElementById('hexChars').textContent = p.chars;
+  document.getElementById('hexNombre').textContent = p.es;
+  document.getElementById('hexNum').textContent = `Hexagrama ${hp.numero}`;
+  setTimeout(() => document.getElementById('hexName').classList.add('visible'), BASE);
+
+  document.getElementById('dictText').textContent = hp.dictamen;
+  setTimeout(() => document.getElementById('dictSec').classList.add('visible'), BASE + 400);
+
+  document.getElementById('imgText').textContent = hp.imagen;
+  setTimeout(() => document.getElementById('imgSec').classList.add('visible'), BASE + 750);
+
+  const lm = res.lineas_moviles;
+  if (lm && Object.keys(lm).length) {
+    const list = document.getElementById('movilList');
+    list.innerHTML = '';
+    Object.entries(lm).forEach(([n, t]) => {
+      const d = document.createElement('div'); d.className = 'movil-item';
+      d.innerHTML = `<div class="movil-item-num">Línea ${n}</div><div class="movil-item-text">${t}</div>`;
+      list.appendChild(d);
+    });
+    const s = document.getElementById('movilSec');
+    s.style.display = '';
+    setTimeout(() => s.classList.add('visible'), BASE + 1100);
+  }
+
+  if (hs) {
+    const p2 = separarNombre(hs.nombre);
+    document.getElementById('secNombre').textContent = p2.es;
+    document.getElementById('secDictamen').textContent = hs.dictamen;
+    const s = document.getElementById('secSec');
+    s.style.display = '';
+    setTimeout(() => s.classList.add('visible'), BASE + 1500);
+  }
+
+  document.getElementById('interpText').innerHTML = md2html(interp.texto_completo||interp);
+  document.getElementById('sourceLabel').textContent =
+    interp.fuente === 'ai' ? 'Interpretación IA · OpenRouter' : 'Interpretación simbólica';
+  setTimeout(() => document.getElementById('interpBlock').classList.add('visible'), BASE + 2000);
+}
+</script>
+{% endblock %}

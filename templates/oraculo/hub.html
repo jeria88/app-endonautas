@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}Oráculo — Endonautas{% endblock %}
+{% block content %}
+<style data-page-style>
+.oracle-header {
+  margin-bottom: 2.5rem;
+}
+.oracle-eyebrow {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+.oracle-title {
+  font-family: var(--font-editorial);
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.5rem;
+}
+.oracle-title em { font-style: italic; color: var(--muted); }
+.oracle-sub {
+  font-size: 0.875rem;
+  color: var(--muted);
+  line-height: 1.65;
+  max-width: 520px;
+}
+
+/* Grid de oráculos */
+.oracle-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+@media (max-width: 900px) {
+  .oracle-grid { grid-template-columns: 1fr; }
+}
+
+.oracle-card {
+  background: var(--surface);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.25s, transform 0.25s;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.oracle-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--card-accent);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.oracle-card:hover {
+  border-color: var(--border-active);
+  transform: translateY(-2px);
+}
+.oracle-card:hover::before { opacity: 1; }
+
+.oracle-card.tarot  { --card-accent: var(--calipso); }
+.oracle-card.iching { --card-accent: var(--violet); }
+.oracle-card.fractal { --card-accent: var(--amber); }
+
+.oc-icon {
+  font-size: 1.75rem;
+  opacity: 0.5;
+  line-height: 1;
+}
+.oc-tag {
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.oracle-card.tarot  .oc-tag { color: var(--calipso); }
+.oracle-card.iching .oc-tag { color: var(--violet); }
+.oracle-card.fractal .oc-tag { color: var(--amber); }
+
+.oc-name {
+  font-family: var(--font-editorial);
+  font-size: 1.45rem;
+  font-weight: 400;
+  line-height: 1.15;
+}
+.oc-desc {
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.65;
+  flex: 1;
+}
+.oc-cta {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 600;
+  opacity: 0.4;
+  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.oracle-card.tarot:hover  .oc-cta { opacity: 1; color: var(--calipso); }
+.oracle-card.iching:hover .oc-cta { opacity: 1; color: var(--violet); }
+.oracle-card.fractal:hover .oc-cta { opacity: 1; color: var(--amber); }
+
+/* Nota */
+.oracle-note {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.6;
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+.oracle-note-icon { opacity: 0.4; flex-shrink: 0; margin-top: 2px; }
+</style>
+
+<div class="oracle-header">
+  <div class="oracle-eyebrow">Oráculo</div>
+  <h1 class="oracle-title">Perspectiva <em>simbólica</em></h1>
+  <p class="oracle-sub">
+    Para cuando la mente necesita un espejo externo. No adivina — revela el patrón que la pregunta ya contiene.
+  </p>
+</div>
+
+<div class="oracle-grid">
+  <a class="oracle-card tarot" href="/oraculo/tarot/" onclick="spaGo(event,this)" data-preset="oraculo">
+    <span class="oc-icon">⬡</span>
+    <span class="oc-tag">Tarot Terapéutico</span>
+    <h2 class="oc-name">Arquetipos<br>en tirada</h2>
+    <p class="oc-desc">
+      78 cartas junguianas. 5 tipos de tirada — desde un arcano hasta el Viaje del Héroe completo.
+      El patrón que conecta las cartas importa más que cada carta individual.
+    </p>
+    <span class="oc-cta">Consultar →</span>
+  </a>
+
+  <a class="oracle-card iching" href="/oraculo/iching/" onclick="spaGo(event,this)" data-preset="oraculo">
+    <span class="oc-icon">☯</span>
+    <span class="oc-tag">I Ching</span>
+    <h2 class="oc-name">Oráculo<br>taoísta</h2>
+    <p class="oc-desc">
+      64 hexagramas. El Libro de los Cambios revela el principio en movimiento detrás de la situación —
+      no el futuro, sino la naturaleza de lo que está ocurriendo.
+    </p>
+    <span class="oc-cta">Consultar →</span>
+  </a>
+
+  <a class="oracle-card fractal" href="/oraculo/fractal/" onclick="spaGo(event,this)" data-preset="oraculo">
+    <span class="oc-icon">◈</span>
+    <span class="oc-tag">Oráculo Fractal</span>
+    <h2 class="oc-name">33 cartas<br>kabbalísticas</h2>
+    <p class="oc-desc">
+      22 arcanos con verbos imperativos + 11 sefirot. Sistema de Alanis Mika Yuda.
+      La pregunta convoca el arquetipo — no el azar.
+    </p>
+    <span class="oc-cta">Consultar →</span>
+  </a>
+</div>
+
+<div class="oracle-note">
+  <span class="oracle-note-icon">◎</span>
+  <span>
+    El Oráculo es independiente del proceso terapéutico. Úsalo cuando quieres una perspectiva simbólica
+    sin pasar por el análisis psicométrico — o simplemente para hacerle una pregunta al campo.
+  </span>
+</div>
+{% endblock %}

@@ -333,6 +333,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           Nacimiento
         </a>
+        <a class="nav-link" href="/oraculo/" data-preset="oraculo" onclick="spaGo(event,this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.25"/></svg>
+          Oráculo
+        </a>
       </div>
 
       {% if user.profile.is_practicante %}
@@ -411,6 +415,7 @@ const PRESETS = {
   suenos:       { bhr:4.0, density:0.20, sizeMult:2.00, bloom:7.0, speedInner:1.50, speedOuter:0.03, camZ:160, camAng:22 },
   nacimiento:   { bhr:4.0, density:0.20, sizeMult:1.60, bloom:7.5, speedInner:1.20, speedOuter:0.03, camZ:220, camAng:4  },
   practicantes: { bhr:4.0, density:0.50, sizeMult:1.65, bloom:5.8, speedInner:2.30, speedOuter:0.05, camZ:125, camAng:35 },
+  oraculo:      { bhr:4.0, density:0.16, sizeMult:2.80, bloom:11.0, speedInner:0.70, speedOuter:0.02, camZ:195, camAng:6  },
   general:      { bhr:4.0, density:0.32, sizeMult:1.80, bloom:6.0, speedInner:3.05, speedOuter:0.05, camZ:149, camAng:16 },
 };
 
@@ -428,6 +433,7 @@ function presetForPath(path) {
   if (/\/mensajes/.test(path))                                 return 'mensajes';
   if (/\/configuracion/.test(path))                            return 'configuracion';
   if (/\/practicantes/.test(path))                             return 'practicantes';
+  if (/\/oraculo/.test(path))                                  return 'oraculo';
   return 'general';
 }
 

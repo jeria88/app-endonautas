@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'birth',
     'community',
     'practitioners',
+    'oraculo',
 ]
 
 MIDDLEWARE = [
