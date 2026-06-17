@@ -553,7 +553,7 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
       "patron_sindrome": "nombre del síndrome o patrón energético (ej: Estancamiento de Qi de Hígado, Vata en exceso)",
       "elemento_afectado": "solo para MTC: Madera|Fuego|Tierra|Metal|Agua — omitir para otros marcos",
       "dosha_afectado": "solo para Ayurveda: Vata|Pitta|Kapha — omitir para otros marcos",
-      "chakra_relacionado": "solo para Ayurveda: nombre del chakra principal afectado — omitir para otros marcos",
+      "chakra_relacionado": "solo para Ayurveda — OBLIGATORIO: chakra principal en español (Muladhara|Svadhisthana|Manipura|Anahata|Vishuddha|Ajna|Sahasrara) — omitir para MTC y otros marcos",
       "pasos": ["paso detallado 1", "paso detallado 2"],
       "duracion": "tiempo total estimado",
       "frecuencia": "frecuencia específica",

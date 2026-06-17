@@ -76,7 +76,7 @@
   </div>
   {% endif %}
 
-  {{ report.raw_data|json_script:"chart-raw" }}
+  <script id="chart-raw" type="application/json">{"planets":[{% for planet in report.raw_data.planets %}{"label":"{{ planet.label|escapejs }}","sign":"{{ planet.sign|escapejs }}","degree":{{ planet.degree|default:0 }}}{% if not forloop.last %},{% endif %}{% endfor %}],"ascendant":{"sign":"{{ report.raw_data.ascendant.sign|escapejs }}","degree":{{ report.raw_data.ascendant.degree|default:0 }}}}</script>
 
   {% elif report.status == 'error' %}
   <div class="alert alert-error">{{ report.error_message|default:"Error al calcular la carta." }}</div>

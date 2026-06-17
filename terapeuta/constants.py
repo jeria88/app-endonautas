@@ -330,7 +330,7 @@ QUESTIONS_BANK = [
         "id": "Q05",
         "pregunta": "¿Qué alimentos te sientan mal y cómo afectan tu energía?",
         "tecnicas_asociadas": ["AYU-DIE", "BIO-NUT"],
-        "tipo_respuesta": "checkboxes_text",
+        "tipo_respuesta": "checkboxes_comment",
         "opciones": ["Lácteos", "Gluten / trigo", "Azúcar y dulces", "Grasas o frituras", "Carne roja", "Picante", "Alcohol", "Cafeína", "Ninguno en particular"],
     },
     {

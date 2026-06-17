@@ -68,6 +68,23 @@
       <input type="text" name="respuesta_otro_{{ pregunta.id }}" class="form-input" style="margin-top:0.5rem" placeholder="Otros o detalla…" oninput="syncCheckboxText('{{ pregunta.id }}')">
       <input type="hidden" name="respuesta_{{ pregunta.id }}" id="respuesta_hidden_{{ pregunta.id }}">
 
+    {% elif pregunta.tipo_respuesta == "checkboxes_comment" %}
+      {% for opcion in pregunta.opciones %}
+      <div style="margin-bottom:0.35rem">
+        <label class="checkbox-option" style="margin-bottom:0">
+          <input type="checkbox" name="respuesta_cb_{{ pregunta.id }}" value="{{ opcion }}"
+                 data-idx="{{ forloop.counter0 }}" onchange="toggleCmt(this)">
+          {{ opcion }}
+        </label>
+        <div id="cmt_{{ pregunta.id }}_{{ forloop.counter0 }}" style="display:none;padding-left:1.5rem;margin-top:0.25rem">
+          <input type="text" name="respuesta_cmt_{{ pregunta.id }}_{{ forloop.counter0 }}" class="form-input"
+                 style="font-size:0.8rem;padding:0.3rem 0.65rem" placeholder="¿Cómo te afecta?"
+                 oninput="syncCmt('{{ pregunta.id }}')">
+        </div>
+      </div>
+      {% endfor %}
+      <input type="hidden" name="respuesta_{{ pregunta.id }}" id="respuesta_hidden_{{ pregunta.id }}">
+
     {% else %}
       <textarea name="respuesta_{{ pregunta.id }}" class="form-input" rows="2" placeholder="Tu respuesta…" oninput="markAnswered('{{ pregunta.id }}')"></textarea>
     {% endif %}
@@ -101,6 +118,28 @@ function syncCheckboxText(id) {
   const combined = [...checked, ...(textVal ? [textVal] : [])].join(', ');
   const hidden = document.getElementById('respuesta_hidden_' + id);
   if (hidden) { hidden.value = combined; markAnswered(id); }
+}
+function toggleCmt(cb) {
+  const qid = cb.name.replace('respuesta_cb_', '');
+  const idx = cb.dataset.idx;
+  const cmt = document.getElementById('cmt_' + qid + '_' + idx);
+  if (cmt) cmt.style.display = cb.checked ? '' : 'none';
+  if (!cb.checked) {
+    const inp = cmt?.querySelector('input[type="text"]');
+    if (inp) inp.value = '';
+  }
+  syncCmt(qid);
+}
+function syncCmt(qid) {
+  const parts = [];
+  document.querySelectorAll(`input[name="respuesta_cb_${qid}"]:checked`).forEach(cb => {
+    const idx = cb.dataset.idx;
+    const inp = document.querySelector(`input[name="respuesta_cmt_${qid}_${idx}"]`);
+    const c = inp?.value.trim() || '';
+    parts.push(c ? `${cb.value} (${c})` : cb.value);
+  });
+  const hidden = document.getElementById('respuesta_hidden_' + qid);
+  if (hidden) { hidden.value = parts.join(', '); markAnswered(qid); }
 }
 </script>
 {% endblock %}

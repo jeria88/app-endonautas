@@ -139,8 +139,9 @@ function renderHexLines(lineas, containerId, small) {
   var s = '<svg viewBox="0 0 ' + W + ' ' + totalH + '" width="' + W + '" height="' + totalH + '" xmlns="http://www.w3.org/2000/svg">';
   lineas.slice().reverse().forEach(function(linea, i) {
     var y = i * (lh + gap);
-    var esMovil = linea === 6 || linea === 9;
-    var esYang  = linea === 7 || linea === 9;
+    var val = (linea !== null && typeof linea === 'object') ? linea.valor : linea;
+    var esMovil = val === 6 || val === 9;
+    var esYang  = val === 7 || val === 9;
     var color = esMovil ? '#ffbf00' : 'rgba(155,142,196,0.85)';
     var rx = Math.round(lh / 3);
     if (esYang) {

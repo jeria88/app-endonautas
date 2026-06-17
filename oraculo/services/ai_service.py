@@ -127,7 +127,7 @@ Imagen: {hp.get('imagen', '')}{sec_txt}{lin_txt}
 
 Interpreta el principio de este hexagrama en relación directa con la pregunta."""
 
-    return _call_openrouter(_SYSTEM_ICHING, prompt, max_tokens=380)
+    return _call_openrouter(_SYSTEM_ICHING, prompt, max_tokens=600)
 
 
 # ─── Oráculo Fractal ──────────────────────────────────────────────────────────

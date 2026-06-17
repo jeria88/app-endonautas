@@ -180,14 +180,24 @@
     return s+'</svg>';
   }
 
-  function chakraSvg(chakra) {
+  function chakraIndices(chakra, dosha) {
     var idx=CHAKRA_MAP[(chakra||'').toLowerCase().trim()];
-    if(idx===undefined)idx=-1;
+    if(idx!==undefined)return[idx];
+    var d=(dosha||'').toLowerCase();
+    var ids=[];
+    if(d.indexOf('vata')>=0){ids.push(0,1);}
+    if(d.indexOf('pitta')>=0){ids.push(2,3);}
+    if(d.indexOf('kapha')>=0){ids.push(4,5);}
+    return ids.length?ids:[-1];
+  }
+  function chakraSvg(chakra, dosha) {
+    var activos=chakraIndices(chakra,dosha);
+    var idx=activos[0];
     var sp=240/7;
     var s='<svg viewBox="0 0 240 56" width="240" height="56" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0.5rem auto">';
     s+='<line x1="'+(sp*0.5).toFixed(1)+'" y1="24" x2="'+(sp*6.5).toFixed(1)+'" y2="24" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>';
     CHAKRAS.forEach(function(c,i){
-      var cx=sp*(i+0.5),active=i===idx,r=active?13:9,op=active?1:0.35;
+      var cx=sp*(i+0.5),active=activos.indexOf(i)>=0,r=active?13:9,op=active?1:0.35;
       if(active){
         s+='<circle cx="'+cx.toFixed(1)+'" cy="24" r="19" fill="none" stroke="'+c.c+'" stroke-width="1" opacity="0.2">'
           +'<animate attributeName="r" values="15;21;15" dur="1.8s" repeatCount="indefinite"/>'
@@ -207,7 +217,7 @@
       block.innerHTML=mtcSvg(card.dataset.elemento||'');
       block.style.display='block';
     } else if(marco.indexOf('Ayurveda')>=0){
-      block.innerHTML=chakraSvg(card.dataset.chakra||'');
+      block.innerHTML=chakraSvg(card.dataset.chakra||'',card.dataset.dosha||'');
       block.style.display='block';
     }
   });
