@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ entry.title|default:"Nauminto" }} — Endonautas{% endblock %}
+{% block content %}
+
+<a href="/nauminto/" onclick="spaGo(event,this)" style="color:var(--violet);text-decoration:none;font-size:0.82rem;display:inline-block;margin-bottom:1.25rem">← Nauminto</a>
+
+<div class="eyebrow" style="color:var(--violet)">{{ entry.get_nauminto_type_display|default:"Sin clasificar" }}</div>
+<h1 style="font-size:1.2rem;font-weight:700;margin-bottom:0.25rem">{{ entry.title|default:"Registro sin título" }}</h1>
+<p style="font-size:0.75rem;color:var(--dim);margin-bottom:1.5rem">{{ entry.dream_date|date:"d M Y" }}</p>
+
+<div class="panel" style="padding:1.25rem;margin-bottom:1rem">
+  <p style="font-size:0.9rem;line-height:1.7;color:var(--text);white-space:pre-wrap">{{ entry.content }}</p>
+</div>
+
+{% if entry.archetype_tags %}
+<div class="panel" style="padding:1rem 1.25rem;margin-bottom:1rem">
+  <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.5rem">Arquetipos presentes</div>
+  <div style="display:flex;gap:0.35rem;flex-wrap:wrap">
+    {% for arch in entry.archetype_tags %}
+    <span style="font-size:0.75rem;padding:0.25rem 0.7rem;background:var(--violet-glow);border:1px solid rgba(155,142,196,0.2);border-radius:20px;color:var(--violet)">{{ arch }}</span>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% if entry.tags %}
+<div style="margin-bottom:1.25rem">
+  <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.4rem">Etiquetas</div>
+  {% for tag in entry.tags.split %}
+  <span style="font-size:0.7rem;padding:1px 7px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:3px;color:var(--dim);margin-right:0.25rem">{{ tag }}</span>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div style="background:rgba(155,142,196,0.06);border:1px solid rgba(155,142,196,0.2);border-radius:14px;padding:1rem 1.25rem;margin-bottom:1.25rem">
+  <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--violet);margin-bottom:0.4rem">Principio Nauminto</div>
+  <p style="font-size:0.82rem;color:var(--muted);line-height:1.6;margin:0">Este registro no es una predicción ni un diagnóstico. Es una señal del origen fractal — su significado emerge de la exploración, no del análisis. Tú tienes el poder de interpretarlo.</p>
+</div>
+
+<a href="/comunidad/compartir/?shared_from_type=dream&shared_from_id={{ entry.pk }}" onclick="spaGo(event,this)" style="font-size:0.8rem;color:var(--calipso);text-decoration:none">Compartir en comunidad →</a>
+
+{% endblock %}

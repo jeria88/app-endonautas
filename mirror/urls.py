@@ -11,4 +11,12 @@ urlpatterns = [
     path('chat/<int:pk>/renombrar/', views.chat_session_rename, name='espejo_rename'),
     path('chat/<int:pk>/eliminar/', views.chat_session_delete, name='espejo_delete'),
     path('chat/<int:pk>/exportar/', views.chat_session_export, name='espejo_export'),
+    # Bitácora
+    path('bitacora/', views.bitacora_list, name='bitacora_list'),
+    path('bitacora/nueva/', views.bitacora_create, name='bitacora_create'),
+    path('bitacora/<int:pk>/eliminar/', views.bitacora_delete, name='bitacora_delete'),
+    # Nauminto (sueños expandido)
+    path('nauminto/', views.nauminto_list, name='nauminto_list'),
+    path('nauminto/nuevo/', views.nauminto_create, name='nauminto_create'),
+    path('nauminto/<int:pk>/', views.nauminto_detail, name='nauminto_detail'),
 ]

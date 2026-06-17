@@ -1,7 +1,25 @@
+import json
+
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import Test, TestResult
+
+DIMENSION_COLORS = {
+    'identidad': '#7ECCCD',
+    'emociones': '#c97b84',
+    'cuerpo': '#7ec49b',
+    'vinculos': '#d4a056',
+    'sombra': '#9b8ec4',
+    'espiritualidad': '#7ECCCD',
+    'suenos': '#9b8ec4',
+    'proposito': '#d4a056',
+    'comunidad': '#7ec49b',
+    'abundancia': '#d4a056',
+    'creatividad': '#c97b84',
+    'mente': '#7ECCCD',
+}
 
 
 def test_list(request):
@@ -9,7 +27,16 @@ def test_list(request):
     by_dimension = {}
     for t in tests:
         by_dimension.setdefault(t.get_dimension_display(), []).append(t)
-    return render(request, 'psychometrics/test_list.html', {'by_dimension': by_dimension})
+
+    completed_slugs = set()
+    if request.user.is_authenticated:
+        completed_slugs = set(
+            TestResult.objects.filter(user=request.user)
+            .values_list('test__slug', flat=True)
+        )
+    return render(request, 'psychometrics/test_list.html', {
+        'by_dimension': by_dimension, 'completed_slugs': completed_slugs
+    })
 
 
 def test_detail(request, slug):
@@ -39,10 +66,18 @@ def test_take(request, slug):
         evaluation = evaluate_test(test.name, dim_scores)
 
         result = TestResult.objects.create(
+            user=request.user, test=test,
+            raw_scores=raw_scores, evaluation=evaluation,
+        )
+        from tokens.service import credit_mission
+        credit_mission(request.user, 'test_completed')
+
+        from mirror.models import BitacoraEntry
+        BitacoraEntry.objects.create(
             user=request.user,
-            test=test,
-            raw_scores=raw_scores,
-            evaluation=evaluation,
+            entry_type='auto_test',
+            content=f'Completé el test: {test.name}',
+            emoji='◎',
         )
         return redirect('test_result', pk=result.pk)
 
@@ -76,29 +111,176 @@ def test_result(request, pk):
     return render(request, 'psychometrics/test_result.html', {'result': result})
 
 
-def _generate_insight(result):
-    import requests
-    from django.conf import settings
-    if not settings.DEEPSEEK_API_KEY:
-        return ''
-    payload = {
-        'model': settings.DEEPSEEK_MODEL,
-        'messages': [{'role': 'user', 'content': f'Dame un insight breve sobre este resultado: {result.evaluation}'}],
-        'max_tokens': 300,
-    }
-    try:
-        r = requests.post(
-            'https://api.deepseek.com/chat/completions',
-            json=payload,
-            headers={'Authorization': f'Bearer {settings.DEEPSEEK_API_KEY}'},
-            timeout=20,
+@login_required
+def test_result_pdf(request, pk):
+    result = get_object_or_404(TestResult, pk=pk, user=request.user)
+    return _generate_pdf(result)
+
+
+def _generate_pdf(result):
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import cm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+
+    buffer = HttpResponse(content_type='application/pdf')
+    buffer['Content-Disposition'] = f'attachment; filename="resultado-{result.pk}.pdf"'
+
+    doc = SimpleDocTemplate(buffer, pagesize=A4,
+                            topMargin=2*cm, bottomMargin=2*cm,
+                            leftMargin=2.5*cm, rightMargin=2.5*cm)
+    styles = getSampleStyleSheet()
+    story = []
+
+    title_style = ParagraphStyle('Title', parent=styles['Title'], fontSize=20, spaceAfter=10)
+    story.append(Paragraph(f'Resultado: {result.test.name}', title_style))
+    story.append(Paragraph(f'Fecha: {result.completed_at.strftime("%d/%m/%Y")}', styles['Normal']))
+    story.append(Spacer(1, 0.5*cm))
+
+    story.append(Paragraph('Puntuaciones por dimensión', styles['Heading2']))
+    story.append(Spacer(1, 0.3*cm))
+
+    table_data = [['Dimensión', 'Puntuación']]
+    for key, val in result.evaluation.items():
+        if isinstance(val, (int, float)):
+            table_data.append([key.replace('_', ' ').title(), str(round(val, 1))])
+        elif isinstance(val, dict):
+            for sub_k, sub_v in val.items():
+                if isinstance(sub_v, (int, float)):
+                    table_data.append([f'  {sub_k}', str(round(sub_v, 1))])
+
+    table = Table(table_data, colWidths=[10*cm, 5*cm])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#7ECCCD')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F5F5F5')]),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#DDDDDD')),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    story.append(table)
+
+    if result.ai_insight:
+        story.append(Spacer(1, 0.5*cm))
+        story.append(Paragraph('Insight', styles['Heading2']))
+        story.append(Paragraph(result.ai_insight, styles['Normal']))
+
+    story.append(Spacer(1, 1*cm))
+    story.append(Paragraph('Generado por Endonautas — endonautas.cl', styles['Normal']))
+
+    doc.build(story)
+    return buffer
+
+
+@login_required
+def test_result_share(request, pk):
+    result = get_object_or_404(TestResult, pk=pk, user=request.user)
+    if request.method == 'POST':
+        from community.models import Post
+        caption = request.POST.get('caption', '')
+        eval_summary = []
+        for k, v in result.evaluation.items():
+            if isinstance(v, (int, float)):
+                eval_summary.append(f'{k}: {round(v, 1)}')
+        Post.objects.create(
+            author=request.user,
+            content=f'{caption}\n\nCompleté el test: {result.test.name}'.strip(),
+            shared_from_type='test_result',
+            shared_from_id=result.pk,
+            shared_data={
+                'test_name': result.test.name,
+                'dimension': result.test.dimension,
+                'summary': ', '.join(eval_summary[:3]),
+            },
         )
-        return r.json()['choices'][0]['message']['content']
-    except Exception:
-        return ''
+        return redirect('community_feed')
+    return render(request, 'psychometrics/share_result.html', {'result': result})
 
 
 @login_required
 def my_results(request):
-    results = TestResult.objects.filter(user=request.user).select_related('test')
+    results = TestResult.objects.filter(user=request.user).select_related('test').order_by('-completed_at')
     return render(request, 'psychometrics/my_results.html', {'results': results})
+
+
+@login_required
+def mapa_interior(request):
+    results = TestResult.objects.filter(user=request.user).select_related('test').order_by('-completed_at')
+    # Build radar data: latest result per dimension
+    dimension_data = {}
+    for r in results:
+        dim = r.test.dimension
+        if dim not in dimension_data:
+            total = 0
+            count = 0
+            for k, v in r.evaluation.items():
+                if isinstance(v, (int, float)):
+                    total += v
+                    count += 1
+            normalized = round((total / count) * 10) if count else 0
+            dimension_data[dim] = {
+                'label': r.test.get_dimension_display(),
+                'value': min(100, normalized),
+                'color': DIMENSION_COLORS.get(dim, '#7ECCCD'),
+                'test_name': r.test.name,
+                'date': r.completed_at.strftime('%d %b %Y'),
+                'result_pk': r.pk,
+            }
+
+    radar_json = json.dumps(list(dimension_data.values()))
+    return render(request, 'psychometrics/mapa_interior.html', {
+        'dimension_data': dimension_data,
+        'radar_json': radar_json,
+        'results': results[:10],
+    })
+
+
+@login_required
+def reponer_resultados(request):
+    if request.method == 'POST':
+        test_ids = request.POST.getlist('tests')
+        deleted = TestResult.objects.filter(user=request.user, test__id__in=test_ids).delete()
+        count = deleted[0]
+        from django.contrib import messages
+        messages.success(request, f'{count} resultado(s) eliminados. Puedes volver a tomar los tests.')
+        return redirect('my_results')
+    tests_con_resultado = Test.objects.filter(
+        testresult__user=request.user, active=True
+    ).distinct()
+    return render(request, 'psychometrics/reponer_resultados.html', {'tests': tests_con_resultado})
+
+
+def _generate_insight(result):
+    import requests
+    from django.conf import settings
+    api_key = getattr(settings, 'DEEPSEEK_API_KEY', '') or getattr(settings, 'OPENROUTER_API_KEY', '')
+    if not api_key:
+        return ''
+    base_url = 'https://api.deepseek.com/chat/completions'
+    model = getattr(settings, 'DEEPSEEK_MODEL', 'deepseek-chat')
+    if getattr(settings, 'OPENROUTER_API_KEY', '') and not getattr(settings, 'DEEPSEEK_API_KEY', ''):
+        base_url = 'https://openrouter.ai/api/v1/chat/completions'
+        model = 'meta-llama/llama-3.1-8b-instruct:free'
+        api_key = settings.OPENROUTER_API_KEY
+    payload = {
+        'model': model,
+        'messages': [{
+            'role': 'user',
+            'content': (
+                f'Dame un insight breve (3-4 oraciones) sobre este resultado de test psicométrico. '
+                f'Test: {result.test.name}. Dimensión: {result.test.dimension}. '
+                f'Evaluación: {json.dumps(result.evaluation, ensure_ascii=False)}. '
+                f'Recuerda: los resultados NO son deterministas, son puntos de exploración.'
+            )
+        }],
+        'max_tokens': 300,
+    }
+    try:
+        r = requests.post(base_url, json=payload,
+                          headers={'Authorization': f'Bearer {api_key}'}, timeout=20)
+        return r.json()['choices'][0]['message']['content']
+    except Exception:
+        return ''

@@ -195,8 +195,9 @@
 
   <div style="display:flex;gap:0.75rem;flex-wrap:wrap;padding-bottom:3rem">
     <a href="/tests/{{ result.test.slug }}/responder/" onclick="spaGo(event,this)" class="btn btn-secondary">Repetir test</a>
+    <a href="/tests/resultado/{{ result.pk }}/pdf/" class="btn btn-ghost">↓ Descargar PDF</a>
+    <a href="/tests/resultado/{{ result.pk }}/compartir/" onclick="spaGo(event,this)" class="btn btn-ghost">Compartir →</a>
     <a href="/tests/" onclick="spaGo(event,this)" class="btn btn-ghost">Volver a tests</a>
-    <a href="/tests/mis-resultados/" onclick="spaGo(event,this)" class="btn btn-ghost">Mis resultados</a>
   </div>
 </div>
 {% endwith %}

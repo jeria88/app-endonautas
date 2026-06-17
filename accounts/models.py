@@ -44,10 +44,18 @@ class UserProfile(models.Model):
         ('archipielago', 'Archipiélago'),
         ('arbol', 'Árbol'),
     ]
+    PALETTE_CHOICES = [
+        ('cosmos', 'Cosmos (por defecto)'),
+        ('aurora', 'Aurora Boreal'),
+        ('terra', 'Tierra Viva'),
+        ('obsidian', 'Obsidiana'),
+        ('sakura', 'Sakura'),
+    ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     plan = models.CharField(max_length=20, choices=PLAN_CHOICES, default='free')
     map_aesthetic = models.CharField(max_length=20, choices=AESTHETIC_CHOICES, default='cosmos')
+    color_palette = models.CharField(max_length=20, choices=PALETTE_CHOICES, default='cosmos')
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     bio = models.TextField(blank=True)
 

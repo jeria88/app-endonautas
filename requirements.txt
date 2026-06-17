@@ -11,3 +11,7 @@ dj-database-url==3.1.2
 psycopg2-binary==2.9.11
 pytz>=2024.1
 django-post-office==3.9.1
+django-allauth>=65.0.0
+reportlab>=4.0.0
+PyJWT>=2.0.0
+cryptography>=40.0.0

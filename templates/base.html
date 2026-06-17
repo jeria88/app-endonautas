@@ -56,6 +56,24 @@
       --radius: 16px;
     }
 
+    /* Paletas de color (override de acentos según preferencia del usuario) */
+    [data-palette="aurora"] {
+      --calipso: #6B73FF; --calipso-glow: rgba(107,115,255,0.15);
+      --accent: var(--calipso);
+    }
+    [data-palette="terra"] {
+      --calipso: #C8965A; --calipso-glow: rgba(200,150,90,0.15);
+      --accent: var(--calipso);
+    }
+    [data-palette="obsidian"] {
+      --calipso: #A78BFA; --calipso-glow: rgba(167,139,250,0.15);
+      --accent: var(--calipso);
+    }
+    [data-palette="sakura"] {
+      --calipso: #F06292; --calipso-glow: rgba(240,98,146,0.15);
+      --accent: var(--calipso);
+    }
+
     html, body {
       height: 100%; width: 100vw;
       background: var(--bg); color: var(--text);
@@ -268,7 +286,7 @@
   </style>
   {% block extra_head %}{% endblock %}
 </head>
-<body data-aesthetic="{{ map_aesthetic|default:'cosmos' }}"{% if user.is_authenticated %} class="app-mode"{% endif %}>
+<body data-aesthetic="{{ map_aesthetic|default:'cosmos' }}" data-palette="{{ user.profile.color_palette|default:'cosmos' }}"{% if user.is_authenticated %} class="app-mode"{% endif %}>
 
 <div id="cosmos-bg-container"><div id="cosmos-overlay"></div></div>
 
@@ -328,6 +346,14 @@
         <a class="nav-link" href="/suenos/" data-preset="suenos" onclick="spaGo(event,this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           Diario de Sueños
+        </a>
+        <a class="nav-link" href="/nauminto/" data-preset="suenos" onclick="spaGo(event,this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>
+          Nauminto
+        </a>
+        <a class="nav-link" href="/bitacora/" data-preset="espejo" onclick="spaGo(event,this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Bitácora
         </a>
         <a class="nav-link" href="/nacimiento/" data-preset="nacimiento" onclick="spaGo(event,this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -673,6 +699,51 @@ function spaGo(e, el) {
 }
 window.spaGo = spaGo;
 window.addEventListener('popstate', () => { window.location.reload(); });
+</script>
+
+<!-- Onboarding por página -->
+<div id="page-onboarding" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:900;max-width:300px;background:rgba(8,6,12,0.95);border:1px solid rgba(126,204,205,0.25);border-radius:16px;padding:1.1rem 1.25rem;backdrop-filter:blur(20px);box-shadow:0 8px 40px rgba(0,0,0,0.5)">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem;margin-bottom:0.5rem">
+    <span style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--calipso)">Guía</span>
+    <button onclick="dismissOnboarding()" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:0.85rem;padding:0;line-height:1">✕</button>
+  </div>
+  <p id="page-onboarding-msg" style="font-size:0.83rem;color:var(--muted);line-height:1.55;margin:0"></p>
+</div>
+<script>
+const PAGE_GUIDES = {
+  '/espejo/': 'Tú tienes el poder, no la IA. El Espejo te hace preguntas — tú construyes las respuestas.',
+  '/tests/': 'Los resultados no son etiquetas. Son puntos de partida para la exploración.',
+  '/tests/mapa-interior/': 'Tu mapa es tuyo. Cada dimensión que ves aquí es una puerta, no un diagnóstico.',
+  '/regulacion/': 'Rompe el patrón en el presente. La regulación no es control — es presencia.',
+  '/suenos/': 'El inconsciente habla en imágenes. Registra sin interpretar primero.',
+  '/nauminto/': 'Nauminto es tu canal con el origen fractal. No predice — señala.',
+  '/terapeuta/': 'La consulta comienza contigo. El motivo de consulta es lo más importante.',
+  '/oraculo/': 'El Oráculo no adivina — te devuelve preguntas que ya traías.',
+  '/bitacora/': 'Tu bitácora es el mapa de tu proceso. Todo lo que haces queda registrado aquí.',
+  '/nacimiento/': 'Tu carta natal no determina quién eres — muestra el campo desde el que partes.',
+};
+function showPageOnboarding() {
+  const path = window.location.pathname;
+  const key = Object.keys(PAGE_GUIDES).find(k => path.startsWith(k));
+  if (!key) return;
+  const dismissed = JSON.parse(localStorage.getItem('endo_ob_dismissed') || '[]');
+  if (dismissed.includes(key)) return;
+  const el = document.getElementById('page-onboarding');
+  const msg = document.getElementById('page-onboarding-msg');
+  if (el && msg) { msg.textContent = PAGE_GUIDES[key]; el.style.display = 'block'; el.dataset.key = key; }
+}
+function dismissOnboarding() {
+  const el = document.getElementById('page-onboarding');
+  if (!el) return;
+  const key = el.dataset.key;
+  if (key) {
+    const dismissed = JSON.parse(localStorage.getItem('endo_ob_dismissed') || '[]');
+    if (!dismissed.includes(key)) dismissed.push(key);
+    localStorage.setItem('endo_ob_dismissed', JSON.stringify(dismissed));
+  }
+  el.style.display = 'none';
+}
+setTimeout(showPageOnboarding, 600);
 </script>
 
 {% block extra_js %}{% endblock %}

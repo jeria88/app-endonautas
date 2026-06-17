@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Nuevo Nauminto — Endonautas{% endblock %}
+{% block content %}
+<style data-page-style>
+.arch-btn { display:inline-flex;align-items:center;gap:0.3rem;padding:0.35rem 0.75rem;border:1.5px solid var(--border);border-radius:20px;font-size:0.78rem;cursor:pointer;color:var(--muted);transition:all 0.15s;margin:0.2rem; }
+.arch-btn.selected { border-color:var(--violet);color:var(--violet);background:var(--violet-glow); }
+</style>
+
+<a href="/nauminto/" onclick="spaGo(event,this)" style="color:var(--violet);text-decoration:none;font-size:0.82rem;display:inline-block;margin-bottom:1.25rem">← Nauminto</a>
+
+<h1 style="font-size:1.2rem;font-weight:700;margin-bottom:0.25rem">Nuevo registro</h1>
+<p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.5">Registra lo que emergió — sin interpretarlo aún. El inconsciente habla en fractales.</p>
+
+<form method="post" class="panel" style="padding:1.25rem;max-width:580px">
+  {% csrf_token %}
+  <div class="form-group">
+    <label class="form-label">Título (opcional)</label>
+    <input type="text" name="title" class="form-input" placeholder="Una imagen, una frase, un símbolo...">
+  </div>
+  <div class="form-group">
+    <label class="form-label">¿Qué emergió?</label>
+    <textarea name="content" class="form-input" rows="6" required placeholder="Describe con detalle sensorial — colores, texturas, emociones, personajes, escenas..." autofocus></textarea>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+    <div class="form-group">
+      <label class="form-label">Fecha</label>
+      <input type="date" name="dream_date" class="form-input" value="{{ today }}">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tipo</label>
+      <select name="nauminto_type" class="form-input">
+        <option value="">Sin clasificar</option>
+        <option value="literal">Literal</option>
+        <option value="simbolico">Simbólico</option>
+        <option value="profetico">Profético</option>
+        <option value="lucido">Lúcido</option>
+        <option value="recurrente">Recurrente</option>
+        <option value="arquetipico">Arquetípico</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Arquetipos presentes</label>
+    <div id="archetypes-container">
+      {% for arch in "Sombra,Anima,Animus,El Viejo Sabio,La Gran Madre,El Héroe,El Pícaro,El Niño Divino,El Guerrero,La Bruja,El Espejo,El Umbral"|split:"," %}
+      <button type="button" class="arch-btn" data-arch="{{ arch }}" onclick="toggleArch(this)">{{ arch }}</button>
+      {% endfor %}
+    </div>
+    <div id="archetypes-inputs"></div>
+    <div class="form-group" style="margin-top:0.6rem">
+      <input type="text" class="form-input" placeholder="Otro arquetipo..." id="arch-custom" style="font-size:0.82rem">
+      <button type="button" class="btn btn-ghost btn-sm" style="margin-top:0.35rem" onclick="addCustomArch()">+ Agregar</button>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Etiquetas</label>
+    <input type="text" name="tags" class="form-input" placeholder="agua fuego desierto...">
+  </div>
+
+  <div style="display:flex;gap:0.75rem;margin-top:0.75rem">
+    <a href="/nauminto/" onclick="spaGo(event,this)" class="btn btn-secondary">Cancelar</a>
+    <button type="submit" class="btn btn-primary" style="flex:1">Guardar registro →</button>
+  </div>
+</form>
+
+<script>
+const selected = [];
+function toggleArch(btn) {
+  const arch = btn.dataset.arch;
+  btn.classList.toggle('selected');
+  if (btn.classList.contains('selected')) {
+    selected.push(arch);
+  } else {
+    const idx = selected.indexOf(arch);
+    if (idx > -1) selected.splice(idx, 1);
+  }
+  renderInputs();
+}
+function addCustomArch() {
+  const val = document.getElementById('arch-custom').value.trim();
+  if (val && !selected.includes(val)) {
+    selected.push(val);
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'arch-btn selected';
+    btn.dataset.arch = val; btn.textContent = val;
+    btn.onclick = function() { toggleArch(this); this.remove(); };
+    document.getElementById('archetypes-container').appendChild(btn);
+    renderInputs();
+    document.getElementById('arch-custom').value = '';
+  }
+}
+function renderInputs() {
+  const c = document.getElementById('archetypes-inputs');
+  c.innerHTML = '';
+  selected.forEach(a => {
+    const inp = document.createElement('input');
+    inp.type = 'hidden'; inp.name = 'archetypes'; inp.value = a;
+    c.appendChild(inp);
+  });
+}
+</script>
+{% endblock %}

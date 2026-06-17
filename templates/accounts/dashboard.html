@@ -1,81 +1,94 @@
 {% extends "base.html" %}
 {% block title %}Dashboard — Endonautas{% endblock %}
-
 {% block content %}
 <style data-page-style>
-.dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
-.dash-header { margin-bottom: 2rem; }
-.dash-greeting { font-size: 1.5rem; font-weight: 700; color: var(--text); }
-.dash-sub { font-size: 0.88rem; color: var(--muted); margin-top: 0.25rem; }
-.stat-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 2rem; }
-.stat { background: rgba(0,0,0,0.88); border: 1px solid var(--border); border-radius: 14px; padding: 1rem 1.25rem; flex: 1; min-width: 120px; }
-.stat-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.3rem; }
-.stat-value { font-size: 1.6rem; font-weight: 700; color: var(--text); }
-.stat-value.accent { color: var(--accent); }
-.quick-links { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; }
-.quick-link { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 1.25rem 1rem; background: rgba(0,0,0,0.88); border: 1px solid var(--border); border-radius: 14px; text-decoration: none; color: var(--text); transition: border-color 0.15s, background 0.15s; cursor: pointer; font-size: 0.85rem; text-align: center; }
-.quick-link:hover { border-color: var(--accent); background: rgba(78,205,196,0.07); color: var(--accent); }
-.quick-link-icon { font-size: 1.5rem; }
-.section-title { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 1rem; }
-.result-item { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
-.result-item:last-child { border-bottom: none; }
+.dash-greeting { font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:-0.02em; }
+.dash-frase { font-size:0.85rem;color:var(--calipso);font-style:italic;margin-top:0.25rem;line-height:1.5; }
+.shortcut-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:0.6rem; }
+.shortcut { display:flex;flex-direction:column;align-items:center;gap:0.4rem;padding:0.9rem 0.6rem;background:var(--surface);border:1px solid var(--border);border-radius:12px;text-decoration:none;color:var(--muted);font-size:0.78rem;text-align:center;transition:border-color 0.15s; }
+.shortcut:hover { border-color:var(--border-active);color:var(--text); }
+.shortcut-icon { font-size:1.3rem; }
+.bita-entry { padding:0.5rem 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.82rem;color:var(--muted); }
+.bita-entry:last-child { border-bottom:none; }
+.ultima-sesion { display:flex;align-items:center;gap:0.75rem;padding:0.85rem;background:rgba(126,204,205,0.05);border:1px solid rgba(126,204,205,0.15);border-radius:12px;text-decoration:none;color:inherit;transition:border-color 0.15s; }
+.ultima-sesion:hover { border-color:rgba(126,204,205,0.3); }
+.mission-fracton { font-size:0.7rem;font-weight:700;color:var(--amber);background:var(--amber-glow);border:1px solid rgba(212,160,86,0.2);border-radius:20px;padding:2px 8px;white-space:nowrap; }
 </style>
 
-<div class="dash-header">
+<div style="margin-bottom:1.5rem">
   <div class="dash-greeting">Hola, {{ user.first_name|default:'Endonauta' }} ✦</div>
-  <div class="dash-sub">Continúa tu exploración interior</div>
+  <div class="dash-frase">{{ frase }}</div>
 </div>
 
-<div class="stat-row">
-  <div class="stat">
-    <div class="stat-label">Fractones</div>
-    <div class="stat-value accent">{{ token_balance }}</div>
-  </div>
-  <div class="stat">
-    <div class="stat-label">Tests completados</div>
-    <div class="stat-value">{{ user.test_results.count }}</div>
-  </div>
-  <div class="stat">
-    <div class="stat-label">Plan</div>
-    <div class="stat-value" style="font-size:1.1rem;padding-top:0.3rem">{{ user.profile.get_plan_display }}</div>
-  </div>
+<div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem">
+  <span style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.3rem 0.75rem;border:1px solid var(--border);border-radius:20px;font-size:0.75rem;color:var(--muted)">⬡ <strong style="color:var(--text)">{{ balance }}</strong> fractones</span>
+  <span style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.3rem 0.75rem;border:1px solid var(--border);border-radius:20px;font-size:0.75rem;color:var(--muted)">◎ <strong style="color:var(--text)">{{ user.test_results.count }}</strong> tests</span>
 </div>
 
-<div class="panel" style="margin-bottom:1.5rem">
-  <div class="section-title">Accesos rápidos</div>
-  <div class="quick-links">
-    <a class="quick-link" href="/tests/" onclick="spaGo(event,this)">
-      <span class="quick-link-icon">◎</span>Tests
-    </a>
-    <a class="quick-link" href="/espejo/" onclick="spaGo(event,this)">
-      <span class="quick-link-icon">◈</span>Espejo
-    </a>
-    <a class="quick-link" href="/nacimiento/" onclick="spaGo(event,this)">
-      <span class="quick-link-icon">✦</span>Nacimiento
-    </a>
-    <a class="quick-link" href="/comunidad/" onclick="spaGo(event,this)">
-      <span class="quick-link-icon">⬡</span>Comunidad
-    </a>
-    {% if user.profile.is_practicante %}
-    <a class="quick-link" href="/practicantes/" onclick="spaGo(event,this)">
-      <span class="quick-link-icon">◉</span>Clientes
-    </a>
-    {% endif %}
-  </div>
-</div>
-
-{% with results=user.test_results.all|slice:":5" %}
-{% if results %}
-<div class="panel">
-  <div class="section-title">Últimos resultados</div>
-  {% for r in results %}
-  <div class="result-item">
-    <span>{{ r.test.name }}</span>
-    <span style="color:var(--muted);font-size:0.8rem">{{ r.completed_at|date:"d M Y" }}</span>
-  </div>
-  {% endfor %}
-  <a href="/tests/mis-resultados/" onclick="spaGo(event,this)" class="btn btn-ghost" style="margin-top:1rem;font-size:0.8rem">Ver todos →</a>
+{% if ultima_sesion %}
+<div style="margin-bottom:1.5rem">
+  <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.5rem">Última sesión IA</div>
+  <a class="ultima-sesion" href="/espejo/chat/{{ ultima_sesion.pk }}/" onclick="spaGo(event,this)">
+    <div style="width:34px;height:34px;border-radius:8px;background:var(--calipso-glow);border:1px solid rgba(126,204,205,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--calipso)">◈</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:0.87rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ ultima_sesion.title|default:"Espejo de Conflictos" }}</div>
+      <div style="font-size:0.7rem;color:var(--muted)">{{ ultima_sesion.updated_at|date:"d M Y · H:i" }}</div>
+    </div>
+    <span style="color:var(--calipso);font-size:0.85rem">→</span>
+  </a>
 </div>
 {% endif %}
-{% endwith %}
+
+<div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.7rem">Accesos rápidos</div>
+<div class="shortcut-grid" style="margin-bottom:1.5rem">
+  <a class="shortcut" href="/onboarding/" onclick="spaGo(event,this)"><span class="shortcut-icon" style="color:var(--calipso)">◎</span>Onboarding</a>
+  <a class="shortcut" href="/tests/mapa-interior/" onclick="spaGo(event,this)"><span class="shortcut-icon" style="color:var(--violet)">◉</span>Mapa Interior</a>
+  <a class="shortcut" href="/tests/mis-resultados/" onclick="spaGo(event,this)"><span class="shortcut-icon" style="color:var(--amber)">⬡</span>Reportes</a>
+  <a class="shortcut" href="/bitacora/" onclick="spaGo(event,this)"><span class="shortcut-icon">◈</span>Bitácora</a>
+  <a class="shortcut" href="/regulacion/" onclick="spaGo(event,this)"><span class="shortcut-icon" style="color:var(--green)">◈</span>Regulación</a>
+  <a class="shortcut" href="/terapeuta/" onclick="spaGo(event,this)"><span class="shortcut-icon" style="color:var(--calipso)">♥</span>Terapeuta</a>
+  <a class="shortcut" href="/oraculo/" onclick="spaGo(event,this)"><span class="shortcut-icon" style="color:var(--amber)">✦</span>Oráculo</a>
+  <a class="shortcut" href="/nauminto/" onclick="spaGo(event,this)"><span class="shortcut-icon" style="color:var(--violet)">◎</span>Nauminto</a>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+  {% if misiones_pendientes %}
+  <div class="panel" style="padding:1rem 1.1rem">
+    <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.7rem">Misiones</div>
+    {% for m in misiones_pendientes %}
+    <div style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0;border-bottom:1px solid var(--border)">
+      <div style="flex:1;font-size:0.82rem">{{ m.name }}</div>
+      <span class="mission-fracton">+{{ m.fracton_reward }}⬡</span>
+    </div>
+    {% endfor %}
+    <a href="/tokens/balance/" onclick="spaGo(event,this)" style="font-size:0.72rem;color:var(--calipso);text-decoration:none;display:block;margin-top:0.6rem">Ver todas →</a>
+  </div>
+  {% endif %}
+
+  {% if ultimos_resultados %}
+  <div class="panel" style="padding:1rem 1.1rem">
+    <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.7rem">Resultados recientes</div>
+    {% for r in ultimos_resultados %}
+    <a href="/tests/resultado/{{ r.pk }}/" onclick="spaGo(event,this)" style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border);text-decoration:none;color:inherit">
+      <span style="font-size:0.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.test.name }}</span>
+      <span style="font-size:0.68rem;color:var(--dim);flex-shrink:0;margin-left:0.4rem">{{ r.completed_at|date:"d M" }}</span>
+    </a>
+    {% endfor %}
+    <a href="/tests/mis-resultados/" onclick="spaGo(event,this)" style="font-size:0.72rem;color:var(--calipso);text-decoration:none;display:block;margin-top:0.6rem">Ver todos →</a>
+  </div>
+  {% endif %}
+</div>
+
+{% if ultimas_bitacora %}
+<div class="panel" style="padding:1rem 1.1rem">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.7rem">
+    <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim)">Bitácora reciente</div>
+    <a href="/bitacora/" onclick="spaGo(event,this)" style="font-size:0.72rem;color:var(--calipso);text-decoration:none">Ver todo →</a>
+  </div>
+  {% for b in ultimas_bitacora %}
+  <div class="bita-entry">{{ b.emoji|default:"◈" }} {{ b.content|truncatechars:70 }} <span style="font-size:0.65rem;color:var(--dim)">{{ b.fecha|date:"d M" }}</span></div>
+  {% endfor %}
+</div>
+{% endif %}
+
 {% endblock %}

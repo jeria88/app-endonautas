@@ -15,8 +15,12 @@ class Post(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='posts')
     content = models.TextField()
     image = models.ImageField(upload_to='community/', blank=True, null=True)
+    video = models.FileField(upload_to='community/videos/', blank=True, null=True)
     somatic_tag = models.CharField(max_length=20, choices=SOMATIC_TAGS, blank=True)
     score = models.IntegerField(default=0)
+    shared_from_type = models.CharField(max_length=30, blank=True)
+    shared_from_id = models.IntegerField(null=True, blank=True)
+    shared_data = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

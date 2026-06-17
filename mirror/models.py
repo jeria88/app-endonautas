@@ -46,6 +46,15 @@ class ChatMessage(models.Model):
 
 
 class DreamEntry(models.Model):
+    NAUMINTO_CHOICES = [
+        ('literal', 'Literal'),
+        ('simbolico', 'Simbólico'),
+        ('profetico', 'Profético'),
+        ('lucido', 'Lúcido'),
+        ('recurrente', 'Recurrente'),
+        ('arquetipico', 'Arquetípico'),
+    ]
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='dreams')
     title = models.CharField(max_length=200, blank=True)
     content = models.TextField()
@@ -53,6 +62,10 @@ class DreamEntry(models.Model):
     dream_date = models.DateField()
     tags = models.CharField(max_length=200, blank=True)
     reality_check = models.BooleanField(default=False)
+    nauminto_type = models.CharField(max_length=20, choices=NAUMINTO_CHOICES, blank=True)
+    archetype_tags = models.JSONField(default=list, blank=True)
+    ai_insight = models.TextField(blank=True)
+    is_nauminto = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -60,3 +73,54 @@ class DreamEntry(models.Model):
 
     def __str__(self):
         return f'{self.user.email} — {self.title or str(self.dream_date)}'
+
+
+class BitacoraEntry(models.Model):
+    ENTRY_TYPES = [
+        ('manual', 'Manual'),
+        ('auto_test', 'Test completado'),
+        ('auto_dream', 'Sueño registrado'),
+        ('auto_espejo', 'Sesión Espejo'),
+        ('auto_terapeuta', 'Consulta Terapéutica'),
+        ('auto_oraculo', 'Oráculo consultado'),
+        ('auto_regulacion', 'Ejercicio de regulación'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bitacora')
+    entry_type = models.CharField(max_length=30, choices=ENTRY_TYPES, default='manual')
+    content = models.TextField()
+    tags = models.CharField(max_length=200, blank=True)
+    emoji = models.CharField(max_length=10, blank=True)
+    fecha = models.DateField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user.email} [{self.entry_type}] {self.fecha}'
+
+
+class EjercicioRegulacion(models.Model):
+    CATEGORY_CHOICES = [
+        ('respiracion', 'Respiración'),
+        ('movimiento', 'Movimiento corporal'),
+        ('sensorial', 'Anclaje sensorial'),
+        ('cognitivo', 'Reencuadre cognitivo'),
+        ('emocional', 'Regulación emocional'),
+    ]
+
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    instructions = models.TextField()
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    duration_minutes = models.IntegerField(default=5)
+    image = models.ImageField(upload_to='regulacion/', blank=True, null=True)
+    order = models.IntegerField(default=0)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order', 'title']
+
+    def __str__(self):
+        return f'[{self.category}] {self.title}'

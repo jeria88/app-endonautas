@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Mapa Interior — Endonautas{% endblock %}
+{% block content %}
+<style data-page-style>
+.radar-wrap { position:relative;width:100%;max-width:400px;margin:0 auto 2rem; }
+.dim-card { background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0.75rem 1rem;display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;text-decoration:none;color:inherit;transition:border-color 0.15s; }
+.dim-card:hover { border-color:var(--border-active); }
+.dim-bar-wrap { flex:1;height:5px;background:rgba(255,255,255,0.06);border-radius:100px;overflow:hidden; }
+.dim-bar { height:100%;border-radius:100px;transition:width 0.8s cubic-bezier(0.25,0.8,0.25,1); }
+.dim-label { font-size:0.82rem;font-weight:500;min-width:100px; }
+.dim-val { font-size:0.78rem;font-weight:700;min-width:34px;text-align:right; }
+.no-determinista { font-size:0.72rem;color:var(--dim);font-style:italic;text-align:center;margin-top:0.5rem; }
+</style>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+  <div>
+    <div class="eyebrow">Psicometría</div>
+    <h1 style="font-size:1.2rem;font-weight:700">Mapa Interior</h1>
+  </div>
+  <a href="/tests/" onclick="spaGo(event,this)" class="btn btn-primary btn-sm">+ Test</a>
+</div>
+
+{% if dimension_data %}
+<div class="radar-wrap">
+  <canvas id="radarChart" width="400" height="400"></canvas>
+</div>
+
+<p class="no-determinista">Los resultados no son deterministas — son puntos de exploración, no etiquetas.</p>
+
+<div style="margin-top:1.5rem">
+  <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.75rem">Dimensiones exploradas</div>
+  {% for key, dim in dimension_data.items %}
+  <a class="dim-card" href="/tests/resultado/{{ dim.result_pk }}/" onclick="spaGo(event,this)">
+    <div class="dim-label">{{ dim.label }}</div>
+    <div class="dim-bar-wrap">
+      <div class="dim-bar" style="width:{{ dim.value }}%;background:{{ dim.color }}"></div>
+    </div>
+    <div class="dim-val" style="color:{{ dim.color }}">{{ dim.value }}</div>
+    <div style="font-size:0.65rem;color:var(--dim);min-width:60px;text-align:right">{{ dim.date }}</div>
+  </a>
+  {% endfor %}
+</div>
+
+<div style="margin-top:1.5rem;display:flex;gap:0.75rem;flex-wrap:wrap">
+  <a href="/tests/mis-resultados/reponer/" onclick="spaGo(event,this)" class="btn btn-secondary btn-sm">Reponer resultados</a>
+  <a href="/tests/mis-resultados/" onclick="spaGo(event,this)" class="btn btn-ghost btn-sm">Historial completo</a>
+</div>
+
+{% else %}
+<div class="panel" style="text-align:center;padding:3rem;color:var(--muted)">
+  <div style="font-size:2rem;opacity:0.15;margin-bottom:0.75rem">◉</div>
+  <p style="font-size:0.9rem;margin-bottom:1.5rem">Tu mapa interior se construye con cada test. Empieza a explorar.</p>
+  <a href="/tests/" onclick="spaGo(event,this)" class="btn btn-primary">Explorar tests</a>
+</div>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const radarData = {{ radar_json|safe }};
+if (radarData.length > 0 && document.getElementById('radarChart')) {
+  const labels = radarData.map(d => d.label);
+  const values = radarData.map(d => d.value);
+  const colors = radarData.map(d => d.color);
+  new Chart(document.getElementById('radarChart'), {
+    type: 'radar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Mapa Interior',
+        data: values,
+        backgroundColor: 'rgba(126,204,205,0.1)',
+        borderColor: 'rgba(126,204,205,0.6)',
+        pointBackgroundColor: colors,
+        pointRadius: 5,
+        borderWidth: 1.5,
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        r: {
+          min: 0, max: 100,
+          ticks: { display: false },
+          grid: { color: 'rgba(255,255,255,0.06)' },
+          angleLines: { color: 'rgba(255,255,255,0.06)' },
+          pointLabels: { color: '#848296', font: { size: 11 } },
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => `${ctx.parsed.r} — punto de exploración`
+          }
+        }
+      }
+    }
+  });
+}
+</script>
+{% endblock %}

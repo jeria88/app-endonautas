@@ -7,6 +7,7 @@ urlpatterns = [
     path('publicar/', views.post_create, name='community_post_create'),
     path('post/<int:pk>/', views.post_detail, name='community_post_detail'),
     path('post/<int:pk>/reaccionar/', views.post_react, name='community_post_react'),
+    path('compartir/', views.share_create, name='community_share'),
     path('foros/', views.foros, name='foros'),
     path('mensajes/', views.mensajes, name='mensajes'),
 ]
