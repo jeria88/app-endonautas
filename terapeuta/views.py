@@ -37,15 +37,27 @@ _OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 # ─── OpenRouter helper ────────────────────────────────────────────────────────
 
-def _call_ai_json(prompt: str, system: str = "", max_tokens: int = 2000, temperature: float = 0.1, max_retries: int = 2) -> dict:
+def _call_ai_json(prompt: str, system: str = "", max_tokens: int = 2000, temperature: float = 0.1, max_retries: int = 2, model: str | None = None) -> dict:
     api_key = getattr(settings, "OPENROUTER_API_KEY", "")
     if not api_key:
         return {}
-    model = getattr(settings, "OPENROUTER_MODEL", "meta-llama/llama-3.1-8b-instruct:free")
+    _model = model or getattr(settings, "OPENROUTER_MODEL", "meta-llama/llama-3.1-8b-instruct:free")
     sys_msg = system or AI_SYSTEM_PROMPT
 
     for attempt in range(max_retries):
         try:
+            payload: dict = {
+                "model": _model,
+                "messages": [
+                    {"role": "system", "content": sys_msg},
+                    {"role": "user", "content": prompt},
+                ],
+                "max_tokens": max_tokens,
+                "temperature": temperature,
+            }
+            # json_object mode solo para modelos que lo soportan
+            if _model in ("openrouter/auto",) or any(x in _model for x in ("gpt-4", "claude", "gemini")):
+                payload["response_format"] = {"type": "json_object"}
             resp = _requests.post(
                 _OPENROUTER_URL,
                 headers={
@@ -54,29 +66,18 @@ def _call_ai_json(prompt: str, system: str = "", max_tokens: int = 2000, tempera
                     "HTTP-Referer": "https://endonautas.cl",
                     "X-Title": "Endonautas",
                 },
-                data=_json.dumps({
-                    "model": model,
-                    "messages": [
-                        {"role": "system", "content": sys_msg},
-                        {"role": "user", "content": prompt},
-                    ],
-                    "max_tokens": max_tokens,
-                    "temperature": temperature,
-                }, ensure_ascii=False).encode("utf-8"),
-                timeout=45,
+                data=_json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+                timeout=60,
             )
             resp.raise_for_status()
             raw = resp.json()["choices"][0]["message"]["content"].strip()
-            # Intento directo
             try:
                 return _json.loads(raw)
             except _json.JSONDecodeError:
                 pass
-            # Extraer bloque JSON de markdown
             m = _re.search(r'```(?:json)?\s*(\{.*?\})\s*```', raw, _re.DOTALL)
             if m:
                 return _json.loads(m.group(1))
-            # Extraer primer objeto JSON del texto
             m = _re.search(r'(\{.*\})', raw, _re.DOTALL)
             if m:
                 return _json.loads(m.group(1))
@@ -448,30 +449,41 @@ def _generar_propuesta_fallback(diagnosticos: list) -> dict:
     for d in diagnosticos:
         marco = d.marco_asociado.nombre if d.marco_asociado else "Sin marco"
         tecnica = d.tecnica_asociada.nombre if d.tecnica_asociada else "Sin técnica"
-        pasos = []
+        pasos = [d.descripcion] if d.descripcion else []
         if d.protocolo_indicado:
-            partes = _re.split(r'\.\s+(?=[A-ZÁÉÍÓÚÑ\d])', d.protocolo_indicado)
-            pasos = [p.strip() for p in partes if len(p.strip()) > 25][:3]
+            # Limpiar citas entre paréntesis y tomar primera instrucción concreta
+            clean = _re.sub(r'\(ref\.[^)]*\)', '', d.protocolo_indicado).strip()
+            clean = _re.sub(r'\s+', ' ', clean)
+            # Tomar el texto después del primer punto, si hay sección con ":"
+            after = clean.split(':', 1)[1].strip() if ':' in clean else clean
+            # Primer fragmento antes de punto y seguido de mayúscula
+            m = _re.search(r'^(.{40,250}?)(?:\.\s+[A-ZÁÉÍÓÚ]|\.$)', after, _re.DOTALL)
+            if m:
+                pasos.append(m.group(1).strip() + '.')
+            else:
+                pasos.append(after[:220] + '…')
+        pasos = [p for p in pasos if p][:2]
         if not pasos:
-            pasos = [d.descripcion[:250]] if d.descripcion else ["Ver protocolo con profesional certificado."]
+            pasos = [f"Consultar con profesional certificado en {tecnica}."]
+        precauciones_d = (d.contraindicaciones or "").split('.')[0].strip()
         plan.append({
             "marco": marco, "tecnica": tecnica, "diagnostico": d.titulo,
             "icono": "🌿", "pasos": pasos,
             "duracion": "4-6 semanas", "frecuencia": "2-3 sesiones/semana",
-            "como_empezar": (d.integracion[:200] if d.integracion else "Iniciar con una evaluación con el profesional correspondiente."),
+            "como_empezar": f"Agendar evaluación con profesional en {tecnica}." + (f" Precaución: {precauciones_d}." if precauciones_d else ""),
         })
     titulos = " y ".join(d.titulo for d in diagnosticos[:2])
-    precauciones = next((d.contraindicaciones for d in diagnosticos if d.contraindicaciones), "Consultar con un médico si los síntomas empeoran.")
+    precauciones = next((d.contraindicaciones for d in diagnosticos if d.contraindicaciones), "Consultar con médico si los síntomas empeoran.")
     return {
-        "sintesis": f"El análisis revela patrones asociados a {titulos}. El plan combina las técnicas seleccionadas para abordar el caso de forma integrativa y progresiva.",
+        "sintesis": f"El análisis identifica patrones de {titulos}. El plan integra las técnicas evaluadas para abordar el caso de forma holística y progresiva.",
         "plan": plan,
         "fases": [
-            {"nombre": "Exploración inicial", "duracion": "1-2 semanas", "objetivo": "Establecer línea base e iniciar primeras intervenciones"},
-            {"nombre": "Tratamiento activo", "duracion": "4-6 semanas", "objetivo": "Implementar el protocolo completo"},
-            {"nombre": "Consolidación", "duracion": "2-4 semanas", "objetivo": "Integrar cambios y prevenir recaídas"},
+            {"nombre": "Exploración inicial", "duracion": "Semanas 1-2", "objetivo": "Evaluación y primeras intervenciones"},
+            {"nombre": "Tratamiento activo", "duracion": "Semanas 3-8", "objetivo": "Implementar el protocolo completo"},
+            {"nombre": "Consolidación", "duracion": "Semanas 9-12", "objetivo": "Integrar cambios y prevenir recaídas"},
         ],
         "indicadores": ["Mejora subjetiva del bienestar general", "Reducción de la intensidad del síntoma principal", "Mayor claridad mental y energía sostenida"],
-        "precauciones": precauciones[:400] if len(precauciones) > 400 else precauciones,
+        "precauciones": precauciones[:400],
     }
 
 
@@ -482,30 +494,66 @@ def _generar_propuesta_terapeutica(consulta: Consulta, diagnosticos: list) -> di
     for d in diagnosticos:
         marco = d.marco_asociado.nombre if d.marco_asociado else "Sin marco"
         tecnica = d.tecnica_asociada.nombre if d.tecnica_asociada else "Sin técnica"
-        # Truncar textos largos para no exceder contexto del modelo gratuito
-        protocolo = (d.protocolo_indicado or "")[:400]
-        integracion = (d.integracion or "")[:200]
-        contraindicaciones = (d.contraindicaciones or "ninguna")[:150]
-        bloques.append(f"Diagnóstico: {d.titulo}\nMarco: {marco} — Técnica: {tecnica}\nDescripción: {d.descripcion[:200]}\nProtocolo: {protocolo}\nIntegración: {integracion}\nContraindicaciones: {contraindicaciones}")
+        bloques.append(f"""Diagnóstico: {d.titulo}
+Marco: {marco} — Técnica: {tecnica}
+Descripción: {d.descripcion}
+Protocolo indicado: {d.protocolo_indicado or '(no especificado)'}
+Integración con otros marcos: {d.integracion or '(no especificado)'}
+Contraindicaciones: {d.contraindicaciones or 'ninguna registrada'}""")
 
-    contexto = f"Motivo: {consulta.motivo[:300]}"
+    contexto = f"Motivo de consulta: {consulta.motivo}"
     if consulta.intensidad:
         contexto += f"\nIntensidad: {consulta.intensidad}/10"
     if consulta.duracion:
         mapa = {"agudo": "agudo (<2 sem)", "subagudo": "subagudo (2-6 sem)", "cronico": "crónico (>6 sem)"}
         contexto += f"\nDuración: {mapa.get(consulta.duracion, consulta.duracion)}"
+    if consulta.medicamentos_actuales:
+        contexto += f"\nMedicamentos/terapias actuales: {consulta.medicamentos_actuales}"
 
     prompt = f"""{contexto}
 
-DIAGNÓSTICOS:
-{"---".join(bloques)}
+DIAGNÓSTICOS CONFIRMADOS:
 
-Responde SOLO con JSON válido, sin texto adicional:
-{{"sintesis":"2 oraciones sobre qué está pasando","plan":[{{"marco":"","tecnica":"","diagnostico":"","icono":"emoji","pasos":["paso1","paso2"],"duracion":"","frecuencia":"","como_empezar":""}}],"fases":[{{"nombre":"","duracion":"","objetivo":""}}],"indicadores":["señal1"],"precauciones":""}}
+{chr(10).join('---' + chr(10) + b for b in bloques)}
 
-Máximo 2 pasos por disciplina. Responde en español."""
+INSTRUCCIÓN CRÍTICA:
+El campo "Protocolo indicado" ya contiene el tratamiento clínico específico. Tu trabajo es:
+1. Leer el "Protocolo indicado" de cada diagnóstico.
+2. Seleccionar los 2-3 pasos más relevantes para ESTE caso.
+3. Reformular cada paso en lenguaje directo, conservando nombres específicos (hierbas, puntos, ejercicios, dosis).
 
-    data = _call_ai_json(prompt, system=_SYSTEM_PROPUESTA, max_tokens=2000, temperature=0.2)
+Instrucciones por tipo de técnica en el campo "pasos":
+— ACUPUNTURA: nombre completo del punto + ubicación anatómica corporal (NO códigos). Añade instrucción de auto-estimulación en casa. Ej: "Punto Tai Chong (Hígado): dorso del pie, entre el 1° y 2° metatarsiano. En consulta: agujas en sedación. En casa: presiona con el pulgar en círculos, firmeza media, 60 segundos, 3 veces/día."
+— EJERCICIO/FISIOTERAPIA: nombre + posición inicial → movimiento → respiración → repeticiones. Ej: "Bird-Dog: en cuadrupedia, espalda neutral. Exhala y extiende brazo derecho + pierna izquierda, mantén 3 seg. 3 series × 8 reps cada lado, días alternos."
+— FITOTERAPIA: nombre de la hierba, dosis exacta y preparación. Ej: "Ashwagandha KSM-66: 600mg en cápsula con leche tibia, 1 vez al acostarse."
+— DIETA: alimentos específicos, cuándo y en qué cantidad.
+
+Devuelve ÚNICAMENTE JSON válido con esta estructura:
+{{
+  "sintesis": "2-3 oraciones en lenguaje claro que expliquen qué está pasando",
+  "plan": [
+    {{
+      "marco": "nombre del marco",
+      "tecnica": "nombre de la técnica",
+      "diagnostico": "título del diagnóstico",
+      "icono": "emoji representativo",
+      "pasos": ["paso detallado 1", "paso detallado 2"],
+      "duracion": "tiempo total estimado",
+      "frecuencia": "frecuencia específica",
+      "como_empezar": "qué hacer exactamente en los primeros 3 días"
+    }}
+  ],
+  "fases": [{{"nombre": "fase", "duracion": "Semanas X-Y", "objetivo": "objetivo medible"}}],
+  "indicadores": ["señal concreta observable sin instrumentos"],
+  "precauciones": "precauciones concretas de los diagnósticos"
+}}
+
+Máximo 3 pasos por disciplina. Responde en español."""
+
+    model_propuesta = getattr(settings, "OPENROUTER_MODEL_PROPUESTA",
+                              getattr(settings, "OPENROUTER_MODEL", "openrouter/auto"))
+    data = _call_ai_json(prompt, system=_SYSTEM_PROPUESTA, max_tokens=4000, temperature=0.2,
+                         model=model_propuesta)
     if data.get("sintesis") and data.get("plan"):
         return data
     logger.warning("Propuesta IA incompleta — usando fallback de catálogo")

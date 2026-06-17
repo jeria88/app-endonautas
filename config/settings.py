@@ -166,6 +166,8 @@ LOGGING = {
 DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY', '') or os.getenv('OPENROUTER_API_KEY', '')
 DEEPSEEK_MODEL = os.getenv('AI_MODEL', 'deepseek-chat')
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '')
+OPENROUTER_MODEL = os.getenv('OPENROUTER_MODEL', 'meta-llama/llama-3.1-8b-instruct:free')
+OPENROUTER_MODEL_PROPUESTA = os.getenv('OPENROUTER_MODEL_PROPUESTA', 'openrouter/auto')
 
 # Email
 EMAIL_BACKEND = 'post_office.EmailBackend'
