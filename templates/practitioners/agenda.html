@@ -3,13 +3,33 @@
 
 {% block content %}
 <style data-page-style>
-.agenda-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-.agenda-title { font-size: 1.3rem; font-weight: 700; }
-.session-list { display: flex; flex-direction: column; gap: 0.75rem; }
-.session-card { background: rgba(0,0,0,0.88); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-.session-card:hover { border-color: rgba(78,205,196,0.3); }
-.session-date { font-size: 1.5rem; font-weight: 700; color: var(--accent); min-width: 48px; text-align: center; line-height: 1; }
-.session-month { font-size: 0.68rem; text-transform: uppercase; color: var(--muted); text-align: center; }
+.agenda-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem; }
+.agenda-title { font-size:1.3rem; font-weight:700; }
+.cal-wrap { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.25rem; margin-bottom:1.75rem; }
+.cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; }
+.cal-month-name { font-family:var(--font-display); font-size:1.05rem; font-weight:700; }
+.cal-nav-btn { color:var(--accent); text-decoration:none; font-size:0.9rem; padding:0.25rem 0.65rem; border-radius:8px; border:1px solid var(--border); transition:border-color 0.2s; }
+.cal-nav-btn:hover { border-color:var(--accent); }
+.cal-weekdays { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; margin-bottom:4px; }
+.cal-weekday { text-align:center; font-size:0.62rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--dim); padding:0.3rem 0; }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+.cal-cell { min-height:54px; border-radius:8px; padding:4px 3px; position:relative; }
+.cal-cell:hover { background:rgba(78,205,196,0.05); }
+.cal-num { font-size:0.73rem; color:var(--muted); width:22px; height:22px; display:flex; align-items:center; justify-content:center; border-radius:50%; }
+.cal-today .cal-num { background:var(--accent); color:#000; font-weight:700; }
+.cal-ses-dot { font-size:0.6rem; background:rgba(78,205,196,0.13); border-left:2px solid var(--calipso); border-radius:3px; padding:1px 4px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--calipso); cursor:default; }
+.cal-ses-dot[data-status="completed"] { border-color:#6bcb77; background:rgba(107,203,119,0.1); color:#6bcb77; }
+.cal-ses-dot[data-status="cancelled"] { border-color:var(--border); background:rgba(128,128,128,0.08); color:var(--dim); }
+.upcoming-label { font-family:var(--font-display); font-size:0.63rem; font-weight:700; letter-spacing:0.15em; color:var(--dim); text-transform:uppercase; margin-bottom:0.75rem; }
+.ses-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1rem 1.25rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:0.6rem; transition:border-color 0.2s; }
+.ses-card:hover { border-color:rgba(78,205,196,0.3); }
+.ses-day { font-size:1.35rem; font-weight:700; color:var(--accent); min-width:38px; text-align:center; line-height:1; }
+.ses-mon { font-size:0.63rem; text-transform:uppercase; color:var(--muted); text-align:center; }
+.ses-badge { font-size:0.7rem; padding:0.2rem 0.65rem; border-radius:20px; font-weight:600; flex-shrink:0; }
+.ses-pending  { background:rgba(255,191,0,0.12); color:#ffbf00; }
+.ses-confirmed { background:rgba(78,205,196,0.12); color:var(--calipso); }
+.ses-completed { background:rgba(107,203,119,0.12); color:#6bcb77; }
+.ses-cancelled { background:rgba(128,128,128,0.1); color:var(--muted); }
 </style>
 
 <div class="agenda-head">
@@ -20,30 +40,77 @@
   <a href="/practicantes/agenda/nueva/" onclick="spaGo(event,this)" class="btn btn-primary">+ Nueva sesión</a>
 </div>
 
-{% if sessions %}
-<div class="session-list">
-  {% for s in sessions %}
-  <div class="session-card">
-    <div style="display:flex;align-items:center;gap:1rem">
-      <div>
-        <div class="session-date">{{ s.datetime|date:"d" }}</div>
-        <div class="session-month">{{ s.datetime|date:"M" }}</div>
-      </div>
-      <div>
-        <div style="font-weight:600;font-size:0.95rem">{{ s.profile.alias }}</div>
-        <div style="font-size:0.8rem;color:var(--muted)">{{ s.datetime|date:"H:i" }} · {{ s.duration_minutes }} min · {{ s.get_session_type_display }}</div>
-        {% if s.meeting_url %}<a href="{{ s.meeting_url }}" target="_blank" style="font-size:0.78rem;color:var(--accent)">Abrir sala →</a>{% endif %}
-      </div>
-    </div>
-    <span class="badge {% if s.status == 'completed' %}badge-validado{% elif s.status == 'confirmed' %}badge-endonauta{% elif s.status == 'cancelled' %}badge-adaptado{% else %}badge-adaptado{% endif %}">{{ s.get_status_display }}</span>
+<div class="cal-wrap">
+  <div class="cal-nav">
+    <a href="?year={{ prev_year }}&month={{ prev_month }}" onclick="spaGo(event,this)" class="cal-nav-btn">‹</a>
+    <span class="cal-month-name">{{ month_name }} {{ year }}</span>
+    <a href="?year={{ next_year }}&month={{ next_month }}" onclick="spaGo(event,this)" class="cal-nav-btn">›</a>
   </div>
-  {% endfor %}
+  <div class="cal-weekdays">
+    <div class="cal-weekday">Lun</div>
+    <div class="cal-weekday">Mar</div>
+    <div class="cal-weekday">Mié</div>
+    <div class="cal-weekday">Jue</div>
+    <div class="cal-weekday">Vie</div>
+    <div class="cal-weekday">Sáb</div>
+    <div class="cal-weekday">Dom</div>
+  </div>
+  <div class="cal-grid" id="cal-grid"></div>
 </div>
+
+<div class="upcoming-label">Próximas sesiones</div>
+
+{% if upcoming %}
+{% for s in upcoming %}
+<div class="ses-card">
+  <div style="display:flex;align-items:center;gap:1rem;flex:1;min-width:0">
+    <div style="flex-shrink:0">
+      <div class="ses-day">{{ s.datetime|date:"d" }}</div>
+      <div class="ses-mon">{{ s.datetime|date:"M" }}</div>
+    </div>
+    <div style="min-width:0">
+      <div style="font-weight:600;font-size:0.95rem">{{ s.profile.alias }}</div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-top:2px">
+        {{ s.datetime|date:"H:i" }} · {{ s.duration_minutes }} min · {{ s.get_session_type_display }}
+        {% if s.profile.email %} · {{ s.profile.email }}{% endif %}
+      </div>
+      {% if s.meeting_url %}
+      <a href="{{ s.meeting_url }}" target="_blank" style="font-size:0.78rem;color:var(--accent)">Abrir sala →</a>
+      {% endif %}
+    </div>
+  </div>
+  <span class="ses-badge ses-{{ s.status }}">{{ s.get_status_display }}</span>
+</div>
+{% endfor %}
 {% else %}
-<div class="panel" style="text-align:center;padding:3rem">
-  <div style="font-size:2rem;margin-bottom:1rem">◎</div>
-  <div style="color:var(--muted)">Sin sesiones programadas.</div>
-  <a href="/practicantes/agenda/nueva/" onclick="spaGo(event,this)" class="btn btn-primary" style="margin-top:1.5rem">Programar sesión</a>
+<div class="panel" style="text-align:center;padding:2.5rem">
+  <div style="color:var(--muted);font-size:0.88rem;margin-bottom:1rem">Sin sesiones próximas.</div>
+  <a href="/practicantes/agenda/nueva/" onclick="spaGo(event,this)" class="btn btn-primary">Programar sesión</a>
 </div>
 {% endif %}
+
+<script>
+(function(){
+  const sessions   = {{ cal_data_json|safe }};
+  const daysInMonth = {{ days_in_month }};
+  const firstWeekday = {{ first_weekday }};
+  const todayDay   = {{ today_day }};
+  const grid = document.getElementById('cal-grid');
+
+  for (let i = 0; i < firstWeekday; i++) {
+    grid.insertAdjacentHTML('beforeend', '<div></div>');
+  }
+  for (let day = 1; day <= daysInMonth; day++) {
+    const ds = sessions.filter(s => s.day === day);
+    const isToday = day === todayDay;
+    let html = `<div class="cal-cell${isToday ? ' cal-today' : ''}">
+      <div class="cal-num">${day}</div>`;
+    ds.forEach(s => {
+      html += `<div class="cal-ses-dot" data-status="${s.status}" title="${s.client} · ${s.time} (${s.type})">${s.time}</div>`;
+    });
+    html += '</div>';
+    grid.insertAdjacentHTML('beforeend', html);
+  }
+})();
+</script>
 {% endblock %}

@@ -3,83 +3,134 @@
 
 {% block content %}
 <style data-page-style>
-.client-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
-.client-name { font-size: 1.4rem; font-weight: 700; }
-.client-info { font-size: 0.82rem; color: var(--muted); margin-top: 0.3rem; }
-.tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; }
-.tab { padding: 0.4rem 0.9rem; border-radius: 8px; font-size: 0.85rem; cursor: pointer; color: var(--muted); transition: all 0.15s; border: none; background: none; }
-.tab.active { background: rgba(78,205,196,0.12); color: var(--accent); }
-.tab-content { display: none; }
-.tab-content.active { display: block; }
-.result-row { padding: 0.85rem 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-.result-row:last-child { border-bottom: none; }
-.note-card { background: var(--surface2); border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem; font-size: 0.87rem; }
-.note-date { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.5rem; }
-.invite-box { background: rgba(78,205,196,0.06); border: 1px solid rgba(78,205,196,0.2); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
-.invite-link { font-family: monospace; font-size: 0.8rem; color: var(--accent); word-break: break-all; }
+.cd-header { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+.cd-name { font-size:1.4rem; font-weight:700; margin-top:0.75rem; }
+.cd-meta { font-size:0.8rem; color:var(--muted); margin-top:0.3rem; }
+.cd-actions { display:flex; gap:0.5rem; flex-wrap:wrap; align-items:flex-start; padding-top:0.5rem; }
+.cd-tabs { display:flex; gap:0.4rem; margin-bottom:1.5rem; border-bottom:1px solid var(--border); padding-bottom:0.75rem; overflow-x:auto; }
+.cd-tab { padding:0.35rem 0.85rem; border-radius:8px; font-size:0.83rem; cursor:pointer; color:var(--muted); transition:all 0.15s; border:none; background:none; white-space:nowrap; }
+.cd-tab.active { background:rgba(78,205,196,0.12); color:var(--accent); }
+.cd-pane { display:none; }
+.cd-pane.active { display:block; }
+.invite-box { background:rgba(78,205,196,0.05); border:1px solid rgba(78,205,196,0.18); border-radius:12px; padding:1rem; margin-bottom:1.25rem; }
+.invite-link { font-family:monospace; font-size:0.78rem; color:var(--accent); word-break:break-all; }
+/* Fichas */
+.ficha-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.1rem 1.25rem; margin-bottom:0.6rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; text-decoration:none; transition:border-color 0.2s; }
+.ficha-card:hover { border-color:rgba(78,205,196,0.35); }
+.ficha-title { font-size:0.9rem; font-weight:500; color:var(--text); }
+.ficha-sub { font-size:0.72rem; color:var(--muted); margin-top:0.2rem; }
+.badge-open { background:rgba(255,191,0,0.12); color:#ffbf00; font-size:0.68rem; padding:0.18rem 0.55rem; border-radius:20px; font-weight:600; white-space:nowrap; }
+.badge-prop { background:rgba(78,205,196,0.12); color:var(--calipso); font-size:0.68rem; padding:0.18rem 0.55rem; border-radius:20px; font-weight:600; white-space:nowrap; }
+.badge-done { background:rgba(107,203,119,0.12); color:#6bcb77; font-size:0.68rem; padding:0.18rem 0.55rem; border-radius:20px; font-weight:600; white-space:nowrap; }
+/* Sesiones */
+.ses-row { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.85rem 0; border-bottom:1px solid var(--border); }
+.ses-row:last-child { border-bottom:none; }
+.ses-day-big { font-size:1.3rem; font-weight:700; color:var(--accent); min-width:36px; text-align:center; line-height:1; }
+.ses-mon-sm { font-size:0.62rem; text-transform:uppercase; color:var(--muted); text-align:center; }
+.ses-badge { font-size:0.68rem; padding:0.18rem 0.55rem; border-radius:20px; font-weight:600; }
+.ses-pending  { background:rgba(255,191,0,0.12); color:#ffbf00; }
+.ses-confirmed { background:rgba(78,205,196,0.12); color:var(--calipso); }
+.ses-completed { background:rgba(107,203,119,0.12); color:#6bcb77; }
+.ses-cancelled { background:rgba(128,128,128,0.1); color:var(--muted); }
+/* Notas / resultados */
+.note-card { background:var(--surface2); border-radius:12px; padding:1rem; margin-bottom:0.75rem; font-size:0.87rem; }
+.note-date { font-size:0.7rem; color:var(--muted); margin-bottom:0.45rem; }
+.result-row { padding:0.8rem 0; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.result-row:last-child { border-bottom:none; }
 </style>
 
-<div class="client-head">
+<div class="cd-header">
   <div>
     <a href="/practicantes/" onclick="spaGo(event,this)" style="color:var(--accent);text-decoration:none;font-size:0.82rem">← Clientes</a>
-    <h1 class="client-name" style="margin-top:0.75rem">{{ client.alias }}</h1>
-    <div class="client-info">
-      {% if client.claimed_by %}
-        Vinculado · {{ client.claimed_by.email }}
-      {% else %}
-        Sin vincular · código: {{ client.access_code }}
-      {% endif %}
+    <h1 class="cd-name">{{ client.alias }}</h1>
+    <div class="cd-meta">
+      {% if client.claimed_by %}Vinculado · {{ client.claimed_by.email }}
+      {% else %}Sin vincular · código: {{ client.access_code }}{% endif %}
       {% if client.email %} · {{ client.email }}{% endif %}
     </div>
   </div>
-  <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+  <div class="cd-actions">
     <a href="/practicantes/cliente/{{ client.pk }}/nota/" onclick="spaGo(event,this)" class="btn btn-ghost" style="font-size:0.82rem">+ Nota</a>
     <a href="/practicantes/fichas/nueva/{{ client.pk }}/" class="btn btn-ghost" style="font-size:0.82rem">+ Ficha</a>
-    <a href="/practicantes/agenda/nueva/" onclick="spaGo(event,this)" class="btn btn-primary" style="font-size:0.82rem">+ Sesión</a>
+    <a href="/practicantes/agenda/nueva/?client={{ client.pk }}" onclick="spaGo(event,this)" class="btn btn-primary" style="font-size:0.82rem">+ Sesión</a>
   </div>
 </div>
 
 {% if not client.claimed_by %}
 <div class="invite-box">
-  <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.4rem">Enlace de invitación</div>
+  <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.4rem">Enlace de invitación</div>
   <div class="invite-link" id="invite-link">{{ request.scheme }}://{{ request.get_host }}/practicantes/invitar/{{ client.access_code }}/</div>
   <button onclick="navigator.clipboard.writeText(document.getElementById('invite-link').textContent);this.textContent='¡Copiado!';setTimeout(()=>this.textContent='Copiar',2000)" class="btn btn-ghost" style="margin-top:0.75rem;font-size:0.78rem">Copiar</button>
 </div>
 {% endif %}
 
-<div class="tabs">
-  <button class="tab active" onclick="showTab('notas')">Notas ({{ notes|length }})</button>
-  <button class="tab" onclick="showTab('fichas')">Fichas ({{ fichas|length }})</button>
-  <button class="tab" onclick="showTab('resultados')">Resultados ({{ results|length }})</button>
-  <button class="tab" onclick="showTab('sesiones')">Sesiones ({{ sessions|length }})</button>
-  <button class="tab" onclick="showTab('resumen')">Resumen clínico</button>
+<div class="cd-tabs">
+  <button class="cd-tab active" onclick="showPane('fichas',this)">Fichas ({{ fichas|length }})</button>
+  <button class="cd-tab" onclick="showPane('sesiones',this)">Sesiones ({{ sessions|length }})</button>
+  <button class="cd-tab" onclick="showPane('resultados',this)">Tests ({{ results|length }})</button>
+  <button class="cd-tab" onclick="showPane('notas',this)">Notas ({{ notes|length }})</button>
+  <button class="cd-tab" onclick="showPane('resumen',this)">Resumen</button>
 </div>
 
-<div id="tab-fichas" class="tab-content">
+<div id="pane-fichas" class="cd-pane active">
   {% for ficha in fichas %}
-  <div class="result-row">
+  <a href="/terapeuta/{{ ficha.id }}/detalle/" onclick="spaGo(event,this)" class="ficha-card">
     <div style="flex:1;min-width:0">
-      <div style="font-size:0.88rem;font-weight:500">{{ ficha.nombre_paciente|default:ficha.motivo|truncatechars:70|default:"Sin motivo" }}</div>
-      <div style="font-size:0.72rem;color:var(--muted);margin-top:0.15rem">
-        {{ ficha.fecha_creacion|date:"d M Y" }}
-        {% if ficha.paso_actual >= 5 %}
-        · <span style="color:var(--calipso)">Completada</span>
-        {% else %}
-        · <span style="color:var(--amber)">Paso {{ ficha.paso_actual }}/5</span>
-        {% endif %}
-        {% if ficha.propuesta_terapeutica %}
-        · <span style="color:var(--calipso)">Con propuesta</span>
-        {% endif %}
-      </div>
+      <div class="ficha-title">{{ ficha.nombre_paciente|default:ficha.motivo|truncatechars:70|default:"Sin motivo" }}</div>
+      <div class="ficha-sub">{{ ficha.fecha_creacion|date:"d M Y" }} · Paso {{ ficha.paso_actual }}/5</div>
     </div>
-    <a href="/terapeuta/{{ ficha.id }}/detalle/" onclick="spaGo(event,this)" class="btn btn-ghost" style="font-size:0.78rem">Ver →</a>
-  </div>
+    {% if ficha.propuesta_terapeutica %}
+    <span class="badge-prop">Con propuesta</span>
+    {% elif ficha.paso_actual >= 5 %}
+    <span class="badge-done">Completada</span>
+    {% else %}
+    <span class="badge-open">En proceso</span>
+    {% endif %}
+  </a>
   {% empty %}
-  <div style="color:var(--muted);font-size:0.88rem;padding:1rem 0">Sin fichas clínicas. Usa el botón "+ Ficha" para crear una.</div>
+  <div style="color:var(--muted);font-size:0.88rem;padding:1rem 0">Sin fichas clínicas. Usa el botón <strong>+ Ficha</strong> para abrir un caso.</div>
   {% endfor %}
 </div>
 
-<div id="tab-notas" class="tab-content active">
+<div id="pane-sesiones" class="cd-pane">
+  <div style="margin-bottom:1rem;display:flex;justify-content:flex-end">
+    <a href="/practicantes/agenda/nueva/?client={{ client.pk }}" onclick="spaGo(event,this)" class="btn btn-ghost" style="font-size:0.82rem">+ Agendar sesión</a>
+  </div>
+  {% for s in sessions %}
+  <div class="ses-row">
+    <div style="display:flex;align-items:center;gap:1rem;flex:1;min-width:0">
+      <div style="flex-shrink:0">
+        <div class="ses-day-big">{{ s.datetime|date:"d" }}</div>
+        <div class="ses-mon-sm">{{ s.datetime|date:"M" }}</div>
+      </div>
+      <div>
+        <div style="font-size:0.88rem;font-weight:500">{{ s.datetime|date:"H:i" }} · {{ s.duration_minutes }} min · {{ s.get_session_type_display }}</div>
+        {% if s.notes %}<div style="font-size:0.78rem;color:var(--muted);margin-top:2px">{{ s.notes|truncatechars:80 }}</div>{% endif %}
+        {% if s.meeting_url %}<a href="{{ s.meeting_url }}" target="_blank" style="font-size:0.78rem;color:var(--accent)">Abrir sala →</a>{% endif %}
+      </div>
+    </div>
+    <span class="ses-badge ses-{{ s.status }}">{{ s.get_status_display }}</span>
+  </div>
+  {% empty %}
+  <div style="color:var(--muted);font-size:0.88rem;padding:1rem 0">Sin sesiones registradas.</div>
+  {% endfor %}
+</div>
+
+<div id="pane-resultados" class="cd-pane">
+  {% for r in results %}
+  <div class="result-row">
+    <div>
+      <div style="font-size:0.9rem;font-weight:500">{{ r.test.name }}</div>
+      <div style="font-size:0.73rem;color:var(--muted);margin-top:0.15rem">{{ r.completed_at|date:"d M Y · H:i" }}</div>
+    </div>
+    <a href="/tests/resultado/{{ r.pk }}/" onclick="spaGo(event,this)" class="btn btn-ghost" style="font-size:0.78rem">Ver →</a>
+  </div>
+  {% empty %}
+  <div style="color:var(--muted);font-size:0.88rem;padding:1rem 0">Sin tests completados.</div>
+  {% endfor %}
+</div>
+
+<div id="pane-notas" class="cd-pane">
   {% for note in notes %}
   <div class="note-card">
     <div class="note-date">{{ note.session_date|date:"d M Y" }}</div>
@@ -90,37 +141,9 @@
   {% endfor %}
 </div>
 
-<div id="tab-resultados" class="tab-content">
-  {% for r in results %}
-  <div class="result-row">
-    <div>
-      <div style="font-size:0.9rem;font-weight:500">{{ r.test.name }}</div>
-      <div style="font-size:0.75rem;color:var(--muted)">{{ r.completed_at|date:"d M Y · H:i" }}</div>
-    </div>
-    <a href="/tests/resultado/{{ r.pk }}/" onclick="spaGo(event,this)" class="btn btn-ghost" style="font-size:0.78rem">Ver →</a>
-  </div>
-  {% empty %}
-  <div style="color:var(--muted);font-size:0.88rem">Sin resultados aún.</div>
-  {% endfor %}
-</div>
-
-<div id="tab-sesiones" class="tab-content">
-  {% for s in sessions %}
-  <div class="result-row">
-    <div>
-      <div style="font-size:0.9rem;font-weight:500">{{ s.datetime|date:"d M Y · H:i" }}</div>
-      <div style="font-size:0.75rem;color:var(--muted)">{{ s.get_session_type_display }} · {{ s.duration_minutes }}min</div>
-    </div>
-    <span class="badge {% if s.status == 'completed' %}badge-validado{% elif s.status == 'confirmed' %}badge-endonauta{% else %}badge-adaptado{% endif %}">{{ s.get_status_display }}</span>
-  </div>
-  {% empty %}
-  <div style="color:var(--muted);font-size:0.88rem">Sin sesiones registradas.</div>
-  {% endfor %}
-</div>
-
-<div id="tab-resumen" class="tab-content">
+<div id="pane-resumen" class="cd-pane">
   <div class="panel">
-    <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.75rem">Resumen clínico</div>
+    <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.75rem">Resumen clínico</div>
     {% if client.clinical_summary %}
     <div style="font-size:0.9rem;line-height:1.7;white-space:pre-wrap">{{ client.clinical_summary }}</div>
     {% else %}
@@ -130,11 +153,11 @@
 </div>
 
 <script>
-function showTab(name) {
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  event.target.classList.add('active');
+function showPane(name, btn) {
+  document.querySelectorAll('.cd-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.cd-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('pane-' + name).classList.add('active');
+  btn.classList.add('active');
 }
 </script>
 {% endblock %}

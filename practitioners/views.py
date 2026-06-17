@@ -82,8 +82,72 @@ def session_note_create(request, pk):
 def agenda(request):
     if not request.user.profile.is_practicante:
         return redirect('dashboard')
-    sessions = TherapySession.objects.filter(practitioner=request.user).order_by('datetime')
-    return render(request, 'practitioners/agenda.html', {'sessions': sessions})
+    import calendar
+    import datetime
+    import json
+    from django.utils import timezone
+
+    today = timezone.now().date()
+    try:
+        year  = int(request.GET.get('year',  today.year))
+        month = int(request.GET.get('month', today.month))
+    except ValueError:
+        year, month = today.year, today.month
+
+    if month < 1:
+        month, year = 12, year - 1
+    elif month > 12:
+        month, year = 1, year + 1
+
+    first_day = datetime.date(year, month, 1)
+    days_in_month = calendar.monthrange(year, month)[1]
+    last_day = datetime.date(year, month, days_in_month)
+
+    month_sessions = TherapySession.objects.filter(
+        practitioner=request.user,
+        datetime__date__gte=first_day,
+        datetime__date__lte=last_day,
+    ).select_related('profile').order_by('datetime')
+
+    cal_sessions = [
+        {
+            'day':    s.datetime.day,
+            'time':   s.datetime.strftime('%H:%M'),
+            'client': s.profile.alias,
+            'email':  s.profile.email,
+            'type':   s.get_session_type_display(),
+            'status': s.status,
+            'pk':     s.pk,
+        }
+        for s in month_sessions
+    ]
+
+    upcoming = TherapySession.objects.filter(
+        practitioner=request.user,
+        datetime__gte=timezone.now(),
+        status__in=('pending', 'confirmed'),
+    ).select_related('profile').order_by('datetime')[:10]
+
+    prev_month, prev_year = (12, year - 1) if month == 1 else (month - 1, year)
+    next_month, next_year = (1,  year + 1) if month == 12 else (month + 1, year)
+
+    MONTHS_ES = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+
+    return render(request, 'practitioners/agenda.html', {
+        'upcoming':       upcoming,
+        'cal_data_json':  json.dumps(cal_sessions),
+        'year':           year,
+        'month':          month,
+        'month_name':     MONTHS_ES[month],
+        'prev_year':      prev_year,
+        'prev_month':     prev_month,
+        'next_year':      next_year,
+        'next_month':     next_month,
+        'today_day':      today.day if (today.year == year and today.month == month) else 0,
+        'days_in_month':  days_in_month,
+        'first_weekday':  calendar.monthrange(year, month)[0],
+    })
 
 
 @login_required
@@ -103,7 +167,11 @@ def session_create(request):
             notes=request.POST.get('notes', ''),
         )
         return redirect('practitioners_agenda')
-    return render(request, 'practitioners/session_form.html', {'clients': clients})
+    preselected_pk = request.GET.get('client', '')
+    return render(request, 'practitioners/session_form.html', {
+        'clients': clients,
+        'preselected_pk': preselected_pk,
+    })
 
 
 @login_required

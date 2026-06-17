@@ -13,7 +13,7 @@
         <select name="client" class="form-input" required>
           <option value="">Seleccionar...</option>
           {% for c in clients %}
-          <option value="{{ c.pk }}">{{ c.alias }}</option>
+          <option value="{{ c.pk }}"{% if c.pk|stringformat:"s" == preselected_pk %} selected{% endif %}>{{ c.alias }}</option>
           {% endfor %}
         </select>
       </div>
