@@ -14,5 +14,6 @@ urlpatterns = [
     # Bitácora
     path('bitacora/', views.bitacora_list, name='bitacora_list'),
     path('bitacora/nueva/', views.bitacora_create, name='bitacora_create'),
+    path('bitacora/<int:pk>/editar/', views.bitacora_edit, name='bitacora_edit'),
     path('bitacora/<int:pk>/eliminar/', views.bitacora_delete, name='bitacora_delete'),
 ]

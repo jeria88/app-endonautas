@@ -109,7 +109,36 @@
 </div>
 {% endif %}
 
-<div style="display:flex;gap:0.75rem;margin-top:1.5rem">
+<details class="panel" style="padding:0;margin-top:1.5rem;margin-bottom:0.75rem;border-color:rgba(155,142,196,0.25)">
+  <summary style="padding:0.85rem 1.25rem;cursor:pointer;font-size:0.75rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--violet);list-style:none;display:flex;align-items:center;gap:0.5rem">
+    <span>✎</span> Editar información básica
+  </summary>
+  <form method="post" action="/terapeuta/{{ consulta.id }}/detalle/" style="padding:0 1.25rem 1.25rem">
+    {% csrf_token %}
+    <input type="hidden" name="accion" value="editar_basicos">
+    <div style="display:grid;grid-template-columns:1fr 80px;gap:0.75rem;margin-bottom:0.75rem">
+      <div>
+        <label class="form-label">Nombre del paciente</label>
+        <input type="text" name="nombre_paciente" class="form-input" value="{{ consulta.nombre_paciente }}">
+      </div>
+      <div>
+        <label class="form-label">Edad</label>
+        <input type="number" name="edad" class="form-input" value="{{ consulta.edad|default:'' }}" min="1" max="150">
+      </div>
+    </div>
+    <div style="margin-bottom:0.75rem">
+      <label class="form-label">Motivo de consulta</label>
+      <textarea name="motivo" class="form-input" rows="4">{{ consulta.motivo }}</textarea>
+    </div>
+    <div style="margin-bottom:0.75rem">
+      <label class="form-label">Diagnóstico integral del terapeuta</label>
+      <textarea name="diagnostico_final" class="form-input" rows="3" placeholder="Síntesis personal del caso...">{{ consulta.diagnostico_final }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary btn-sm">Guardar cambios</button>
+  </form>
+</details>
+
+<div style="display:flex;gap:0.75rem;margin-top:0.75rem">
   <a href="/terapeuta/{{ consulta.id }}/paso5/" onclick="spaGo(event,this)" class="btn btn-secondary">Editar propuesta</a>
   <a href="/terapeuta/" onclick="spaGo(event,this)" class="btn btn-primary" style="flex:1">Volver a consultas</a>
 </div>

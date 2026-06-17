@@ -20,9 +20,9 @@
 
 <a href="/bitacora/" onclick="spaGo(event,this)" style="color:var(--calipso);text-decoration:none;font-size:0.82rem;display:inline-block;margin-bottom:1.25rem">← Bitácora</a>
 
-<h1 style="font-size:1.2rem;font-weight:700;margin-bottom:1.25rem">Nueva entrada</h1>
+<h1 style="font-size:1.2rem;font-weight:700;margin-bottom:1.25rem">{% if editing %}Editar entrada{% else %}Nueva entrada{% endif %}</h1>
 
-<form method="post" class="panel" style="padding:1.25rem;max-width:560px">
+<form method="post" action="{% if editing %}/bitacora/{{ entry.pk }}/editar/{% else %}/bitacora/nueva/{% endif %}" class="panel" style="padding:1.25rem;max-width:560px">
   {% csrf_token %}
   <input type="hidden" name="entry_type" id="entry_type_input" value="{{ tipo_default|default:'manual' }}">
 
@@ -39,23 +39,23 @@
 
   <div class="form-group">
     <label class="form-label" id="content-label">¿Qué notaste?</label>
-    <textarea name="content" id="content-area" class="form-input" rows="6" required placeholder="Escribe libremente. Este espacio es solo tuyo..." autofocus></textarea>
+    <textarea name="content" id="content-area" class="form-input" rows="6" required placeholder="Escribe libremente. Este espacio es solo tuyo..." autofocus>{% if editing %}{{ entry.content }}{% endif %}</textarea>
   </div>
 
   <div style="display:grid;grid-template-columns:1fr 80px;gap:0.75rem">
     <div class="form-group">
       <label class="form-label">Etiquetas (separadas por espacio)</label>
-      <input type="text" name="tags" class="form-input" placeholder="reflejo miedo cuerpo...">
+      <input type="text" name="tags" class="form-input" placeholder="reflejo miedo cuerpo..." value="{% if editing %}{{ entry.tags }}{% endif %}">
     </div>
     <div class="form-group">
       <label class="form-label">Emoji</label>
-      <input type="text" name="emoji" id="emoji-input" class="form-input" placeholder="◈" maxlength="2" style="text-align:center;font-size:1.2rem">
+      <input type="text" name="emoji" id="emoji-input" class="form-input" placeholder="◈" maxlength="2" style="text-align:center;font-size:1.2rem" value="{% if editing %}{{ entry.emoji }}{% endif %}">
     </div>
   </div>
 
   <div style="display:flex;gap:0.75rem;margin-top:0.75rem">
     <a href="/bitacora/" onclick="spaGo(event,this)" class="btn btn-secondary">Cancelar</a>
-    <button type="submit" class="btn btn-primary" style="flex:1">Guardar →</button>
+    <button type="submit" class="btn btn-primary" style="flex:1">{% if editing %}Actualizar →{% else %}Guardar →{% endif %}</button>
   </div>
 </form>
 

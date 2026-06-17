@@ -23,8 +23,8 @@ class Command(BaseCommand):
             user.save()
 
             profile, _ = UserProfile.objects.get_or_create(user=user)
-            profile.is_practicante = True
-            profile.save(update_fields=['is_practicante'])
+            profile.plan = 'practicante'
+            profile.save(update_fields=['plan'])
             TokenBalance.objects.get_or_create(user=user)
 
             action = 'Creado' if created else 'Actualizado'

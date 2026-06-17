@@ -2,7 +2,8 @@
 {% block title %}Perfil — Endonautas{% endblock %}
 {% block content %}
 <style data-page-style>
-.perfil-wrap { max-width:580px; }
+.perfil-wrap { max-width:100%; }
+@media(max-width:640px) { .perfil-grid { grid-template-columns:1fr !important; } }
 .avatar-wrap { position:relative;width:70px;height:70px; }
 .avatar-img { width:70px;height:70px;border-radius:50%;object-fit:cover;border:2px solid var(--border); }
 .avatar-placeholder { width:70px;height:70px;border-radius:50%;background:var(--calipso-glow);border:2px solid rgba(126,204,205,0.2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--calipso); }
@@ -24,7 +25,8 @@
 <div class="perfil-wrap">
   <h1 style="font-size:1.2rem;font-weight:700;margin-bottom:1.25rem">Mi perfil</h1>
 
-  <div class="panel" style="padding:1.25rem;margin-bottom:1rem">
+  <div class="perfil-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start">
+  <div class="panel" style="padding:1.25rem;margin-bottom:0">
     <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
 
@@ -108,10 +110,19 @@
     </form>
   </div>
 
-  <div class="panel" style="padding:1rem 1.25rem;margin-bottom:1rem">
-    <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.5rem">Inicio de sesión con Google</div>
-    <a href="/oauth/google/login/" class="btn btn-secondary btn-sm">Conectar con Google</a>
-    <p style="font-size:0.7rem;color:var(--dim);margin-top:0.35rem">Requiere configurar OAuth en el panel de administración.</p>
+  <div>
+    <div class="panel" style="padding:1rem 1.25rem;margin-bottom:1rem">
+      <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.5rem">Inicio de sesión con Google</div>
+      <a href="/oauth/google/login/" class="btn btn-secondary btn-sm">Conectar con Google</a>
+      <p style="font-size:0.7rem;color:var(--dim);margin-top:0.35rem">Requiere configurar OAuth en el panel de administración.</p>
+    </div>
+    <div class="panel" style="padding:1rem 1.25rem">
+      <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.5rem">Plan activo</div>
+      <div style="font-size:0.9rem;font-weight:600">{{ profile.get_plan_display }}</div>
+      <div style="font-size:0.72rem;color:var(--muted);margin-top:0.3rem">{{ user.email }}</div>
+    </div>
+  </div>
+
   </div>
 </div>
 {% endblock %}

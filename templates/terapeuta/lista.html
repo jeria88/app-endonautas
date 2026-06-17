@@ -22,16 +22,23 @@
 
 {% if consultas %}
   {% for c in consultas %}
-  <a class="consulta-row" href="/terapeuta/{{ c.id }}/detalle/" onclick="spaGo(event,this)">
+  <div class="consulta-row">
     <div class="cr-badge">{{ c.id }}</div>
     <div class="cr-body">
       <div class="cr-title">{{ c.nombre_paciente|default:"Sin nombre" }}{% if c.modo == 'autoconsulta' %} <span style="font-size:0.68rem;color:var(--muted)">(autoconsulta)</span>{% endif %}</div>
-      <div class="cr-meta">{{ c.motivo|truncatechars:70 }} · {{ c.fecha_creacion|date:"d M Y" }}</div>
+      <div class="cr-meta">{{ c.motivo|truncatechars:60 }} · {{ c.fecha_creacion|date:"d M Y" }}</div>
     </div>
-    <div class="cr-step {% if c.paso_actual >= 5 %}done{% endif %}">
+    <div class="cr-step {% if c.paso_actual >= 5 %}done{% endif %}" style="margin-right:0.5rem">
       {% if c.paso_actual >= 5 %}Completa{% else %}Paso {{ c.paso_actual }}/5{% endif %}
     </div>
-  </a>
+    <div style="display:flex;gap:0.25rem;flex-shrink:0">
+      <a href="/terapeuta/{{ c.id }}/detalle/" onclick="spaGo(event,this)" style="font-size:0.72rem;color:var(--calipso);text-decoration:none;padding:0.3rem 0.6rem;border:1px solid rgba(126,204,205,0.25);border-radius:6px">Ver</a>
+      <form method="post" action="/terapeuta/{{ c.id }}/eliminar/" style="display:inline" onsubmit="return confirm('¿Eliminar consulta?')">
+        {% csrf_token %}
+        <button type="submit" style="font-size:0.72rem;color:var(--rose);background:none;border:1px solid rgba(201,123,132,0.25);border-radius:6px;padding:0.3rem 0.6rem;cursor:pointer">✕</button>
+      </form>
+    </div>
+  </div>
   {% endfor %}
 {% else %}
 <div class="panel" style="text-align:center;padding:3rem;color:var(--muted)">

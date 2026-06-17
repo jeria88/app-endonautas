@@ -71,10 +71,13 @@
         <div class="bita-meta">{{ entry.created_at|date:"d M Y · H:i" }}</div>
       </div>
       {% if entry.entry_type not in 'auto_test,auto_espejo,auto_terapeuta,auto_oraculo,auto_regulacion,auto_dream' %}
-      <form method="post" action="/bitacora/{{ entry.pk }}/eliminar/" style="flex-shrink:0">
-        {% csrf_token %}
-        <button type="submit" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:0.7rem;padding:0.2rem 0.4rem" onclick="return confirm('¿Eliminar esta entrada?')">✕</button>
-      </form>
+      <div style="display:flex;gap:0.25rem;flex-shrink:0">
+        <a href="/bitacora/{{ entry.pk }}/editar/" onclick="spaGo(event,this)" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:0.7rem;padding:0.2rem 0.4rem;text-decoration:none;display:inline-flex;align-items:center" title="Editar">✎</a>
+        <form method="post" action="/bitacora/{{ entry.pk }}/eliminar/" style="display:inline">
+          {% csrf_token %}
+          <button type="submit" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:0.7rem;padding:0.2rem 0.4rem" onclick="return confirm('¿Eliminar esta entrada?')" title="Eliminar">✕</button>
+        </form>
+      </div>
       {% endif %}
     </div>
   </div>

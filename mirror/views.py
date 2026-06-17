@@ -148,6 +148,29 @@ def bitacora_create(request):
 
 
 @login_required
+def bitacora_edit(request, pk):
+    entry = get_object_or_404(BitacoraEntry, pk=pk, user=request.user)
+    if request.method == 'POST':
+        content = request.POST.get('content', '').strip()
+        entry_type = request.POST.get('entry_type', entry.entry_type)
+        if entry_type not in [t[0] for t in BitacoraEntry.ENTRY_TYPES]:
+            entry_type = entry.entry_type
+        if content:
+            entry.content = content
+            entry.entry_type = entry_type
+            entry.tags = request.POST.get('tags', '').strip()
+            entry.emoji = request.POST.get('emoji', '').strip()[:2]
+            entry.save()
+        return redirect('bitacora_list')
+    return render(request, 'mirror/bitacora_form.html', {
+        'entry': entry,
+        'tipo_default': entry.entry_type,
+        'manual_types': MANUAL_TYPES,
+        'editing': True,
+    })
+
+
+@login_required
 def bitacora_delete(request, pk):
     entry = get_object_or_404(BitacoraEntry, pk=pk, user=request.user)
     if request.method == 'POST':

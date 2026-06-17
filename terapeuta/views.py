@@ -574,6 +574,17 @@ def consulta_detalle(request: HttpRequest, consulta_id: int) -> HttpResponse:
             consulta.save(update_fields=["diagnostico_final"])
             messages.success(request, "Notas guardadas.")
             return redirect("terapeuta:detalle", consulta_id=consulta.id)
+        if accion == "editar_basicos":
+            consulta.nombre_paciente = request.POST.get("nombre_paciente", "").strip()
+            edad = request.POST.get("edad", "")
+            consulta.edad = int(edad) if edad.isdigit() else None
+            motivo = request.POST.get("motivo", "").strip()
+            if motivo:
+                consulta.motivo = motivo
+            consulta.diagnostico_final = request.POST.get("diagnostico_final", "").strip()
+            consulta.save(update_fields=["nombre_paciente", "edad", "motivo", "diagnostico_final"])
+            messages.success(request, "Cambios guardados.")
+            return redirect("terapeuta:detalle", consulta_id=consulta.id)
 
     selecciones = SeleccionTecnica.objects.filter(consulta=consulta).select_related("tecnica", "tecnica__marco")
     preguntas = PreguntaRespuesta.objects.filter(consulta=consulta).order_by("orden")
