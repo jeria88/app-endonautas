@@ -443,6 +443,38 @@ _SYSTEM_PROPUESTA = (
     "y estructurarlos en lenguaje comprensible. NO inventas protocolos. Respondes siempre con JSON válido."
 )
 
+def _generar_propuesta_fallback(diagnosticos: list) -> dict:
+    plan = []
+    for d in diagnosticos:
+        marco = d.marco_asociado.nombre if d.marco_asociado else "Sin marco"
+        tecnica = d.tecnica_asociada.nombre if d.tecnica_asociada else "Sin técnica"
+        pasos = []
+        if d.protocolo_indicado:
+            partes = _re.split(r'\.\s+(?=[A-ZÁÉÍÓÚÑ\d])', d.protocolo_indicado)
+            pasos = [p.strip() for p in partes if len(p.strip()) > 25][:3]
+        if not pasos:
+            pasos = [d.descripcion[:250]] if d.descripcion else ["Ver protocolo con profesional certificado."]
+        plan.append({
+            "marco": marco, "tecnica": tecnica, "diagnostico": d.titulo,
+            "icono": "🌿", "pasos": pasos,
+            "duracion": "4-6 semanas", "frecuencia": "2-3 sesiones/semana",
+            "como_empezar": (d.integracion[:200] if d.integracion else "Iniciar con una evaluación con el profesional correspondiente."),
+        })
+    titulos = " y ".join(d.titulo for d in diagnosticos[:2])
+    precauciones = next((d.contraindicaciones for d in diagnosticos if d.contraindicaciones), "Consultar con un médico si los síntomas empeoran.")
+    return {
+        "sintesis": f"El análisis revela patrones asociados a {titulos}. El plan combina las técnicas seleccionadas para abordar el caso de forma integrativa y progresiva.",
+        "plan": plan,
+        "fases": [
+            {"nombre": "Exploración inicial", "duracion": "1-2 semanas", "objetivo": "Establecer línea base e iniciar primeras intervenciones"},
+            {"nombre": "Tratamiento activo", "duracion": "4-6 semanas", "objetivo": "Implementar el protocolo completo"},
+            {"nombre": "Consolidación", "duracion": "2-4 semanas", "objetivo": "Integrar cambios y prevenir recaídas"},
+        ],
+        "indicadores": ["Mejora subjetiva del bienestar general", "Reducción de la intensidad del síntoma principal", "Mayor claridad mental y energía sostenida"],
+        "precauciones": precauciones[:400] if len(precauciones) > 400 else precauciones,
+    }
+
+
 def _generar_propuesta_terapeutica(consulta: Consulta, diagnosticos: list) -> dict | None:
     if not diagnosticos:
         return None
@@ -450,51 +482,34 @@ def _generar_propuesta_terapeutica(consulta: Consulta, diagnosticos: list) -> di
     for d in diagnosticos:
         marco = d.marco_asociado.nombre if d.marco_asociado else "Sin marco"
         tecnica = d.tecnica_asociada.nombre if d.tecnica_asociada else "Sin técnica"
-        bloques.append(f"Diagnóstico: {d.titulo}\nMarco: {marco} — Técnica: {tecnica}\nDescripción: {d.descripcion}\nProtocolo indicado: {d.protocolo_indicado or '(no especificado)'}\nIntegración: {d.integracion or '(no especificado)'}\nContraindicaciones: {d.contraindicaciones or 'ninguna'}")
+        # Truncar textos largos para no exceder contexto del modelo gratuito
+        protocolo = (d.protocolo_indicado or "")[:400]
+        integracion = (d.integracion or "")[:200]
+        contraindicaciones = (d.contraindicaciones or "ninguna")[:150]
+        bloques.append(f"Diagnóstico: {d.titulo}\nMarco: {marco} — Técnica: {tecnica}\nDescripción: {d.descripcion[:200]}\nProtocolo: {protocolo}\nIntegración: {integracion}\nContraindicaciones: {contraindicaciones}")
 
-    contexto = f"Motivo: {consulta.motivo}"
-    if consulta.prioridad_sintoma:
-        contexto += f"\nSíntoma prioritario: {consulta.prioridad_sintoma}"
+    contexto = f"Motivo: {consulta.motivo[:300]}"
     if consulta.intensidad:
         contexto += f"\nIntensidad: {consulta.intensidad}/10"
     if consulta.duracion:
         mapa = {"agudo": "agudo (<2 sem)", "subagudo": "subagudo (2-6 sem)", "cronico": "crónico (>6 sem)"}
         contexto += f"\nDuración: {mapa.get(consulta.duracion, consulta.duracion)}"
-    if consulta.medicamentos_actuales:
-        contexto += f"\nMedicamentos actuales: {consulta.medicamentos_actuales}"
 
     prompt = f"""{contexto}
 
 DIAGNÓSTICOS:
 {"---".join(bloques)}
 
-Devuelve JSON con esta estructura:
-{{
-  "sintesis": "2-3 oraciones que expliquen qué está pasando",
-  "plan": [
-    {{
-      "marco": "nombre del marco",
-      "tecnica": "nombre de la técnica",
-      "diagnostico": "título del diagnóstico",
-      "icono": "emoji representativo",
-      "pasos": ["paso concreto extraído del protocolo_indicado"],
-      "duracion": "tiempo estimado",
-      "frecuencia": "frecuencia de práctica",
-      "como_empezar": "qué hacer exactamente hoy"
-    }}
-  ],
-  "fases": [{{"nombre": "fase", "duracion": "semanas", "objetivo": "objetivo", "acciones": ["acción"]}}],
-  "indicadores": ["señal observable sin instrumentos"],
-  "precauciones": "extraído de contraindicaciones"
-}}
+Responde SOLO con JSON válido, sin texto adicional:
+{{"sintesis":"2 oraciones sobre qué está pasando","plan":[{{"marco":"","tecnica":"","diagnostico":"","icono":"emoji","pasos":["paso1","paso2"],"duracion":"","frecuencia":"","como_empezar":""}}],"fases":[{{"nombre":"","duracion":"","objetivo":""}}],"indicadores":["señal1"],"precauciones":""}}
 
-Máximo 3 pasos por disciplina. Responde en español."""
+Máximo 2 pasos por disciplina. Responde en español."""
 
-    data = _call_ai_json(prompt, system=_SYSTEM_PROPUESTA, max_tokens=4000, temperature=0.2)
-    if not data.get("sintesis") or not data.get("plan"):
-        logger.warning("Propuesta terapéutica incompleta de IA")
-        return None
-    return data
+    data = _call_ai_json(prompt, system=_SYSTEM_PROPUESTA, max_tokens=2000, temperature=0.2)
+    if data.get("sintesis") and data.get("plan"):
+        return data
+    logger.warning("Propuesta IA incompleta — usando fallback de catálogo")
+    return _generar_propuesta_fallback(diagnosticos)
 
 
 @login_required

@@ -672,20 +672,23 @@ function spaGo(e, el) {
   const url = el.href || el.dataset.href;
   if (!url) return;
   fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
-    .then(r => r.text())
-    .then(html => {
+    .then(r => {
+      const finalUrl = r.url || url;  // URL real tras seguir redirects
+      return r.text().then(html => [html, finalUrl]);
+    })
+    .then(([html, finalUrl]) => {
       const doc = new DOMParser().parseFromString(html, 'text/html');
       const content = doc.getElementById('page-content');
       if (!content) { window.location.href = url; return; }
       const target = document.getElementById('page-content');
       target.innerHTML = content.innerHTML;
-      history.pushState({}, '', url);
+      history.pushState({}, '', finalUrl);
       // Cosmos preset
       const preset = el.dataset.preset ||
-        (window.presetForPath ? window.presetForPath(new URL(url, location.origin).pathname) : null);
+        (window.presetForPath ? window.presetForPath(new URL(finalUrl, location.origin).pathname) : null);
       if (preset && window.updateCosmosPreset) window.updateCosmosPreset(preset);
       // Nav active state
-      const path = new URL(url, location.origin).pathname;
+      const path = new URL(finalUrl, location.origin).pathname;
       document.querySelectorAll('.nav-link').forEach(l => {
         l.classList.toggle('active', l.getAttribute('href') === path);
       });

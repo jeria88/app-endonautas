@@ -36,7 +36,7 @@
 {% endfor %}
 {% endif %}
 
-<form method="post" id="paso2form">
+<form method="post" id="paso2form" action="/terapeuta/{{ consulta.id }}/paso2/">
   {% csrf_token %}
   {% for marco in marcos_data %}
   <div class="marco-card {% if marco.es_recomendado %}recomendado{% endif %}">

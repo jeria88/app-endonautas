@@ -38,7 +38,7 @@
   {% endif %}
 
 <div class="panel">
-  <form method="post">
+  <form method="post" action="/terapeuta/{{ consulta.id }}/paso1/">
     {% csrf_token %}
 
     {% if consulta.modo == 'terapeuta' %}
