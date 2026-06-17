@@ -127,19 +127,25 @@ def bitacora_list(request):
     })
 
 
+_EMOCIONES = ['miedo', 'ira', 'verguenza', 'culpa', 'tristeza', 'envidia', 'ansiedad', 'asco', 'celos']
+
+
 def _parse_meta(post, entry_type):
     meta = {}
     if entry_type == 'sueno':
-        meta['lucido']    = 'lucido' in post
+        meta['lucido']     = 'lucido' in post
         meta['recurrente'] = 'recurrente' in post
-        meta['pesadilla'] = 'pesadilla' in post
+        meta['pesadilla']  = 'pesadilla' in post
         meta['personajes'] = post.get('personajes', '').strip()
-        meta['ambiente']  = post.get('ambiente', '').strip()
+        meta['ambiente']   = post.get('ambiente', '').strip()
     elif entry_type == 'sombra':
-        meta['conflicto']  = post.get('conflicto', '').strip()
-        meta['emociones']  = post.getlist('emociones')
-        meta['expresion']  = post.get('expresion', '')
-        meta['figura']     = post.get('figura', '').strip()
+        meta['conflicto'] = post.get('conflicto', '').strip()
+        meta['figura']    = post.get('figura', '').strip()
+        checked = set(post.getlist('emo_checked'))
+        meta['emociones'] = [
+            {'nombre': emo, 'procesamiento': post.get(f'emo_proc_{emo}', '')}
+            for emo in _EMOCIONES if emo in checked
+        ]
     elif entry_type == 'patron':
         meta['detonante']  = post.get('detonante', '').strip()
         meta['frecuencia'] = post.get('frecuencia', '')

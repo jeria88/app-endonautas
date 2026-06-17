@@ -13,25 +13,60 @@
 .tipo-btn.sel-patron { background:rgba(212,160,86,0.15);border-color:rgba(212,160,86,0.4);color:#d4a056; }
 .tipo-btn.sel-signo  { background:rgba(126,196,155,0.15);border-color:rgba(126,196,155,0.4);color:#7ec49b; }
 .tipo-btn.sel-manual { background:rgba(126,204,205,0.1);border-color:rgba(126,204,205,0.3);color:var(--calipso); }
-.meta-section { display:none;margin-top:1rem; }
+
+/* Secciones por tipo */
+.meta-section { display:none;margin-top:1.1rem; }
 .meta-section.visible { display:block; }
-.check-grid { display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.5rem; }
-.check-item {
-  display:inline-flex;align-items:center;gap:0.4rem;padding:0.4rem 0.7rem;
-  background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:7px;
-  font-size:0.78rem;color:var(--muted);cursor:pointer;transition:border-color 0.15s;
+.meta-divider { height:1px;background:rgba(255,255,255,0.05);margin:1.1rem 0 0.9rem; }
+.meta-title { font-size:0.63rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);margin-bottom:0.85rem; }
+
+/* Chips de toggle (sueño, patrón, signo) */
+.chip-row { display:flex;gap:0.4rem;flex-wrap:wrap; }
+.chip {
+  display:inline-flex;align-items:center;gap:0.4rem;padding:0.4rem 0.75rem;
+  border:1.5px solid var(--border);border-radius:20px;font-size:0.78rem;
+  color:var(--muted);cursor:pointer;transition:all 0.15s;user-select:none;
 }
-.check-item input[type=checkbox] { display:none; }
-.check-item.checked { border-color:var(--calipso);background:var(--calipso-glow);color:var(--calipso); }
-.radio-row { display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.5rem; }
-.radio-btn {
-  padding:0.4rem 0.85rem;border:1.5px solid var(--border);border-radius:7px;
-  font-size:0.78rem;color:var(--muted);cursor:pointer;background:transparent;transition:all 0.15s;
+.chip input { display:none; }
+.chip.on { border-color:var(--calipso);background:var(--calipso-glow);color:var(--calipso); }
+.chip.on-rose { border-color:rgba(201,123,132,0.5);background:rgba(201,123,132,0.1);color:#c97b84; }
+.chip.on-amber { border-color:rgba(212,160,86,0.5);background:rgba(212,160,86,0.1);color:#d4a056; }
+.chip.on-green { border-color:rgba(126,196,155,0.5);background:rgba(126,196,155,0.1);color:#7ec49b; }
+
+/* Radio pills */
+.pill-row { display:flex;gap:0.35rem;flex-wrap:wrap;margin-top:0.5rem; }
+.pill {
+  padding:0.35rem 0.75rem;border:1.5px solid var(--border);border-radius:6px;
+  font-size:0.75rem;color:var(--muted);cursor:pointer;transition:all 0.15s;
 }
-.radio-btn input { display:none; }
-.radio-btn.sel { border-color:var(--calipso);color:var(--calipso);background:var(--calipso-glow); }
-.meta-divider { height:1px;background:rgba(255,255,255,0.05);margin:1.1rem 0; }
-.meta-title { font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.75rem; }
+.pill input { display:none; }
+.pill.sel { border-color:var(--calipso);color:var(--calipso);background:var(--calipso-glow); }
+
+/* Matriz de emociones (sombra) */
+.emo-matriz { display:flex;flex-direction:column;gap:0; }
+.emo-fila {
+  display:flex;align-items:center;flex-wrap:wrap;gap:0.5rem;
+  padding:0.55rem 0;border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.emo-fila:last-child { border-bottom:none; }
+.emo-lbl {
+  display:inline-flex;align-items:center;gap:0.5rem;padding:0.35rem 0.65rem;
+  border:1.5px solid var(--border);border-radius:6px;font-size:0.8rem;
+  color:var(--muted);cursor:pointer;transition:all 0.15s;min-width:105px;
+}
+.emo-lbl input { display:none; }
+.emo-lbl .emo-bullet { width:7px;height:7px;border-radius:50%;border:1.5px solid var(--muted);flex-shrink:0;transition:all 0.15s; }
+.emo-lbl.activa { border-color:rgba(201,123,132,0.5);color:#c97b84;background:rgba(201,123,132,0.08); }
+.emo-lbl.activa .emo-bullet { background:#c97b84;border-color:#c97b84; }
+.emo-proc { display:none;flex-wrap:wrap;gap:0.3rem;align-items:center; }
+.emo-fila.marcada .emo-proc { display:flex; }
+.proc-pill {
+  padding:0.25rem 0.55rem;border:1px solid var(--border);border-radius:5px;
+  font-size:0.7rem;color:var(--dim);cursor:pointer;transition:all 0.15s;
+}
+.proc-pill input { display:none; }
+.proc-pill.sel { border-color:rgba(201,123,132,0.45);color:#c97b84;background:rgba(201,123,132,0.08); }
+.proc-sep { font-size:0.65rem;color:var(--dim);padding:0 0.1rem; }
 </style>
 {% endblock %}
 {% block content %}
@@ -39,10 +74,13 @@
 <a href="/bitacora/" onclick="spaGo(event,this)" style="color:var(--calipso);text-decoration:none;font-size:0.82rem;display:inline-block;margin-bottom:1.25rem">← Bitácora</a>
 <h1 style="font-size:1.2rem;font-weight:700;margin-bottom:1.25rem">{% if editing %}Editar entrada{% else %}Nueva entrada{% endif %}</h1>
 
-<form method="post" action="{% if editing %}/bitacora/{{ entry.pk }}/editar/{% else %}/bitacora/nueva/{% endif %}" class="panel" style="padding:1.25rem;max-width:580px">
+{% if editing %}{{ entry.meta|json_script:"entry-meta" }}{% endif %}
+
+<form method="post" action="{% if editing %}/bitacora/{{ entry.pk }}/editar/{% else %}/bitacora/nueva/{% endif %}" class="panel" style="padding:1.25rem;max-width:600px">
   {% csrf_token %}
   <input type="hidden" name="entry_type" id="entry_type_input" value="{{ tipo_default|default:'manual' }}">
 
+  <!-- Selector de tipo -->
   <div class="form-group">
     <label class="form-label">Categoría</label>
     <div class="tipo-selector">
@@ -54,171 +92,236 @@
     </div>
   </div>
 
+  <!-- Contenido principal -->
   <div class="form-group">
     <label class="form-label" id="content-label">¿Qué notaste?</label>
     <textarea name="content" id="content-area" class="form-input" rows="5" required placeholder="Escribe libremente..." autofocus>{% if editing %}{{ entry.content }}{% endif %}</textarea>
   </div>
 
-  {# ── SUEÑO ────────────────────────────────────────────────── #}
+  <!-- ── SUEÑO ──────────────────────────────────────────────── -->
   <div class="meta-section" id="meta-sueno">
     <div class="meta-divider"></div>
-    <div class="meta-title">Características del sueño</div>
-    <div class="check-grid">
-      <label class="check-item {% if editing and entry.meta.lucido %}checked{% endif %}" onclick="this.classList.toggle('checked')">
-        <input type="checkbox" name="lucido" {% if editing and entry.meta.lucido %}checked{% endif %}><span>◉ Lúcido</span>
+    <div class="meta-title">Tipo de sueño</div>
+    <div class="chip-row">
+      <label class="chip" id="chip-lucido">
+        <input type="checkbox" name="lucido" onchange="toggleChip(this, 'on')">
+        <span>◉ Lúcido</span>
       </label>
-      <label class="check-item {% if editing and entry.meta.recurrente %}checked{% endif %}" onclick="this.classList.toggle('checked')">
-        <input type="checkbox" name="recurrente" {% if editing and entry.meta.recurrente %}checked{% endif %}><span>↻ Recurrente</span>
+      <label class="chip" id="chip-recurrente">
+        <input type="checkbox" name="recurrente" onchange="toggleChip(this, 'on')">
+        <span>↻ Recurrente</span>
       </label>
-      <label class="check-item {% if editing and entry.meta.pesadilla %}checked{% endif %}" onclick="this.classList.toggle('checked')">
-        <input type="checkbox" name="pesadilla" {% if editing and entry.meta.pesadilla %}checked{% endif %}><span>⚡ Pesadilla</span>
+      <label class="chip" id="chip-pesadilla">
+        <input type="checkbox" name="pesadilla" onchange="toggleChip(this, 'on-rose')">
+        <span>⚡ Pesadilla</span>
       </label>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-top:0.75rem">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-top:0.9rem">
       <div>
         <label class="form-label" style="font-size:0.72rem">¿Quiénes aparecen?</label>
-        <input type="text" name="personajes" class="form-input" placeholder="Personas, animales, figuras..." value="{% if editing %}{{ entry.meta.personajes|default:'' }}{% endif %}">
+        <input type="text" name="personajes" id="in-personajes" class="form-input" placeholder="Personas, animales, figuras...">
       </div>
       <div>
         <label class="form-label" style="font-size:0.72rem">¿Dónde transcurre?</label>
-        <input type="text" name="ambiente" class="form-input" placeholder="Lugar, atmósfera, época..." value="{% if editing %}{{ entry.meta.ambiente|default:'' }}{% endif %}">
+        <input type="text" name="ambiente" id="in-ambiente" class="form-input" placeholder="Lugar, atmósfera, época...">
       </div>
     </div>
   </div>
 
-  {# ── SOMBRA ───────────────────────────────────────────────── #}
+  <!-- ── SOMBRA ─────────────────────────────────────────────── -->
   <div class="meta-section" id="meta-sombra">
     <div class="meta-divider"></div>
     <div class="meta-title">Exploración de la sombra</div>
     <div class="form-group">
       <label class="form-label" style="font-size:0.72rem">¿Qué disparó esta sombra?</label>
-      <input type="text" name="conflicto" class="form-input" placeholder="Situación, persona o momento que la activó..." value="{% if editing %}{{ entry.meta.conflicto|default:'' }}{% endif %}">
+      <input type="text" name="conflicto" id="in-conflicto" class="form-input" placeholder="Situación, persona o momento que la activó...">
     </div>
     <div class="form-group">
-      <label class="form-label" style="font-size:0.72rem">Emociones involucradas</label>
-      <div class="check-grid">
-        {% with emos=entry.meta.emociones|default:'' %}
-        <label class="check-item {% if editing and 'miedo' in emos %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="emociones" value="miedo" {% if editing and 'miedo' in emos %}checked{% endif %}><span>Miedo</span></label>
-        <label class="check-item {% if editing and 'ira' in emos %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="emociones" value="ira" {% if editing and 'ira' in emos %}checked{% endif %}><span>Ira</span></label>
-        <label class="check-item {% if editing and 'vergüenza' in emos %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="emociones" value="vergüenza" {% if editing and 'vergüenza' in emos %}checked{% endif %}><span>Vergüenza</span></label>
-        <label class="check-item {% if editing and 'culpa' in emos %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="emociones" value="culpa" {% if editing and 'culpa' in emos %}checked{% endif %}><span>Culpa</span></label>
-        <label class="check-item {% if editing and 'tristeza' in emos %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="emociones" value="tristeza" {% if editing and 'tristeza' in emos %}checked{% endif %}><span>Tristeza</span></label>
-        <label class="check-item {% if editing and 'envidia' in emos %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="emociones" value="envidia" {% if editing and 'envidia' in emos %}checked{% endif %}><span>Envidia</span></label>
-        <label class="check-item {% if editing and 'ansiedad' in emos %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="emociones" value="ansiedad" {% if editing and 'ansiedad' in emos %}checked{% endif %}><span>Ansiedad</span></label>
-        <label class="check-item {% if editing and 'asco' in emos %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="emociones" value="asco" {% if editing and 'asco' in emos %}checked{% endif %}><span>Asco</span></label>
-        <label class="check-item {% if editing and 'celos' in emos %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="emociones" value="celos" {% if editing and 'celos' in emos %}checked{% endif %}><span>Celos</span></label>
-        {% endwith %}
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label" style="font-size:0.72rem">¿Cómo fue manejada?</label>
-      <div class="radio-row">
-        {% with exp=entry.meta.expresion|default:'' %}
-        <label class="radio-btn {% if editing and exp == 'expresada' %}sel{% endif %}"><input type="radio" name="expresion" value="expresada" {% if editing and exp == 'expresada' %}checked{% endif %} onchange="selRadio(this)"><span>Expresada</span></label>
-        <label class="radio-btn {% if editing and exp == 'reprimida' %}sel{% endif %}"><input type="radio" name="expresion" value="reprimida" {% if editing and exp == 'reprimida' %}checked{% endif %} onchange="selRadio(this)"><span>Reprimida</span></label>
-        <label class="radio-btn {% if editing and exp == 'negada' %}sel{% endif %}"><input type="radio" name="expresion" value="negada" {% if editing and exp == 'negada' %}checked{% endif %} onchange="selRadio(this)"><span>Negada</span></label>
-        <label class="radio-btn {% if editing and exp == 'proyectada' %}sel{% endif %}"><input type="radio" name="expresion" value="proyectada" {% if editing and exp == 'proyectada' %}checked{% endif %} onchange="selRadio(this)"><span>Proyectada</span></label>
-        <label class="radio-btn {% if editing and exp == 'actuada' %}sel{% endif %}"><input type="radio" name="expresion" value="actuada" {% if editing and exp == 'actuada' %}checked{% endif %} onchange="selRadio(this)"><span>Actuada</span></label>
-        {% endwith %}
+      <div class="form-label" style="font-size:0.72rem;margin-bottom:0.7rem">Emociones presentes — marca cada una y cómo fue procesada</div>
+      <div class="emo-matriz">
+        <div class="emo-fila" id="emo-miedo">
+          <label class="emo-lbl"><input type="checkbox" name="emo_checked" value="miedo" onchange="toggleEmo(this)"><span class="emo-bullet"></span><span>Miedo</span></label>
+          <div class="emo-proc"><span class="proc-sep">→</span>
+            <label class="proc-pill"><input type="radio" name="emo_proc_miedo" value="expresado" onchange="selPill(this)"><span>Expresado</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_miedo" value="reprimido" onchange="selPill(this)"><span>Reprimido</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_miedo" value="negado" onchange="selPill(this)"><span>Negado</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_miedo" value="proyectado" onchange="selPill(this)"><span>Proyectado</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_miedo" value="actuado" onchange="selPill(this)"><span>Actuado</span></label>
+          </div>
+        </div>
+        <div class="emo-fila" id="emo-ira">
+          <label class="emo-lbl"><input type="checkbox" name="emo_checked" value="ira" onchange="toggleEmo(this)"><span class="emo-bullet"></span><span>Ira</span></label>
+          <div class="emo-proc"><span class="proc-sep">→</span>
+            <label class="proc-pill"><input type="radio" name="emo_proc_ira" value="expresada" onchange="selPill(this)"><span>Expresada</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_ira" value="reprimida" onchange="selPill(this)"><span>Reprimida</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_ira" value="negada" onchange="selPill(this)"><span>Negada</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_ira" value="proyectada" onchange="selPill(this)"><span>Proyectada</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_ira" value="actuada" onchange="selPill(this)"><span>Actuada</span></label>
+          </div>
+        </div>
+        <div class="emo-fila" id="emo-verguenza">
+          <label class="emo-lbl"><input type="checkbox" name="emo_checked" value="verguenza" onchange="toggleEmo(this)"><span class="emo-bullet"></span><span>Vergüenza</span></label>
+          <div class="emo-proc"><span class="proc-sep">→</span>
+            <label class="proc-pill"><input type="radio" name="emo_proc_verguenza" value="expresada" onchange="selPill(this)"><span>Expresada</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_verguenza" value="reprimida" onchange="selPill(this)"><span>Reprimida</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_verguenza" value="negada" onchange="selPill(this)"><span>Negada</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_verguenza" value="proyectada" onchange="selPill(this)"><span>Proyectada</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_verguenza" value="actuada" onchange="selPill(this)"><span>Actuada</span></label>
+          </div>
+        </div>
+        <div class="emo-fila" id="emo-culpa">
+          <label class="emo-lbl"><input type="checkbox" name="emo_checked" value="culpa" onchange="toggleEmo(this)"><span class="emo-bullet"></span><span>Culpa</span></label>
+          <div class="emo-proc"><span class="proc-sep">→</span>
+            <label class="proc-pill"><input type="radio" name="emo_proc_culpa" value="expresada" onchange="selPill(this)"><span>Expresada</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_culpa" value="reprimida" onchange="selPill(this)"><span>Reprimida</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_culpa" value="negada" onchange="selPill(this)"><span>Negada</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_culpa" value="proyectada" onchange="selPill(this)"><span>Proyectada</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_culpa" value="actuada" onchange="selPill(this)"><span>Actuada</span></label>
+          </div>
+        </div>
+        <div class="emo-fila" id="emo-tristeza">
+          <label class="emo-lbl"><input type="checkbox" name="emo_checked" value="tristeza" onchange="toggleEmo(this)"><span class="emo-bullet"></span><span>Tristeza</span></label>
+          <div class="emo-proc"><span class="proc-sep">→</span>
+            <label class="proc-pill"><input type="radio" name="emo_proc_tristeza" value="expresada" onchange="selPill(this)"><span>Expresada</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_tristeza" value="reprimida" onchange="selPill(this)"><span>Reprimida</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_tristeza" value="negada" onchange="selPill(this)"><span>Negada</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_tristeza" value="proyectada" onchange="selPill(this)"><span>Proyectada</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_tristeza" value="actuada" onchange="selPill(this)"><span>Actuada</span></label>
+          </div>
+        </div>
+        <div class="emo-fila" id="emo-envidia">
+          <label class="emo-lbl"><input type="checkbox" name="emo_checked" value="envidia" onchange="toggleEmo(this)"><span class="emo-bullet"></span><span>Envidia</span></label>
+          <div class="emo-proc"><span class="proc-sep">→</span>
+            <label class="proc-pill"><input type="radio" name="emo_proc_envidia" value="expresada" onchange="selPill(this)"><span>Expresada</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_envidia" value="reprimida" onchange="selPill(this)"><span>Reprimida</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_envidia" value="negada" onchange="selPill(this)"><span>Negada</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_envidia" value="proyectada" onchange="selPill(this)"><span>Proyectada</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_envidia" value="actuada" onchange="selPill(this)"><span>Actuada</span></label>
+          </div>
+        </div>
+        <div class="emo-fila" id="emo-ansiedad">
+          <label class="emo-lbl"><input type="checkbox" name="emo_checked" value="ansiedad" onchange="toggleEmo(this)"><span class="emo-bullet"></span><span>Ansiedad</span></label>
+          <div class="emo-proc"><span class="proc-sep">→</span>
+            <label class="proc-pill"><input type="radio" name="emo_proc_ansiedad" value="expresada" onchange="selPill(this)"><span>Expresada</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_ansiedad" value="reprimida" onchange="selPill(this)"><span>Reprimida</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_ansiedad" value="negada" onchange="selPill(this)"><span>Negada</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_ansiedad" value="proyectada" onchange="selPill(this)"><span>Proyectada</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_ansiedad" value="actuada" onchange="selPill(this)"><span>Actuada</span></label>
+          </div>
+        </div>
+        <div class="emo-fila" id="emo-asco">
+          <label class="emo-lbl"><input type="checkbox" name="emo_checked" value="asco" onchange="toggleEmo(this)"><span class="emo-bullet"></span><span>Asco</span></label>
+          <div class="emo-proc"><span class="proc-sep">→</span>
+            <label class="proc-pill"><input type="radio" name="emo_proc_asco" value="expresado" onchange="selPill(this)"><span>Expresado</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_asco" value="reprimido" onchange="selPill(this)"><span>Reprimido</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_asco" value="negado" onchange="selPill(this)"><span>Negado</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_asco" value="proyectado" onchange="selPill(this)"><span>Proyectado</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_asco" value="actuado" onchange="selPill(this)"><span>Actuado</span></label>
+          </div>
+        </div>
+        <div class="emo-fila" id="emo-celos">
+          <label class="emo-lbl"><input type="checkbox" name="emo_checked" value="celos" onchange="toggleEmo(this)"><span class="emo-bullet"></span><span>Celos</span></label>
+          <div class="emo-proc"><span class="proc-sep">→</span>
+            <label class="proc-pill"><input type="radio" name="emo_proc_celos" value="expresados" onchange="selPill(this)"><span>Expresados</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_celos" value="reprimidos" onchange="selPill(this)"><span>Reprimidos</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_celos" value="negados" onchange="selPill(this)"><span>Negados</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_celos" value="proyectados" onchange="selPill(this)"><span>Proyectados</span></label>
+            <label class="proc-pill"><input type="radio" name="emo_proc_celos" value="actuados" onchange="selPill(this)"><span>Actuados</span></label>
+          </div>
+        </div>
       </div>
     </div>
     <div>
-      <label class="form-label" style="font-size:0.72rem">¿En quién la proyectas? (opcional)</label>
-      <input type="text" name="figura" class="form-input" placeholder="Persona o figura que la porta externamente..." value="{% if editing %}{{ entry.meta.figura|default:'' }}{% endif %}">
+      <label class="form-label" style="font-size:0.72rem">¿En quién proyectas la sombra? (opcional)</label>
+      <input type="text" name="figura" id="in-figura" class="form-input" placeholder="Persona o figura que la porta externamente...">
     </div>
   </div>
 
-  {# ── PATRÓN ───────────────────────────────────────────────── #}
+  <!-- ── PATRÓN ─────────────────────────────────────────────── -->
   <div class="meta-section" id="meta-patron">
     <div class="meta-divider"></div>
     <div class="meta-title">Mapa del patrón</div>
     <div class="form-group">
       <label class="form-label" style="font-size:0.72rem">¿Qué lo activa?</label>
-      <input type="text" name="detonante" class="form-input" placeholder="Situación, emoción o contexto que lo dispara..." value="{% if editing %}{{ entry.meta.detonante|default:'' }}{% endif %}">
+      <input type="text" name="detonante" id="in-detonante-patron" class="form-input" placeholder="Situación, emoción o contexto que lo dispara...">
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-      <div class="form-group">
-        <label class="form-label" style="font-size:0.72rem">Frecuencia</label>
-        <div class="radio-row" style="flex-direction:column;gap:0.35rem">
-          {% with frec=entry.meta.frecuencia|default:'' %}
-          <label class="radio-btn {% if editing and frec == 'primera_vez' %}sel{% endif %}"><input type="radio" name="frecuencia" value="primera_vez" {% if editing and frec == 'primera_vez' %}checked{% endif %} onchange="selRadio(this)"><span>Primera vez</span></label>
-          <label class="radio-btn {% if editing and frec == 'ocasional' %}sel{% endif %}"><input type="radio" name="frecuencia" value="ocasional" {% if editing and frec == 'ocasional' %}checked{% endif %} onchange="selRadio(this)"><span>Ocasional</span></label>
-          <label class="radio-btn {% if editing and frec == 'frecuente' %}sel{% endif %}"><input type="radio" name="frecuencia" value="frecuente" {% if editing and frec == 'frecuente' %}checked{% endif %} onchange="selRadio(this)"><span>Frecuente</span></label>
-          <label class="radio-btn {% if editing and frec == 'muy_frecuente' %}sel{% endif %}"><input type="radio" name="frecuencia" value="muy_frecuente" {% if editing and frec == 'muy_frecuente' %}checked{% endif %} onchange="selRadio(this)"><span>Muy frecuente</span></label>
-          {% endwith %}
+      <div>
+        <label class="form-label" style="font-size:0.72rem;margin-bottom:0.5rem">Frecuencia</label>
+        <div class="pill-row" style="flex-direction:column;gap:0.3rem">
+          <label class="pill"><input type="radio" name="frecuencia" value="primera_vez" onchange="selPill(this)"><span>Primera vez</span></label>
+          <label class="pill"><input type="radio" name="frecuencia" value="ocasional"   onchange="selPill(this)"><span>Ocasional</span></label>
+          <label class="pill"><input type="radio" name="frecuencia" value="frecuente"   onchange="selPill(this)"><span>Frecuente</span></label>
+          <label class="pill"><input type="radio" name="frecuencia" value="muy_frecuente" onchange="selPill(this)"><span>Muy frecuente</span></label>
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label" style="font-size:0.72rem">Área de la vida</label>
-        <div style="display:flex;flex-direction:column;gap:0.35rem;margin-top:0.5rem">
-          {% with areas=entry.meta.area_vital|default:'' %}
-          <label class="check-item {% if editing and 'vínculos' in areas %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="area_vital" value="vínculos" {% if editing and 'vínculos' in areas %}checked{% endif %}><span>Vínculos</span></label>
-          <label class="check-item {% if editing and 'trabajo' in areas %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="area_vital" value="trabajo" {% if editing and 'trabajo' in areas %}checked{% endif %}><span>Trabajo</span></label>
-          <label class="check-item {% if editing and 'salud' in areas %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="area_vital" value="salud" {% if editing and 'salud' in areas %}checked{% endif %}><span>Salud</span></label>
-          <label class="check-item {% if editing and 'autoestima' in areas %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="area_vital" value="autoestima" {% if editing and 'autoestima' in areas %}checked{% endif %}><span>Autoestima</span></label>
-          <label class="check-item {% if editing and 'espiritualidad' in areas %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="area_vital" value="espiritualidad" {% if editing and 'espiritualidad' in areas %}checked{% endif %}><span>Espiritualidad</span></label>
-          <label class="check-item {% if editing and 'dinero' in areas %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="area_vital" value="dinero" {% if editing and 'dinero' in areas %}checked{% endif %}><span>Dinero</span></label>
-          {% endwith %}
+      <div>
+        <label class="form-label" style="font-size:0.72rem;margin-bottom:0.5rem">Área de la vida</label>
+        <div style="display:flex;flex-direction:column;gap:0.3rem">
+          <label class="chip" id="chip-vinculos"><input type="checkbox" name="area_vital" value="vinculos" onchange="toggleChip(this,'on-amber')"><span>Vínculos</span></label>
+          <label class="chip" id="chip-trabajo"><input type="checkbox" name="area_vital" value="trabajo" onchange="toggleChip(this,'on-amber')"><span>Trabajo</span></label>
+          <label class="chip" id="chip-salud"><input type="checkbox" name="area_vital" value="salud" onchange="toggleChip(this,'on-amber')"><span>Salud</span></label>
+          <label class="chip" id="chip-autoestima"><input type="checkbox" name="area_vital" value="autoestima" onchange="toggleChip(this,'on-amber')"><span>Autoestima</span></label>
+          <label class="chip" id="chip-espiritualidad"><input type="checkbox" name="area_vital" value="espiritualidad" onchange="toggleChip(this,'on-amber')"><span>Espiritualidad</span></label>
+          <label class="chip" id="chip-dinero"><input type="checkbox" name="area_vital" value="dinero" onchange="toggleChip(this,'on-amber')"><span>Dinero</span></label>
         </div>
       </div>
     </div>
-    <label class="check-item {% if editing and entry.meta.cambiar %}checked{% endif %}" onclick="this.classList.toggle('checked')" style="margin-top:0.4rem;display:inline-flex">
-      <input type="checkbox" name="cambiar" {% if editing and entry.meta.cambiar %}checked{% endif %}><span>Quiero transformar este patrón</span>
+    <label class="chip" id="chip-cambiar" style="margin-top:0.75rem;display:inline-flex">
+      <input type="checkbox" name="cambiar" onchange="toggleChip(this,'on')"><span>Quiero transformar este patrón</span>
     </label>
   </div>
 
-  {# ── SIGNO ────────────────────────────────────────────────── #}
+  <!-- ── SIGNO ──────────────────────────────────────────────── -->
   <div class="meta-section" id="meta-signo">
     <div class="meta-divider"></div>
     <div class="meta-title">Registro del signo</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.9rem">
       <div>
         <label class="form-label" style="font-size:0.72rem">Localización corporal</label>
-        <input type="text" name="ubicacion" class="form-input" placeholder="Cabeza, pecho, abdomen..." value="{% if editing %}{{ entry.meta.ubicacion|default:'' }}{% endif %}">
+        <input type="text" name="ubicacion" id="in-ubicacion" class="form-input" placeholder="Cabeza, pecho, abdomen...">
       </div>
       <div>
         <label class="form-label" style="font-size:0.72rem">Intensidad (1–5)</label>
         <div style="display:flex;align-items:center;gap:0.75rem;margin-top:0.5rem">
-          <input type="range" name="intensidad_signo" min="1" max="5" step="1" value="{% if editing %}{{ entry.meta.intensidad|default:'3' }}{% else %}3{% endif %}" style="flex:1;accent-color:var(--calipso)" oninput="document.getElementById('signo-int').textContent=this.value">
-          <span id="signo-int" style="font-size:0.95rem;font-weight:700;color:var(--calipso);min-width:14px">{% if editing %}{{ entry.meta.intensidad|default:'3' }}{% else %}3{% endif %}</span>
+          <input type="range" name="intensidad_signo" id="signo-slider" min="1" max="5" step="1" value="3" style="flex:1;accent-color:var(--calipso)" oninput="document.getElementById('signo-val').textContent=this.value">
+          <span id="signo-val" style="font-size:0.95rem;font-weight:700;color:var(--calipso);min-width:14px">3</span>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:0.62rem;color:var(--dim)"><span>Leve</span><span>Intenso</span></div>
       </div>
     </div>
     <div class="form-group">
       <label class="form-label" style="font-size:0.72rem">¿Cuándo aparece?</label>
-      <div class="check-grid">
-        {% with moms=entry.meta.momento|default:'' %}
-        <label class="check-item {% if editing and 'al despertar' in moms %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="momento" value="al despertar" {% if editing and 'al despertar' in moms %}checked{% endif %}><span>Al despertar</span></label>
-        <label class="check-item {% if editing and 'mañana' in moms %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="momento" value="mañana" {% if editing and 'mañana' in moms %}checked{% endif %}><span>Mañana</span></label>
-        <label class="check-item {% if editing and 'tarde' in moms %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="momento" value="tarde" {% if editing and 'tarde' in moms %}checked{% endif %}><span>Tarde</span></label>
-        <label class="check-item {% if editing and 'noche' in moms %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="momento" value="noche" {% if editing and 'noche' in moms %}checked{% endif %}><span>Noche</span></label>
-        <label class="check-item {% if editing and 'antes de dormir' in moms %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="momento" value="antes de dormir" {% if editing and 'antes de dormir' in moms %}checked{% endif %}><span>Antes de dormir</span></label>
-        <label class="check-item {% if editing and 'con estrés' in moms %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="momento" value="con estrés" {% if editing and 'con estrés' in moms %}checked{% endif %}><span>Con estrés</span></label>
-        <label class="check-item {% if editing and 'sin causa clara' in moms %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="momento" value="sin causa clara" {% if editing and 'sin causa clara' in moms %}checked{% endif %}><span>Sin causa clara</span></label>
-        {% endwith %}
+      <div class="chip-row" style="margin-top:0.4rem">
+        <label class="chip" id="chip-al_despertar"><input type="checkbox" name="momento" value="al_despertar" onchange="toggleChip(this,'on-green')"><span>Al despertar</span></label>
+        <label class="chip" id="chip-manana"><input type="checkbox" name="momento" value="manana" onchange="toggleChip(this,'on-green')"><span>Mañana</span></label>
+        <label class="chip" id="chip-tarde"><input type="checkbox" name="momento" value="tarde" onchange="toggleChip(this,'on-green')"><span>Tarde</span></label>
+        <label class="chip" id="chip-noche"><input type="checkbox" name="momento" value="noche" onchange="toggleChip(this,'on-green')"><span>Noche</span></label>
+        <label class="chip" id="chip-antes_dormir"><input type="checkbox" name="momento" value="antes_dormir" onchange="toggleChip(this,'on-green')"><span>Antes de dormir</span></label>
+        <label class="chip" id="chip-con_estres"><input type="checkbox" name="momento" value="con_estres" onchange="toggleChip(this,'on-green')"><span>Con estrés</span></label>
+        <label class="chip" id="chip-sin_causa"><input type="checkbox" name="momento" value="sin_causa" onchange="toggleChip(this,'on-green')"><span>Sin causa clara</span></label>
       </div>
     </div>
     <div>
       <label class="form-label" style="font-size:0.72rem">¿Qué pudo activarlo?</label>
-      <input type="text" name="detonante" class="form-input" placeholder="Emoción, alimento, situación, esfuerzo..." value="{% if editing %}{{ entry.meta.detonante|default:'' }}{% endif %}">
+      <input type="text" name="detonante" id="in-detonante-signo" class="form-input" placeholder="Emoción, alimento, esfuerzo, situación...">
     </div>
   </div>
 
-  {# ── COMUNES ──────────────────────────────────────────────── #}
+  <!-- ── COMUNES ────────────────────────────────────────────── -->
   <div class="meta-divider"></div>
   <div style="display:grid;grid-template-columns:1fr 80px;gap:0.75rem">
-    <div class="form-group">
-      <label class="form-label">Etiquetas <span style="color:var(--dim);font-weight:400">(separadas por espacio)</span></label>
-      <input type="text" name="tags" class="form-input" placeholder="sombra miedo madre..." value="{% if editing %}{{ entry.tags }}{% endif %}">
+    <div>
+      <label class="form-label">Etiquetas <span style="font-weight:400;color:var(--dim)">(separadas por espacio)</span></label>
+      <input type="text" name="tags" id="in-tags" class="form-input" placeholder="sombra miedo madre...">
     </div>
-    <div class="form-group">
+    <div>
       <label class="form-label">Emoji</label>
-      <input type="text" name="emoji" id="emoji-input" class="form-input" placeholder="◈" maxlength="2" style="text-align:center;font-size:1.2rem" value="{% if editing %}{{ entry.emoji }}{% endif %}">
+      <input type="text" name="emoji" id="in-emoji" class="form-input" placeholder="◈" maxlength="2" style="text-align:center;font-size:1.2rem">
     </div>
   </div>
 
-  <div style="display:flex;gap:0.75rem;margin-top:0.75rem">
+  <div style="display:flex;gap:0.75rem;margin-top:1rem">
     <a href="/bitacora/" onclick="spaGo(event,this)" class="btn btn-secondary">Cancelar</a>
     <button type="submit" class="btn btn-primary" style="flex:1">{% if editing %}Actualizar →{% else %}Guardar →{% endif %}</button>
   </div>
@@ -226,36 +329,101 @@
 
 <script>
 const TIPO_META = {
-  sueno:  { label:'¿Qué soñaste?',              emoji:'◯', placeholder:'Describe el sueño con detalle — imágenes, sensaciones, emociones...' },
-  sombra: { label:'¿Qué sombra observas?',       emoji:'●', placeholder:'¿Qué rechazas, envidias o temes ver en ti? ¿Qué te perturbó o irritó?' },
-  patron: { label:'¿Qué patrón identificas?',    emoji:'⟡', placeholder:'Un comportamiento, respuesta emocional o situación que se repite...' },
-  signo:  { label:'¿Qué signo o síntoma notas?', emoji:'✦', placeholder:'Sensación física, emocional o energética. Descríbela sin interpretar.' },
-  manual: { label:'¿Qué notaste?',               emoji:'◈', placeholder:'Escribe libremente. Este espacio es solo tuyo...' },
+  sueno:  { label:'¿Qué soñaste?',              emoji:'◯', ph:'Describe el sueño con detalle — imágenes, sensaciones, emociones que dejó...' },
+  sombra: { label:'¿Qué sombra observas?',       emoji:'●', ph:'¿Qué rechazas, envidias o temes ver en ti? ¿Qué te perturbó o irritó?' },
+  patron: { label:'¿Qué patrón identificas?',    emoji:'⟡', ph:'Un comportamiento, respuesta emocional o situación que se repite...' },
+  signo:  { label:'¿Qué signo o síntoma notas?', emoji:'✦', ph:'Sensación física, emocional o energética — descríbela sin interpretar.' },
+  manual: { label:'¿Qué notaste?',               emoji:'◈', ph:'Escribe libremente. Este espacio es solo tuyo...' },
 };
-function selRadio(input) {
-  document.querySelectorAll(`input[name="${input.name}"]`).forEach(r => r.closest('.radio-btn').classList.remove('sel'));
-  input.closest('.radio-btn').classList.add('sel');
+
+function toggleChip(input, cls) {
+  input.closest('.chip').classList.toggle(cls, input.checked);
 }
+function toggleEmo(input) {
+  const fila = input.closest('.emo-fila');
+  const lbl  = input.closest('.emo-lbl');
+  fila.classList.toggle('marcada', input.checked);
+  lbl.classList.toggle('activa', input.checked);
+}
+function selPill(input) {
+  const container = input.closest('.emo-proc') || input.closest('.pill-row');
+  if (container) container.querySelectorAll('.pill, .proc-pill').forEach(p => p.classList.remove('sel'));
+  input.closest('.pill, .proc-pill').classList.add('sel');
+}
+
 function setTipo(btn) {
   document.querySelectorAll('.tipo-btn').forEach(b => b.className = 'tipo-btn');
   const tipo = btn.dataset.tipo;
   btn.classList.add('sel-' + tipo);
   document.getElementById('entry_type_input').value = tipo;
-  const meta = TIPO_META[tipo] || TIPO_META.manual;
-  document.getElementById('content-label').textContent = meta.label;
-  document.getElementById('content-area').placeholder = meta.placeholder;
-  const emojiEl = document.getElementById('emoji-input');
-  if (!emojiEl.value || Object.values(TIPO_META).some(m => m.emoji === emojiEl.value)) {
-    emojiEl.value = meta.emoji;
-  }
+  const m = TIPO_META[tipo] || TIPO_META.manual;
+  document.getElementById('content-label').textContent = m.label;
+  document.getElementById('content-area').placeholder = m.ph;
+  const emojiEl = document.getElementById('in-emoji');
+  if (!emojiEl.value || Object.values(TIPO_META).some(x => x.emoji === emojiEl.value)) emojiEl.value = m.emoji;
   document.querySelectorAll('.meta-section').forEach(s => s.classList.remove('visible'));
   const sec = document.getElementById('meta-' + tipo);
   if (sec) sec.classList.add('visible');
 }
+
+/* ── Inicialización en modo edición ─────────────────────── */
+function initMeta(meta, tipo) {
+  if (!meta || !tipo) return;
+  if (tipo === 'sueno') {
+    if (meta.lucido)     { const i = document.querySelector('input[name="lucido"]');     if(i){i.checked=true; toggleChip(i,'on');} }
+    if (meta.recurrente) { const i = document.querySelector('input[name="recurrente"]'); if(i){i.checked=true; toggleChip(i,'on');} }
+    if (meta.pesadilla)  { const i = document.querySelector('input[name="pesadilla"]');  if(i){i.checked=true; toggleChip(i,'on-rose');} }
+    setVal('in-personajes', meta.personajes);
+    setVal('in-ambiente', meta.ambiente);
+  } else if (tipo === 'sombra') {
+    setVal('in-conflicto', meta.conflicto);
+    setVal('in-figura', meta.figura);
+    (meta.emociones || []).forEach(e => {
+      const cb = document.querySelector(`input[name="emo_checked"][value="${e.nombre}"]`);
+      if (cb) { cb.checked = true; toggleEmo(cb); }
+      if (e.procesamiento) {
+        const rb = document.querySelector(`input[name="emo_proc_${e.nombre}"][value="${e.procesamiento}"]`);
+        if (rb) { rb.checked = true; selPill(rb); }
+      }
+    });
+  } else if (tipo === 'patron') {
+    setVal('in-detonante-patron', meta.detonante);
+    if (meta.frecuencia) {
+      const rb = document.querySelector(`input[name="frecuencia"][value="${meta.frecuencia}"]`);
+      if (rb) { rb.checked = true; selPill(rb); }
+    }
+    (meta.area_vital || []).forEach(v => {
+      const cb = document.querySelector(`input[name="area_vital"][value="${v}"]`);
+      if (cb) { cb.checked = true; toggleChip(cb, 'on-amber'); }
+    });
+    if (meta.cambiar) { const i = document.querySelector('input[name="cambiar"]'); if(i){i.checked=true; toggleChip(i,'on');} }
+  } else if (tipo === 'signo') {
+    setVal('in-ubicacion', meta.ubicacion);
+    if (meta.intensidad) { const s = document.getElementById('signo-slider'); s.value=meta.intensidad; document.getElementById('signo-val').textContent=meta.intensidad; }
+    (meta.momento || []).forEach(v => {
+      const cb = document.querySelector(`input[name="momento"][value="${v}"]`);
+      if (cb) { cb.checked = true; toggleChip(cb, 'on-green'); }
+    });
+    setVal('in-detonante-signo', meta.detonante);
+  }
+}
+function setVal(id, val) { const el = document.getElementById(id); if (el && val) el.value = val; }
+
+/* ── Arranque ───────────────────────────────────────────── */
 (function() {
-  const def = '{{ tipo_default|default:"manual" }}';
-  const btn = document.querySelector('.tipo-btn[data-tipo="' + def + '"]');
+  const tipo = '{{ tipo_default|default:"manual" }}';
+  const btn  = document.querySelector('.tipo-btn[data-tipo="' + tipo + '"]');
   if (btn) setTipo(btn);
+
+  {% if editing %}
+  const metaEl = document.getElementById('entry-meta');
+  if (metaEl) {
+    const meta = JSON.parse(metaEl.textContent || '{}');
+    initMeta(meta, tipo);
+    document.getElementById('in-tags').value  = '{{ entry.tags|escapejs }}';
+    document.getElementById('in-emoji').value = '{{ entry.emoji|escapejs }}';
+  }
+  {% endif %}
 })();
 </script>
 
