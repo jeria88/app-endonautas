@@ -28,6 +28,18 @@
   <a href="/practicantes/cliente/nuevo/" onclick="spaGo(event,this)" class="btn btn-primary">+ Nuevo cliente</a>
 </div>
 
+{% if not clients %}
+<div style="background:rgba(126,204,205,0.05);border:1px solid rgba(126,204,205,0.15);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:1.75rem">
+  <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--calipso);margin-bottom:0.6rem">Cómo empezar</div>
+  <div style="display:grid;gap:0.6rem">
+    <div style="font-size:0.83rem;color:var(--muted);display:flex;gap:0.6rem;align-items:flex-start"><span style="color:var(--calipso);font-weight:700;flex-shrink:0">1.</span> Crea un perfil de cliente con su alias (nombre ficticio para resguardar privacidad).</div>
+    <div style="font-size:0.83rem;color:var(--muted);display:flex;gap:0.6rem;align-items:flex-start"><span style="color:var(--calipso);font-weight:700;flex-shrink:0">2.</span> Comparte el enlace de invitación para que el cliente vincule su cuenta Endonautas.</div>
+    <div style="font-size:0.83rem;color:var(--muted);display:flex;gap:0.6rem;align-items:flex-start"><span style="color:var(--calipso);font-weight:700;flex-shrink:0">3.</span> Desde su perfil, crea fichas clínicas: el wizard recopila motivo, técnicas, diagnósticos y genera una propuesta terapéutica.</div>
+    <div style="font-size:0.83rem;color:var(--muted);display:flex;gap:0.6rem;align-items:flex-start"><span style="color:var(--calipso);font-weight:700;flex-shrink:0">4.</span> Agenda sesiones, escribe notas clínicas y sigue el progreso desde el perfil del cliente.</div>
+  </div>
+</div>
+{% endif %}
+
 {% if clients %}
 <div class="client-grid">
   {% for client in clients %}

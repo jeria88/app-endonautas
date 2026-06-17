@@ -73,6 +73,9 @@ def chat_message(request, pk):
         return JsonResponse({'error': 'Mensaje vacío'}, status=400)
 
     ChatMessage.objects.create(session=session, role='user', content=content)
+    if not session.title:
+        session.title = content[:60].strip()
+        session.save(update_fields=['title'])
     reply = _get_reply(session, content)
     msg = ChatMessage.objects.create(session=session, role='assistant', content=reply)
 

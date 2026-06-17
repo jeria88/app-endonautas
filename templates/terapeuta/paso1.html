@@ -17,9 +17,18 @@
 
 <div class="progress-bar"><div class="progress-fill"></div></div>
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+  {% if cliente %}
+  <a href="/practicantes/cliente/{{ cliente.pk }}/" onclick="spaGo(event,this)" style="color:var(--calipso);text-decoration:none;font-size:0.82rem">← {{ cliente.alias }}</a>
+  {% else %}
   <a href="/terapeuta/" onclick="spaGo(event,this)" style="color:var(--muted);text-decoration:none;font-size:0.82rem">← Consultas</a>
+  {% endif %}
   <span style="font-size:0.72rem;color:var(--dim)">Paso 1 de 5</span>
 </div>
+{% if cliente %}
+<div style="background:rgba(126,204,205,0.06);border:1px solid rgba(126,204,205,0.2);border-radius:10px;padding:0.65rem 1rem;margin-bottom:1.25rem;font-size:0.82rem;color:var(--calipso)">
+  Creando ficha clínica para <strong>{{ cliente.alias }}</strong>
+</div>
+{% endif %}
 
 <div style="max-width:620px">
   <h1 style="font-size:1.2rem;font-weight:700;margin-bottom:0.25rem">Datos del {% if consulta.modo == 'terapeuta' %}paciente{% else %}consultante{% endif %}</h1>

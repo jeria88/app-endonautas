@@ -58,14 +58,17 @@
 <div id="tab-fichas" class="tab-content">
   {% for ficha in fichas %}
   <div class="result-row">
-    <div>
-      <div style="font-size:0.88rem;font-weight:500">{{ ficha.motivo|truncatechars:80|default:"Sin motivo" }}</div>
-      <div style="font-size:0.72rem;color:var(--muted)">
+    <div style="flex:1;min-width:0">
+      <div style="font-size:0.88rem;font-weight:500">{{ ficha.nombre_paciente|default:ficha.motivo|truncatechars:70|default:"Sin motivo" }}</div>
+      <div style="font-size:0.72rem;color:var(--muted);margin-top:0.15rem">
         {{ ficha.fecha_creacion|date:"d M Y" }}
         {% if ficha.paso_actual >= 5 %}
         · <span style="color:var(--calipso)">Completada</span>
         {% else %}
         · <span style="color:var(--amber)">Paso {{ ficha.paso_actual }}/5</span>
+        {% endif %}
+        {% if ficha.propuesta_terapeutica %}
+        · <span style="color:var(--calipso)">Con propuesta</span>
         {% endif %}
       </div>
     </div>

@@ -158,6 +158,13 @@ def wizard_paso1(request: HttpRequest, consulta_id: int) -> HttpResponse:
             alarmas = cd.get("senales_alarma", [])
             consulta.senales_alarma = bool(alarmas)
             consulta.paso_actual = 2
+            if consulta.modo == "autoconsulta" and not consulta.nombre_paciente:
+                from django.utils import timezone
+                fecha = timezone.now().strftime("%d/%m/%y")
+                motivo_short = (consulta.motivo or "")[:40].rstrip()
+                if len(consulta.motivo or "") > 40:
+                    motivo_short += "…"
+                consulta.nombre_paciente = f"{motivo_short} · {fecha}"
             consulta.save()
             return redirect("terapeuta:paso2", consulta_id=consulta.id)
     else:
@@ -167,7 +174,10 @@ def wizard_paso1(request: HttpRequest, consulta_id: int) -> HttpResponse:
             "intensidad": consulta.intensidad, "duracion": consulta.duracion,
             "medicamentos_actuales": consulta.medicamentos_actuales,
         })
-    return render(request, "terapeuta/paso1.html", {"form": form, "consulta": consulta, "paso": 1, "total_pasos": 5})
+    return render(request, "terapeuta/paso1.html", {
+        "form": form, "consulta": consulta, "paso": 1, "total_pasos": 5,
+        "cliente": consulta.perfil_cliente,
+    })
 
 
 @login_required
@@ -601,6 +611,7 @@ def consulta_detalle(request: HttpRequest, consulta_id: int) -> HttpResponse:
         "diagnosticos": diagnosticos,
         "diagnosticos_confirmados": [d for d in diagnosticos if d.fue_confirmado_por_usuario],
         "propuesta": propuesta,
+        "perfil_cliente": consulta.perfil_cliente,
     })
 
 
