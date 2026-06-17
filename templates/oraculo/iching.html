@@ -131,17 +131,38 @@ document.getElementById('consultarBtn').addEventListener('click', async () => {
   }
 });
 
-function renderHexLines(lineas, containerId) {
-  const container = document.getElementById(containerId);
-  container.innerHTML = '';
-  [...lineas].reverse().forEach((linea, i) => {
-    const div = document.createElement('div');
-    const esMovil = linea === 6 || linea === 9;
-    const esYang = linea === 7 || linea === 9;
-    div.className = 'hex-line' + (esYang ? ' yang' : ' yin') + (esMovil ? ' movil' : '');
-    container.appendChild(div);
-    setTimeout(() => div.classList.add('show'), i * 90);
+function renderHexLines(lineas, containerId, small) {
+  var container = document.getElementById(containerId);
+  var W = small ? 80 : 120;
+  var lh = small ? 6 : 10, gap = small ? 3 : 5;
+  var totalH = 6 * lh + 5 * gap;
+  var s = '<svg viewBox="0 0 ' + W + ' ' + totalH + '" width="' + W + '" height="' + totalH + '" xmlns="http://www.w3.org/2000/svg">';
+  lineas.slice().reverse().forEach(function(linea, i) {
+    var y = i * (lh + gap);
+    var esMovil = linea === 6 || linea === 9;
+    var esYang  = linea === 7 || linea === 9;
+    var color = esMovil ? '#ffbf00' : 'rgba(155,142,196,0.85)';
+    var rx = Math.round(lh / 3);
+    if (esYang) {
+      s += '<rect x="0" y="' + y + '" width="' + W + '" height="' + lh + '" rx="' + rx + '" fill="' + color + '">';
+      if (esMovil) s += '<animate attributeName="opacity" values="1;0.4;1" dur="1.8s" repeatCount="indefinite"/>';
+      s += '</rect>';
+    } else {
+      var hw = ((W - (small ? 8 : 12)) / 2).toFixed(1);
+      var x2 = (W - parseFloat(hw)).toFixed(1);
+      s += '<rect x="0" y="' + y + '" width="' + hw + '" height="' + lh + '" rx="' + rx + '" fill="' + color + '">';
+      if (esMovil) s += '<animate attributeName="opacity" values="1;0.4;1" dur="1.8s" repeatCount="indefinite"/>';
+      s += '</rect>';
+      s += '<rect x="' + x2 + '" y="' + y + '" width="' + hw + '" height="' + lh + '" rx="' + rx + '" fill="' + color + '">';
+      if (esMovil) s += '<animate attributeName="opacity" values="1;0.4;1" dur="1.8s" repeatCount="indefinite"/>';
+      s += '</rect>';
+      if (esMovil && !small) {
+        s += '<circle cx="' + (W/2).toFixed(1) + '" cy="' + (y + lh/2).toFixed(1) + '" r="3" fill="' + color + '" opacity="0.65"/>';
+      }
+    }
   });
+  s += '</svg>';
+  container.innerHTML = s;
 }
 
 function reveal(id, delay) {
@@ -182,13 +203,7 @@ function mostrar(data) {
       secSec.style.display = '';
       document.getElementById('hexSecNum').textContent = `Hexagrama ${hs.numero}`;
       document.getElementById('hexSecName').textContent = hs.nombre;
-      const linesHtml = [...hs.lineas].reverse().map(l => {
-        const esYang = l === 7 || l === 9;
-        return esYang
-          ? '<div style="height:6px;border-radius:2px;background:rgba(155,142,196,0.5);margin-bottom:3px"></div>'
-          : '<div style="height:6px;border-radius:2px;display:flex;gap:5px;margin-bottom:3px"><div style="flex:1;height:6px;border-radius:2px;background:rgba(155,142,196,0.5)"></div><div style="flex:1;height:6px;border-radius:2px;background:rgba(155,142,196,0.5)"></div></div>';
-      }).join('');
-      document.getElementById('hexSecLines').innerHTML = linesHtml;
+      renderHexLines(hs.lineas, 'hexSecLines', true);
     }, 2100);
   }
 

@@ -19,6 +19,7 @@
 .elem-air   { color:#7cc0c0; }
 .elem-water { color:#6080c0; }
 .retro-tag { font-size:0.65rem;color:var(--rose);margin-left:4px; }
+.zodiac-wheel-wrap { margin-bottom:1.75rem;text-align:center; }
 </style>
 
 <div>
@@ -50,10 +51,13 @@
     </div>
   </div>
 
+  <!-- Rueda zodiacal -->
+  <div class="zodiac-wheel-wrap" id="zodiac-wheel"></div>
+
   <!-- Planetas -->
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0.75rem;margin-bottom:1.5rem">
     {% for planet in report.raw_data.planets %}
-    <div class="astral-planet">
+    <div class="astral-planet" data-sign="{{ planet.sign }}" data-label="{{ planet.label }}">
       <div class="p-label">{{ planet.label }}</div>
       <div class="p-sign elem-{{ planet.element }}">
         {{ planet.sign }}{% if planet.retrograde %}<span class="retro-tag">℞</span>{% endif %}
@@ -72,6 +76,8 @@
   </div>
   {% endif %}
 
+  {{ report.raw_data|json_script:"chart-raw" }}
+
   {% elif report.status == 'error' %}
   <div class="alert alert-error">{{ report.error_message|default:"Error al calcular la carta." }}</div>
   <a href="/nacimiento/" onclick="spaGo(event,this)" class="btn btn-secondary btn-sm" style="margin-top:1rem">Volver</a>
@@ -79,4 +85,77 @@
   <div class="panel" style="text-align:center;padding:2.5rem;color:var(--muted)">Calculando carta astral…</div>
   {% endif %}
 </div>
+
+<script>
+(function(){
+  var SIGN_ORDER=['Aries','Tauro','Géminis','Cáncer','Leo','Virgo','Libra','Escorpio','Sagitario','Capricornio','Acuario','Piscis'];
+  var SIGN_SYM={Aries:'♈',Tauro:'♉','Géminis':'♊','Cáncer':'♋',Leo:'♌',Virgo:'♍',Libra:'♎',Escorpio:'♏',Sagitario:'♐',Capricornio:'♑',Acuario:'♒',Piscis:'♓'};
+  var ELEM_COLORS={fire:'#e07060',earth:'#b0a060',air:'#7cc0c0',water:'#6080c0'};
+  var SIGN_ELEM={Aries:'fire',Tauro:'earth','Géminis':'air','Cáncer':'water',Leo:'fire',Virgo:'earth',Libra:'air',Escorpio:'water',Sagitario:'fire',Capricornio:'earth',Acuario:'air',Piscis:'water'};
+  var PLANET_SYM={Sol:'☉',Luna:'☽',Mercurio:'☿',Venus:'♀',Marte:'♂','Júpiter':'♃',Saturno:'♄',Urano:'⛢',Neptuno:'♆','Plutón':'♇',Quirón:'⚷'};
+
+  function buildWheel(data) {
+    var CX=140,CY=140,R_outer=128,R_sym=108,R_inner=84,R_planet=66;
+    var s='<svg viewBox="0 0 280 280" width="280" height="280" xmlns="http://www.w3.org/2000/svg">';
+    s+='<circle cx="'+CX+'" cy="'+CY+'" r="'+R_outer+'" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>';
+    s+='<circle cx="'+CX+'" cy="'+CY+'" r="'+R_inner+'" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>';
+    for(var i=0;i<12;i++){
+      var a0=(i*30-90)*Math.PI/180;
+      var amid=((i+0.5)*30-90)*Math.PI/180;
+      var x1=(CX+R_inner*Math.cos(a0)).toFixed(1),y1=(CY+R_inner*Math.sin(a0)).toFixed(1);
+      var x2=(CX+R_outer*Math.cos(a0)).toFixed(1),y2=(CY+R_outer*Math.sin(a0)).toFixed(1);
+      s+='<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="rgba(255,255,255,0.07)" stroke-width="0.5"/>';
+      var sign=SIGN_ORDER[i],elem=SIGN_ELEM[sign]||'air',color=ELEM_COLORS[elem];
+      var sx=(CX+R_sym*Math.cos(amid)).toFixed(1),sy=(CY+R_sym*Math.sin(amid)+4).toFixed(1);
+      s+='<text x="'+sx+'" y="'+sy+'" text-anchor="middle" font-size="12" fill="'+color+'" opacity="0.65" font-family="serif">'+SIGN_SYM[sign]+'</text>';
+    }
+    var planets=data.planets||[];
+    planets.forEach(function(p){
+      var idx=SIGN_ORDER.indexOf(p.sign);
+      if(idx<0)return;
+      var lon=idx*30+parseFloat(p.degree||0);
+      var ang=(lon-90)*Math.PI/180;
+      var px=(CX+R_planet*Math.cos(ang)).toFixed(1),py=(CY+R_planet*Math.sin(ang)).toFixed(1);
+      var color=ELEM_COLORS[SIGN_ELEM[p.sign]||'air'];
+      var sym=PLANET_SYM[p.label]||'●';
+      s+='<circle cx="'+px+'" cy="'+py+'" r="11" fill="rgba(10,10,15,0.75)" stroke="'+color+'" stroke-width="1.2" opacity="0.9"/>';
+      s+='<text x="'+px+'" y="'+(parseFloat(py)+4).toFixed(1)+'" text-anchor="middle" font-size="9.5" fill="'+color+'" font-family="serif">'+sym+'</text>';
+    });
+    if(data.ascendant){
+      var asc=data.ascendant;
+      var aidx=SIGN_ORDER.indexOf(asc.sign);
+      if(aidx>=0){
+        var lon2=aidx*30+parseFloat(asc.degree||0);
+        var ang2=(lon2-90)*Math.PI/180;
+        var ax=(CX+R_outer*Math.cos(ang2)).toFixed(1),ay=(CY+R_outer*Math.sin(ang2)).toFixed(1);
+        s+='<line x1="'+CX+'" y1="'+CY+'" x2="'+ax+'" y2="'+ay+'" stroke="#4ecdc4" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.55"/>';
+        var lx=(CX+(R_outer+10)*Math.cos(ang2)).toFixed(1),ly=(CY+(R_outer+10)*Math.sin(ang2)+3).toFixed(1);
+        s+='<text x="'+lx+'" y="'+ly+'" text-anchor="middle" font-size="7" fill="#4ecdc4" opacity="0.8" font-family="sans-serif">ASC</text>';
+      }
+    }
+    s+='<text x="'+CX+'" y="'+(CY+6)+'" text-anchor="middle" font-size="18" fill="rgba(255,255,255,0.07)" font-family="serif">☯</text>';
+    s+='</svg>';
+    return s;
+  }
+
+  var raw=document.getElementById('chart-raw');
+  if(raw){
+    try{
+      var data=JSON.parse(raw.textContent);
+      document.getElementById('zodiac-wheel').innerHTML=buildWheel(data);
+    }catch(e){}
+  }
+
+  document.querySelectorAll('.astral-planet[data-sign]').forEach(function(card){
+    var sym=SIGN_SYM[card.dataset.sign];
+    if(!sym)return;
+    var pSign=card.querySelector('.p-sign');
+    if(!pSign)return;
+    var sp=document.createElement('span');
+    sp.style.cssText='font-family:serif;margin-right:0.25em;opacity:0.75;font-size:1.05rem';
+    sp.textContent=sym;
+    pSign.insertBefore(sp,pSign.firstChild);
+  });
+})();
+</script>
 {% endblock %}

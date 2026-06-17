@@ -450,8 +450,11 @@ def wizard_paso5(request: HttpRequest, consulta_id: int) -> HttpResponse:
 
 
 _SYSTEM_PROPUESTA = (
-    "Eres un terapeuta en salud integrativa. Tu trabajo es leer protocolos clínicos ya definidos "
-    "y estructurarlos en lenguaje comprensible. NO inventas protocolos. Respondes siempre con JSON válido."
+    "Eres un terapeuta en salud integrativa especializado en sistemas médicos comparados. "
+    "Para Medicina Tradicional China: identifica el patrón energético exacto (síndrome), "
+    "el elemento afectado (Madera|Fuego|Tierra|Metal|Agua) y nombra los puntos por nombre completo + código. "
+    "Para Ayurveda: identifica el dosha desequilibrado (Vata|Pitta|Kapha) y el chakra relacionado con la afección. "
+    "NO inventas protocolos. Respondes siempre con JSON válido."
 )
 
 def _generar_propuesta_fallback(diagnosticos: list) -> dict:
@@ -547,6 +550,10 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
       "tecnica": "nombre de la técnica",
       "diagnostico": "título del diagnóstico",
       "icono": "emoji representativo",
+      "patron_sindrome": "nombre del síndrome o patrón energético (ej: Estancamiento de Qi de Hígado, Vata en exceso)",
+      "elemento_afectado": "solo para MTC: Madera|Fuego|Tierra|Metal|Agua — omitir para otros marcos",
+      "dosha_afectado": "solo para Ayurveda: Vata|Pitta|Kapha — omitir para otros marcos",
+      "chakra_relacionado": "solo para Ayurveda: nombre del chakra principal afectado — omitir para otros marcos",
       "pasos": ["paso detallado 1", "paso detallado 2"],
       "duracion": "tiempo total estimado",
       "frecuencia": "frecuencia específica",
