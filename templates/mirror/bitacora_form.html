@@ -1,51 +1,216 @@
 {% extends "base.html" %}
-{% block title %}Nueva entrada — Bitácora{% endblock %}
+{% block title %}{% if editing %}Editar entrada{% else %}Nueva entrada{% endif %} — Bitácora{% endblock %}
 {% block extra_head %}
 <style data-page-style>
-.tipo-selector { display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem; }
+.tipo-selector { display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.25rem; }
 .tipo-btn {
   font-size:0.75rem;font-weight:600;padding:0.4rem 0.9rem;border-radius:20px;
-  border:1px solid var(--border);color:var(--muted);background:none;cursor:pointer;
-  transition:all 0.2s;
+  border:1px solid var(--border);color:var(--muted);background:none;cursor:pointer;transition:all 0.2s;
 }
 .tipo-btn:hover { border-color:var(--border-active);color:var(--text); }
-.tipo-btn.sel-sueno   { background:rgba(155,142,196,0.15);border-color:rgba(155,142,196,0.4);color:#9b8ec4; }
-.tipo-btn.sel-sombra  { background:rgba(201,123,132,0.15);border-color:rgba(201,123,132,0.4);color:#c97b84; }
-.tipo-btn.sel-patron  { background:rgba(212,160,86,0.15);border-color:rgba(212,160,86,0.4);color:#d4a056; }
-.tipo-btn.sel-signo   { background:rgba(126,196,155,0.15);border-color:rgba(126,196,155,0.4);color:#7ec49b; }
-.tipo-btn.sel-manual  { background:rgba(126,204,205,0.1);border-color:rgba(126,204,205,0.3);color:var(--calipso); }
+.tipo-btn.sel-sueno  { background:rgba(155,142,196,0.15);border-color:rgba(155,142,196,0.4);color:#9b8ec4; }
+.tipo-btn.sel-sombra { background:rgba(201,123,132,0.15);border-color:rgba(201,123,132,0.4);color:#c97b84; }
+.tipo-btn.sel-patron { background:rgba(212,160,86,0.15);border-color:rgba(212,160,86,0.4);color:#d4a056; }
+.tipo-btn.sel-signo  { background:rgba(126,196,155,0.15);border-color:rgba(126,196,155,0.4);color:#7ec49b; }
+.tipo-btn.sel-manual { background:rgba(126,204,205,0.1);border-color:rgba(126,204,205,0.3);color:var(--calipso); }
+.meta-section { display:none;margin-top:1rem; }
+.meta-section.visible { display:block; }
+.check-grid { display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.5rem; }
+.check-item {
+  display:inline-flex;align-items:center;gap:0.4rem;padding:0.4rem 0.7rem;
+  background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:7px;
+  font-size:0.78rem;color:var(--muted);cursor:pointer;transition:border-color 0.15s;
+}
+.check-item input[type=checkbox] { display:none; }
+.check-item.checked { border-color:var(--calipso);background:var(--calipso-glow);color:var(--calipso); }
+.radio-row { display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.5rem; }
+.radio-btn {
+  padding:0.4rem 0.85rem;border:1.5px solid var(--border);border-radius:7px;
+  font-size:0.78rem;color:var(--muted);cursor:pointer;background:transparent;transition:all 0.15s;
+}
+.radio-btn input { display:none; }
+.radio-btn.sel { border-color:var(--calipso);color:var(--calipso);background:var(--calipso-glow); }
+.meta-divider { height:1px;background:rgba(255,255,255,0.05);margin:1.1rem 0; }
+.meta-title { font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.75rem; }
 </style>
 {% endblock %}
 {% block content %}
 
 <a href="/bitacora/" onclick="spaGo(event,this)" style="color:var(--calipso);text-decoration:none;font-size:0.82rem;display:inline-block;margin-bottom:1.25rem">← Bitácora</a>
-
 <h1 style="font-size:1.2rem;font-weight:700;margin-bottom:1.25rem">{% if editing %}Editar entrada{% else %}Nueva entrada{% endif %}</h1>
 
-<form method="post" action="{% if editing %}/bitacora/{{ entry.pk }}/editar/{% else %}/bitacora/nueva/{% endif %}" class="panel" style="padding:1.25rem;max-width:560px">
+<form method="post" action="{% if editing %}/bitacora/{{ entry.pk }}/editar/{% else %}/bitacora/nueva/{% endif %}" class="panel" style="padding:1.25rem;max-width:580px">
   {% csrf_token %}
   <input type="hidden" name="entry_type" id="entry_type_input" value="{{ tipo_default|default:'manual' }}">
 
   <div class="form-group">
     <label class="form-label">Categoría</label>
     <div class="tipo-selector">
-      <button type="button" class="tipo-btn" data-tipo="sueno" onclick="setTipo(this)">◯ Sueño</button>
+      <button type="button" class="tipo-btn" data-tipo="sueno"  onclick="setTipo(this)">◯ Sueño</button>
       <button type="button" class="tipo-btn" data-tipo="sombra" onclick="setTipo(this)">● Sombra</button>
       <button type="button" class="tipo-btn" data-tipo="patron" onclick="setTipo(this)">⟡ Patrón</button>
-      <button type="button" class="tipo-btn" data-tipo="signo" onclick="setTipo(this)">✦ Signo</button>
+      <button type="button" class="tipo-btn" data-tipo="signo"  onclick="setTipo(this)">✦ Signo</button>
       <button type="button" class="tipo-btn" data-tipo="manual" onclick="setTipo(this)">◈ Nota libre</button>
     </div>
   </div>
 
   <div class="form-group">
     <label class="form-label" id="content-label">¿Qué notaste?</label>
-    <textarea name="content" id="content-area" class="form-input" rows="6" required placeholder="Escribe libremente. Este espacio es solo tuyo..." autofocus>{% if editing %}{{ entry.content }}{% endif %}</textarea>
+    <textarea name="content" id="content-area" class="form-input" rows="5" required placeholder="Escribe libremente..." autofocus>{% if editing %}{{ entry.content }}{% endif %}</textarea>
   </div>
 
+  {# ── SUEÑO ────────────────────────────────────────────────── #}
+  <div class="meta-section" id="meta-sueno">
+    <div class="meta-divider"></div>
+    <div class="meta-title">Características del sueño</div>
+    <div class="check-grid">
+      <label class="check-item {% if editing and entry.meta.lucido %}checked{% endif %}" onclick="this.classList.toggle('checked')">
+        <input type="checkbox" name="lucido" {% if editing and entry.meta.lucido %}checked{% endif %}><span>◉ Lúcido</span>
+      </label>
+      <label class="check-item {% if editing and entry.meta.recurrente %}checked{% endif %}" onclick="this.classList.toggle('checked')">
+        <input type="checkbox" name="recurrente" {% if editing and entry.meta.recurrente %}checked{% endif %}><span>↻ Recurrente</span>
+      </label>
+      <label class="check-item {% if editing and entry.meta.pesadilla %}checked{% endif %}" onclick="this.classList.toggle('checked')">
+        <input type="checkbox" name="pesadilla" {% if editing and entry.meta.pesadilla %}checked{% endif %}><span>⚡ Pesadilla</span>
+      </label>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-top:0.75rem">
+      <div>
+        <label class="form-label" style="font-size:0.72rem">¿Quiénes aparecen?</label>
+        <input type="text" name="personajes" class="form-input" placeholder="Personas, animales, figuras..." value="{% if editing %}{{ entry.meta.personajes|default:'' }}{% endif %}">
+      </div>
+      <div>
+        <label class="form-label" style="font-size:0.72rem">¿Dónde transcurre?</label>
+        <input type="text" name="ambiente" class="form-input" placeholder="Lugar, atmósfera, época..." value="{% if editing %}{{ entry.meta.ambiente|default:'' }}{% endif %}">
+      </div>
+    </div>
+  </div>
+
+  {# ── SOMBRA ───────────────────────────────────────────────── #}
+  <div class="meta-section" id="meta-sombra">
+    <div class="meta-divider"></div>
+    <div class="meta-title">Exploración de la sombra</div>
+    <div class="form-group">
+      <label class="form-label" style="font-size:0.72rem">¿Qué disparó esta sombra?</label>
+      <input type="text" name="conflicto" class="form-input" placeholder="Situación, persona o momento que la activó..." value="{% if editing %}{{ entry.meta.conflicto|default:'' }}{% endif %}">
+    </div>
+    <div class="form-group">
+      <label class="form-label" style="font-size:0.72rem">Emociones involucradas</label>
+      <div class="check-grid">
+        {% with emos=entry.meta.emociones|default:'' %}
+        <label class="check-item {% if editing and 'miedo' in emos %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="emociones" value="miedo" {% if editing and 'miedo' in emos %}checked{% endif %}><span>Miedo</span></label>
+        <label class="check-item {% if editing and 'ira' in emos %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="emociones" value="ira" {% if editing and 'ira' in emos %}checked{% endif %}><span>Ira</span></label>
+        <label class="check-item {% if editing and 'vergüenza' in emos %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="emociones" value="vergüenza" {% if editing and 'vergüenza' in emos %}checked{% endif %}><span>Vergüenza</span></label>
+        <label class="check-item {% if editing and 'culpa' in emos %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="emociones" value="culpa" {% if editing and 'culpa' in emos %}checked{% endif %}><span>Culpa</span></label>
+        <label class="check-item {% if editing and 'tristeza' in emos %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="emociones" value="tristeza" {% if editing and 'tristeza' in emos %}checked{% endif %}><span>Tristeza</span></label>
+        <label class="check-item {% if editing and 'envidia' in emos %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="emociones" value="envidia" {% if editing and 'envidia' in emos %}checked{% endif %}><span>Envidia</span></label>
+        <label class="check-item {% if editing and 'ansiedad' in emos %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="emociones" value="ansiedad" {% if editing and 'ansiedad' in emos %}checked{% endif %}><span>Ansiedad</span></label>
+        <label class="check-item {% if editing and 'asco' in emos %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="emociones" value="asco" {% if editing and 'asco' in emos %}checked{% endif %}><span>Asco</span></label>
+        <label class="check-item {% if editing and 'celos' in emos %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="emociones" value="celos" {% if editing and 'celos' in emos %}checked{% endif %}><span>Celos</span></label>
+        {% endwith %}
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" style="font-size:0.72rem">¿Cómo fue manejada?</label>
+      <div class="radio-row">
+        {% with exp=entry.meta.expresion|default:'' %}
+        <label class="radio-btn {% if editing and exp == 'expresada' %}sel{% endif %}"><input type="radio" name="expresion" value="expresada" {% if editing and exp == 'expresada' %}checked{% endif %} onchange="selRadio(this)"><span>Expresada</span></label>
+        <label class="radio-btn {% if editing and exp == 'reprimida' %}sel{% endif %}"><input type="radio" name="expresion" value="reprimida" {% if editing and exp == 'reprimida' %}checked{% endif %} onchange="selRadio(this)"><span>Reprimida</span></label>
+        <label class="radio-btn {% if editing and exp == 'negada' %}sel{% endif %}"><input type="radio" name="expresion" value="negada" {% if editing and exp == 'negada' %}checked{% endif %} onchange="selRadio(this)"><span>Negada</span></label>
+        <label class="radio-btn {% if editing and exp == 'proyectada' %}sel{% endif %}"><input type="radio" name="expresion" value="proyectada" {% if editing and exp == 'proyectada' %}checked{% endif %} onchange="selRadio(this)"><span>Proyectada</span></label>
+        <label class="radio-btn {% if editing and exp == 'actuada' %}sel{% endif %}"><input type="radio" name="expresion" value="actuada" {% if editing and exp == 'actuada' %}checked{% endif %} onchange="selRadio(this)"><span>Actuada</span></label>
+        {% endwith %}
+      </div>
+    </div>
+    <div>
+      <label class="form-label" style="font-size:0.72rem">¿En quién la proyectas? (opcional)</label>
+      <input type="text" name="figura" class="form-input" placeholder="Persona o figura que la porta externamente..." value="{% if editing %}{{ entry.meta.figura|default:'' }}{% endif %}">
+    </div>
+  </div>
+
+  {# ── PATRÓN ───────────────────────────────────────────────── #}
+  <div class="meta-section" id="meta-patron">
+    <div class="meta-divider"></div>
+    <div class="meta-title">Mapa del patrón</div>
+    <div class="form-group">
+      <label class="form-label" style="font-size:0.72rem">¿Qué lo activa?</label>
+      <input type="text" name="detonante" class="form-input" placeholder="Situación, emoción o contexto que lo dispara..." value="{% if editing %}{{ entry.meta.detonante|default:'' }}{% endif %}">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div class="form-group">
+        <label class="form-label" style="font-size:0.72rem">Frecuencia</label>
+        <div class="radio-row" style="flex-direction:column;gap:0.35rem">
+          {% with frec=entry.meta.frecuencia|default:'' %}
+          <label class="radio-btn {% if editing and frec == 'primera_vez' %}sel{% endif %}"><input type="radio" name="frecuencia" value="primera_vez" {% if editing and frec == 'primera_vez' %}checked{% endif %} onchange="selRadio(this)"><span>Primera vez</span></label>
+          <label class="radio-btn {% if editing and frec == 'ocasional' %}sel{% endif %}"><input type="radio" name="frecuencia" value="ocasional" {% if editing and frec == 'ocasional' %}checked{% endif %} onchange="selRadio(this)"><span>Ocasional</span></label>
+          <label class="radio-btn {% if editing and frec == 'frecuente' %}sel{% endif %}"><input type="radio" name="frecuencia" value="frecuente" {% if editing and frec == 'frecuente' %}checked{% endif %} onchange="selRadio(this)"><span>Frecuente</span></label>
+          <label class="radio-btn {% if editing and frec == 'muy_frecuente' %}sel{% endif %}"><input type="radio" name="frecuencia" value="muy_frecuente" {% if editing and frec == 'muy_frecuente' %}checked{% endif %} onchange="selRadio(this)"><span>Muy frecuente</span></label>
+          {% endwith %}
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="font-size:0.72rem">Área de la vida</label>
+        <div style="display:flex;flex-direction:column;gap:0.35rem;margin-top:0.5rem">
+          {% with areas=entry.meta.area_vital|default:'' %}
+          <label class="check-item {% if editing and 'vínculos' in areas %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="area_vital" value="vínculos" {% if editing and 'vínculos' in areas %}checked{% endif %}><span>Vínculos</span></label>
+          <label class="check-item {% if editing and 'trabajo' in areas %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="area_vital" value="trabajo" {% if editing and 'trabajo' in areas %}checked{% endif %}><span>Trabajo</span></label>
+          <label class="check-item {% if editing and 'salud' in areas %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="area_vital" value="salud" {% if editing and 'salud' in areas %}checked{% endif %}><span>Salud</span></label>
+          <label class="check-item {% if editing and 'autoestima' in areas %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="area_vital" value="autoestima" {% if editing and 'autoestima' in areas %}checked{% endif %}><span>Autoestima</span></label>
+          <label class="check-item {% if editing and 'espiritualidad' in areas %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="area_vital" value="espiritualidad" {% if editing and 'espiritualidad' in areas %}checked{% endif %}><span>Espiritualidad</span></label>
+          <label class="check-item {% if editing and 'dinero' in areas %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="area_vital" value="dinero" {% if editing and 'dinero' in areas %}checked{% endif %}><span>Dinero</span></label>
+          {% endwith %}
+        </div>
+      </div>
+    </div>
+    <label class="check-item {% if editing and entry.meta.cambiar %}checked{% endif %}" onclick="this.classList.toggle('checked')" style="margin-top:0.4rem;display:inline-flex">
+      <input type="checkbox" name="cambiar" {% if editing and entry.meta.cambiar %}checked{% endif %}><span>Quiero transformar este patrón</span>
+    </label>
+  </div>
+
+  {# ── SIGNO ────────────────────────────────────────────────── #}
+  <div class="meta-section" id="meta-signo">
+    <div class="meta-divider"></div>
+    <div class="meta-title">Registro del signo</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem">
+      <div>
+        <label class="form-label" style="font-size:0.72rem">Localización corporal</label>
+        <input type="text" name="ubicacion" class="form-input" placeholder="Cabeza, pecho, abdomen..." value="{% if editing %}{{ entry.meta.ubicacion|default:'' }}{% endif %}">
+      </div>
+      <div>
+        <label class="form-label" style="font-size:0.72rem">Intensidad (1–5)</label>
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-top:0.5rem">
+          <input type="range" name="intensidad_signo" min="1" max="5" step="1" value="{% if editing %}{{ entry.meta.intensidad|default:'3' }}{% else %}3{% endif %}" style="flex:1;accent-color:var(--calipso)" oninput="document.getElementById('signo-int').textContent=this.value">
+          <span id="signo-int" style="font-size:0.95rem;font-weight:700;color:var(--calipso);min-width:14px">{% if editing %}{{ entry.meta.intensidad|default:'3' }}{% else %}3{% endif %}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:0.62rem;color:var(--dim)"><span>Leve</span><span>Intenso</span></div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" style="font-size:0.72rem">¿Cuándo aparece?</label>
+      <div class="check-grid">
+        {% with moms=entry.meta.momento|default:'' %}
+        <label class="check-item {% if editing and 'al despertar' in moms %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="momento" value="al despertar" {% if editing and 'al despertar' in moms %}checked{% endif %}><span>Al despertar</span></label>
+        <label class="check-item {% if editing and 'mañana' in moms %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="momento" value="mañana" {% if editing and 'mañana' in moms %}checked{% endif %}><span>Mañana</span></label>
+        <label class="check-item {% if editing and 'tarde' in moms %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="momento" value="tarde" {% if editing and 'tarde' in moms %}checked{% endif %}><span>Tarde</span></label>
+        <label class="check-item {% if editing and 'noche' in moms %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="momento" value="noche" {% if editing and 'noche' in moms %}checked{% endif %}><span>Noche</span></label>
+        <label class="check-item {% if editing and 'antes de dormir' in moms %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="momento" value="antes de dormir" {% if editing and 'antes de dormir' in moms %}checked{% endif %}><span>Antes de dormir</span></label>
+        <label class="check-item {% if editing and 'con estrés' in moms %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="momento" value="con estrés" {% if editing and 'con estrés' in moms %}checked{% endif %}><span>Con estrés</span></label>
+        <label class="check-item {% if editing and 'sin causa clara' in moms %}checked{% endif %}" onclick="this.classList.toggle('checked')"><input type="checkbox" name="momento" value="sin causa clara" {% if editing and 'sin causa clara' in moms %}checked{% endif %}><span>Sin causa clara</span></label>
+        {% endwith %}
+      </div>
+    </div>
+    <div>
+      <label class="form-label" style="font-size:0.72rem">¿Qué pudo activarlo?</label>
+      <input type="text" name="detonante" class="form-input" placeholder="Emoción, alimento, situación, esfuerzo..." value="{% if editing %}{{ entry.meta.detonante|default:'' }}{% endif %}">
+    </div>
+  </div>
+
+  {# ── COMUNES ──────────────────────────────────────────────── #}
+  <div class="meta-divider"></div>
   <div style="display:grid;grid-template-columns:1fr 80px;gap:0.75rem">
     <div class="form-group">
-      <label class="form-label">Etiquetas (separadas por espacio)</label>
-      <input type="text" name="tags" class="form-input" placeholder="reflejo miedo cuerpo..." value="{% if editing %}{{ entry.tags }}{% endif %}">
+      <label class="form-label">Etiquetas <span style="color:var(--dim);font-weight:400">(separadas por espacio)</span></label>
+      <input type="text" name="tags" class="form-input" placeholder="sombra miedo madre..." value="{% if editing %}{{ entry.tags }}{% endif %}">
     </div>
     <div class="form-group">
       <label class="form-label">Emoji</label>
@@ -61,16 +226,18 @@
 
 <script>
 const TIPO_META = {
-  sueno:  { label:'¿Qué soñaste?',              emoji:'◯', placeholder:'Describe el sueño con detalle...' },
-  sombra: { label:'¿Qué sombra observas?',       emoji:'●', placeholder:'¿Qué rechazas, envidias o temes ver en ti?' },
-  patron: { label:'¿Qué patrón identificas?',    emoji:'⟡', placeholder:'Un comportamiento, emoción o situación recurrente...' },
-  signo:  { label:'¿Qué signo o síntoma notas?', emoji:'✦', placeholder:'Sensación física, emocional o energética...' },
+  sueno:  { label:'¿Qué soñaste?',              emoji:'◯', placeholder:'Describe el sueño con detalle — imágenes, sensaciones, emociones...' },
+  sombra: { label:'¿Qué sombra observas?',       emoji:'●', placeholder:'¿Qué rechazas, envidias o temes ver en ti? ¿Qué te perturbó o irritó?' },
+  patron: { label:'¿Qué patrón identificas?',    emoji:'⟡', placeholder:'Un comportamiento, respuesta emocional o situación que se repite...' },
+  signo:  { label:'¿Qué signo o síntoma notas?', emoji:'✦', placeholder:'Sensación física, emocional o energética. Descríbela sin interpretar.' },
   manual: { label:'¿Qué notaste?',               emoji:'◈', placeholder:'Escribe libremente. Este espacio es solo tuyo...' },
 };
+function selRadio(input) {
+  document.querySelectorAll(`input[name="${input.name}"]`).forEach(r => r.closest('.radio-btn').classList.remove('sel'));
+  input.closest('.radio-btn').classList.add('sel');
+}
 function setTipo(btn) {
-  document.querySelectorAll('.tipo-btn').forEach(b => {
-    b.className = 'tipo-btn';
-  });
+  document.querySelectorAll('.tipo-btn').forEach(b => b.className = 'tipo-btn');
   const tipo = btn.dataset.tipo;
   btn.classList.add('sel-' + tipo);
   document.getElementById('entry_type_input').value = tipo;
@@ -81,8 +248,10 @@ function setTipo(btn) {
   if (!emojiEl.value || Object.values(TIPO_META).some(m => m.emoji === emojiEl.value)) {
     emojiEl.value = meta.emoji;
   }
+  document.querySelectorAll('.meta-section').forEach(s => s.classList.remove('visible'));
+  const sec = document.getElementById('meta-' + tipo);
+  if (sec) sec.classList.add('visible');
 }
-// Activate default
 (function() {
   const def = '{{ tipo_default|default:"manual" }}';
   const btn = document.querySelector('.tipo-btn[data-tipo="' + def + '"]');

@@ -18,6 +18,7 @@ urlpatterns = [
     path('suenos/<int:pk>/', mirror_views.sueno_detail, name='sueno_detail'),
     path('bitacora/', mirror_views.bitacora_list, name='bitacora_list'),
     path('bitacora/nueva/', mirror_views.bitacora_create, name='bitacora_create'),
+    path('bitacora/<int:pk>/editar/', mirror_views.bitacora_edit, name='bitacora_edit'),
     path('bitacora/<int:pk>/eliminar/', mirror_views.bitacora_delete, name='bitacora_delete'),
     path('foros/', community_views.foros, name='foros'),
     path('mensajes/', community_views.mensajes, name='mensajes'),

@@ -127,6 +127,33 @@ def bitacora_list(request):
     })
 
 
+def _parse_meta(post, entry_type):
+    meta = {}
+    if entry_type == 'sueno':
+        meta['lucido']    = 'lucido' in post
+        meta['recurrente'] = 'recurrente' in post
+        meta['pesadilla'] = 'pesadilla' in post
+        meta['personajes'] = post.get('personajes', '').strip()
+        meta['ambiente']  = post.get('ambiente', '').strip()
+    elif entry_type == 'sombra':
+        meta['conflicto']  = post.get('conflicto', '').strip()
+        meta['emociones']  = post.getlist('emociones')
+        meta['expresion']  = post.get('expresion', '')
+        meta['figura']     = post.get('figura', '').strip()
+    elif entry_type == 'patron':
+        meta['detonante']  = post.get('detonante', '').strip()
+        meta['frecuencia'] = post.get('frecuencia', '')
+        meta['area_vital'] = post.getlist('area_vital')
+        meta['cambiar']    = 'cambiar' in post
+    elif entry_type == 'signo':
+        meta['ubicacion']  = post.get('ubicacion', '').strip()
+        intensidad = post.get('intensidad_signo', '')
+        meta['intensidad'] = int(intensidad) if intensidad.isdigit() else None
+        meta['momento']    = post.getlist('momento')
+        meta['detonante']  = post.get('detonante', '').strip()
+    return meta
+
+
 @login_required
 def bitacora_create(request):
     tipo_default = request.GET.get('tipo', 'manual')
@@ -142,6 +169,7 @@ def bitacora_create(request):
                 content=content,
                 tags=request.POST.get('tags', '').strip(),
                 emoji=request.POST.get('emoji', '').strip()[:2],
+                meta=_parse_meta(request.POST, entry_type),
             )
         return redirect('bitacora_list')
     return render(request, 'mirror/bitacora_form.html', {
@@ -163,6 +191,7 @@ def bitacora_edit(request, pk):
             entry.entry_type = entry_type
             entry.tags = request.POST.get('tags', '').strip()
             entry.emoji = request.POST.get('emoji', '').strip()[:2]
+            entry.meta = _parse_meta(request.POST, entry_type)
             entry.save()
         return redirect('bitacora_list')
     return render(request, 'mirror/bitacora_form.html', {

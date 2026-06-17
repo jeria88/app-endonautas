@@ -97,6 +97,7 @@ class BitacoraEntry(models.Model):
     content = models.TextField()
     tags = models.CharField(max_length=200, blank=True)
     emoji = models.CharField(max_length=10, blank=True)
+    meta = models.JSONField(default=dict, blank=True)
     fecha = models.DateField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
