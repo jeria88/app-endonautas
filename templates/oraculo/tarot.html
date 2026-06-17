@@ -2,338 +2,81 @@
 {% block title %}Tarot Terapéutico — Oráculo — Endonautas{% endblock %}
 {% block content %}
 <style data-page-style>
-.tarot-back {
-  font-family: var(--font-display);
-  font-size: 0.75rem;
-  color: var(--muted);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  text-decoration: none;
-  margin-bottom: 1.5rem;
-  transition: color 0.2s;
-}
-.tarot-back:hover { color: var(--text); }
+.tarot-layout { display:grid;grid-template-columns:320px 1fr;gap:1.5rem;align-items:start; }
+@media(max-width:900px){ .tarot-layout{grid-template-columns:1fr} }
 
-.tarot-layout {
-  display: grid;
-  grid-template-columns: 360px 1fr;
-  gap: 1.5rem;
-  align-items: start;
-}
-@media (max-width: 960px) {
-  .tarot-layout { grid-template-columns: 1fr; }
-}
-
-/* Panel formulario */
-.tarot-form {
-  background: var(--surface);
-  backdrop-filter: blur(14px);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.75rem;
-  position: sticky;
-  top: 0;
-}
-.tf-eyebrow {
-  font-family: var(--font-display);
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--calipso);
-  margin-bottom: 0.5rem;
-}
-.tf-title {
-  font-family: var(--font-editorial);
-  font-size: 1.65rem;
-  font-weight: 400;
-  line-height: 1.2;
-  margin-bottom: 0.4rem;
-}
-.tf-sub {
-  font-size: 0.82rem;
-  color: var(--muted);
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
-}
-
-.form-label {
-  display: block;
-  font-family: var(--font-display);
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-  margin-bottom: 0.4rem;
-}
-.form-textarea {
-  width: 100%;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.75rem;
-  color: var(--text);
-  font-family: var(--font-ui);
-  font-size: 0.9rem;
-  resize: vertical;
-  min-height: 80px;
-  outline: none;
-  transition: border-color 0.2s;
-  box-sizing: border-box;
-}
-.form-textarea:focus { border-color: var(--calipso); }
-.form-textarea::placeholder { color: var(--dim); }
-
-/* Tiradas */
-.tirada-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.4rem;
-  margin: 1rem 0 1.25rem;
-}
+.tirada-grid { display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;margin:0.75rem 0 1rem; }
 .tirada-btn {
-  background: rgba(255,255,255,0.02);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.6rem 0.75rem;
-  color: var(--muted);
-  font-family: var(--font-display);
-  font-size: 0.75rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: left;
-  line-height: 1.3;
+  background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:8px;
+  padding:0.55rem 0.7rem;color:var(--muted);font-family:var(--font-display);font-size:0.75rem;
+  font-weight:500;cursor:pointer;transition:all 0.15s;text-align:left;line-height:1.3;
 }
-.tirada-btn:hover { border-color: rgba(126,204,205,0.35); color: var(--text); }
-.tirada-btn.active {
-  border-color: var(--calipso);
-  background: var(--calipso-glow);
-  color: var(--calipso);
-}
-.tirada-btn .tb-n {
-  display: block;
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 1px;
-}
-.tirada-btn.full { grid-column: 1 / -1; }
+.tirada-btn:hover { border-color:rgba(126,204,205,0.35);color:var(--text); }
+.tirada-btn.active { border-color:var(--calipso);background:var(--calipso-glow);color:var(--calipso); }
+.tirada-btn .tb-n { display:block;font-size:1rem;font-weight:700;margin-bottom:1px; }
+.tirada-btn.full { grid-column:1/-1; }
 
-/* Resultado */
-.tarot-result { min-height: 200px; }
-
-.result-empty {
-  background: var(--surface);
-  border: 1px dashed var(--border);
-  border-radius: var(--radius);
-  padding: 3rem 2rem;
-  text-align: center;
-  color: var(--muted);
-}
-.result-empty-icon { font-size: 2.5rem; opacity: 0.2; margin-bottom: 0.75rem; }
-.result-empty p { font-size: 0.85rem; }
-
-.loader-block {
-  display: none;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 3rem 2rem;
-  text-align: center;
-  color: var(--muted);
-  font-size: 0.85rem;
-}
-.loader-block.active { display: block; }
-.dots span {
-  display: inline-block;
-  width: 5px; height: 5px;
-  background: var(--calipso);
-  border-radius: 50%;
-  margin: 0 3px;
-  opacity: 0.3;
-  animation: blink 1.2s infinite ease-in-out;
-}
-.dots span:nth-child(2) { animation-delay: 0.2s; }
-.dots span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes blink {
-  0%,80%,100% { opacity:0.3; transform:scale(1); }
-  40% { opacity:1; transform:scale(1.35); }
-}
-
-/* Spread */
-.spread-header {
-  font-family: var(--font-display);
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-.spread-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-.cards-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
+.cards-grid { display:flex;flex-wrap:wrap;gap:0.6rem;margin-bottom:1.25rem; }
 .card-chip {
-  flex: 0 0 calc(33.33% - 0.5rem);
-  min-width: 130px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 1rem;
-  opacity: 0;
-  transform: translateY(8px);
-  animation: chipIn 0.35s ease forwards;
+  flex:0 0 calc(33.33% - 0.4rem);min-width:120px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:0.85rem;
 }
-@keyframes chipIn {
-  to { opacity:1; transform:translateY(0); }
-}
-.chip-pos {
-  font-family: var(--font-display);
-  font-size: 0.6rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 0.4rem;
-}
-.chip-name {
-  font-family: var(--font-editorial);
-  font-size: 1.05rem;
-  font-weight: 400;
-  line-height: 1.2;
-  margin-bottom: 0.25rem;
-}
-.chip-estado {
-  font-size: 0.7rem;
-  color: var(--calipso);
-}
-.card-chip.invertida .chip-estado { color: var(--amber); }
-.chip-kw { font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }
+.chip-pos { font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem; }
+.chip-name { font-weight:600;font-size:0.92rem;line-height:1.2;margin-bottom:0.2rem; }
+.chip-estado { font-size:0.7rem;color:var(--calipso); }
+.card-chip.invertida .chip-estado { color:var(--amber); }
+.chip-kw { font-size:0.72rem;color:var(--muted);margin-top:0.2rem; }
 
-/* Interpretación */
-.interp-block {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--calipso);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  opacity: 0;
-  animation: fadeUp 0.5s ease 0.2s forwards;
-}
-@keyframes fadeUp {
-  from { opacity:0; transform:translateY(6px); }
-  to { opacity:1; transform:translateY(0); }
-}
-.interp-label {
-  font-family: var(--font-display);
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--calipso);
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.interp-label::after { content: ''; flex:1; height:1px; background: rgba(126,204,205,0.15); }
-.interp-text {
-  font-size: 0.9rem;
-  line-height: 1.8;
-  color: var(--text);
-}
-.interp-text p { margin-bottom: 0.7em; }
-.interp-text strong { color: var(--calipso); font-weight: 600; }
-.interp-text em { color: var(--muted); }
-.source-line {
-  margin-top: 1rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--border);
-  font-size: 0.68rem;
-  color: var(--dim);
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-.source-dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--calipso);
-  opacity: 0.5;
-}
+.typing-row { display:none;align-items:center;gap:5px;color:var(--muted);font-size:0.82rem;padding:2.5rem;justify-content:center; }
+.typing-row.show { display:flex; }
+.dot { width:5px;height:5px;background:var(--calipso);border-radius:50%;animation:bounce 1.4s infinite both; }
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
 </style>
 
-<a class="tarot-back" href="/oraculo/" onclick="spaGo(event,this)" data-preset="oraculo">
-  ← Oráculo
-</a>
+<a href="/oraculo/" onclick="spaGo(event,this)" data-preset="oraculo" style="color:var(--calipso);text-decoration:none;font-size:0.82rem;display:inline-block;margin-bottom:1.25rem">← Oráculo</a>
 
 <div class="tarot-layout">
-  <!-- Formulario -->
-  <div class="tarot-form">
-    <div class="tf-eyebrow">Tarot Terapéutico</div>
-    <h1 class="tf-title">El arquetipo<br>en juego</h1>
-    <p class="tf-sub">El Tarot no predice — lee el patrón que conecta las cartas con tu pregunta.</p>
+  <div class="panel">
+    <div class="eyebrow" style="color:var(--calipso)">Tarot Terapéutico</div>
+    <h1 style="font-size:1.2rem;font-weight:700;margin-bottom:0.3rem">El arquetipo en juego</h1>
+    <p style="font-size:0.82rem;color:var(--muted);line-height:1.6;margin-bottom:1.25rem">El Tarot no predice — lee el patrón que conecta las cartas con tu pregunta.</p>
 
     <label class="form-label" for="pregunta">Tu pregunta o intención</label>
-    <textarea id="pregunta" class="form-textarea" rows="3" placeholder="¿Qué quiero entender de esta situación?"></textarea>
+    <textarea id="pregunta" class="form-input" rows="3" placeholder="¿Qué quiero entender de esta situación?"></textarea>
 
-    <div style="margin-top:1rem;">
+    <div style="margin-top:1rem">
       <div class="form-label">Tipo de tirada</div>
       <div class="tirada-grid">
-        <button class="tirada-btn" data-tirada="un_arcano">
-          <span class="tb-n">1</span>Arcano · Espejo
-        </button>
-        <button class="tirada-btn active" data-tirada="tres_cartas">
-          <span class="tb-n">3</span>Patrón
-        </button>
-        <button class="tirada-btn" data-tirada="cruz_normal">
-          <span class="tb-n">5</span>Cruz
-        </button>
-        <button class="tirada-btn" data-tirada="cruz_celta">
-          <span class="tb-n">10</span>Cruz Celta
-        </button>
-        <button class="tirada-btn full" data-tirada="viaje_heroe">
-          <span class="tb-n">12</span>Viaje del Héroe · solo arcanos mayores
-        </button>
+        <button class="tirada-btn" data-tirada="un_arcano"><span class="tb-n">1</span>Arcano · Espejo</button>
+        <button class="tirada-btn active" data-tirada="tres_cartas"><span class="tb-n">3</span>Patrón</button>
+        <button class="tirada-btn" data-tirada="cruz_normal"><span class="tb-n">5</span>Cruz</button>
+        <button class="tirada-btn" data-tirada="cruz_celta"><span class="tb-n">10</span>Cruz Celta</button>
+        <button class="tirada-btn full" data-tirada="viaje_heroe"><span class="tb-n">12</span>Viaje del Héroe · solo arcanos mayores</button>
       </div>
     </div>
 
-    <button class="btn btn-primary" id="tirarBtn" style="width:100%">
-      Tirar las cartas
-    </button>
+    <button class="btn btn-primary" id="tirarBtn" style="width:100%">Tirar las cartas</button>
   </div>
 
-  <!-- Resultado -->
-  <div class="tarot-result" id="resultPanel">
-    <div class="result-empty" id="emptyState">
-      <div class="result-empty-icon">⬡</div>
-      <p>Las cartas esperan tu pregunta.</p>
+  <div id="resultPanel">
+    <div id="emptyState" class="panel" style="text-align:center;padding:3rem;color:var(--muted)">
+      <div style="font-size:2rem;opacity:0.15;margin-bottom:0.75rem">⬡</div>
+      <p style="font-size:0.85rem">Las cartas esperan tu pregunta.</p>
     </div>
 
-    <div class="loader-block" id="loader">
-      <div class="dots"><span></span><span></span><span></span></div>
-      <p style="margin-top:0.75rem">El oráculo consulta el patrón…</p>
+    <div class="panel" id="loaderState" style="display:none;text-align:center;padding:3rem">
+      <div class="typing-row show"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <p style="font-size:0.85rem;color:var(--muted)">El oráculo consulta el patrón…</p>
     </div>
 
     <div id="resultContent" style="display:none">
-      <div class="spread-header" id="spreadLabel"></div>
+      <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;display:flex;align-items:center;gap:0.5rem" id="spreadLabel"></div>
       <div class="cards-grid" id="cardsGrid"></div>
-      <div class="interp-block" id="interpBlock">
-        <div class="interp-label">Lectura del patrón</div>
-        <div class="interp-text" id="interpText"></div>
-        <div class="source-line">
-          <span class="source-dot"></span>
-          <span id="sourceLabel"></span>
-        </div>
+      <div style="background:rgba(126,204,205,0.06);border:1px solid rgba(126,204,205,0.2);border-radius:14px;padding:1.25rem">
+        <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--calipso);margin-bottom:0.75rem">Lectura del patrón</div>
+        <div id="interpText" style="font-size:0.9rem;line-height:1.8;color:var(--text)"></div>
+        <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--border);font-size:0.68rem;color:var(--dim)" id="sourceLabel"></div>
       </div>
     </div>
   </div>
@@ -357,7 +100,6 @@ const NOMBRES_TIRADA = {
   cruz_normal:'5 cartas · Cruz',cruz_celta:'10 cartas · Cruz Celta',
   viaje_heroe:'12 arcanos · Viaje del Héroe',
 };
-
 let tiradaActual = 'tres_cartas';
 
 document.querySelectorAll('.tirada-btn').forEach(btn => {
@@ -374,20 +116,15 @@ function md2html(txt) {
     .replace(/\*(.+?)\*/g,'<em>$1</em>')
     .replace(/\n\n/g,'</p><p>').replace(/^/,'<p>').replace(/$/,'</p>');
 }
-function getCsrf() {
-  const m = document.cookie.match(/csrftoken=([^;]+)/);
-  return m ? m[1] : '';
-}
+function getCsrf() { const m = document.cookie.match(/csrftoken=([^;]+)/); return m ? m[1] : ''; }
 
 document.getElementById('tirarBtn').addEventListener('click', async () => {
   const pregunta = document.getElementById('pregunta').value.trim();
   if (!pregunta) { document.getElementById('pregunta').focus(); return; }
-
   document.getElementById('emptyState').style.display = 'none';
   document.getElementById('resultContent').style.display = 'none';
-  document.getElementById('loader').classList.add('active');
+  document.getElementById('loaderState').style.display = '';
   document.getElementById('tirarBtn').disabled = true;
-
   try {
     const resp = await fetch('/oraculo/api/tarot/', {
       method:'POST',
@@ -399,9 +136,9 @@ document.getElementById('tirarBtn').addEventListener('click', async () => {
     mostrar(data);
   } catch(e) {
     document.getElementById('emptyState').style.display = '';
-    document.getElementById('emptyState').innerHTML = '<div class="result-empty-icon">⬡</div><p style="color:var(--rose)">Error al consultar. Intenta nuevamente.</p>';
+    document.getElementById('emptyState').innerHTML = '<p style="color:var(--rose);font-size:0.85rem">Error al consultar. Intenta nuevamente.</p>';
   } finally {
-    document.getElementById('loader').classList.remove('active');
+    document.getElementById('loaderState').style.display = 'none';
     document.getElementById('tirarBtn').disabled = false;
   }
 });
@@ -409,28 +146,22 @@ document.getElementById('tirarBtn').addEventListener('click', async () => {
 function mostrar(data) {
   const tirada = data.tirada;
   const interp = data.interpretacion;
-
-  document.getElementById('spreadLabel').textContent = NOMBRES_TIRADA[tirada.tipo] || tirada.tipo;
-
+  const lbl = document.getElementById('spreadLabel');
+  lbl.textContent = NOMBRES_TIRADA[tirada.tipo] || tirada.tipo;
+  lbl.style.cssText += ';border-bottom:1px solid var(--border);padding-bottom:0.5rem;margin-bottom:0.75rem';
   const grid = document.getElementById('cardsGrid');
   grid.innerHTML = '';
-  tirada.cartas.forEach((c, i) => {
+  tirada.cartas.forEach(c => {
     const div = document.createElement('div');
     div.className = 'card-chip' + (c.invertida ? ' invertida' : '');
-    div.style.animationDelay = `${i * 70}ms`;
-    div.innerHTML = `
-      <div class="chip-pos">${NOMBRES_POS[c.posicion]||c.posicion}</div>
+    div.innerHTML = `<div class="chip-pos">${NOMBRES_POS[c.posicion]||c.posicion}</div>
       <div class="chip-name">${c.nombre}</div>
       <div class="chip-estado">${c.invertida?'Invertida':'Directa'}</div>
-      <div class="chip-kw">${c.palabra_clave||''}</div>
-    `;
+      <div class="chip-kw">${c.palabra_clave||''}</div>`;
     grid.appendChild(div);
   });
-
   document.getElementById('interpText').innerHTML = md2html(interp.texto_completo||interp);
-  document.getElementById('sourceLabel').textContent =
-    interp.fuente==='ai' ? 'Interpretación IA · OpenRouter' : 'Interpretación simbólica';
-
+  document.getElementById('sourceLabel').textContent = interp.fuente==='ai' ? 'Interpretación IA · OpenRouter' : 'Interpretación simbólica';
   document.getElementById('resultContent').style.display = '';
 }
 </script>

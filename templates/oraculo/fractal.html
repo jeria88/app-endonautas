@@ -2,409 +2,89 @@
 {% block title %}Oráculo Fractal — Oráculo — Endonautas{% endblock %}
 {% block content %}
 <style data-page-style>
-.fr-back {
-  font-family: var(--font-display);
-  font-size: 0.75rem;
-  color: var(--muted);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  text-decoration: none;
-  margin-bottom: 1.5rem;
-  transition: color 0.2s;
-}
-.fr-back:hover { color: var(--text); }
+.fractal-layout { display:grid;grid-template-columns:320px 1fr;gap:1.5rem;align-items:start; }
+@media(max-width:900px){ .fractal-layout{grid-template-columns:1fr} }
 
-.fractal-layout {
-  display: grid;
-  grid-template-columns: 360px 1fr;
-  gap: 1.5rem;
-  align-items: start;
-}
-@media (max-width: 960px) {
-  .fractal-layout { grid-template-columns: 1fr; }
-}
-
-/* Panel formulario */
-.fractal-form {
-  background: var(--surface);
-  backdrop-filter: blur(14px);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.75rem;
-  position: sticky;
-  top: 0;
-}
-.ff-eyebrow {
-  font-family: var(--font-display);
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--amber);
-  margin-bottom: 0.5rem;
-}
-.ff-title {
-  font-family: var(--font-editorial);
-  font-size: 1.65rem;
-  font-weight: 400;
-  line-height: 1.2;
-  margin-bottom: 0.4rem;
-}
-.ff-sub {
-  font-size: 0.82rem;
-  color: var(--muted);
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
-}
-
-.form-label {
-  display: block;
-  font-family: var(--font-display);
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-  margin-bottom: 0.4rem;
-}
-.form-textarea {
-  width: 100%;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.75rem;
-  color: var(--text);
-  font-family: var(--font-ui);
-  font-size: 0.9rem;
-  resize: vertical;
-  min-height: 80px;
-  outline: none;
-  transition: border-color 0.2s;
-  box-sizing: border-box;
-}
-.form-textarea:focus { border-color: var(--amber); }
-.form-textarea::placeholder { color: var(--dim); }
-
-/* Nota informativa */
-.ff-nota {
-  margin-top: 1rem;
-  padding: 0.75rem;
-  background: var(--amber-glow);
-  border: 1px solid rgba(212,160,86,0.2);
-  border-radius: 8px;
-  font-size: 0.75rem;
-  color: var(--muted);
-  line-height: 1.5;
-}
-.ff-nota strong { color: var(--amber); }
-
-/* Resultado */
-.fractal-result { min-height: 200px; }
-
-.result-empty {
-  background: var(--surface);
-  border: 1px dashed var(--border);
-  border-radius: var(--radius);
-  padding: 3rem 2rem;
-  text-align: center;
-  color: var(--muted);
-}
-.result-empty-icon { font-size: 2.5rem; opacity: 0.2; margin-bottom: 0.75rem; }
-.result-empty p { font-size: 0.85rem; }
-
-.loader-block {
-  display: none;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 3rem 2rem;
-  text-align: center;
-  color: var(--muted);
-  font-size: 0.85rem;
-}
-.loader-block.active { display: block; }
-.dots span {
-  display: inline-block;
-  width: 5px; height: 5px;
-  background: var(--amber);
-  border-radius: 50%;
-  margin: 0 3px;
-  opacity: 0.3;
-  animation: blink 1.2s infinite ease-in-out;
-}
-.dots span:nth-child(2) { animation-delay: 0.2s; }
-.dots span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes blink {
-  0%,80%,100% { opacity:0.3; transform:scale(1); }
-  40% { opacity:1; transform:scale(1.35); }
-}
-
-/* Carta */
-.carta-wrap {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1.75rem;
-  perspective: 800px;
-}
-
+.carta-wrap { display:flex;justify-content:center;margin-bottom:1.5rem;perspective:800px; }
 .carta-flip {
-  width: 220px;
-  height: 340px;
-  position: relative;
-  transform-style: preserve-3d;
-  transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
-  cursor: pointer;
-  opacity: 0;
-  animation: cardReveal 0.6s ease 0.1s forwards;
+  width:200px;height:310px;position:relative;transform-style:preserve-3d;
+  transition:transform 0.65s cubic-bezier(0.23,1,0.32,1);cursor:pointer;
 }
-.carta-flip.flipped { transform: rotateY(180deg); }
-@keyframes cardReveal {
-  from { opacity: 0; transform: rotateY(-30deg) translateY(16px); }
-  to   { opacity: 1; transform: rotateY(0deg) translateY(0); }
-}
-.carta-flip.invertida-visual {
-  transform: rotateZ(180deg);
-}
-.carta-flip.invertida-visual.flipped {
-  transform: rotateY(180deg) rotateZ(180deg);
-}
-
-.carta-face {
-  position: absolute;
-  inset: 0;
-  border-radius: 14px;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
+.carta-flip.flipped { transform:rotateY(180deg); }
+.carta-face { position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;-webkit-backface-visibility:hidden; }
 .carta-dorso {
-  background: linear-gradient(135deg, rgba(212,160,86,0.15) 0%, rgba(155,142,196,0.1) 100%);
-  border: 1px solid rgba(212,160,86,0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background:var(--surface2);border:1px solid rgba(212,160,86,0.25);
+  display:flex;align-items:center;justify-content:center;
 }
-.carta-dorso-inner {
-  text-align: center;
-  color: var(--amber);
-  opacity: 0.5;
-}
-.carta-dorso-inner svg { width: 40px; height: 40px; }
-.carta-dorso-inner p {
-  font-family: var(--font-display);
-  font-size: 0.65rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  margin-top: 0.75rem;
-}
-
+.carta-dorso-inner { text-align:center;color:var(--amber);opacity:0.4; }
+.carta-dorso-inner svg { width:36px;height:36px; }
+.carta-dorso-inner p { font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;margin-top:0.6rem;font-family:var(--font-display); }
 .carta-frente {
-  background: var(--surface2);
-  border: 1px solid rgba(212,160,86,0.35);
-  transform: rotateY(180deg);
-  display: flex;
-  flex-direction: column;
-  padding: 1.5rem 1.25rem;
-  overflow: hidden;
+  background:var(--surface2);border:1px solid rgba(212,160,86,0.35);
+  transform:rotateY(180deg);display:flex;flex-direction:column;padding:1.25rem;overflow:hidden;
+  position:relative;
 }
-.carta-frente::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, var(--amber), transparent);
-}
-.carta-numero {
-  font-family: var(--font-display);
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--amber);
-  opacity: 0.7;
-  margin-bottom: 0.5rem;
-}
-.carta-verbo {
-  font-family: var(--font-editorial);
-  font-size: 2.4rem;
-  font-weight: 400;
-  line-height: 1.1;
-  color: var(--text);
-  margin-bottom: 0.35rem;
-}
-.carta-nombre {
-  font-family: var(--font-display);
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--muted);
-  margin-bottom: auto;
-}
-.carta-tipo-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  background: var(--amber-glow);
-  border: 1px solid rgba(212,160,86,0.25);
-  border-radius: 20px;
-  padding: 3px 10px;
-  font-family: var(--font-display);
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--amber);
-  margin-top: 0.75rem;
-  align-self: flex-start;
-}
-.carta-sefirot {
-  font-family: var(--font-editorial);
-  font-size: 0.85rem;
-  color: var(--violet);
-  margin-top: 0.5rem;
-  font-style: italic;
-}
-.carta-estado {
-  margin-top: 0.6rem;
-  font-size: 0.7rem;
-  color: var(--amber);
-  font-family: var(--font-display);
-  opacity: 0.7;
-}
-.carta-flip.invertida-visual .carta-estado { color: var(--rose); }
-.carta-desc {
-  margin-top: 0.5rem;
-  font-size: 0.75rem;
-  color: var(--muted);
-  line-height: 1.5;
-  border-top: 1px solid var(--border);
-  padding-top: 0.5rem;
-}
+.carta-frente::before { content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--amber),transparent); }
+.carta-num { font-size:0.62rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);opacity:0.7;margin-bottom:0.4rem; }
+.carta-verbo { font-size:2rem;font-weight:700;line-height:1.1;margin-bottom:0.3rem; }
+.carta-nombre { font-size:0.8rem;color:var(--muted);margin-bottom:auto; }
+.carta-estado { margin-top:0.6rem;font-size:0.68rem;color:var(--amber);font-family:var(--font-display); }
+.carta-desc { margin-top:0.5rem;font-size:0.72rem;color:var(--muted);line-height:1.5;border-top:1px solid var(--border);padding-top:0.5rem; }
 
-.carta-hint {
-  text-align: center;
-  font-size: 0.72rem;
-  color: var(--dim);
-  margin-bottom: 0.5rem;
-  font-family: var(--font-display);
-  opacity: 0;
-  animation: fadeUp 0.5s ease 0.7s forwards;
-}
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Interpretación */
-.interp-block {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--amber);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  opacity: 0;
-  animation: fadeUp 0.5s ease 0.3s forwards;
-}
-.interp-label {
-  font-family: var(--font-display);
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--amber);
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.interp-label::after { content: ''; flex:1; height:1px; background: rgba(212,160,86,0.15); }
-.interp-text {
-  font-size: 0.9rem;
-  line-height: 1.8;
-  color: var(--text);
-}
-.interp-text p { margin-bottom: 0.7em; }
-.interp-text strong { color: var(--amber); font-weight: 600; }
-.interp-text em { color: var(--muted); }
-.source-line {
-  margin-top: 1rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--border);
-  font-size: 0.68rem;
-  color: var(--dim);
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-.source-dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--amber);
-  opacity: 0.5;
-}
+.typing-row { display:none;align-items:center;gap:5px;color:var(--muted);font-size:0.82rem;padding:2.5rem;justify-content:center; }
+.typing-row.show { display:flex; }
+.dot { width:5px;height:5px;background:var(--amber);border-radius:50%;animation:bounce 1.4s infinite both; }
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
 </style>
 
-<a class="fr-back" href="/oraculo/" onclick="spaGo(event,this)" data-preset="oraculo">
-  ← Oráculo
-</a>
+<a href="/oraculo/" onclick="spaGo(event,this)" data-preset="oraculo" style="color:var(--amber);text-decoration:none;font-size:0.82rem;display:inline-block;margin-bottom:1.25rem">← Oráculo</a>
 
 <div class="fractal-layout">
-  <!-- Formulario -->
-  <div class="fractal-form">
-    <div class="ff-eyebrow">Oráculo Fractal</div>
-    <h1 class="ff-title">33 cartas<br>kabbalísticas</h1>
-    <p class="ff-sub">La pregunta convoca el arquetipo — no el azar. Cada día, la misma pregunta revela una nueva cara.</p>
+  <div class="panel">
+    <div class="eyebrow" style="color:var(--amber)">Oráculo Fractal</div>
+    <h1 style="font-size:1.2rem;font-weight:700;margin-bottom:0.3rem">33 cartas kabbalísticas</h1>
+    <p style="font-size:0.82rem;color:var(--muted);line-height:1.6;margin-bottom:1.25rem">La pregunta convoca el arquetipo — no el azar. Cada día, la misma pregunta revela una nueva cara.</p>
 
     <label class="form-label" for="pregunta">Tu pregunta o intención</label>
-    <textarea id="pregunta" class="form-textarea" rows="3" placeholder="¿Qué principio está operando en esta situación?"></textarea>
+    <textarea id="pregunta" class="form-input" rows="3" placeholder="¿Qué principio está operando en esta situación?"></textarea>
+    <p style="font-size:0.72rem;color:var(--dim);margin-top:0.4rem;line-height:1.5">Sistema de Alanis Mika Yuda (2023) — 22 arcanos + 11 sefirot.</p>
 
-    <button class="btn btn-gold" id="consultarBtn" style="width:100%;margin-top:1.25rem">
-      Convocar el arquetipo
-    </button>
-
-    <div class="ff-nota">
-      <strong>Sistema de Alanis Mika Yuda (2023)</strong> — 22 arcanos con verbos imperativos más 11 sefirot. La carta gira para revelar su mensaje.
-    </div>
+    <button class="btn btn-gold" id="consultarBtn" style="width:100%;margin-top:1.25rem">Convocar el arquetipo</button>
   </div>
 
-  <!-- Resultado -->
-  <div class="fractal-result" id="resultPanel">
-    <div class="result-empty" id="emptyState">
-      <div class="result-empty-icon">◈</div>
-      <p>El arquetipo aguarda tu pregunta.</p>
+  <div id="resultPanel">
+    <div id="emptyState" class="panel" style="text-align:center;padding:3rem;color:var(--muted)">
+      <div style="font-size:2rem;opacity:0.15;margin-bottom:0.75rem">◈</div>
+      <p style="font-size:0.85rem">El arquetipo aguarda tu pregunta.</p>
     </div>
 
-    <div class="loader-block" id="loader">
-      <div class="dots"><span></span><span></span><span></span></div>
-      <p style="margin-top:0.75rem">El oráculo convoca el patrón…</p>
+    <div class="panel" id="loaderState" style="display:none;text-align:center;padding:3rem">
+      <div class="typing-row show"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <p style="font-size:0.85rem;color:var(--muted);margin-top:0.5rem">El oráculo convoca el patrón…</p>
     </div>
 
     <div id="resultContent" style="display:none">
-      <p class="carta-hint">Toca la carta para girarla</p>
+      <p style="text-align:center;font-size:0.72rem;color:var(--dim);margin-bottom:0.5rem">Toca la carta para girarla</p>
       <div class="carta-wrap">
         <div class="carta-flip" id="cartaFlip" onclick="flipCarta()">
           <div class="carta-face carta-dorso">
             <div class="carta-dorso-inner">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>
-                <circle cx="12" cy="12" r="4"/>
+                <circle cx="12" cy="12" r="10"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="4"/>
                 <path d="M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M19.07 4.93l-2.83 2.83M7.76 16.24l-2.83 2.83"/>
               </svg>
               <p>Oráculo Fractal</p>
             </div>
           </div>
-          <div class="carta-face carta-frente" id="cartaFrente">
-            <!-- populated by JS -->
-          </div>
+          <div class="carta-face carta-frente" id="cartaFrente"></div>
         </div>
       </div>
 
-      <div class="interp-block" id="interpBlock">
-        <div class="interp-label">Lectura del arquetipo</div>
-        <div class="interp-text" id="interpText"></div>
-        <div class="source-line">
-          <span class="source-dot"></span>
-          <span id="sourceLabel"></span>
-        </div>
+      <div style="background:rgba(212,160,86,0.06);border:1px solid rgba(212,160,86,0.2);border-radius:14px;padding:1.25rem">
+        <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:0.75rem">Lectura del arquetipo</div>
+        <div id="interpText" style="font-size:0.9rem;line-height:1.8;color:var(--text)"></div>
+        <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--border);font-size:0.68rem;color:var(--dim)" id="sourceLabel"></div>
       </div>
     </div>
   </div>
@@ -412,50 +92,40 @@
 
 <script>
 let flipped = false;
-
 function flipCarta() {
-  const el = document.getElementById('cartaFlip');
-  if (!el) return;
   flipped = !flipped;
-  el.classList.toggle('flipped', flipped);
+  document.getElementById('cartaFlip').classList.toggle('flipped', flipped);
 }
-
+function getCsrf() { const m = document.cookie.match(/csrftoken=([^;]+)/); return m ? m[1] : ''; }
 function md2html(txt) {
   if (!txt) return '';
   return txt.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
     .replace(/\*(.+?)\*/g,'<em>$1</em>')
     .replace(/\n\n/g,'</p><p>').replace(/^/,'<p>').replace(/$/,'</p>');
 }
-function getCsrf() {
-  const m = document.cookie.match(/csrftoken=([^;]+)/);
-  return m ? m[1] : '';
-}
 
 document.getElementById('consultarBtn').addEventListener('click', async () => {
   const pregunta = document.getElementById('pregunta').value.trim();
   if (!pregunta) { document.getElementById('pregunta').focus(); return; }
-
   flipped = false;
   document.getElementById('emptyState').style.display = 'none';
   document.getElementById('resultContent').style.display = 'none';
-  document.getElementById('loader').classList.add('active');
+  document.getElementById('loaderState').style.display = '';
   document.getElementById('consultarBtn').disabled = true;
-
   try {
     const resp = await fetch('/oraculo/api/fractal/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
-      body: JSON.stringify({ pregunta }),
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':getCsrf()},
+      body: JSON.stringify({pregunta}),
     });
     const data = await resp.json();
-    if (!data.success) throw new Error(data.error || 'Error');
+    if (!data.success) throw new Error(data.error||'Error');
     mostrar(data);
-  } catch (e) {
+  } catch(e) {
     document.getElementById('emptyState').style.display = '';
-    document.getElementById('emptyState').innerHTML =
-      '<div class="result-empty-icon">◈</div><p style="color:var(--rose)">Error al consultar. Intenta nuevamente.</p>';
+    document.getElementById('emptyState').innerHTML = '<p style="color:var(--rose);font-size:0.85rem">Error al consultar. Intenta nuevamente.</p>';
   } finally {
-    document.getElementById('loader').classList.remove('active');
+    document.getElementById('loaderState').style.display = 'none';
     document.getElementById('consultarBtn').disabled = false;
   }
 });
@@ -463,32 +133,21 @@ document.getElementById('consultarBtn').addEventListener('click', async () => {
 function mostrar(data) {
   const carta = data.carta;
   const interp = data.interpretacion;
-
   const flip = document.getElementById('cartaFlip');
-  flip.classList.remove('flipped', 'invertida-visual');
-  if (carta.invertida) flip.classList.add('invertida-visual');
-
-  // Construir cara frontal
-  const frente = document.getElementById('cartaFrente');
+  flip.classList.remove('flipped');
   const nombre = carta.tipo === 'sefirot' ? (carta.sefirot_nombre || carta.nombre_arcano) : carta.nombre_arcano;
   const tipoLabel = carta.tipo === 'sefirot' ? 'Sefirot' : 'Arcano';
-
-  frente.innerHTML = `
-    <div class="carta-numero">${tipoLabel} ${carta.numero + 1}</div>
+  document.getElementById('cartaFrente').innerHTML = `
+    <div class="carta-num">${tipoLabel} ${carta.numero + 1}</div>
     <div class="carta-verbo">${carta.verbo || nombre}</div>
     <div class="carta-nombre">${carta.verbo ? nombre : ''}</div>
-    ${carta.sefirot_nombre && carta.tipo !== 'sefirot'
-      ? `<div class="carta-sefirot">${carta.sefirot_nombre}</div>` : ''}
-    <div class="carta-tipo-badge">${tipoLabel}</div>
+    ${carta.sefirot_nombre && carta.tipo !== 'sefirot' ? `<div style="font-size:0.82rem;color:var(--violet);font-style:italic;margin-top:0.35rem">${carta.sefirot_nombre}</div>` : ''}
+    <span class="tag-amber" style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-top:0.6rem;background:var(--amber-glow);color:var(--amber);border:1px solid rgba(212,160,86,0.2)">${tipoLabel}</span>
     <div class="carta-estado">${carta.invertida ? 'Invertida · energía reprimida' : 'Directa · energía activa'}</div>
-    ${carta.descripcion_breve
-      ? `<div class="carta-desc">${carta.descripcion_breve}</div>` : ''}
+    ${carta.descripcion_breve ? `<div class="carta-desc">${carta.descripcion_breve}</div>` : ''}
   `;
-
   document.getElementById('interpText').innerHTML = md2html(interp.texto_completo || interp);
-  document.getElementById('sourceLabel').textContent =
-    interp.fuente === 'ai' ? 'Interpretación IA · OpenRouter' : 'Interpretación simbólica';
-
+  document.getElementById('sourceLabel').textContent = interp.fuente === 'ai' ? 'Interpretación IA · OpenRouter' : 'Interpretación simbólica';
   document.getElementById('resultContent').style.display = '';
 }
 </script>
