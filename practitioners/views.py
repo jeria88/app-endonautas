@@ -52,13 +52,17 @@ def client_detail(request, pk):
     if not request.user.profile.is_practicante:
         return redirect('dashboard')
     client = get_object_or_404(TemporaryProfile, pk=pk, practitioner=request.user)
+    from psychometrics.models import Test
     notes = client.session_notes.all()
     sessions = client.sessions.all()
     results = client.temp_test_results.select_related('test').all()
     fichas = client.consultas.select_related('usuario').order_by('-fecha_creacion')
+    assigned = client.assigned_tests.all()
+    all_tests = Test.objects.filter(active=True).order_by('dimension', 'order')
     return render(request, 'practitioners/client_detail.html', {
         'client': client, 'notes': notes, 'sessions': sessions,
         'results': results, 'fichas': fichas,
+        'assigned_tests': assigned, 'all_tests': all_tests,
     })
 
 
@@ -223,6 +227,27 @@ def ficha_create(request, profile_pk):
         paso_actual=1,
     )
     return redirect('terapeuta:paso1', consulta_id=consulta.id)
+
+
+@login_required
+def assign_test(request, pk):
+    if not request.user.profile.is_practicante:
+        return redirect('dashboard')
+    client = get_object_or_404(TemporaryProfile, pk=pk, practitioner=request.user)
+    if request.method == 'POST':
+        from psychometrics.models import Test
+        test_id = request.POST.get('test_id', '').strip()
+        accion = request.POST.get('accion', 'asignar')
+        if test_id:
+            try:
+                test = Test.objects.get(pk=test_id, active=True)
+                if accion == 'quitar':
+                    client.assigned_tests.remove(test)
+                else:
+                    client.assigned_tests.add(test)
+            except Test.DoesNotExist:
+                pass
+    return redirect('practitioners_client_detail', pk=pk)
 
 
 def claim_profile(request, code):

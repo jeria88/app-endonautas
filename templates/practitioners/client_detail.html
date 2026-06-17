@@ -117,6 +117,41 @@
 </div>
 
 <div id="pane-resultados" class="cd-pane">
+
+  <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.6rem">Asignar tests</div>
+  <form method="post" action="/practicantes/cliente/{{ client.pk }}/asignar-test/" style="display:flex;gap:0.5rem;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap">
+    {% csrf_token %}
+    <input type="hidden" name="accion" value="asignar">
+    <select name="test_id" class="form-input" style="font-size:0.83rem;flex:1;min-width:200px">
+      <option value="">— Seleccionar test —</option>
+      {% for t in all_tests %}
+      <option value="{{ t.pk }}">{{ t.name }} · {{ t.get_dimension_display }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary" style="font-size:0.82rem;white-space:nowrap">Asignar</button>
+  </form>
+
+  {% if assigned_tests %}
+  <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem">Pendientes de completar</div>
+  {% for t in assigned_tests %}
+  <div class="result-row">
+    <div>
+      <div style="font-size:0.88rem;font-weight:500">{{ t.name }}</div>
+      <div style="font-size:0.72rem;color:var(--muted);margin-top:0.15rem">{{ t.get_dimension_display }} · ~{{ t.estimated_minutes }} min</div>
+    </div>
+    <form method="post" action="/practicantes/cliente/{{ client.pk }}/asignar-test/" style="display:inline">
+      {% csrf_token %}
+      <input type="hidden" name="test_id" value="{{ t.pk }}">
+      <input type="hidden" name="accion" value="quitar">
+      <button type="submit" class="btn btn-ghost" style="font-size:0.75rem;color:var(--rose)">Quitar</button>
+    </form>
+  </div>
+  {% endfor %}
+  <div style="height:1rem"></div>
+  {% endif %}
+
+  {% if results %}
+  <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem">Resultados completados</div>
   {% for r in results %}
   <div class="result-row">
     <div>
@@ -125,9 +160,10 @@
     </div>
     <a href="/tests/resultado/{{ r.pk }}/" onclick="spaGo(event,this)" class="btn btn-ghost" style="font-size:0.78rem">Ver →</a>
   </div>
-  {% empty %}
-  <div style="color:var(--muted);font-size:0.88rem;padding:1rem 0">Sin tests completados.</div>
   {% endfor %}
+  {% else %}
+  <div style="color:var(--muted);font-size:0.85rem;padding:0.5rem 0">Sin resultados completados aún.</div>
+  {% endif %}
 </div>
 
 <div id="pane-notas" class="cd-pane">

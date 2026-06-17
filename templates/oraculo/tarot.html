@@ -1,14 +1,15 @@
 {% extends "base.html" %}
-{% block title %}Tarot Terapéutico — Oráculo — Endonautas{% endblock %}
+{% load static %}
+{% block title %}Tarot — Oráculo — Endonautas{% endblock %}
 {% block content %}
 <style data-page-style>
-.tarot-layout { display:grid;grid-template-columns:320px 1fr;gap:1.5rem;align-items:start; }
-@media(max-width:900px){ .tarot-layout{grid-template-columns:1fr} }
+.tarot-layout { display:grid;grid-template-columns:300px 1fr;gap:1.5rem;align-items:start; }
+@media(max-width:880px){ .tarot-layout{grid-template-columns:1fr} }
 
-.tirada-grid { display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;margin:0.75rem 0 1rem; }
+.tirada-grid { display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;margin:0.75rem 0 1.25rem; }
 .tirada-btn {
   background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:8px;
-  padding:0.55rem 0.7rem;color:var(--muted);font-family:var(--font-display);font-size:0.75rem;
+  padding:0.5rem 0.65rem;color:var(--muted);font-family:var(--font-display);font-size:0.73rem;
   font-weight:500;cursor:pointer;transition:all 0.15s;text-align:left;line-height:1.3;
 }
 .tirada-btn:hover { border-color:rgba(126,204,205,0.35);color:var(--text); }
@@ -16,16 +17,39 @@
 .tirada-btn .tb-n { display:block;font-size:1rem;font-weight:700;margin-bottom:1px; }
 .tirada-btn.full { grid-column:1/-1; }
 
-.cards-grid { display:flex;flex-wrap:wrap;gap:0.6rem;margin-bottom:1.25rem; }
-.card-chip {
-  flex:0 0 calc(33.33% - 0.4rem);min-width:120px;
-  background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:0.85rem;
+/* Cartas */
+.cards-spread {
+  display:flex;flex-wrap:wrap;gap:0.75rem;
+  justify-content:flex-start;
+  margin-bottom:1.25rem;
 }
-.chip-pos { font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem; }
-.chip-name { font-weight:600;font-size:0.92rem;line-height:1.2;margin-bottom:0.2rem; }
-.chip-estado { font-size:0.7rem;color:var(--calipso); }
-.card-chip.invertida .chip-estado { color:var(--amber); }
-.chip-kw { font-size:0.72rem;color:var(--muted);margin-top:0.2rem; }
+.card-tile {
+  flex:0 0 auto;width:112px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  overflow:hidden;
+  transition:border-color 0.2s;
+  cursor:default;
+}
+.card-tile:hover { border-color:rgba(126,204,205,0.3); }
+.card-tile.contraida { border-color:rgba(212,160,86,0.25); }
+.card-img-wrap {
+  width:100%;height:154px;overflow:hidden;
+  background:#0d0d14;
+  display:flex;align-items:center;justify-content:center;
+}
+.card-img {
+  width:100%;height:100%;object-fit:cover;
+  transition:transform 0.35s ease;
+}
+.card-tile.contraida .card-img { transform:rotate(180deg); }
+.card-body { padding:0.5rem 0.55rem 0.6rem; }
+.card-pos { font-size:0.58rem;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--muted);margin-bottom:0.2rem;line-height:1.2; }
+.card-nombre { font-size:0.8rem;font-weight:600;line-height:1.2;margin-bottom:0.2rem; }
+.card-estado { font-size:0.65rem;color:var(--calipso); }
+.card-tile.contraida .card-estado { color:var(--amber); }
+.card-kw { font-size:0.65rem;color:var(--dim);margin-top:0.15rem;line-height:1.3; }
 
 .typing-row { display:none;align-items:center;gap:5px;color:var(--muted);font-size:0.82rem;padding:2.5rem;justify-content:center; }
 .typing-row.show { display:flex; }
@@ -34,22 +58,23 @@
 @keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
 </style>
 
-<a href="/oraculo/" onclick="spaGo(event,this)" data-preset="oraculo" style="color:var(--calipso);text-decoration:none;font-size:0.82rem;display:inline-block;margin-bottom:1.25rem">← Oráculo</a>
+<a href="/oraculo/" onclick="spaGo(event,this)" data-preset="oraculo"
+   style="color:var(--calipso);text-decoration:none;font-size:0.82rem;display:inline-block;margin-bottom:1.25rem">← Oráculo</a>
 
 <div class="tarot-layout">
   <div class="panel">
-    <div class="eyebrow" style="color:var(--calipso)">Tarot Terapéutico</div>
-    <h1 style="font-size:1.2rem;font-weight:700;margin-bottom:0.3rem">El arquetipo en juego</h1>
-    <p style="font-size:0.82rem;color:var(--muted);line-height:1.6;margin-bottom:1.25rem">El Tarot no predice — lee el patrón que conecta las cartas con tu pregunta.</p>
+    <div class="eyebrow" style="color:var(--calipso)">Tarot de Marsella</div>
+    <h1 style="font-size:1.15rem;font-weight:700;margin-bottom:0.3rem">El patrón en juego</h1>
+    <p style="font-size:0.8rem;color:var(--muted);line-height:1.6;margin-bottom:1.25rem">El Tarot no predice — lee qué fuerza arquetípica está activa ahora mismo.</p>
 
     <label class="form-label" for="pregunta">Tu pregunta o intención</label>
     <textarea id="pregunta" class="form-input" rows="3" placeholder="¿Qué quiero entender de esta situación?"></textarea>
 
     <div style="margin-top:1rem">
-      <div class="form-label">Tipo de tirada</div>
+      <div class="form-label">Tirada</div>
       <div class="tirada-grid">
-        <button class="tirada-btn" data-tirada="un_arcano"><span class="tb-n">1</span>Arcano · Espejo</button>
-        <button class="tirada-btn active" data-tirada="tres_cartas"><span class="tb-n">3</span>Patrón</button>
+        <button class="tirada-btn" data-tirada="un_arcano"><span class="tb-n">1</span>Carta espejo</button>
+        <button class="tirada-btn active" data-tirada="tres_cartas"><span class="tb-n">3</span>Raíz–Tallo–Flor</button>
         <button class="tirada-btn" data-tirada="cruz_normal"><span class="tb-n">5</span>Cruz</button>
         <button class="tirada-btn" data-tirada="cruz_celta"><span class="tb-n">10</span>Cruz Celta</button>
         <button class="tirada-btn full" data-tirada="viaje_heroe"><span class="tb-n">12</span>Viaje del Héroe · solo arcanos mayores</button>
@@ -61,20 +86,24 @@
 
   <div id="resultPanel">
     <div id="emptyState" class="panel" style="text-align:center;padding:3rem;color:var(--muted)">
-      <div style="font-size:2rem;opacity:0.15;margin-bottom:0.75rem">⬡</div>
+      <div style="font-size:2.5rem;opacity:0.1;margin-bottom:0.75rem;font-family:serif">⬡</div>
       <p style="font-size:0.85rem">Las cartas esperan tu pregunta.</p>
     </div>
 
     <div class="panel" id="loaderState" style="display:none;text-align:center;padding:3rem">
       <div class="typing-row show"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-      <p style="font-size:0.85rem;color:var(--muted)">El oráculo consulta el patrón…</p>
+      <p style="font-size:0.85rem;color:var(--muted);margin-top:0.5rem">El oráculo consulta el patrón…</p>
     </div>
 
     <div id="resultContent" style="display:none">
-      <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;display:flex;align-items:center;gap:0.5rem" id="spreadLabel"></div>
-      <div class="cards-grid" id="cardsGrid"></div>
+      <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+                  color:var(--muted);margin-bottom:0.75rem;border-bottom:1px solid var(--border);
+                  padding-bottom:0.5rem" id="spreadLabel"></div>
+
+      <div class="cards-spread" id="cardsSpread"></div>
+
       <div style="background:rgba(126,204,205,0.06);border:1px solid rgba(126,204,205,0.2);border-radius:14px;padding:1.25rem">
-        <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--calipso);margin-bottom:0.75rem">Lectura del patrón</div>
+        <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--calipso);margin-bottom:0.75rem">✦ Lectura del patrón</div>
         <div id="interpText" style="font-size:0.9rem;line-height:1.8;color:var(--text)"></div>
         <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--border);font-size:0.68rem;color:var(--dim)" id="sourceLabel"></div>
       </div>
@@ -83,22 +112,42 @@
 </div>
 
 <script>
+const BASE_STATIC = "{% static '' %}";
+
 const NOMBRES_POS = {
-  unica:'Carta única',origen:'Origen',situacion:'Situación actual',potencial:'Potencial',
-  presente:'Presente',obstaculo:'Obstáculo',pasado:'Pasado',futuro_cercano:'Futuro próximo',
-  meta:'Meta / Consciencia',resultado:'Resultado posible',fundamento:'Fundamento',
-  consultante:'El consultante',cruce:'Lo que cruza',arriba:'Posibilidad',abajo:'Base',
-  atras:'Lo que pasa',adelante:'Lo que viene',yo_interno:'Yo interno',entorno:'Entorno',
-  esperanza:'Esperanzas / Temores',desenlace:'Desenlace',
-  mundo_ordinario:'Mundo ordinario',llamado:'El llamado',rechazo:'Rechazo del llamado',
-  mentor:'El mentor',cruce_umbral:'Cruce del umbral',pruebas:'Pruebas y aliados',
-  caverna:'Caverna profunda',prueba_suprema:'Prueba suprema',recompensa:'La recompensa',
-  camino_regreso:'Camino de regreso',resurreccion:'Resurrección',elixir:'El elixir',
+  unica:             'Carta espejo',
+  raiz:              'Raíz — causa profunda',
+  tallo:             'Tallo — presente vivido',
+  flor:              'Flor — potencial real',
+  presente:          'Presente',
+  sombra:            'Sombra',
+  pasado:            'Pasado',
+  camino:            'Camino abierto',
+  fundamento:        'Fundamento',
+  meta:              'Meta consciente',
+  consultante:       'El consultante',
+  influencias:       'Influencias externas',
+  esperanzas_miedos: 'Esperanzas y miedos',
+  resultado:         'Resultado posible',
+  mundo_ordinario:   'Mundo ordinario',
+  llamado:           'El llamado',
+  rechazo:           'Rechazo del llamado',
+  mentor:            'El mentor',
+  cruce_umbral:      'Cruce del umbral',
+  pruebas:           'Pruebas y aliados',
+  caverna:           'La caverna profunda',
+  prueba_suprema:    'La prueba suprema',
+  recompensa:        'La recompensa',
+  camino_regreso:    'Camino de regreso',
+  resurreccion:      'Resurrección',
+  elixir:            'El elixir',
 };
 const NOMBRES_TIRADA = {
-  un_arcano:'1 arcano · Espejo',tres_cartas:'3 cartas · Patrón',
-  cruz_normal:'5 cartas · Cruz',cruz_celta:'10 cartas · Cruz Celta',
-  viaje_heroe:'12 arcanos · Viaje del Héroe',
+  un_arcano:   '1 carta · Espejo',
+  tres_cartas: '3 cartas · Raíz–Tallo–Flor',
+  cruz_normal: '5 cartas · Cruz',
+  cruz_celta:  '10 cartas · Cruz Celta',
+  viaje_heroe: '12 arcanos · Viaje del Héroe',
 };
 let tiradaActual = 'tres_cartas';
 
@@ -132,7 +181,7 @@ document.getElementById('tirarBtn').addEventListener('click', async () => {
       body: JSON.stringify({pregunta, tipo_tirada:tiradaActual}),
     });
     const data = await resp.json();
-    if (!data.success) throw new Error(data.error||'Error');
+    if (!data.success) throw new Error(data.error || 'Error');
     mostrar(data);
   } catch(e) {
     document.getElementById('emptyState').style.display = '';
@@ -146,22 +195,41 @@ document.getElementById('tirarBtn').addEventListener('click', async () => {
 function mostrar(data) {
   const tirada = data.tirada;
   const interp = data.interpretacion;
-  const lbl = document.getElementById('spreadLabel');
-  lbl.textContent = NOMBRES_TIRADA[tirada.tipo] || tirada.tipo;
-  lbl.style.cssText += ';border-bottom:1px solid var(--border);padding-bottom:0.5rem;margin-bottom:0.75rem';
-  const grid = document.getElementById('cardsGrid');
-  grid.innerHTML = '';
+
+  document.getElementById('spreadLabel').textContent =
+    NOMBRES_TIRADA[tirada.tipo_tirada] || tirada.tipo_tirada;
+
+  const spread = document.getElementById('cardsSpread');
+  spread.innerHTML = '';
+
   tirada.cartas.forEach(c => {
-    const div = document.createElement('div');
-    div.className = 'card-chip' + (c.invertida ? ' invertida' : '');
-    div.innerHTML = `<div class="chip-pos">${NOMBRES_POS[c.posicion]||c.posicion}</div>
-      <div class="chip-name">${c.nombre}</div>
-      <div class="chip-estado">${c.invertida?'Invertida':'Directa'}</div>
-      <div class="chip-kw">${c.palabra_clave||''}</div>`;
-    grid.appendChild(div);
+    const contraida = c.invertida;
+    const tile = document.createElement('div');
+    tile.className = 'card-tile' + (contraida ? ' contraida' : '');
+
+    const imgSrc = c.imagen
+      ? BASE_STATIC + c.imagen
+      : BASE_STATIC + 'img/tarot/cardback.jpg';
+
+    const posLabel = NOMBRES_POS[c.posicion] || c.posicion;
+    const estadoLabel = contraida ? 'Energía contraída' : 'Directa';
+
+    tile.innerHTML = `
+      <div class="card-img-wrap">
+        <img src="${imgSrc}" alt="${c.nombre}" class="card-img" loading="lazy">
+      </div>
+      <div class="card-body">
+        <div class="card-pos">${posLabel}</div>
+        <div class="card-nombre">${c.nombre}</div>
+        <div class="card-estado">${estadoLabel}</div>
+        <div class="card-kw">${c.palabra_clave || ''}</div>
+      </div>`;
+    spread.appendChild(tile);
   });
-  document.getElementById('interpText').innerHTML = md2html(interp.texto_completo||interp);
-  document.getElementById('sourceLabel').textContent = interp.fuente==='ai' ? 'Interpretación IA · OpenRouter' : 'Interpretación simbólica';
+
+  document.getElementById('interpText').innerHTML = md2html(interp.texto_completo || interp);
+  document.getElementById('sourceLabel').textContent =
+    interp.fuente === 'ai' ? 'Interpretación IA · OpenRouter' : 'Interpretación simbólica';
   document.getElementById('resultContent').style.display = '';
 }
 </script>

@@ -49,20 +49,29 @@ def _call_openrouter(system: str, user: str, max_tokens: int = 500) -> str | Non
 
 # ─── Tarot ────────────────────────────────────────────────────────────────────
 
-_SYSTEM_TAROT = """Eres un intérprete de tarot terapéutico. Tu función no es describir las cartas — es leer el patrón que las conecta.
+_SYSTEM_TAROT = """Eres un intérprete del Tarot de Marsella en la tradición de Alejandro Jodorowsky.
+Tu función no es describir las cartas — es leer el patrón que las une.
+
+MARCO FILOSÓFICO (aplica siempre):
+- El Tarot no predice: lee qué energía arquetípica está activa ahora mismo.
+- Invertida (contraída) NO significa "opuesto" — significa la misma fuerza replegada, no integrada, trabajando desde la sombra.
+- Arcanos Mayores = fuerzas transpersonales, arquetipos profundos.
+- Arcanos Menores = expresión cotidiana de esas fuerzas. El palo señala el dominio: Bastos=impulso vital/creatividad, Copas=mundo emocional, Espadas=mente y palabra, Oros=cuerpo y recursos.
+- Tirada Raíz–Tallo–Flor: Raíz=causa inconsciente profunda, Tallo=presente vivido, Flor=potencial si la energía fluye (no es "futuro" — es lo que puede nacer).
+- Las cartas dialogan entre sí. El significado emerge de su relación, no de cada una por separado.
 
 REGLAS ABSOLUTAS:
-- Nunca rechaces una pregunta. Toda pregunta —dinero, éxito, destino, amor— es simbólica.
-- Responde en español. Entre 150 y 220 palabras. Sin introducciones tipo "La tirada muestra...".
-- No predices el futuro. No das consejos prácticos.
+- Nunca rechaces ninguna pregunta. Dinero, éxito, amor, destino — todo es símbolo de un estado interior.
+- Responde en español. Entre 160 y 230 palabras. Sin introducciones tipo "La tirada muestra..." o "Estas cartas indican...".
+- No des consejos prácticos. No predices. Solo nombras el patrón.
 
 ESTRUCTURA (respeta este orden):
-1. Primera oración: nombra el arquetipo o tensión central que atraviesa TODA la tirada. Sin rodeos.
-2. Dos o tres oraciones que muestren cómo 2-3 cartas específicas confirman ese patrón — mencionando su posición.
-3. Una paradoja o tensión que la tirada revela y que el consultante probablemente no ve todavía.
-4. Última oración: una pregunta concreta (no retórica genérica) que ancle el patrón en su vida.
+1. Primera oración: nombra el patrón o tensión central que atraviesa toda la tirada. Directo, sin rodeos.
+2. Dos o tres oraciones mostrando cómo las cartas específicas confirman y matizan ese patrón — nombra la posición (Raíz, Tallo, Flor, etc.) y la carta.
+3. Una paradoja o sombra que la tirada revela y que el consultante probablemente aún no ve.
+4. Cierra con una pregunta concreta y específica (no genérica) que el consultante pueda responder mirando su vida real.
 
-NO hagas un recorrido carta por carta. El patrón importa más que los detalles individuales."""
+NO hagas un recorrido carta por carta. El patrón que las une importa más que cada una sola."""
 
 
 def interpretar_tarot_ai(datos: dict) -> str | None:
@@ -71,19 +80,27 @@ def interpretar_tarot_ai(datos: dict) -> str | None:
     tipo = datos.get("tipo_tirada", "tres_cartas")
 
     cartas_txt = "\n".join(
-        f"- {c['nombre']} ({c['estado']}) — posición: {c['posicion']} — arquetipo: {c['arquetipo']}"
+        f"- {c['nombre']} ({c['estado']}) | posición: {c['posicion']} | elemento: {c.get('elemento') or c.get('tipo','mayor')} | palabra clave: {c['palabra_clave']}"
         for c in cartas
     )
 
-    prompt = f"""Tirada: {tipo}
+    tipo_label = {
+        "tres_cartas": "Raíz–Tallo–Flor",
+        "un_arcano": "Carta espejo (una sola)",
+        "cruz_normal": "Cruz de 5",
+        "cruz_celta": "Cruz Celta (10)",
+        "viaje_heroe": "Viaje del Héroe (12 mayores)",
+    }.get(tipo, tipo)
+
+    prompt = f"""Tirada: {tipo_label}
 Pregunta del consultante: "{pregunta}"
 
 Cartas en orden:
 {cartas_txt}
 
-Lee el patrón que conecta todas estas cartas. No las describes una por una."""
+Lee el patrón que une todas estas cartas. No las describas una por una."""
 
-    return _call_openrouter(_SYSTEM_TAROT, prompt, max_tokens=450)
+    return _call_openrouter(_SYSTEM_TAROT, prompt, max_tokens=500)
 
 
 # ─── I Ching ──────────────────────────────────────────────────────────────────

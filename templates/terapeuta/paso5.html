@@ -58,7 +58,7 @@
 {% if propuesta.plan %}
 <div class="eyebrow" style="margin-bottom:0.75rem">Plan por disciplina</div>
 {% for item in propuesta.plan %}
-<div class="plan-card" data-marco="{{ item.marco }}" data-elemento="{{ item.elemento_afectado|default:'' }}" data-dosha="{{ item.dosha_afectado|default:'' }}" data-chakra="{{ item.chakra_relacionado|default:'' }}">
+<div class="plan-card" data-marco="{{ item.marco }}" data-elemento="{{ item.elemento_afectado|default:'' }}" data-nutridor="{{ item.elemento_nutridor|default:'' }}" data-controlado="{{ item.elemento_controlado|default:'' }}" data-dosha="{{ item.dosha_afectado|default:'' }}" data-subdosha="{{ item.sub_dosha|default:'' }}" data-chakra="{{ item.chakra_relacionado|default:'' }}">
   <div class="plan-header">
     {% if item.icono %}<span class="plan-icon">{{ item.icono }}</span>{% endif %}
     <div>
@@ -144,66 +144,85 @@
   var COLORS={Madera:'#4ecdc4',Fuego:'#e84393',Tierra:'#ffbf00',Metal:'#b8c0cc',Agua:'#6096ba'};
   var GEN=[['Madera','Fuego'],['Fuego','Tierra'],['Tierra','Metal'],['Metal','Agua'],['Agua','Madera']];
   var CTRL=[['Madera','Tierra'],['Tierra','Agua'],['Agua','Fuego'],['Fuego','Metal'],['Metal','Madera']];
+  var GEN_INV={Fuego:'Madera',Tierra:'Fuego',Metal:'Tierra',Agua:'Metal',Madera:'Agua'};
+  var CTRL_MAP={Madera:'Tierra',Tierra:'Agua',Agua:'Fuego',Fuego:'Metal',Metal:'Madera'};
+
   var CHAKRA_MAP={'muladhara':0,'raiz':0,'raíz':0,'svadhisthana':1,'sacro':1,'sacral':1,'svadhishthana':1,
     'manipura':2,'plexo solar':2,'anahata':3,'corazon':3,'corazón':3,'vishuddha':4,'garganta':4,
     'vishudha':4,'ajna':5,'tercer ojo':5,'sahasrara':6,'corona':6};
+  var SUB_DOSHA_CHAKRA={
+    'apana vata':[0,1],'samana vata':[2],'prana vata':[3,5],'udana vata':[4],'vyana vata':[3],
+    'pachaka pitta':[2],'sadhaka pitta':[3],'alochaka pitta':[5],'ranjaka pitta':[2],
+    'kledaka kapha':[1],'avalambaka kapha':[3],'tarpaka kapha':[5,6],'bodhaka kapha':[4],'shleshaka kapha':[1]
+  };
   var CHAKRAS=[
     {n:'Raíz',c:'#e53e3e'},{n:'Sacro',c:'#dd6b20'},{n:'Plexo',c:'#d69e2e'},
     {n:'Corazón',c:'#38a169'},{n:'Garganta',c:'#3182ce'},{n:'3er Ojo',c:'#553c9a'},{n:'Corona',c:'#9f7aea'}
   ];
 
-  function mtcSvg(elem) {
+  function mtcSvg(elem, nutridor, controlado) {
     var CX=80,CY=80,R=58;
     var names=['Fuego','Tierra','Metal','Agua','Madera'];
     var angs=[-90,-18,54,126,198].map(function(a){return a*Math.PI/180;});
     var pos={};
     names.forEach(function(e,i){pos[e]=[CX+R*Math.cos(angs[i]),CY+R*Math.sin(angs[i])];});
+    if(!nutridor&&elem)nutridor=GEN_INV[elem];
+    if(!controlado&&elem)controlado=CTRL_MAP[elem];
     var s='<svg viewBox="0 0 160 160" width="160" height="160" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0.5rem auto">';
     GEN.forEach(function(ab){
       var p=pos[ab[0]],q=pos[ab[1]];
-      s+='<line x1="'+p[0].toFixed(1)+'" y1="'+p[1].toFixed(1)+'" x2="'+q[0].toFixed(1)+'" y2="'+q[1].toFixed(1)+'" stroke="#4ecdc4" stroke-width="1.2" opacity="0.3"/>';
+      var nutLine=(ab[0]===nutridor&&ab[1]===elem);
+      s+='<line x1="'+p[0].toFixed(1)+'" y1="'+p[1].toFixed(1)+'" x2="'+q[0].toFixed(1)+'" y2="'+q[1].toFixed(1)+'" stroke="'+(nutLine?'#ffbf00':'#4ecdc4')+'" stroke-width="'+(nutLine?2:1.2)+'" opacity="'+(nutLine?0.65:0.22)+'"/>';
     });
     CTRL.forEach(function(ab){
       var p=pos[ab[0]],q=pos[ab[1]];
-      s+='<line x1="'+p[0].toFixed(1)+'" y1="'+p[1].toFixed(1)+'" x2="'+q[0].toFixed(1)+'" y2="'+q[1].toFixed(1)+'" stroke="#ffbf00" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.18"/>';
+      var ctrlLine=(ab[0]===elem&&ab[1]===controlado);
+      s+='<line x1="'+p[0].toFixed(1)+'" y1="'+p[1].toFixed(1)+'" x2="'+q[0].toFixed(1)+'" y2="'+q[1].toFixed(1)+'" stroke="'+(ctrlLine?'#e07060':'#ffbf00')+'" stroke-width="'+(ctrlLine?1.8:0.8)+'" stroke-dasharray="3,3" opacity="'+(ctrlLine?0.55:0.15)+'"/>';
     });
     names.forEach(function(e){
-      var x=pos[e][0],y=pos[e][1],active=e===elem,color=COLORS[e],r=active?14:10,op=active?1:0.45;
-      if(active){
+      var x=pos[e][0],y=pos[e][1];
+      var isAct=e===elem,isNut=e===nutridor,isCtrl=e===controlado;
+      var color=COLORS[e];
+      var r=isAct?14:(isNut?12:10),op=isAct?1:(isNut?0.72:(isCtrl?0.35:0.32));
+      var fillOp=isAct?0.25:(isNut?0.2:(isCtrl?0.06:0.09)),sw=isAct?2:(isNut?1.5:1);
+      if(isAct){
         s+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="18" fill="none" stroke="'+color+'" stroke-width="1" opacity="0.2">'
           +'<animate attributeName="r" values="14;22;14" dur="2s" repeatCount="indefinite"/>'
           +'<animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite"/></circle>';
+      } else if(isNut){
+        s+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="17" fill="none" stroke="#ffbf00" stroke-width="1" opacity="0.18"/>';
       }
-      s+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+r+'" fill="'+color+'" fill-opacity="'+(active?0.25:0.1)+'" stroke="'+color+'" stroke-width="'+(active?2:1)+'" opacity="'+op+'"/>';
+      s+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+r+'" fill="'+color+'" fill-opacity="'+fillOp+'" stroke="'+color+'" stroke-width="'+sw+'" opacity="'+op+'"/>';
       s+='<text x="'+x.toFixed(1)+'" y="'+(y+(y>CY?26:-15)).toFixed(1)+'" text-anchor="middle" font-size="7.5" fill="'+color+'" opacity="'+op+'" font-family="sans-serif">'+e+'</text>';
     });
     return s+'</svg>';
   }
 
-  function chakraIndices(chakra, dosha) {
+  function chakraIndices(chakra, dosha, subdosha) {
     var idx=CHAKRA_MAP[(chakra||'').toLowerCase().trim()];
     if(idx!==undefined)return[idx];
+    var sd=(subdosha||'').toLowerCase().trim();
+    if(sd&&SUB_DOSHA_CHAKRA[sd])return SUB_DOSHA_CHAKRA[sd];
     var d=(dosha||'').toLowerCase();
     var ids=[];
-    if(d.indexOf('vata')>=0){ids.push(0,1);}
-    if(d.indexOf('pitta')>=0){ids.push(2,3);}
-    if(d.indexOf('kapha')>=0){ids.push(4,5);}
+    if(d.indexOf('vata')>=0)ids.push(0);
+    if(d.indexOf('pitta')>=0)ids.push(2);
+    if(d.indexOf('kapha')>=0)ids.push(1);
     return ids.length?ids:[-1];
   }
-  function chakraSvg(chakra, dosha) {
-    var activos=chakraIndices(chakra,dosha);
-    var idx=activos[0];
+  function chakraSvg(chakra, dosha, subdosha) {
+    var activos=chakraIndices(chakra,dosha,subdosha);
     var sp=240/7;
     var s='<svg viewBox="0 0 240 56" width="240" height="56" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0.5rem auto">';
     s+='<line x1="'+(sp*0.5).toFixed(1)+'" y1="24" x2="'+(sp*6.5).toFixed(1)+'" y2="24" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>';
     CHAKRAS.forEach(function(c,i){
-      var cx=sp*(i+0.5),active=activos.indexOf(i)>=0,r=active?13:9,op=active?1:0.35;
+      var cx=sp*(i+0.5),active=activos.indexOf(i)>=0,r=active?13:9,op=active?1:0.32;
       if(active){
         s+='<circle cx="'+cx.toFixed(1)+'" cy="24" r="19" fill="none" stroke="'+c.c+'" stroke-width="1" opacity="0.2">'
           +'<animate attributeName="r" values="15;21;15" dur="1.8s" repeatCount="indefinite"/>'
           +'<animate attributeName="opacity" values="0.3;0;0.3" dur="1.8s" repeatCount="indefinite"/></circle>';
       }
-      s+='<circle cx="'+cx.toFixed(1)+'" cy="24" r="'+r+'" fill="'+c.c+'" fill-opacity="'+(active?0.28:0.12)+'" stroke="'+c.c+'" stroke-width="'+(active?2:1)+'" opacity="'+op+'"/>';
+      s+='<circle cx="'+cx.toFixed(1)+'" cy="24" r="'+r+'" fill="'+c.c+'" fill-opacity="'+(active?0.28:0.10)+'" stroke="'+c.c+'" stroke-width="'+(active?2:1)+'" opacity="'+op+'"/>';
       s+='<text x="'+cx.toFixed(1)+'" y="48" text-anchor="middle" font-size="6.5" fill="'+c.c+'" opacity="'+op+'" font-family="sans-serif">'+c.n+'</text>';
     });
     return s+'</svg>';
@@ -214,10 +233,10 @@
     if(!block)return;
     var marco=card.dataset.marco||'';
     if(marco.indexOf('Medicina Tradicional China')>=0||marco.indexOf('MTC')>=0){
-      block.innerHTML=mtcSvg(card.dataset.elemento||'');
+      block.innerHTML=mtcSvg(card.dataset.elemento||'',card.dataset.nutridor||'',card.dataset.controlado||'');
       block.style.display='block';
     } else if(marco.indexOf('Ayurveda')>=0){
-      block.innerHTML=chakraSvg(card.dataset.chakra||'',card.dataset.dosha||'');
+      block.innerHTML=chakraSvg(card.dataset.chakra||'',card.dataset.dosha||'',card.dataset.subdosha||'');
       block.style.display='block';
     }
   });

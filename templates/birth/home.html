@@ -2,73 +2,109 @@
 {% block title %}Nacimiento — Endonautas{% endblock %}
 {% block content %}
 <style data-page-style>
-.birth-header { margin-bottom:2rem; }
-.birth-title { font-size:1.3rem;font-weight:700; }
-.birth-sub { font-size:0.85rem;color:var(--muted);margin-top:0.25rem;line-height:1.6; }
-.report-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin-top:1.5rem; }
-.report-card {
+.birth-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.5rem; }
+@media(max-width:700px){ .birth-grid{grid-template-columns:1fr} }
+.birth-card {
+  position:relative;overflow:hidden;
   background:var(--surface);
   backdrop-filter:blur(14px);
   border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:1.5rem;
-  text-decoration:none;
-  color:inherit;
-  transition:border-color 0.3s;
-  display:block;
+  border-radius:16px;
+  padding:2rem 1.5rem 1.75rem;
+  text-decoration:none;color:inherit;
+  display:flex;flex-direction:column;gap:0;
+  transition:border-color 0.25s,transform 0.2s;
+  min-height:240px;
 }
-.report-card:hover { border-color:rgba(126,204,205,0.4); }
-.report-icon { font-size:1.8rem;margin-bottom:0.75rem; }
-.report-name { font-weight:600;font-size:0.95rem;margin-bottom:0.3rem; }
-.report-desc { font-size:0.75rem;color:var(--muted);line-height:1.5; }
-.report-status { display:inline-block;margin-top:0.75rem;font-size:0.72rem; }
+.birth-card:hover { border-color:var(--card-accent,rgba(126,204,205,0.5));transform:translateY(-2px); }
+.birth-card::before {
+  content:'';position:absolute;inset:0;opacity:0;
+  background:radial-gradient(ellipse at 30% 20%, var(--card-glow,rgba(126,204,205,0.12)) 0%, transparent 70%);
+  transition:opacity 0.3s;
+}
+.birth-card:hover::before { opacity:1; }
+.bc-stripe {
+  position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--card-accent,rgba(126,204,205,0.6));
+  border-radius:16px 16px 0 0;
+}
+.bc-symbol {
+  font-size:2.8rem;line-height:1;margin-bottom:1.1rem;
+  filter:drop-shadow(0 0 12px var(--card-glow,rgba(126,204,205,0.3)));
+}
+.bc-name { font-weight:700;font-size:1.05rem;margin-bottom:0.35rem;letter-spacing:-0.01em; }
+.bc-system { font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--card-color,var(--muted));margin-bottom:0.75rem; }
+.bc-desc { font-size:0.8rem;color:var(--muted);line-height:1.6;flex:1; }
+.bc-footer { margin-top:1.25rem;display:flex;align-items:center;justify-content:space-between; }
+.bc-cta { font-size:0.78rem;color:var(--card-color,var(--accent));font-weight:600; }
 </style>
 
-<div class="birth-header">
-  <h1 class="birth-title">Lecturas de Nacimiento</h1>
-  <p class="birth-sub">Tu carta natal, Human Design y Saju como mapas del alma.</p>
+<div style="margin-bottom:1.75rem">
+  <h1 style="font-size:1.3rem;font-weight:700;margin-bottom:0.3rem">Lecturas de Nacimiento</h1>
+  <p style="font-size:0.85rem;color:var(--muted);line-height:1.6">Tu carta natal, Human Design y Saju como mapas del alma.</p>
 </div>
 
 {% if birth %}
-<div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.5rem">
+<div style="font-size:0.82rem;color:var(--muted);margin-bottom:0.4rem">
   {{ birth.birth_date }} · {{ birth.city }}{% if birth.birth_time %} · {{ birth.birth_time }}{% endif %}
 </div>
 <a href="/nacimiento/datos/" onclick="spaGo(event,this)" style="color:var(--accent);text-decoration:none;font-size:0.8rem">Editar datos →</a>
 
-<div class="report-grid">
-  {% with reports_by_type=reports|dictsort:"report_type" %}
-  <a class="report-card" href="/nacimiento/astral/" onclick="spaGo(event,this)">
-    <div class="report-icon">✦</div>
-    <div class="report-name">Carta Astral</div>
-    <div class="report-desc">Sol, Luna, Ascendente y planetas personales</div>
-    {% for r in reports %}{% if r.report_type == 'astral' %}
-    <span class="report-status badge {% if r.status == 'done' %}badge-validado{% elif r.status == 'error' %}badge-adaptado{% else %}badge-endonauta{% endif %}">{{ r.get_status_display }}</span>
-    {% endif %}{% endfor %}
+<div class="birth-grid">
+
+  <a class="birth-card" href="/nacimiento/astral/" onclick="spaGo(event,this)"
+     style="--card-accent:#4ecdc4;--card-glow:rgba(78,205,196,0.18);--card-color:#4ecdc4">
+    <div class="bc-stripe"></div>
+    <div class="bc-symbol">✦</div>
+    <div class="bc-system">Astrología Occidental</div>
+    <div class="bc-name">Carta Astral</div>
+    <div class="bc-desc">Sol, Luna, Ascendente y los planetas personales en los 12 signos. El mapa del cielo en el momento exacto de tu nacimiento.</div>
+    <div class="bc-footer">
+      {% for r in reports %}{% if r.report_type == 'astral' %}
+      <span class="badge {% if r.status == 'done' %}badge-validado{% elif r.status == 'error' %}badge-adaptado{% else %}badge-endonauta{% endif %}">{{ r.get_status_display }}</span>
+      {% endif %}{% endfor %}
+      <span class="bc-cta">Ver lectura →</span>
+    </div>
   </a>
-  <a class="report-card" href="/nacimiento/hd/" onclick="spaGo(event,this)">
-    <div class="report-icon">◈</div>
-    <div class="report-name">Human Design</div>
-    <div class="report-desc">Tipo, Autoridad, Perfil y Centros definidos</div>
-    {% for r in reports %}{% if r.report_type == 'hd' %}
-    <span class="report-status badge {% if r.status == 'done' %}badge-validado{% elif r.status == 'error' %}badge-adaptado{% else %}badge-endonauta{% endif %}">{{ r.get_status_display }}</span>
-    {% endif %}{% endfor %}
+
+  <a class="birth-card" href="/nacimiento/hd/" onclick="spaGo(event,this)"
+     style="--card-accent:#9b8ec4;--card-glow:rgba(155,142,196,0.18);--card-color:#9b8ec4">
+    <div class="bc-stripe"></div>
+    <div class="bc-symbol">◈</div>
+    <div class="bc-system">Human Design</div>
+    <div class="bc-name">Diseño Humano</div>
+    <div class="bc-desc">Tu Tipo, Autoridad, Perfil y los nueve Centros energéticos. Instrucciones de fábrica para vivir en coherencia con tu diseño.</div>
+    <div class="bc-footer">
+      {% for r in reports %}{% if r.report_type == 'hd' %}
+      <span class="badge {% if r.status == 'done' %}badge-validado{% elif r.status == 'error' %}badge-adaptado{% else %}badge-endonauta{% endif %}">{{ r.get_status_display }}</span>
+      {% endif %}{% endfor %}
+      <span class="bc-cta">Ver lectura →</span>
+    </div>
   </a>
-  <a class="report-card" href="/nacimiento/saju/" onclick="spaGo(event,this)">
-    <div class="report-icon">◎</div>
-    <div class="report-name">Saju / BaZi</div>
-    <div class="report-desc">Los 4 pilares del destino chino</div>
-    {% for r in reports %}{% if r.report_type == 'saju' %}
-    <span class="report-status badge {% if r.status == 'done' %}badge-validado{% elif r.status == 'error' %}badge-adaptado{% else %}badge-endonauta{% endif %}">{{ r.get_status_display }}</span>
-    {% endif %}{% endfor %}
+
+  <a class="birth-card" href="/nacimiento/saju/" onclick="spaGo(event,this)"
+     style="--card-accent:#e07060;--card-glow:rgba(224,112,96,0.15);--card-color:#e07060">
+    <div class="bc-stripe"></div>
+    <div class="bc-symbol">◎</div>
+    <div class="bc-system">Astrología China</div>
+    <div class="bc-name">Saju / BaZi</div>
+    <div class="bc-desc">Los cuatro pilares del destino: año, mes, día y hora de nacimiento revelan el patrón energético de tu vida.</div>
+    <div class="bc-footer">
+      {% for r in reports %}{% if r.report_type == 'saju' %}
+      <span class="badge {% if r.status == 'done' %}badge-validado{% elif r.status == 'error' %}badge-adaptado{% else %}badge-endonauta{% endif %}">{{ r.get_status_display }}</span>
+      {% endif %}{% endfor %}
+      <span class="bc-cta">Ver lectura →</span>
+    </div>
   </a>
-  {% endwith %}
+
 </div>
 
 {% else %}
-<div class="panel" style="text-align:center;padding:3rem;max-width:480px">
-  <div style="font-size:2rem;margin-bottom:1rem">✦</div>
-  <div style="color:var(--muted);margin-bottom:1.5rem;font-size:0.9rem;line-height:1.7">Ingresa tu fecha, hora y lugar de nacimiento para generar tus lecturas.</div>
-  <a href="/nacimiento/datos/" onclick="spaGo(event,this)" class="btn btn-primary">Ingresar datos</a>
+<div class="panel" style="text-align:center;padding:3.5rem 2rem;max-width:520px">
+  <div style="font-size:2.5rem;margin-bottom:1.25rem;opacity:0.5">✦</div>
+  <div style="font-weight:600;font-size:1rem;margin-bottom:0.5rem">Tu mapa de nacimiento</div>
+  <div style="color:var(--muted);margin-bottom:1.75rem;font-size:0.88rem;line-height:1.7">Ingresa tu fecha, hora y lugar de nacimiento para generar las tres lecturas: Carta Astral, Human Design y Saju.</div>
+  <a href="/nacimiento/datos/" onclick="spaGo(event,this)" class="btn btn-primary">Ingresar datos →</a>
 </div>
 {% endif %}
 {% endblock %}

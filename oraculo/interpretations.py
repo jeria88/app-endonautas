@@ -20,40 +20,66 @@ from .services.ai_service import (
 
 # Frases base para cada posición de la tirada
 FRASES_POSICION_TAROT = {
+    # ── Tirada Raíz–Tallo–Flor (Jodorowsky) ─────────────────────────────────
+    "raiz": {
+        "directa": [
+            "En la raíz inconsciente de lo que consultas vive {arquetipo}. Es la tierra en que todo lo demás crece — aunque no la hayas visto.",
+            "La causa profunda de esta situación porta la energía de {arquetipo}. Tu psique lleva tiempo procesando este patrón sin nombrarlo.",
+            "Bajo la pregunta que hiciste, {arquetipo} opera como fuerza formativa. Esta es la semilla de todo lo que estás viviendo.",
+        ],
+        "contraída": [
+            "En la raíz, {arquetipo} trabaja desde la sombra — no integrada, replegada sobre sí misma. Algo en ese origen no ha sido aceptado del todo.",
+            "La energía de {arquetipo} en la raíz está contraída: actúa, pero de manera indirecta, difícil de reconocer. Lo que no se nombra, gobierna.",
+            "En el fondo de esta situación, {arquetipo} pulsa sin poder expresarse. La negación de esa fuerza es parte del patrón.",
+        ],
+    },
+    "tallo": {
+        "directa": [
+            "El presente vivido lleva la marca de {arquetipo}. Esto es lo que ocurre ahora, independiente de lo que crees que ocurre.",
+            "En el tallo — lo que sostienes hoy — {arquetipo} es la energía en acción. Tu psique te muestra esto como espejo.",
+            "El momento actual está atravesado por {arquetipo}. No es solo una situación: es una fuerza arquetípica que pide ser reconocida.",
+        ],
+        "contraída": [
+            "En el presente, {arquetipo} aparece contraída: la energía existe, pero no fluye. Hay resistencia a reconocer esta fuerza en tu vida actual.",
+            "El tallo muestra {arquetipo} replegada sobre sí misma. Algo en lo que vives hoy actúa desde la sombra de esa energía.",
+            "La fuerza de {arquetipo} opera en tu presente sin ser reclamada. La carta no describe lo que falta — describe lo que no se ve.",
+        ],
+    },
+    "flor": {
+        "directa": [
+            "Lo que puede florecer, si la energía fluye, es {arquetipo}. No es predicción — es el potencial real que la situación porta.",
+            "La flor de este momento apunta a {arquetipo}. Si la raíz es reconocida y el tallo no se tuerce, esto es lo que emerge.",
+            "El potencial de este instante se conecta con {arquetipo}. La pregunta no es si ocurrirá — es si estás dispuesto a recibirlo.",
+        ],
+        "contraída": [
+            "El potencial muestra {arquetipo} contraída: hay un florecimiento posible que algo en ti aún no deja llegar.",
+            "La flor aparece replegada: la energía de {arquetipo} está presente pero no encuentra salida. ¿Qué la contiene?",
+            "Lo que podría nacer carga la sombra de {arquetipo}. El potencial existe, pero hay una resistencia interior que merece atención.",
+        ],
+    },
+    # ── Retrocompatibilidad (tiradas antiguas) ────────────────────────────────
     "origen": {
         "derecha": [
-            "Tu historia comienza con {arquetipo}. Este arquetipo te acompaña desde hace tiempo, moldeando tu manera de ver el mundo.",
-            "El origen de tu situación actual se conecta con {arquetipo}. Tu inconsciente ha estado procesando este patrón.",
-            "En la raíz de lo que consultas, {arquetipo} emerge como fuerza formativa de tu experiencia.",
+            "El origen de esta situación porta la energía de {arquetipo}. Tu inconsciente ha estado procesando este patrón.",
         ],
         "invertida": [
-            "El arquetipo de {arquetipo} aparece bloqueado en tu historia. Hay algo del pasado que aún no has integrado.",
-            "La energía de {arquetipo} se manifiesta de forma invertida: en lugar de impulsarte, te ha detenido.",
-            "Tu relación con {arquetipo} en el origen está distorsionada. Quizás has negado esta parte de ti.",
+            "En el origen, {arquetipo} trabaja desde la sombra — sin ser del todo reconocida ni integrada.",
         ],
     },
     "situacion": {
         "derecha": [
-            "En tu presente, {arquetipo} te muestra dónde estás parado. Tu inconsciente te invita a reconocer este patrón.",
-            "La situación actual refleja {arquetipo}. Estás proyectando esta energía en tu vida cotidiana.",
-            "Aquí y ahora, {arquetipo} domina el escenario. Tu psique te está mostrando esta verdad.",
+            "El presente refleja {arquetipo}. Tu psique te muestra esta verdad ahora.",
         ],
         "invertida": [
-            "En el presente, {arquetipo} aparece invertido: la energía está ahí pero no la reconoces.",
-            "Tu situación actual muestra {arquetipo} en su sombra. Hay una parte de ti que resiste esta verdad.",
-            "El arquetipo de {arquetipo} en tu presente te pide que mires lo que estás evitando.",
+            "En el presente, {arquetipo} aparece contraída: la energía existe pero no fluye libremente.",
         ],
     },
     "potencial": {
         "derecha": [
-            "El potencial que emerge es {arquetipo}. Si integras esta energía, tu camino se abre.",
-            "Lo que puede florecer en ti está conectado con {arquetipo}. Tu inconsciente te señala esta dirección.",
-            "El futuro como posibilidad te muestra {arquetipo}. No es destino, es tendencia arquetípica.",
+            "Lo que puede florecer se conecta con {arquetipo}. No es destino — es potencial real.",
         ],
         "invertida": [
-            "El potencial de {arquetipo} aparece invertido: hay una oportunidad que estás dejando pasar.",
-            "Lo que podría ser se ve bloqueado por la sombra de {arquetipo}. Presta atención a esta resistencia.",
-            "Tu potencial conectado con {arquetipo} necesita ser reclamado. La inversión sugiere trabajo interior pendiente.",
+            "El potencial de {arquetipo} aparece replegado. Hay un florecimiento que algo aún detiene.",
         ],
     },
     "presente": {
@@ -64,12 +90,27 @@ FRASES_POSICION_TAROT = {
             "En el presente, {arquetipo} aparece en su cara oculta. Hay algo que no estás viendo.",
         ],
     },
-    "obstaculo": {
+    "sombra": {
+        "directa": [
+            "La sombra que confronta el presente es {arquetipo}. En Marsella, esta carta no 'bloquea' — muestra lo que la energía central aún no ha integrado.",
+            "La carta que cruza al presente lleva la energía de {arquetipo}: es el complemento oscuro, lo que el presente necesita enfrentar para moverse.",
+        ],
+        "contraída": [
+            "La sombra aparece con {arquetipo} contraída: hay algo que actúa por debajo de la situación visible, sin querer ser visto.",
+        ],
         "derecha": [
-            "El obstáculo que enfrentas se conecta con {arquetipo}. Tu sombra te está protegiendo de algo.",
+            "La sombra que confronta el presente porta {arquetipo}. No es un obstáculo: es lo que la carta central no ha integrado todavía.",
         ],
         "invertida": [
-            "Lo que te bloquea es la sombra de {arquetipo}. La resistencia misma contiene la clave.",
+            "La sombra lleva {arquetipo} contraída — trabajando desde lo oculto, difícil de reconocer directamente.",
+        ],
+    },
+    "obstaculo": {
+        "derecha": [
+            "Lo que confronta al presente lleva la energía de {arquetipo}. La resistencia contiene su propia clave.",
+        ],
+        "invertida": [
+            "La sombra de {arquetipo} actúa desde lo no visto. Lo que resiste también protege algo.",
         ],
     },
     "pasado": {
@@ -80,12 +121,27 @@ FRASES_POSICION_TAROT = {
             "En el pasado, {arquetipo} apareció de forma distorsionada. Hay una herida que sanar.",
         ],
     },
-    "futuro_cercano": {
+    "camino": {
+        "directa": [
+            "El camino que se abre porta la energía de {arquetipo}. No es predicción — es la dirección que la situación tiende a tomar si nada se interviene.",
+            "La fuerza de {arquetipo} marca el camino abierto. La pregunta no es si ocurrirá — es qué parte de ti ya lo está viviendo.",
+        ],
+        "contraída": [
+            "El camino aparece con {arquetipo} contraída: la dirección está, pero algo la estrecha. Hay un movimiento que aún no encuentra su forma.",
+        ],
         "derecha": [
-            "Lo que se acerca en tu horizonte está teñido de {arquetipo}. No es predicción, es tendencia.",
+            "El camino que se abre está marcado por {arquetipo}. No es destino — es tendencia activa.",
         ],
         "invertida": [
-            "El futuro cercano muestra {arquetipo} invertido: prepárate para una sorpresa que desafía tus expectativas.",
+            "El camino muestra {arquetipo} contraída: la dirección existe pero no fluye libremente.",
+        ],
+    },
+    "futuro_cercano": {
+        "derecha": [
+            "Lo próximo está teñido de {arquetipo}. No es predicción — es la tendencia activa del patrón.",
+        ],
+        "invertida": [
+            "El camino cercano porta {arquetipo} contraída: algo en la dirección no fluye aún.",
         ],
     },
     "meta": {
@@ -196,50 +252,61 @@ FRASES_POSICION_TAROT = {
     },
 }
 
-# Cierre integrador para la tirada completa
+# Cierre integrador para la tirada completa (lenguaje Jodorowsky)
 CIERRES_TAROT = [
-    "\n\nEstas tres cartas forman un diálogo entre tu pasado, tu presente y tu potencial. "
-    "No te dicen qué va a pasar — te muestran qué arquetipos están activos en tu psique ahora mismo. "
-    "La pregunta no es '¿qué me depara el futuro?', sino '¿qué parte de mí necesita atención en este momento?'",
+    "\n\nLa Raíz alimenta el Tallo, el Tallo sostiene la Flor. "
+    "Estas tres cartas no describen tres momentos — describen un solo movimiento vivo. "
+    "Lo que resuene en ti no es coincidencia: es reconocimiento.",
 
-    "\n\nLa tirada revela un patrón arquetípico en movimiento. Tu inconsciente, a través de estas imágenes simbólicas, "
-    "te está mostrando una narrativa interna. No es adivinación — es espejo. Lo que resuene, quédate con ello. "
-    "Lo que no, déjalo pasar como una nube en el cielo de tu consciencia.",
+    "\n\nEl Tarot de Marsella no adivina: muestra el patrón que ya opera. "
+    "Estas imágenes son un espejo, no una profecía. La pregunta que hiciste ya contenía su propia respuesta — "
+    "las cartas solo te ayudaron a verla.",
 
-    "\n\nEstas cartas no predicen: reflejan. El tarot terapéutico funciona como un espejo del inconsciente. "
-    "Lo que ves en ellas es una proyección de tu mundo interior. La pregunta que hiciste ya contiene su propia respuesta — "
-    "estas imágenes solo te ayudan a verla desde otro ángulo.",
+    "\n\nCada carta habla con las demás. El significado no vive en ninguna imagen sola — "
+    "vive en el diálogo entre ellas. Presta atención a lo que te incomoda: "
+    "ahí suele estar lo que más necesitas ver.",
 ]
 
 
 def generar_interpretacion_tarot(datos: dict) -> dict:
     """Genera interpretación terapéutica completa para una tirada de tarot."""
-    # Try AI first
     ai_texto = interpretar_tarot_ai(datos)
     if ai_texto:
         return {"texto_completo": ai_texto, "por_carta": {}, "fuente": "ai"}
 
-    # Static fallback
+    # Fallback simbólico
     cartas = datos["cartas"]
     por_carta = {}
     partes = []
 
     for carta in cartas:
-        posicion = carta["posicion"]
-        estado = carta["estado"]
+        posicion_clave = carta.get("posicion_clave", "")
+        posicion_label = carta.get("posicion", posicion_clave)
+        estado = carta["estado"]  # "directa" o "contraída"
         arquetipo = carta["arquetipo"]
         nombre = carta["nombre"]
 
-        frases_pos = FRASES_POSICION_TAROT.get(posicion, FRASES_POSICION_TAROT["situacion"])
-        frases_estado = frases_pos.get(estado, frases_pos["derecha"])
+        frases_pos = FRASES_POSICION_TAROT.get(
+            posicion_clave,
+            FRASES_POSICION_TAROT.get("tallo", FRASES_POSICION_TAROT.get("situacion"))
+        )
+        # Buscar clave de estado: directa → directa, contraída → contraída, caer en derecha/invertida si no existe
+        frases_estado = (
+            frases_pos.get(estado)
+            or frases_pos.get("directa")
+            or frases_pos.get("derecha")
+            or ["La energía de {arquetipo} opera en esta posición."]
+        )
         frase = random.choice(frases_estado).format(arquetipo=arquetipo)
 
+        palo = carta.get("palo")
+        elemento = carta.get("elemento")
         palo_info = ""
-        if carta.get("palo"):
-            palo_info = f" Al pertenecer al palo de {carta['palo']}, esta energía se manifiesta en el ámbito de {carta.get('arquetipo', 'tu vida')}."
+        if palo and elemento:
+            palo_info = f" Al pertenecer al palo de {palo.capitalize()} ({elemento}), esta energía se expresa en el dominio de: {arquetipo}."
 
-        texto_carta = f"**{nombre}** ({estado}): {frase}{palo_info}"
-        por_carta[posicion] = texto_carta
+        texto_carta = f"**{nombre}** — {posicion_label}: {frase}{palo_info}"
+        por_carta[posicion_clave] = texto_carta
         partes.append(texto_carta)
 
     cierre = random.choice(CIERRES_TAROT)
