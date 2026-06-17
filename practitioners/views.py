@@ -54,7 +54,7 @@ def client_detail(request, pk):
     client = get_object_or_404(TemporaryProfile, pk=pk, practitioner=request.user)
     notes = client.session_notes.all()
     sessions = client.sessions.all()
-    results = client.test_results.select_related('test').all()
+    results = client.temp_test_results.select_related('test').all()
     fichas = client.consultas.select_related('usuario').order_by('-fecha_creacion')
     return render(request, 'practitioners/client_detail.html', {
         'client': client, 'notes': notes, 'sessions': sessions,
