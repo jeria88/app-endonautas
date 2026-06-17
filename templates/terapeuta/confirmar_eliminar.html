@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Eliminar Consulta — Terapeuta Integral{% endblock %}
+{% block content %}
+
+<a href="/terapeuta/{{ consulta.id }}/detalle/" onclick="spaGo(event,this)" style="color:var(--calipso);text-decoration:none;font-size:0.82rem;display:inline-block;margin-bottom:1.5rem">← Volver</a>
+
+<div class="panel" style="padding:1.5rem;max-width:480px">
+  <h1 style="font-size:1.1rem;font-weight:700;margin-bottom:0.5rem">Eliminar consulta</h1>
+  <p style="font-size:0.85rem;color:var(--muted);line-height:1.5;margin-bottom:1.25rem">
+    ¿Confirmas que quieres eliminar la consulta de <strong>{{ consulta.nombre_paciente|default:"sin nombre" }}</strong>? Esta acción no se puede deshacer.
+  </p>
+  <p style="font-size:0.78rem;color:var(--dim);margin-bottom:1.5rem;border:1px solid var(--border);border-radius:8px;padding:0.6rem 0.8rem">{{ consulta.motivo|truncatechars:120 }}</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <div style="display:flex;gap:0.75rem">
+      <a href="/terapeuta/{{ consulta.id }}/detalle/" onclick="spaGo(event,this)" class="btn btn-secondary">Cancelar</a>
+      <button type="submit" class="btn" style="flex:1;background:var(--rose);color:#fff;border-color:var(--rose)">Eliminar definitivamente</button>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

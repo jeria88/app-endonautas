@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Confirmación Diagnóstica — Terapeuta Integral{% endblock %}
+{% block content %}
+<style data-page-style>
+.progress-bar { height:3px;background:var(--border);border-radius:2px;margin-bottom:1.5rem; }
+.progress-fill { height:100%;background:var(--calipso);border-radius:2px;width:80%; }
+.diag-card { background:var(--surface);backdrop-filter:blur(14px);border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:0.75rem;overflow:hidden;transition:border-color 0.2s; }
+.diag-card.selected { border-color:rgba(126,204,205,0.45); }
+.diag-header { padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:0.75rem;cursor:pointer; }
+.diag-check { width:20px;height:20px;border:1.5px solid var(--border);border-radius:5px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all 0.15s; }
+.diag-card.selected .diag-check { background:var(--calipso);border-color:var(--calipso); }
+.diag-title { font-weight:600;font-size:0.9rem;flex:1; }
+.diag-meta { font-size:0.7rem;color:var(--muted);margin-top:2px; }
+.diag-body { display:none;padding:0 1.25rem 1.25rem;border-top:1px solid var(--border); }
+.diag-body.open { display:block; }
+.diag-section { margin-top:0.85rem; }
+.diag-section-label { font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.3rem; }
+.diag-section-text { font-size:0.82rem;color:var(--muted);line-height:1.55; }
+.chevron { color:var(--muted);font-size:0.75rem;transition:transform 0.2s;margin-left:auto;flex-shrink:0; }
+</style>
+
+<div class="progress-bar"><div class="progress-fill"></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+  <a href="/terapeuta/{{ consulta.id }}/paso3/" onclick="spaGo(event,this)" style="color:var(--muted);text-decoration:none;font-size:0.82rem">← Paso 3</a>
+  <span style="font-size:0.72rem;color:var(--dim)">Paso 4 de 5</span>
+</div>
+
+<h1 style="font-size:1.2rem;font-weight:700;margin-bottom:0.25rem">Confirmación diagnóstica</h1>
+<p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.6">Selecciona los diagnósticos que corresponden a este caso. Puedes expandir cada uno para ver el detalle clínico.</p>
+
+<form method="post" id="paso4form">
+  {% csrf_token %}
+
+  {% for diag in diagnosticos %}
+  <div class="diag-card" id="dcard-{{ diag.id }}">
+    <div class="diag-header" onclick="handleDiagClick(event,{{ diag.id }})">
+      <div class="diag-check" id="dcheck-{{ diag.id }}">
+        <svg id="dcheck-icon-{{ diag.id }}" width="11" height="11" viewBox="0 0 12 12" fill="none" style="display:none"><polyline points="2,6 5,9 10,3" stroke="#000" stroke-width="1.8"/></svg>
+      </div>
+      <input type="checkbox" name="diagnosticos_confirmados" value="{{ diag.id }}" id="dinput-{{ diag.id }}" style="display:none">
+      <div style="flex:1">
+        <div class="diag-title">{{ diag.titulo }}</div>
+        <div class="diag-meta">
+          {% if diag.marco_asociado %}{{ diag.marco_asociado.nombre }}{% endif %}{% if diag.tecnica_asociada %} · {{ diag.tecnica_asociada.nombre }}{% endif %}
+        </div>
+      </div>
+      <span class="chevron" id="dchev-{{ diag.id }}">▼</span>
+    </div>
+    <div class="diag-body" id="dbody-{{ diag.id }}">
+      <div class="diag-section">
+        <div class="diag-section-label">Descripción</div>
+        <div class="diag-section-text">{{ diag.descripcion }}</div>
+      </div>
+      {% if diag.etiologia %}
+      <div class="diag-section">
+        <div class="diag-section-label">Etiología</div>
+        <div class="diag-section-text">{{ diag.etiologia }}</div>
+      </div>
+      {% endif %}
+      {% if diag.patron_diagnostico %}
+      <div class="diag-section">
+        <div class="diag-section-label">Patrón diagnóstico</div>
+        <div class="diag-section-text">{{ diag.patron_diagnostico }}</div>
+      </div>
+      {% endif %}
+      {% if diag.protocolo_indicado %}
+      <div class="diag-section">
+        <div class="diag-section-label">Protocolo indicado</div>
+        <div class="diag-section-text">{{ diag.protocolo_indicado }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <div style="display:flex;gap:0.75rem;margin-top:1.5rem">
+    <a href="/terapeuta/{{ consulta.id }}/paso3/" onclick="spaGo(event,this)" class="btn btn-secondary">Atrás</a>
+    <button type="submit" class="btn btn-primary" style="flex:1">Continuar →</button>
+  </div>
+</form>
+
+<script>
+function handleDiagClick(e, id) {
+  if (e.target.closest('.diag-check') || e.target.closest('.chevron')) {
+    if (e.target.closest('.diag-check')) {
+      const card = document.getElementById('dcard-' + id);
+      const input = document.getElementById('dinput-' + id);
+      const checkEl = document.getElementById('dcheck-' + id);
+      const icon = document.getElementById('dcheck-icon-' + id);
+      card.classList.toggle('selected');
+      input.checked = card.classList.contains('selected');
+      checkEl.style.background = input.checked ? 'var(--calipso)' : '';
+      checkEl.style.borderColor = input.checked ? 'var(--calipso)' : '';
+      icon.style.display = input.checked ? '' : 'none';
+    }
+    if (e.target.closest('.chevron')) {
+      const body = document.getElementById('dbody-' + id);
+      const chev = document.getElementById('dchev-' + id);
+      body.classList.toggle('open');
+      chev.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
+    }
+    return;
+  }
+  const card = document.getElementById('dcard-' + id);
+  const input = document.getElementById('dinput-' + id);
+  const checkEl = document.getElementById('dcheck-' + id);
+  const icon = document.getElementById('dcheck-icon-' + id);
+  const body = document.getElementById('dbody-' + id);
+  const chev = document.getElementById('dchev-' + id);
+  card.classList.toggle('selected');
+  input.checked = card.classList.contains('selected');
+  checkEl.style.background = input.checked ? 'var(--calipso)' : '';
+  checkEl.style.borderColor = input.checked ? 'var(--calipso)' : '';
+  icon.style.display = input.checked ? '' : 'none';
+  body.classList.toggle('open');
+  chev.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
+}
+</script>
+{% endblock %}

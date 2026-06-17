@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Nueva Consulta — Terapeuta Integral{% endblock %}
+{% block content %}
+<style data-page-style>
+.modo-card { background:var(--surface);backdrop-filter:blur(14px);border:2px solid var(--border);border-radius:var(--radius);padding:1.5rem;cursor:pointer;transition:border-color 0.2s,background 0.2s; }
+.modo-card:hover { border-color:var(--border-active); }
+.modo-card input[type=radio] { display:none; }
+.modo-card.selected { border-color:var(--calipso);background:var(--calipso-glow); }
+.modo-icon { font-size:1.6rem;opacity:0.5;margin-bottom:0.75rem;display:block; }
+.modo-name { font-weight:700;font-size:0.95rem;margin-bottom:0.3rem; }
+.modo-desc { font-size:0.78rem;color:var(--muted);line-height:1.5; }
+</style>
+
+<a href="/terapeuta/" onclick="spaGo(event,this)" style="color:var(--calipso);text-decoration:none;font-size:0.82rem;display:inline-block;margin-bottom:1.25rem">← Consultas</a>
+
+<div style="max-width:580px">
+  <div class="eyebrow">Paso 0 de 5</div>
+  <h1 style="font-size:1.2rem;font-weight:700;margin-bottom:0.25rem">Nueva consulta</h1>
+  <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.6">¿Es una autoconsulta o estás trabajando con un paciente?</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1.5rem">
+      <label class="modo-card" id="card-autoconsulta" onclick="selectModo('autoconsulta')">
+        <input type="radio" name="modo" value="autoconsulta" checked>
+        <span class="modo-icon">◎</span>
+        <div class="modo-name">Autoconsulta</div>
+        <div class="modo-desc">Para explorar tu propia salud desde múltiples marcos terapéuticos.</div>
+      </label>
+      <label class="modo-card" id="card-terapeuta" onclick="selectModo('terapeuta')">
+        <input type="radio" name="modo" value="terapeuta">
+        <span class="modo-icon">♥</span>
+        <div class="modo-name">Terapeuta</div>
+        <div class="modo-desc">Consultando a nombre de un paciente con sus datos y síntomas.</div>
+      </label>
+    </div>
+    <button type="submit" class="btn btn-primary" style="width:100%">Continuar →</button>
+  </form>
+</div>
+
+<script>
+document.getElementById('card-autoconsulta').classList.add('selected');
+function selectModo(modo) {
+  document.querySelectorAll('.modo-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('card-' + modo).classList.add('selected');
+}
+</script>
+{% endblock %}

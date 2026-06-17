@@ -22,6 +22,7 @@ urlpatterns = [
     path('comunidad/', include('community.urls')),
     path('practicantes/', include('practitioners.urls')),
     path('oraculo/', include('oraculo.urls', namespace='oraculo')),
+    path('terapeuta/', include('terapeuta.urls', namespace='terapeuta')),
 ]
 
 if settings.DEBUG:

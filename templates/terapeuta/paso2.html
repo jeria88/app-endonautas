@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Marcos y Técnicas — Terapeuta Integral{% endblock %}
+{% block content %}
+<style data-page-style>
+.progress-bar { height:3px;background:var(--border);border-radius:2px;margin-bottom:1.5rem; }
+.progress-fill { height:100%;background:var(--calipso);border-radius:2px;width:40%; }
+.marco-card { background:var(--surface);backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:0.75rem;overflow:hidden;transition:border-color 0.2s; }
+.marco-card.recomendado { border-color:rgba(126,204,205,0.35); }
+.marco-header { padding:1rem 1.25rem;display:flex;align-items:center;gap:0.75rem;cursor:pointer; }
+.marco-rec-badge { font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;background:var(--calipso-glow);color:var(--calipso);border:1px solid rgba(126,204,205,0.2);padding:2px 7px;border-radius:4px; }
+.marco-name { font-weight:600;font-size:0.92rem;flex:1; }
+.marco-chevron { color:var(--muted);transition:transform 0.2s;font-size:0.8rem; }
+.marco-body { display:none;padding:0 1.25rem 1.25rem;border-top:1px solid var(--border); }
+.marco-body.open { display:block; }
+.marco-desc { font-size:0.78rem;color:var(--muted);line-height:1.5;margin:0.75rem 0; }
+.tecnica-item { display:flex;align-items:flex-start;gap:0.6rem;padding:0.6rem 0;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer; }
+.tecnica-item:last-child { border-bottom:none; }
+.tecnica-checkbox { width:17px;height:17px;border:1.5px solid var(--border);border-radius:4px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all 0.15s; }
+.tecnica-item.checked .tecnica-checkbox { background:var(--calipso);border-color:var(--calipso); }
+.tecnica-name { font-size:0.85rem;font-weight:500;margin-bottom:1px; }
+.tecnica-desc { font-size:0.72rem;color:var(--muted);line-height:1.4; }
+</style>
+
+<div class="progress-bar"><div class="progress-fill"></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+  <a href="/terapeuta/{{ consulta.id }}/paso1/" onclick="spaGo(event,this)" style="color:var(--muted);text-decoration:none;font-size:0.82rem">← Paso 1</a>
+  <span style="font-size:0.72rem;color:var(--dim)">Paso 2 de 5</span>
+</div>
+
+<h1 style="font-size:1.2rem;font-weight:700;margin-bottom:0.25rem">Marcos y técnicas</h1>
+<p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.6">Los marcos resaltados fueron recomendados en base al motivo de consulta. Selecciona las técnicas que usarás en esta evaluación.</p>
+
+{% if messages %}
+{% for msg in messages %}
+<div class="alert alert-error" style="margin-bottom:1rem">{{ msg }}</div>
+{% endfor %}
+{% endif %}
+
+<form method="post" id="paso2form">
+  {% csrf_token %}
+  {% for marco in marcos_data %}
+  <div class="marco-card {% if marco.es_recomendado %}recomendado{% endif %}">
+    <div class="marco-header" onclick="toggleMarco(this)">
+      {% if marco.es_recomendado %}<span class="marco-rec-badge">Recomendado</span>{% endif %}
+      <span class="marco-name">{{ marco.nombre }}</span>
+      <span class="marco-chevron">▼</span>
+    </div>
+    <div class="marco-body {% if marco.es_recomendado %}open{% endif %}">
+      <p class="marco-desc">{{ marco.descripcion }}</p>
+      {% for tec in marco.tecnicas %}
+      <div class="tecnica-item {% if tec.preseleccionada %}checked{% endif %}" onclick="toggleTecnica(this)">
+        <div class="tecnica-checkbox">{% if tec.preseleccionada %}<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#000" stroke-width="1.8"/></svg>{% endif %}</div>
+        <input type="checkbox" name="tecnicas" value="{{ tec.codigo }}" {% if tec.preseleccionada %}checked{% endif %} style="display:none" class="tec-input">
+        <div>
+          <div class="tecnica-name">{{ tec.nombre }}</div>
+          <div class="tecnica-desc">{{ tec.descripcion }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <div style="display:flex;gap:0.75rem;margin-top:1.5rem">
+    <a href="/terapeuta/{{ consulta.id }}/paso1/" onclick="spaGo(event,this)" class="btn btn-secondary">Atrás</a>
+    <button type="submit" class="btn btn-primary" style="flex:1">Continuar →</button>
+  </div>
+</form>
+
+<script>
+function toggleMarco(header) {
+  const body = header.nextElementSibling;
+  const chevron = header.querySelector('.marco-chevron');
+  body.classList.toggle('open');
+  chevron.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
+}
+function toggleTecnica(item) {
+  item.classList.toggle('checked');
+  const cb = item.querySelector('.tec-input');
+  cb.checked = item.classList.contains('checked');
+  const box = item.querySelector('.tecnica-checkbox');
+  box.innerHTML = cb.checked ? '<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#000" stroke-width="1.8"/></svg>' : '';
+  item.querySelector('.tecnica-checkbox').style.background = cb.checked ? 'var(--calipso)' : '';
+  item.querySelector('.tecnica-checkbox').style.borderColor = cb.checked ? 'var(--calipso)' : '';
+}
+</script>
+{% endblock %}

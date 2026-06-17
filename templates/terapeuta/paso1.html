@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Datos del Paciente — Terapeuta Integral{% endblock %}
+{% block content %}
+<style data-page-style>
+.progress-bar { height:3px;background:var(--border);border-radius:2px;margin-bottom:1.5rem; }
+.progress-fill { height:100%;background:var(--calipso);border-radius:2px;width:20%; }
+.alarma-grid { display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;margin-top:0.5rem; }
+.alarma-item { display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.6rem;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:7px;font-size:0.78rem;color:var(--muted);cursor:pointer;transition:border-color 0.15s; }
+.alarma-item:hover { border-color:var(--border-active); }
+.alarma-item input { display:none; }
+.alarma-item.checked { border-color:var(--rose);background:var(--rose-glow);color:var(--rose); }
+.duracion-row { display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem; }
+.duracion-btn { padding:0.45rem 0.9rem;border:1.5px solid var(--border);border-radius:7px;font-size:0.82rem;color:var(--muted);cursor:pointer;background:transparent;transition:all 0.15s; }
+.duracion-btn input { display:none; }
+.duracion-btn.selected { border-color:var(--calipso);color:var(--calipso); }
+</style>
+
+<div class="progress-bar"><div class="progress-fill"></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+  <a href="/terapeuta/" onclick="spaGo(event,this)" style="color:var(--muted);text-decoration:none;font-size:0.82rem">← Consultas</a>
+  <span style="font-size:0.72rem;color:var(--dim)">Paso 1 de 5</span>
+</div>
+
+<div style="max-width:620px">
+  <h1 style="font-size:1.2rem;font-weight:700;margin-bottom:0.25rem">Datos del {% if consulta.modo == 'terapeuta' %}paciente{% else %}consultante{% endif %}</h1>
+  <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.6">El motivo de consulta es lo más importante. Los demás campos son opcionales.</p>
+
+  {% if messages %}
+  {% for msg in messages %}
+  <div class="alert {% if msg.tags == 'error' %}alert-error{% else %}alert-success{% endif %}" style="margin-bottom:1rem">{{ msg }}</div>
+  {% endfor %}
+  {% endif %}
+
+  {% if consulta.senales_alarma %}
+  <div class="alert" style="background:rgba(201,123,132,0.1);border:1px solid rgba(201,123,132,0.3);color:var(--rose);margin-bottom:1rem;font-size:0.85rem">
+    ⚠ Se reportaron señales de alarma — considera derivación médica.
+  </div>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+
+    {% if consulta.modo == 'terapeuta' %}
+    <div style="display:grid;grid-template-columns:1fr 100px 1fr;gap:0.75rem;margin-bottom:1rem">
+      <div>
+        <label class="form-label">Nombre del paciente</label>
+        <input type="text" name="nombre_paciente" class="form-input" value="{{ form.nombre_paciente.value|default:'' }}" placeholder="Nombre (opcional)">
+      </div>
+      <div>
+        <label class="form-label">Edad</label>
+        <input type="number" name="edad" class="form-input" value="{{ form.edad.value|default:'' }}" placeholder="—" min="1" max="150">
+      </div>
+      <div>
+        <label class="form-label">Ocupación</label>
+        <input type="text" name="ocupacion" class="form-input" value="{{ form.ocupacion.value|default:'' }}" placeholder="Opcional">
+      </div>
+    </div>
+    {% endif %}
+
+    <div style="margin-bottom:1rem">
+      <label class="form-label" for="id_motivo">Motivo de consulta *</label>
+      <textarea name="motivo" id="id_motivo" class="form-input" rows="5" required placeholder="Describe el síntoma o situación con el mayor detalle posible. Cuándo empezó, cómo se manifiesta, qué lo mejora o empeora...">{{ form.motivo.value|default:'' }}</textarea>
+      {% if form.motivo.errors %}<div style="font-size:0.75rem;color:var(--rose);margin-top:0.3rem">{{ form.motivo.errors.0 }}</div>{% endif %}
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+      <div>
+        <label class="form-label">Intensidad del síntoma</label>
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-top:0.5rem">
+          <input type="range" name="intensidad" id="id_intensidad" min="1" max="10" step="1" value="{{ form.intensidad.value|default:'5' }}" style="flex:1;accent-color:var(--calipso)" oninput="document.getElementById('int-val').textContent=this.value">
+          <span id="int-val" style="font-size:0.95rem;font-weight:700;color:var(--calipso);min-width:20px">{{ form.intensidad.value|default:'5' }}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:0.65rem;color:var(--dim);margin-top:2px"><span>Leve</span><span>Severo</span></div>
+      </div>
+      <div>
+        <label class="form-label">Duración</label>
+        <div class="duracion-row">
+          {% for val, lbl in form.duracion.field.choices %}{% if val %}
+          <label class="duracion-btn {% if form.duracion.value == val %}selected{% endif %}">
+            <input type="radio" name="duracion" value="{{ val }}" {% if form.duracion.value == val %}checked{% endif %} onchange="document.querySelectorAll('.duracion-btn').forEach(b=>b.classList.remove('selected'));this.closest('.duracion-btn').classList.add('selected')">
+            {{ lbl }}
+          </label>
+          {% endif %}{% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:1rem">
+      <label class="form-label">Medicamentos, suplementos u otras terapias actuales</label>
+      <textarea name="medicamentos_actuales" class="form-input" rows="2" placeholder="Opcional — listado de lo que está tomando o haciendo actualmente">{{ form.medicamentos_actuales.value|default:'' }}</textarea>
+    </div>
+
+    <div style="margin-bottom:1.5rem">
+      <label class="form-label">Señales de alarma (marca si están presentes)</label>
+      <div class="alarma-grid">
+        {% for val, lbl in form.senales_alarma.field.choices %}
+        <label class="alarma-item" onclick="this.classList.toggle('checked')">
+          <input type="checkbox" name="senales_alarma" value="{{ val }}">
+          {{ lbl }}
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div style="display:flex;gap:0.75rem">
+      <a href="/terapeuta/{{ consulta.id }}/paso1/" onclick="spaGo(event,this)" class="btn btn-secondary">Atrás</a>
+      <button type="submit" class="btn btn-primary" style="flex:1">Continuar →</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

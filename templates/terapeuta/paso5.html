@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Propuesta Terapéutica — Terapeuta Integral{% endblock %}
+{% block content %}
+<style data-page-style>
+.progress-bar { height:3px;background:var(--border);border-radius:2px;margin-bottom:1.5rem; }
+.progress-fill { height:100%;background:var(--calipso);border-radius:2px;width:100%; }
+.plan-card { background:var(--surface);backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;margin-bottom:0.75rem; }
+.plan-header { display:flex;align-items:center;gap:0.6rem;margin-bottom:0.75rem; }
+.plan-icon { font-size:1.2rem;flex-shrink:0; }
+.plan-title { font-weight:700;font-size:0.9rem; }
+.plan-sub { font-size:0.72rem;color:var(--muted);margin-top:1px; }
+.plan-steps { list-style:none;margin:0;padding:0; }
+.plan-steps li { font-size:0.82rem;color:var(--muted);line-height:1.5;padding:0.3rem 0;border-bottom:1px solid rgba(255,255,255,0.04); }
+.plan-steps li:last-child { border-bottom:none; }
+.plan-steps li::before { content:"→ ";color:var(--calipso);font-weight:700; }
+.plan-meta { display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.75rem; }
+.plan-meta-item { font-size:0.7rem;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:5px;padding:2px 8px;color:var(--dim); }
+.fase-row { display:flex;gap:0.75rem;align-items:flex-start;padding:0.7rem 0;border-bottom:1px solid rgba(255,255,255,0.04); }
+.fase-row:last-child { border-bottom:none; }
+.fase-num { font-size:0.68rem;font-weight:700;color:var(--calipso);background:var(--calipso-glow);border:1px solid rgba(126,204,205,0.2);border-radius:4px;padding:2px 6px;flex-shrink:0;margin-top:2px; }
+.fase-info { flex:1; }
+.fase-name { font-weight:600;font-size:0.85rem;margin-bottom:2px; }
+.fase-dur { font-size:0.7rem;color:var(--muted); }
+.fase-obj { font-size:0.78rem;color:var(--muted);margin-top:0.3rem;line-height:1.4; }
+.sintesis-block { background:rgba(126,204,205,0.06);border:1px solid rgba(126,204,205,0.2);border-radius:14px;padding:1rem 1.25rem;margin-bottom:1.25rem; }
+.indicador-item { font-size:0.82rem;color:var(--muted);line-height:1.5;padding:0.25rem 0; }
+.indicador-item::before { content:"✓ ";color:var(--calipso); }
+</style>
+
+<div class="progress-bar"><div class="progress-fill"></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+  <a href="/terapeuta/{{ consulta.id }}/paso4/" onclick="spaGo(event,this)" style="color:var(--muted);text-decoration:none;font-size:0.82rem">← Paso 4</a>
+  <span style="font-size:0.72rem;color:var(--dim)">Paso 5 de 5</span>
+</div>
+
+<h1 style="font-size:1.2rem;font-weight:700;margin-bottom:0.25rem">Propuesta terapéutica</h1>
+<p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.6">Plan integrativo basado en los diagnósticos confirmados y las técnicas seleccionadas.</p>
+
+{% if propuesta_error %}
+<div class="panel" style="text-align:center;padding:2rem;color:var(--muted);margin-bottom:1.25rem">
+  <p style="font-size:0.85rem;margin-bottom:1rem">No se pudo generar la propuesta. Intenta de nuevo.</p>
+  <form method="post" style="display:inline">
+    {% csrf_token %}
+    <input type="hidden" name="accion" value="regenerar">
+    <button type="submit" class="btn btn-primary btn-sm">Reintentar</button>
+  </form>
+</div>
+
+{% elif propuesta %}
+
+<div class="sintesis-block">
+  <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--calipso);margin-bottom:0.5rem">Síntesis clínica</div>
+  <p style="font-size:0.87rem;line-height:1.6;color:var(--text)">{{ propuesta.sintesis }}</p>
+</div>
+
+{% if propuesta.plan %}
+<div class="eyebrow" style="margin-bottom:0.75rem">Plan por disciplina</div>
+{% for item in propuesta.plan %}
+<div class="plan-card">
+  <div class="plan-header">
+    {% if item.icono %}<span class="plan-icon">{{ item.icono }}</span>{% endif %}
+    <div>
+      <div class="plan-title">{{ item.tecnica }}</div>
+      <div class="plan-sub">{{ item.marco }}{% if item.diagnostico %} · {{ item.diagnostico }}{% endif %}</div>
+    </div>
+  </div>
+  {% if item.pasos %}
+  <ul class="plan-steps">
+    {% for paso in item.pasos %}<li>{{ paso }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+  {% if item.como_empezar %}
+  <div style="margin-top:0.75rem;padding:0.6rem 0.8rem;background:rgba(126,204,205,0.05);border-radius:8px;font-size:0.78rem;color:var(--calipso)">
+    <strong>Hoy:</strong> {{ item.como_empezar }}
+  </div>
+  {% endif %}
+  <div class="plan-meta">
+    {% if item.duracion %}<span class="plan-meta-item">{{ item.duracion }}</span>{% endif %}
+    {% if item.frecuencia %}<span class="plan-meta-item">{{ item.frecuencia }}</span>{% endif %}
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+
+{% if propuesta.fases %}
+<div class="panel" style="padding:1rem 1.25rem;margin-bottom:1.25rem">
+  <div class="eyebrow" style="margin-bottom:0.75rem">Fases del tratamiento</div>
+  {% for fase in propuesta.fases %}
+  <div class="fase-row">
+    <span class="fase-num">{{ forloop.counter }}</span>
+    <div class="fase-info">
+      <div class="fase-name">{{ fase.nombre }}</div>
+      {% if fase.duracion %}<div class="fase-dur">{{ fase.duracion }}</div>{% endif %}
+      {% if fase.objetivo %}<div class="fase-obj">{{ fase.objetivo }}</div>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if propuesta.indicadores %}
+<div class="panel" style="padding:1rem 1.25rem;margin-bottom:1.25rem">
+  <div class="eyebrow" style="margin-bottom:0.6rem">Indicadores de avance</div>
+  {% for ind in propuesta.indicadores %}
+  <div class="indicador-item">{{ ind }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if propuesta.precauciones %}
+<div class="panel" style="padding:0.85rem 1.25rem;margin-bottom:1.25rem;border-color:rgba(201,123,132,0.2)">
+  <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--rose);margin-bottom:0.4rem">Precauciones</div>
+  <p style="font-size:0.82rem;color:var(--muted);line-height:1.5;margin:0">{{ propuesta.precauciones }}</p>
+</div>
+{% endif %}
+
+<form method="post" style="display:inline;margin-bottom:0.5rem">
+  {% csrf_token %}
+  <input type="hidden" name="accion" value="regenerar">
+  <button type="submit" class="btn btn-secondary btn-sm">↺ Regenerar propuesta</button>
+</form>
+
+{% endif %}
+
+<form method="post" id="paso5form" style="margin-top:1.25rem">
+  {% csrf_token %}
+  <div class="panel" style="padding:1rem 1.25rem">
+    <label class="form-label" style="color:var(--violet)">Diagnóstico integral final (notas del terapeuta)</label>
+    <textarea name="diagnostico_final" class="form-input" rows="4" placeholder="Síntesis personal — tu lectura integrativa del caso...">{{ form.diagnostico_final.value|default:'' }}</textarea>
+  </div>
+
+  <div style="display:flex;gap:0.75rem;margin-top:1.25rem">
+    <a href="/terapeuta/{{ consulta.id }}/paso4/" onclick="spaGo(event,this)" class="btn btn-secondary">Atrás</a>
+    <button type="submit" class="btn btn-primary" style="flex:1">Guardar consulta →</button>
+  </div>
+</form>
+
+{% endblock %}

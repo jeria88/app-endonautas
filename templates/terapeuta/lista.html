@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Terapeuta Integral — Endonautas{% endblock %}
+{% block content %}
+<style data-page-style>
+.consulta-row { background:var(--surface);backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:1rem;text-decoration:none;color:inherit;transition:border-color 0.2s; }
+.consulta-row:hover { border-color:var(--border-active); }
+.cr-badge { width:36px;height:36px;border-radius:8px;background:var(--calipso-glow);border:1px solid rgba(126,204,205,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.8rem;font-weight:700;color:var(--calipso); }
+.cr-body { flex:1;min-width:0; }
+.cr-title { font-weight:600;font-size:0.92rem;margin-bottom:2px; }
+.cr-meta { font-size:0.72rem;color:var(--muted); }
+.cr-step { font-size:0.72rem;font-weight:600;color:var(--muted);flex-shrink:0; }
+.cr-step.done { color:var(--calipso); }
+</style>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem">
+  <div>
+    <div class="eyebrow">Terapeuta Integral</div>
+    <h1 style="font-size:1.3rem;font-weight:700">Consultas</h1>
+  </div>
+  <a href="/terapeuta/nueva/" onclick="spaGo(event,this)" class="btn btn-primary btn-sm">+ Nueva consulta</a>
+</div>
+
+{% if consultas %}
+  {% for c in consultas %}
+  <a class="consulta-row" href="/terapeuta/{{ c.id }}/detalle/" onclick="spaGo(event,this)">
+    <div class="cr-badge">{{ c.id }}</div>
+    <div class="cr-body">
+      <div class="cr-title">{{ c.nombre_paciente|default:"Sin nombre" }}{% if c.modo == 'autoconsulta' %} <span style="font-size:0.68rem;color:var(--muted)">(autoconsulta)</span>{% endif %}</div>
+      <div class="cr-meta">{{ c.motivo|truncatechars:70 }} · {{ c.fecha_creacion|date:"d M Y" }}</div>
+    </div>
+    <div class="cr-step {% if c.paso_actual >= 5 %}done{% endif %}">
+      {% if c.paso_actual >= 5 %}Completa{% else %}Paso {{ c.paso_actual }}/5{% endif %}
+    </div>
+  </a>
+  {% endfor %}
+{% else %}
+<div class="panel" style="text-align:center;padding:3rem;color:var(--muted)">
+  <div style="font-size:2rem;opacity:0.15;margin-bottom:0.75rem">♥</div>
+  <p style="font-size:0.9rem;margin-bottom:1.5rem">No hay consultas aún.</p>
+  <a href="/terapeuta/nueva/" onclick="spaGo(event,this)" class="btn btn-primary">Iniciar primera consulta</a>
+</div>
+{% endif %}
+{% endblock %}

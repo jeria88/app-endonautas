@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Profundización Clínica — Terapeuta Integral{% endblock %}
+{% block content %}
+<style data-page-style>
+.progress-bar { height:3px;background:var(--border);border-radius:2px;margin-bottom:1.5rem; }
+.progress-fill { height:100%;background:var(--calipso);border-radius:2px;width:60%; }
+.pregunta-block { background:var(--surface);backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;margin-bottom:0.75rem;transition:border-color 0.2s; }
+.pregunta-block.answered { border-color:rgba(126,204,205,0.3); }
+.pregunta-num { display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--calipso-glow);border:1px solid rgba(126,204,205,0.3);font-size:0.72rem;font-weight:700;color:var(--calipso);margin-right:0.5rem;flex-shrink:0; }
+.pregunta-texto { font-size:0.9rem;font-weight:600;line-height:1.5; }
+.radio-option,.checkbox-option {
+  display:flex;align-items:center;gap:0.5rem;padding:0.45rem 0.7rem;
+  border:1.5px solid var(--border);border-radius:7px;cursor:pointer;font-size:0.85rem;color:var(--muted);
+  margin-bottom:0.35rem;transition:all 0.15s;
+}
+.radio-option:has(input:checked),.checkbox-option:has(input:checked) { border-color:var(--calipso);color:var(--text);background:var(--calipso-glow); }
+.radio-option input,.checkbox-option input { accent-color:var(--calipso);flex-shrink:0; }
+.tec-tags { display:flex;flex-wrap:wrap;gap:0.3rem;margin-top:0.6rem; }
+.tec-tag { font-size:0.65rem;padding:1px 6px;border-radius:3px;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--dim); }
+</style>
+
+<div class="progress-bar"><div class="progress-fill"></div></div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+  <a href="/terapeuta/{{ consulta.id }}/paso2/" onclick="spaGo(event,this)" style="color:var(--muted);text-decoration:none;font-size:0.82rem">← Paso 2</a>
+  <span style="font-size:0.72rem;color:var(--dim)">Paso 3 de 5</span>
+</div>
+
+<h1 style="font-size:1.2rem;font-weight:700;margin-bottom:0.25rem">Profundización clínica</h1>
+<p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.6">Preguntas seleccionadas según las técnicas elegidas. Responde con la mayor honestidad posible.</p>
+
+<form method="post" id="paso3form">
+  {% csrf_token %}
+
+  <div class="panel" style="padding:1rem 1.25rem;margin-bottom:1.25rem;border-color:rgba(155,142,196,0.3);background:var(--violet-glow)">
+    <label class="form-label" style="color:var(--violet)">Síntoma prioritario a explorar hoy</label>
+    <input type="text" name="prioridad_sintoma" class="form-input" value="{{ consulta.prioridad_sintoma }}" placeholder="El síntoma o malestar principal que quieres explorar…">
+  </div>
+
+  {% for pregunta in preguntas %}
+  <div class="pregunta-block" id="block-{{ pregunta.id }}">
+    <div style="display:flex;align-items:flex-start;gap:0.4rem;margin-bottom:0.85rem">
+      <span class="pregunta-num">{{ forloop.counter }}</span>
+      <p class="pregunta-texto">{{ pregunta.pregunta }}</p>
+    </div>
+    <input type="hidden" name="pregunta_texto_{{ pregunta.id }}" value="{{ pregunta.pregunta }}">
+    <input type="hidden" name="pregunta_tecnica_{{ pregunta.id }}" value="{{ pregunta.tecnicas_asociadas.0 }}">
+
+    {% if pregunta.tipo_respuesta == "radio" %}
+      {% for opcion in pregunta.opciones %}
+      <label class="radio-option">
+        <input type="radio" name="respuesta_{{ pregunta.id }}" value="{{ opcion }}" onchange="markAnswered('{{ pregunta.id }}')">
+        {{ opcion }}
+      </label>
+      {% endfor %}
+
+    {% elif pregunta.tipo_respuesta == "radio_text" %}
+      {% for opcion in pregunta.opciones %}
+      <label class="radio-option">
+        <input type="radio" name="respuesta_radio_{{ pregunta.id }}" value="{{ opcion }}" onchange="syncRadioText('{{ pregunta.id }}')">
+        {{ opcion }}
+      </label>
+      {% endfor %}
+      <input type="text" name="respuesta_otro_{{ pregunta.id }}" class="form-input" style="margin-top:0.5rem" placeholder="Detalla o especifica…" oninput="syncRadioText('{{ pregunta.id }}')">
+      <input type="hidden" name="respuesta_{{ pregunta.id }}" id="respuesta_hidden_{{ pregunta.id }}">
+
+    {% elif pregunta.tipo_respuesta == "checkboxes_text" %}
+      {% for opcion in pregunta.opciones %}
+      <label class="checkbox-option">
+        <input type="checkbox" name="respuesta_cb_{{ pregunta.id }}" value="{{ opcion }}" onchange="syncCheckboxText('{{ pregunta.id }}')">
+        {{ opcion }}
+      </label>
+      {% endfor %}
+      <input type="text" name="respuesta_otro_{{ pregunta.id }}" class="form-input" style="margin-top:0.5rem" placeholder="Otros o detalla…" oninput="syncCheckboxText('{{ pregunta.id }}')">
+      <input type="hidden" name="respuesta_{{ pregunta.id }}" id="respuesta_hidden_{{ pregunta.id }}">
+
+    {% else %}
+      <textarea name="respuesta_{{ pregunta.id }}" class="form-input" rows="2" placeholder="Tu respuesta…" oninput="markAnswered('{{ pregunta.id }}')"></textarea>
+    {% endif %}
+
+    <div class="tec-tags">
+      {% for tec in pregunta.tecnicas_asociadas %}<span class="tec-tag">{{ tec }}</span>{% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <div style="display:flex;gap:0.75rem;margin-top:1.5rem">
+    <a href="/terapeuta/{{ consulta.id }}/paso2/" onclick="spaGo(event,this)" class="btn btn-secondary">Atrás</a>
+    <button type="submit" class="btn btn-primary" style="flex:1">Continuar →</button>
+  </div>
+</form>
+
+<script>
+function markAnswered(id) {
+  document.getElementById('block-' + id)?.classList.add('answered');
+}
+function syncRadioText(id) {
+  const radioVal = document.querySelector(`input[name="respuesta_radio_${id}"]:checked`)?.value || '';
+  const textVal = document.querySelector(`input[name="respuesta_otro_${id}"]`)?.value.trim() || '';
+  const combined = radioVal + (textVal ? ' — ' + textVal : '');
+  const hidden = document.getElementById('respuesta_hidden_' + id);
+  if (hidden) { hidden.value = combined; markAnswered(id); }
+}
+function syncCheckboxText(id) {
+  const checked = [...document.querySelectorAll(`input[name="respuesta_cb_${id}"]:checked`)].map(i => i.value);
+  const textVal = document.querySelector(`input[name="respuesta_otro_${id}"]`)?.value.trim() || '';
+  const combined = [...checked, ...(textVal ? [textVal] : [])].join(', ');
+  const hidden = document.getElementById('respuesta_hidden_' + id);
+  if (hidden) { hidden.value = combined; markAnswered(id); }
+}
+</script>
+{% endblock %}

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'community',
     'practitioners',
     'oraculo',
+    'terapeuta',
 ]
 
 MIDDLEWARE = [
