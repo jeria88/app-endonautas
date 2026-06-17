@@ -1,5 +1,21 @@
 {% extends "base.html" %}
 {% block title %}Nueva entrada — Bitácora{% endblock %}
+{% block extra_head %}
+<style data-page-style>
+.tipo-selector { display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem; }
+.tipo-btn {
+  font-size:0.75rem;font-weight:600;padding:0.4rem 0.9rem;border-radius:20px;
+  border:1px solid var(--border);color:var(--muted);background:none;cursor:pointer;
+  transition:all 0.2s;
+}
+.tipo-btn:hover { border-color:var(--border-active);color:var(--text); }
+.tipo-btn.sel-sueno   { background:rgba(155,142,196,0.15);border-color:rgba(155,142,196,0.4);color:#9b8ec4; }
+.tipo-btn.sel-sombra  { background:rgba(201,123,132,0.15);border-color:rgba(201,123,132,0.4);color:#c97b84; }
+.tipo-btn.sel-patron  { background:rgba(212,160,86,0.15);border-color:rgba(212,160,86,0.4);color:#d4a056; }
+.tipo-btn.sel-signo   { background:rgba(126,196,155,0.15);border-color:rgba(126,196,155,0.4);color:#7ec49b; }
+.tipo-btn.sel-manual  { background:rgba(126,204,205,0.1);border-color:rgba(126,204,205,0.3);color:var(--calipso); }
+</style>
+{% endblock %}
 {% block content %}
 
 <a href="/bitacora/" onclick="spaGo(event,this)" style="color:var(--calipso);text-decoration:none;font-size:0.82rem;display:inline-block;margin-bottom:1.25rem">← Bitácora</a>
@@ -8,10 +24,24 @@
 
 <form method="post" class="panel" style="padding:1.25rem;max-width:560px">
   {% csrf_token %}
+  <input type="hidden" name="entry_type" id="entry_type_input" value="{{ tipo_default|default:'manual' }}">
+
   <div class="form-group">
-    <label class="form-label">¿Cómo fue? ¿Qué notaste?</label>
-    <textarea name="content" class="form-input" rows="5" required placeholder="Escribe libremente. Este espacio es solo tuyo..." autofocus></textarea>
+    <label class="form-label">Categoría</label>
+    <div class="tipo-selector">
+      <button type="button" class="tipo-btn" data-tipo="sueno" onclick="setTipo(this)">◯ Sueño</button>
+      <button type="button" class="tipo-btn" data-tipo="sombra" onclick="setTipo(this)">● Sombra</button>
+      <button type="button" class="tipo-btn" data-tipo="patron" onclick="setTipo(this)">⟡ Patrón</button>
+      <button type="button" class="tipo-btn" data-tipo="signo" onclick="setTipo(this)">✦ Signo</button>
+      <button type="button" class="tipo-btn" data-tipo="manual" onclick="setTipo(this)">◈ Nota libre</button>
+    </div>
   </div>
+
+  <div class="form-group">
+    <label class="form-label" id="content-label">¿Qué notaste?</label>
+    <textarea name="content" id="content-area" class="form-input" rows="6" required placeholder="Escribe libremente. Este espacio es solo tuyo..." autofocus></textarea>
+  </div>
+
   <div style="display:grid;grid-template-columns:1fr 80px;gap:0.75rem">
     <div class="form-group">
       <label class="form-label">Etiquetas (separadas por espacio)</label>
@@ -19,13 +49,45 @@
     </div>
     <div class="form-group">
       <label class="form-label">Emoji</label>
-      <input type="text" name="emoji" class="form-input" placeholder="◈" maxlength="2" style="text-align:center;font-size:1.2rem">
+      <input type="text" name="emoji" id="emoji-input" class="form-input" placeholder="◈" maxlength="2" style="text-align:center;font-size:1.2rem">
     </div>
   </div>
+
   <div style="display:flex;gap:0.75rem;margin-top:0.75rem">
     <a href="/bitacora/" onclick="spaGo(event,this)" class="btn btn-secondary">Cancelar</a>
-    <button type="submit" class="btn btn-primary" style="flex:1">Guardar entrada →</button>
+    <button type="submit" class="btn btn-primary" style="flex:1">Guardar →</button>
   </div>
 </form>
+
+<script>
+const TIPO_META = {
+  sueno:  { label:'¿Qué soñaste?',              emoji:'◯', placeholder:'Describe el sueño con detalle...' },
+  sombra: { label:'¿Qué sombra observas?',       emoji:'●', placeholder:'¿Qué rechazas, envidias o temes ver en ti?' },
+  patron: { label:'¿Qué patrón identificas?',    emoji:'⟡', placeholder:'Un comportamiento, emoción o situación recurrente...' },
+  signo:  { label:'¿Qué signo o síntoma notas?', emoji:'✦', placeholder:'Sensación física, emocional o energética...' },
+  manual: { label:'¿Qué notaste?',               emoji:'◈', placeholder:'Escribe libremente. Este espacio es solo tuyo...' },
+};
+function setTipo(btn) {
+  document.querySelectorAll('.tipo-btn').forEach(b => {
+    b.className = 'tipo-btn';
+  });
+  const tipo = btn.dataset.tipo;
+  btn.classList.add('sel-' + tipo);
+  document.getElementById('entry_type_input').value = tipo;
+  const meta = TIPO_META[tipo] || TIPO_META.manual;
+  document.getElementById('content-label').textContent = meta.label;
+  document.getElementById('content-area').placeholder = meta.placeholder;
+  const emojiEl = document.getElementById('emoji-input');
+  if (!emojiEl.value || Object.values(TIPO_META).some(m => m.emoji === emojiEl.value)) {
+    emojiEl.value = meta.emoji;
+  }
+}
+// Activate default
+(function() {
+  const def = '{{ tipo_default|default:"manual" }}';
+  const btn = document.querySelector('.tipo-btn[data-tipo="' + def + '"]');
+  if (btn) setTipo(btn);
+})();
+</script>
 
 {% endblock %}

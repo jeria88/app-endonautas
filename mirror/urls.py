@@ -15,8 +15,4 @@ urlpatterns = [
     path('bitacora/', views.bitacora_list, name='bitacora_list'),
     path('bitacora/nueva/', views.bitacora_create, name='bitacora_create'),
     path('bitacora/<int:pk>/eliminar/', views.bitacora_delete, name='bitacora_delete'),
-    # Nauminto (sueños expandido)
-    path('nauminto/', views.nauminto_list, name='nauminto_list'),
-    path('nauminto/nuevo/', views.nauminto_create, name='nauminto_create'),
-    path('nauminto/<int:pk>/', views.nauminto_detail, name='nauminto_detail'),
 ]

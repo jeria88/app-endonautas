@@ -90,54 +90,61 @@ def regulacion(request):
 
 @login_required
 def suenos_list(request):
-    entries = DreamEntry.objects.filter(user=request.user)
-    return render(request, 'mirror/suenos_list.html', {'entries': entries})
+    return redirect('bitacora_list')
 
 
 @login_required
 def sueno_create(request):
-    if request.method == 'POST':
-        entry = DreamEntry.objects.create(
-            user=request.user,
-            title=request.POST.get('title', '').strip(),
-            content=request.POST.get('content', '').strip(),
-            is_lucid='is_lucid' in request.POST,
-            reality_check='reality_check' in request.POST,
-            dream_date=request.POST.get('dream_date') or datetime.date.today(),
-            tags=request.POST.get('tags', '').strip(),
-        )
-        BitacoraEntry.objects.create(
-            user=request.user,
-            entry_type='auto_dream',
-            content=f'Registré un sueño: {entry.title or "Sin título"}',
-            emoji='◈',
-        )
-        return redirect('suenos_list')
-    return render(request, 'mirror/sueno_form.html', {'today': datetime.date.today()})
+    return redirect('/bitacora/nueva/?tipo=sueno')
 
 
 # ── Bitácora ──────────────────────────────────────────────────────────────────
 
+MANUAL_TYPES = ('sueno', 'sombra', 'patron', 'signo', 'manual')
+CATEGORY_LABELS = {
+    'sueno': 'Sueños',
+    'sombra': 'Sombras',
+    'patron': 'Patrones',
+    'signo': 'Signos y Síntomas',
+    'manual': 'Notas libres',
+}
+
 @login_required
 def bitacora_list(request):
-    entries = BitacoraEntry.objects.filter(user=request.user).order_by('-created_at')
-    return render(request, 'mirror/bitacora_list.html', {'entries': entries})
+    tab = request.GET.get('tab', '')
+    qs = BitacoraEntry.objects.filter(user=request.user).order_by('-created_at')
+    if tab in MANUAL_TYPES:
+        qs = qs.filter(entry_type=tab)
+    elif tab == 'actividad':
+        qs = qs.exclude(entry_type__in=MANUAL_TYPES)
+    return render(request, 'mirror/bitacora_list.html', {
+        'entries': qs,
+        'tab': tab,
+        'category_labels': CATEGORY_LABELS,
+    })
 
 
 @login_required
 def bitacora_create(request):
+    tipo_default = request.GET.get('tipo', 'manual')
     if request.method == 'POST':
         content = request.POST.get('content', '').strip()
+        entry_type = request.POST.get('entry_type', 'manual')
+        if entry_type not in [t[0] for t in BitacoraEntry.ENTRY_TYPES]:
+            entry_type = 'manual'
         if content:
             BitacoraEntry.objects.create(
                 user=request.user,
-                entry_type='manual',
+                entry_type=entry_type,
                 content=content,
                 tags=request.POST.get('tags', '').strip(),
                 emoji=request.POST.get('emoji', '').strip()[:2],
             )
         return redirect('bitacora_list')
-    return render(request, 'mirror/bitacora_form.html')
+    return render(request, 'mirror/bitacora_form.html', {
+        'tipo_default': tipo_default,
+        'manual_types': MANUAL_TYPES,
+    })
 
 
 @login_required
@@ -146,44 +153,6 @@ def bitacora_delete(request, pk):
     if request.method == 'POST':
         entry.delete()
     return redirect('bitacora_list')
-
-
-# ── Nauminto ──────────────────────────────────────────────────────────────────
-
-@login_required
-def nauminto_list(request):
-    entries = DreamEntry.objects.filter(user=request.user, is_nauminto=True).order_by('-dream_date')
-    return render(request, 'mirror/nauminto_list.html', {'entries': entries})
-
-
-@login_required
-def nauminto_create(request):
-    if request.method == 'POST':
-        archetypes = request.POST.getlist('archetypes')
-        entry = DreamEntry.objects.create(
-            user=request.user,
-            title=request.POST.get('title', '').strip(),
-            content=request.POST.get('content', '').strip(),
-            dream_date=request.POST.get('dream_date') or datetime.date.today(),
-            nauminto_type=request.POST.get('nauminto_type', ''),
-            archetype_tags=archetypes,
-            tags=request.POST.get('tags', '').strip(),
-            is_nauminto=True,
-        )
-        BitacoraEntry.objects.create(
-            user=request.user,
-            entry_type='auto_dream',
-            content=f'Nauminto registrado: {entry.title or "Sin título"}',
-            emoji='✦',
-        )
-        return redirect('nauminto_list')
-    return render(request, 'mirror/nauminto_form.html', {'today': datetime.date.today()})
-
-
-@login_required
-def nauminto_detail(request, pk):
-    entry = get_object_or_404(DreamEntry, pk=pk, user=request.user, is_nauminto=True)
-    return render(request, 'mirror/nauminto_detail.html', {'entry': entry})
 
 
 @login_required

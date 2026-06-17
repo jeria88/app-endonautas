@@ -77,13 +77,19 @@ class DreamEntry(models.Model):
 
 class BitacoraEntry(models.Model):
     ENTRY_TYPES = [
-        ('manual', 'Manual'),
+        # Categorías manuales (el usuario elige)
+        ('sueno', 'Sueño'),
+        ('sombra', 'Sombra'),
+        ('patron', 'Patrón'),
+        ('signo', 'Signo o síntoma'),
+        ('manual', 'Nota libre'),
+        # Auto-generadas por el sistema
         ('auto_test', 'Test completado'),
-        ('auto_dream', 'Sueño registrado'),
         ('auto_espejo', 'Sesión Espejo'),
         ('auto_terapeuta', 'Consulta Terapéutica'),
         ('auto_oraculo', 'Oráculo consultado'),
         ('auto_regulacion', 'Ejercicio de regulación'),
+        ('auto_dream', 'Sueño registrado'),
     ]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bitacora')
