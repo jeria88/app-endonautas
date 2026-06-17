@@ -22,7 +22,9 @@ class Command(BaseCommand):
             user.is_superuser = True
             user.save()
 
-            UserProfile.objects.get_or_create(user=user)
+            profile, _ = UserProfile.objects.get_or_create(user=user)
+            profile.is_practicante = True
+            profile.save(update_fields=['is_practicante'])
             TokenBalance.objects.get_or_create(user=user)
 
             action = 'Creado' if created else 'Actualizado'

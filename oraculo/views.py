@@ -1,6 +1,7 @@
 import json
 import logging
 
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
@@ -22,23 +23,25 @@ iching_service = IChingService()
 card_service = CardService()
 
 
+@login_required
 def hub(request):
-    historial = []
-    if request.user.is_authenticated:
-        historial = SesionOraculo.objects.filter(
-            usuario=request.user, guardada=True
-        ).order_by("-fecha_creacion")[:6]
+    historial = SesionOraculo.objects.filter(
+        usuario=request.user, guardada=True
+    ).order_by("-fecha_creacion")[:6]
     return render(request, "oraculo/hub.html", {"historial": historial})
 
 
+@login_required
 def tarot_view(request):
     return render(request, "oraculo/tarot.html")
 
 
+@login_required
 def iching_view(request):
     return render(request, "oraculo/iching.html")
 
 
+@login_required
 def fractal_view(request):
     return render(request, "oraculo/fractal.html")
 
@@ -46,6 +49,8 @@ def fractal_view(request):
 @csrf_exempt
 @require_POST
 def tarot_api(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "login_required"}, status=401)
     try:
         data = json.loads(request.body)
         pregunta = data.get("pregunta", "").strip()
@@ -92,6 +97,8 @@ def tarot_api(request):
 @csrf_exempt
 @require_POST
 def iching_api(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "login_required"}, status=401)
     try:
         data = json.loads(request.body)
         pregunta = data.get("pregunta", "").strip()
@@ -134,6 +141,8 @@ def iching_api(request):
 @csrf_exempt
 @require_POST
 def fractal_api(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "login_required"}, status=401)
     try:
         data = json.loads(request.body)
         pregunta = data.get("pregunta", "").strip()

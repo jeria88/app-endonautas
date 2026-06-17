@@ -1,9 +1,11 @@
 import json as _json
 import logging
+import re as _re
 
 import requests as _requests
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -58,7 +60,6 @@ def _call_ai_json(prompt: str, system: str = "", max_tokens: int = 2000, tempera
                         {"role": "system", "content": sys_msg},
                         {"role": "user", "content": prompt},
                     ],
-                    "response_format": {"type": "json_object"},
                     "max_tokens": max_tokens,
                     "temperature": temperature,
                 }, ensure_ascii=False).encode("utf-8"),
@@ -66,7 +67,20 @@ def _call_ai_json(prompt: str, system: str = "", max_tokens: int = 2000, tempera
             )
             resp.raise_for_status()
             raw = resp.json()["choices"][0]["message"]["content"].strip()
-            return _json.loads(raw)
+            # Intento directo
+            try:
+                return _json.loads(raw)
+            except _json.JSONDecodeError:
+                pass
+            # Extraer bloque JSON de markdown
+            m = _re.search(r'```(?:json)?\s*(\{.*?\})\s*```', raw, _re.DOTALL)
+            if m:
+                return _json.loads(m.group(1))
+            # Extraer primer objeto JSON del texto
+            m = _re.search(r'(\{.*\})', raw, _re.DOTALL)
+            if m:
+                return _json.loads(m.group(1))
+            logger.warning(f"No JSON found in AI response (attempt {attempt + 1}): {raw[:200]}")
         except (_json.JSONDecodeError, KeyError, IndexError) as e:
             logger.warning(f"AI JSON parse error (attempt {attempt + 1}): {e}")
         except Exception as e:
@@ -120,13 +134,13 @@ def recomendar_frameworks_por_keywords(motivo: str) -> list[str]:
 
 # ─── Wizard views ─────────────────────────────────────────────────────────────
 
+@login_required
 def wizard_paso0(request: HttpRequest) -> HttpResponse:
-    if not request.user.is_authenticated:
-        return redirect("account_login")
     consulta = Consulta.objects.create(modo="autoconsulta", paso_actual=1, usuario=request.user)
     return redirect("terapeuta:paso1", consulta_id=consulta.id)
 
 
+@login_required
 def wizard_paso1(request: HttpRequest, consulta_id: int) -> HttpResponse:
     consulta = get_object_or_404(Consulta, id=consulta_id)
     if request.method == "POST":
@@ -155,6 +169,7 @@ def wizard_paso1(request: HttpRequest, consulta_id: int) -> HttpResponse:
     return render(request, "terapeuta/paso1.html", {"form": form, "consulta": consulta, "paso": 1, "total_pasos": 5})
 
 
+@login_required
 def wizard_paso2(request: HttpRequest, consulta_id: int) -> HttpResponse:
     consulta = get_object_or_404(Consulta, id=consulta_id)
     texto_completo = consulta.motivo + (" " + consulta.medicamentos_actuales if consulta.medicamentos_actuales else "")
@@ -198,6 +213,7 @@ def wizard_paso2(request: HttpRequest, consulta_id: int) -> HttpResponse:
     return render(request, "terapeuta/paso2.html", {"consulta": consulta, "marcos_data": marcos_data, "paso": 2, "total_pasos": 5})
 
 
+@login_required
 def wizard_paso3(request: HttpRequest, consulta_id: int) -> HttpResponse:
     consulta = get_object_or_404(Consulta, id=consulta_id)
     selecciones = SeleccionTecnica.objects.filter(consulta=consulta).select_related("tecnica")
@@ -209,10 +225,6 @@ def wizard_paso3(request: HttpRequest, consulta_id: int) -> HttpResponse:
     if request.method == "POST":
         with transaction.atomic():
             PreguntaRespuesta.objects.filter(consulta=consulta).delete()
-            prioridad = request.POST.get("prioridad_sintoma", "").strip()
-            if prioridad:
-                consulta.prioridad_sintoma = prioridad
-                consulta.save(update_fields=["prioridad_sintoma"])
             for key, value in request.POST.items():
                 if not key.startswith("respuesta_"):
                     continue
@@ -284,6 +296,7 @@ def _seleccion_determinista_preguntas(tecnicas_codigos: list) -> list:
     return selected[:12]
 
 
+@login_required
 def wizard_paso4(request: HttpRequest, consulta_id: int) -> HttpResponse:
     consulta = get_object_or_404(Consulta, id=consulta_id)
     selecciones = SeleccionTecnica.objects.filter(consulta=consulta).select_related("tecnica")
@@ -374,6 +387,7 @@ def _seleccion_determinista_diagnosticos(tecnicas_codigos: list) -> list:
     return diversificados[:4]
 
 
+@login_required
 def wizard_paso5(request: HttpRequest, consulta_id: int) -> HttpResponse:
     consulta = get_object_or_404(Consulta, id=consulta_id)
     diagnosticos_confirmados = DiagnosticoPropuesto.objects.filter(
@@ -483,6 +497,7 @@ Máximo 3 pasos por disciplina. Responde en español."""
     return data
 
 
+@login_required
 def consulta_detalle(request: HttpRequest, consulta_id: int) -> HttpResponse:
     consulta = get_object_or_404(Consulta, id=consulta_id)
     if request.method == "POST":
@@ -515,6 +530,7 @@ def consulta_detalle(request: HttpRequest, consulta_id: int) -> HttpResponse:
     })
 
 
+@login_required
 def consulta_eliminar(request: HttpRequest, consulta_id: int) -> HttpResponse:
     consulta = get_object_or_404(Consulta, id=consulta_id)
     if request.method == "POST":
@@ -524,6 +540,7 @@ def consulta_eliminar(request: HttpRequest, consulta_id: int) -> HttpResponse:
     return render(request, "terapeuta/confirmar_eliminar.html", {"consulta": consulta})
 
 
+@login_required
 def consulta_lista(request: HttpRequest) -> HttpResponse:
     from django.db.models import Count, Q
     qs = Consulta.objects.all()
