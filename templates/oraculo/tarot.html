@@ -71,10 +71,10 @@
   grid-template-rows: repeat(2, 262px);
   gap:0.5rem; justify-content:center;
 }
-/* Cruz Celta: cruz (3×3) + gap + columna (1×4) */
-.cards-spread.layout-celta {
+/* Tarot del Yo Realizado: 3 cols × 4 filas */
+.cards-spread.layout-yo {
   display:grid;
-  grid-template-columns: 112px 112px 112px 1.5rem 112px;
+  grid-template-columns: repeat(3, 112px);
   grid-template-rows: repeat(4, 262px);
   gap:0.5rem; justify-content:center;
 }
@@ -152,7 +152,7 @@
         <button class="tirada-btn" data-tirada="un_arcano"><span class="tb-n">1</span>Carta espejo</button>
         <button class="tirada-btn active" data-tirada="tres_cartas"><span class="tb-n">3</span>Raíz–Tallo–Flor</button>
         <button class="tirada-btn" data-tirada="cruz_normal"><span class="tb-n">5</span>Cruz</button>
-        <button class="tirada-btn" data-tirada="cruz_celta"><span class="tb-n">10</span>Cruz Celta</button>
+        <button class="tirada-btn" data-tirada="yo_realizado"><span class="tb-n">10</span>Yo Realizado</button>
         <button class="tirada-btn full" data-tirada="viaje_heroe"><span class="tb-n">12</span>Viaje del Héroe · solo arcanos mayores</button>
       </div>
     </div>
@@ -193,20 +193,27 @@
 const BASE_STATIC = "{% static '' %}";
 
 const NOMBRES_POS = {
-  unica:             'Carta espejo',
-  raiz:              'Raíz — causa profunda',
-  tallo:             'Tallo — presente vivido',
-  flor:              'Flor — potencial real',
-  presente:          'Presente',
-  sombra:            'Sombra',
-  pasado:            'Pasado',
-  camino:            'Camino abierto',
-  fundamento:        'Fundamento',
-  meta:              'Meta consciente',
-  consultante:       'El consultante',
-  influencias:       'Influencias externas',
-  esperanzas_miedos: 'Esperanzas y miedos',
-  resultado:         'Resultado posible',
+  unica:          'Carta espejo',
+  raiz:           'Raíz — causa profunda',
+  tallo:          'Tallo — presente vivido',
+  flor:           'Flor — potencial real',
+  presente:       'Presente',
+  sombra:         'Sombra',
+  pasado:         'Pasado',
+  camino:         'Camino abierto',
+  fundamento:     'Fundamento',
+  // Yo Realizado
+  protagonista:   'Protagonista',
+  antagonista:    'Antagonista',
+  mediador:       'Mediador',
+  cometa_a:       'Cometa A',
+  cometa_b:       'Cometa B',
+  asteroide_a:    'Asteroide A',
+  asteroide_b:    'Asteroide B',
+  resultado_a:    'Resultado A',
+  resultado_b:    'Resultado B',
+  secreto:        'El Secreto',
+  // Viaje del Héroe
   mundo_ordinario:   'Mundo ordinario',
   llamado:           'El llamado',
   rechazo:           'Rechazo del llamado',
@@ -221,11 +228,11 @@ const NOMBRES_POS = {
   elixir:            'El elixir',
 };
 const NOMBRES_TIRADA = {
-  un_arcano:   '1 carta · Espejo',
-  tres_cartas: '3 cartas · Raíz–Tallo–Flor',
-  cruz_normal: '5 cartas · Cruz de Jodorowsky',
-  cruz_celta:  '10 cartas · Cruz Celta',
-  viaje_heroe: '12 arcanos · Viaje del Héroe',
+  un_arcano:    '1 carta · Espejo',
+  tres_cartas:  '3 cartas · Raíz–Tallo–Flor',
+  cruz_normal:  '5 cartas · Cruz',
+  yo_realizado: '10 cartas · Yo Realizado · Jodorowsky',
+  viaje_heroe:  '12 arcanos · Viaje del Héroe',
 };
 
 /* Grid positions por tirada.
@@ -239,17 +246,22 @@ const GRID_LAYOUTS = {
     camino:     { row:1, col:3 },
     fundamento: { row:2, col:2 },
   },
-  cruz_celta: {
-    meta:              { row:1, col:2 },
-    pasado:            { row:2, col:1 },
-    presente:          { row:2, col:2, pair:'sombra' },
-    sombra:            { row:2, col:2, crossing:true, pair:'presente' },
-    camino:            { row:2, col:3 },
-    fundamento:        { row:3, col:2 },
-    resultado:         { row:1, col:5 },
-    esperanzas_miedos: { row:2, col:5 },
-    influencias:       { row:3, col:5 },
-    consultante:       { row:4, col:5 },
+  // Tarot del Yo Realizado (Jodorowsky):
+  // Fila 1: Protagonista | Mediador | Antagonista
+  // Fila 2: Cometa A     | Secreto  | Asteroide A
+  // Fila 3: Cometa B     | Result A | Asteroide B
+  // Fila 4:              | Result B |
+  yo_realizado: {
+    protagonista: { row:1, col:1 },
+    mediador:     { row:1, col:2 },
+    antagonista:  { row:1, col:3 },
+    cometa_a:     { row:2, col:1 },
+    secreto:      { row:2, col:2 },
+    asteroide_a:  { row:2, col:3 },
+    cometa_b:     { row:3, col:1 },
+    resultado_a:  { row:3, col:2 },
+    asteroide_b:  { row:3, col:3 },
+    resultado_b:  { row:4, col:2 },
   },
   viaje_heroe: {
     mundo_ordinario: { row:1, col:1 },
@@ -425,9 +437,9 @@ function mostrar(data) {
   const spread = document.getElementById('cardsSpread');
   spread.className = 'cards-spread';
   const layoutMap = {
-    cruz_normal: 'layout-cruz',
-    cruz_celta:  'layout-celta',
-    viaje_heroe: 'layout-heroe',
+    cruz_normal:  'layout-cruz',
+    yo_realizado: 'layout-yo',
+    viaje_heroe:  'layout-heroe',
   };
   if (layoutMap[tirada.tipo_tirada]) spread.classList.add(layoutMap[tirada.tipo_tirada]);
   spread.innerHTML = '';
@@ -436,7 +448,7 @@ function mostrar(data) {
 
   tirada.cartas.forEach((c, i) => {
     const posLabel = NOMBRES_POS[c.posicion] || c.posicion;
-    const estadoLabel = c.invertida ? 'Energía contraída' : 'Directa';
+    const tipoLabel = c.tipo === 'mayor' ? 'Arcano Mayor' : (c.elemento ? c.elemento.charAt(0).toUpperCase() + c.elemento.slice(1) : '');
     const imgSrc = c.imagen ? BASE_STATIC + c.imagen : BASE_STATIC + 'img/tarot/cardback.jpg';
 
     const outer = document.createElement('div');
@@ -464,12 +476,12 @@ function mostrar(data) {
         </div>
         <div class="card-face card-front">
           <div class="card-img-wrap">
-            <img src="${imgSrc}" alt="${c.nombre}" class="card-img${c.invertida?' contraida':''}" loading="lazy">
+            <img src="${imgSrc}" alt="${c.nombre}" class="card-img" loading="lazy">
           </div>
           <div class="card-body">
             <div class="card-pos">${posLabel}</div>
             <div class="card-nombre">${c.nombre}</div>
-            <div class="card-estado">${estadoLabel}</div>
+            <div class="card-estado">${tipoLabel}</div>
             <div class="card-kw">${c.palabra_clave||''}</div>
           </div>
         </div>
