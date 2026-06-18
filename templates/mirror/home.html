@@ -315,7 +315,7 @@ async function sendMessage() {
   const content = inputEl.value.trim();
   if (!content) return;
   if (!activeSessionPk) {
-    await newChat();
+    try { await newChat(); } catch(e) { console.error('newChat error:', e); return; }
     if (!activeSessionPk) return;
   }
   const btn = document.getElementById('send-btn');
@@ -335,8 +335,16 @@ async function sendMessage() {
     else if (data.reply) {
       const t = new Date(data.created_at).toLocaleTimeString('es-CL', {hour:'2-digit',minute:'2-digit'});
       addBubble('assistant', data.reply, t);
+      if (data.title) {
+        document.getElementById('chat-title').textContent = data.title;
+        const row = document.querySelector(`.session-row[data-pk="${activeSessionPk}"]`);
+        if (row) {
+          const nameEl = row.querySelector('.session-name');
+          if (nameEl) nameEl.textContent = data.title;
+        }
+      }
     }
-  } catch(e) { addBubble('assistant', 'Error de conexión.', '—'); }
+  } catch(e) { console.error('sendMessage error:', e); addBubble('assistant', 'Error de conexión.', '—'); }
   finally {
     document.getElementById('typing-row').classList.remove('show');
     btn.disabled = false; inputEl.disabled = false; inputEl.focus();

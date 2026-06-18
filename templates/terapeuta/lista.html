@@ -25,8 +25,8 @@
   <div class="consulta-row">
     <div class="cr-badge">{{ c.id }}</div>
     <div class="cr-body">
-      <div class="cr-title">{{ c.nombre_paciente|default:"Sin nombre" }}{% if c.modo == 'autoconsulta' %} <span style="font-size:0.68rem;color:var(--muted)">(autoconsulta)</span>{% endif %}</div>
-      <div class="cr-meta">{{ c.motivo|truncatechars:60 }} · {{ c.fecha_creacion|date:"d M Y" }}</div>
+      <div class="cr-title">{{ c.nombre_paciente|default:c.motivo|truncatechars:50 }}{% if c.modo == 'autoconsulta' %} <span style="font-size:0.68rem;color:var(--muted)">(autoconsulta)</span>{% endif %}</div>
+      <div class="cr-meta">{{ c.fecha_creacion|date:"d M Y" }}</div>
     </div>
     <div class="cr-step {% if c.paso_actual >= 5 %}done{% endif %}" style="margin-right:0.5rem">
       {% if c.paso_actual >= 5 %}Completa{% else %}Paso {{ c.paso_actual }}/5{% endif %}

@@ -73,16 +73,21 @@ def chat_message(request, pk):
         return JsonResponse({'error': 'Mensaje vacío'}, status=400)
 
     ChatMessage.objects.create(session=session, role='user', content=content)
+    new_title = None
     if not session.title:
         session.title = content[:60].strip()
         session.save(update_fields=['title'])
+        new_title = session.title
     reply = _get_reply(session, content)
     msg = ChatMessage.objects.create(session=session, role='assistant', content=reply)
 
     from tokens.service import credit_mission
     credit_mission(request.user, 'first_espejo')
 
-    return JsonResponse({'reply': reply, 'created_at': msg.created_at.isoformat()})
+    resp = {'reply': reply, 'created_at': msg.created_at.isoformat()}
+    if new_title:
+        resp['title'] = new_title
+    return JsonResponse(resp)
 
 
 @login_required
