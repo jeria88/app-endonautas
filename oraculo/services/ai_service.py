@@ -98,7 +98,7 @@ Pregunta del consultante: "{pregunta}"
 Cartas en orden:
 {cartas_txt}
 
-Lee el patrón que une todas estas cartas. No las describas una por una."""
+Lee el patrón que une todas estas cartas en relación directa con la pregunta. No las describas una por una."""
 
     return _call_openrouter(_SYSTEM_TAROT, prompt, max_tokens=500)
 

@@ -173,39 +173,39 @@
   ];
 
   function mtcSvg(elem, nutridor, controlado) {
-    var CX=80,CY=80,R=58;
+    var CX=110,CY=110,R=82;
     var names=['Fuego','Tierra','Metal','Agua','Madera'];
     var angs=[-90,-18,54,126,198].map(function(a){return a*Math.PI/180;});
     var pos={};
     names.forEach(function(e,i){pos[e]=[CX+R*Math.cos(angs[i]),CY+R*Math.sin(angs[i])];});
     if(!nutridor&&elem)nutridor=GEN_INV[elem];
     if(!controlado&&elem)controlado=CTRL_MAP[elem];
-    var s='<svg viewBox="0 0 160 160" width="160" height="160" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0.5rem auto">';
+    var s='<svg viewBox="0 0 220 220" width="220" height="220" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0.5rem auto">';
     GEN.forEach(function(ab){
       var p=pos[ab[0]],q=pos[ab[1]];
       var nutLine=(ab[0]===nutridor&&ab[1]===elem);
-      s+='<line x1="'+p[0].toFixed(1)+'" y1="'+p[1].toFixed(1)+'" x2="'+q[0].toFixed(1)+'" y2="'+q[1].toFixed(1)+'" stroke="'+(nutLine?'#ffbf00':'#4ecdc4')+'" stroke-width="'+(nutLine?2:1.2)+'" opacity="'+(nutLine?0.65:0.22)+'"/>';
+      s+='<line x1="'+p[0].toFixed(1)+'" y1="'+p[1].toFixed(1)+'" x2="'+q[0].toFixed(1)+'" y2="'+q[1].toFixed(1)+'" stroke="'+(nutLine?'#ffbf00':'#4ecdc4')+'" stroke-width="'+(nutLine?2.5:1.5)+'" opacity="'+(nutLine?0.75:0.28)+'"/>';
     });
     CTRL.forEach(function(ab){
       var p=pos[ab[0]],q=pos[ab[1]];
       var ctrlLine=(ab[0]===elem&&ab[1]===controlado);
-      s+='<line x1="'+p[0].toFixed(1)+'" y1="'+p[1].toFixed(1)+'" x2="'+q[0].toFixed(1)+'" y2="'+q[1].toFixed(1)+'" stroke="'+(ctrlLine?'#e07060':'#ffbf00')+'" stroke-width="'+(ctrlLine?1.8:0.8)+'" stroke-dasharray="3,3" opacity="'+(ctrlLine?0.55:0.15)+'"/>';
+      s+='<line x1="'+p[0].toFixed(1)+'" y1="'+p[1].toFixed(1)+'" x2="'+q[0].toFixed(1)+'" y2="'+q[1].toFixed(1)+'" stroke="'+(ctrlLine?'#e07060':'#ffbf00')+'" stroke-width="'+(ctrlLine?2.2:1)+'" stroke-dasharray="4,4" opacity="'+(ctrlLine?0.65:0.18)+'"/>';
     });
     names.forEach(function(e){
       var x=pos[e][0],y=pos[e][1];
       var isAct=e===elem,isNut=e===nutridor,isCtrl=e===controlado;
       var color=COLORS[e];
-      var r=isAct?14:(isNut?12:10),op=isAct?1:(isNut?0.72:(isCtrl?0.35:0.32));
-      var fillOp=isAct?0.25:(isNut?0.2:(isCtrl?0.06:0.09)),sw=isAct?2:(isNut?1.5:1);
+      var r=isAct?18:(isNut?15:12),op=isAct?1:(isNut?0.80:(isCtrl?0.45:0.38));
+      var fillOp=isAct?0.28:(isNut?0.22:(isCtrl?0.08:0.11)),sw=isAct?2.5:(isNut?2:1.2);
       if(isAct){
-        s+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="18" fill="none" stroke="'+color+'" stroke-width="1" opacity="0.2">'
-          +'<animate attributeName="r" values="14;22;14" dur="2s" repeatCount="indefinite"/>'
+        s+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="26" fill="none" stroke="'+color+'" stroke-width="1.5" opacity="0.2">'
+          +'<animate attributeName="r" values="18;28;18" dur="2s" repeatCount="indefinite"/>'
           +'<animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite"/></circle>';
       } else if(isNut){
-        s+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="17" fill="none" stroke="#ffbf00" stroke-width="1" opacity="0.18"/>';
+        s+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="22" fill="none" stroke="#ffbf00" stroke-width="1.2" opacity="0.22"/>';
       }
       s+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+r+'" fill="'+color+'" fill-opacity="'+fillOp+'" stroke="'+color+'" stroke-width="'+sw+'" opacity="'+op+'"/>';
-      s+='<text x="'+x.toFixed(1)+'" y="'+(y+(y>CY?26:-15)).toFixed(1)+'" text-anchor="middle" font-size="7.5" fill="'+color+'" opacity="'+op+'" font-family="sans-serif">'+e+'</text>';
+      s+='<text x="'+x.toFixed(1)+'" y="'+(y+(y>CY?32:-20)).toFixed(1)+'" text-anchor="middle" font-size="9.5" fill="'+color+'" opacity="'+op+'" font-family="sans-serif" font-weight="600">'+e+'</text>';
     });
     return s+'</svg>';
   }
@@ -224,18 +224,18 @@
   }
   function chakraSvg(chakra, dosha, subdosha) {
     var activos=chakraIndices(chakra,dosha,subdosha);
-    var sp=240/7;
-    var s='<svg viewBox="0 0 240 56" width="240" height="56" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0.5rem auto">';
-    s+='<line x1="'+(sp*0.5).toFixed(1)+'" y1="24" x2="'+(sp*6.5).toFixed(1)+'" y2="24" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>';
+    var W=300,H=76,sp=W/7,cy=32;
+    var s='<svg viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0.5rem auto">';
+    s+='<line x1="'+(sp*0.5).toFixed(1)+'" y1="'+cy+'" x2="'+(sp*6.5).toFixed(1)+'" y2="'+cy+'" stroke="rgba(255,255,255,0.10)" stroke-width="1.5"/>';
     CHAKRAS.forEach(function(c,i){
-      var cx=sp*(i+0.5),active=activos.indexOf(i)>=0,r=active?13:9,op=active?1:0.32;
+      var cx=sp*(i+0.5),active=activos.indexOf(i)>=0,r=active?16:11,op=active?1:0.35;
       if(active){
-        s+='<circle cx="'+cx.toFixed(1)+'" cy="24" r="19" fill="none" stroke="'+c.c+'" stroke-width="1" opacity="0.2">'
-          +'<animate attributeName="r" values="15;21;15" dur="1.8s" repeatCount="indefinite"/>'
+        s+='<circle cx="'+cx.toFixed(1)+'" cy="'+cy+'" r="24" fill="none" stroke="'+c.c+'" stroke-width="1.5" opacity="0.2">'
+          +'<animate attributeName="r" values="18;26;18" dur="1.8s" repeatCount="indefinite"/>'
           +'<animate attributeName="opacity" values="0.3;0;0.3" dur="1.8s" repeatCount="indefinite"/></circle>';
       }
-      s+='<circle cx="'+cx.toFixed(1)+'" cy="24" r="'+r+'" fill="'+c.c+'" fill-opacity="'+(active?0.28:0.10)+'" stroke="'+c.c+'" stroke-width="'+(active?2:1)+'" opacity="'+op+'"/>';
-      s+='<text x="'+cx.toFixed(1)+'" y="48" text-anchor="middle" font-size="6.5" fill="'+c.c+'" opacity="'+op+'" font-family="sans-serif">'+c.n+'</text>';
+      s+='<circle cx="'+cx.toFixed(1)+'" cy="'+cy+'" r="'+r+'" fill="'+c.c+'" fill-opacity="'+(active?0.30:0.11)+'" stroke="'+c.c+'" stroke-width="'+(active?2.2:1.2)+'" opacity="'+op+'"/>';
+      s+='<text x="'+cx.toFixed(1)+'" y="'+(cy+r+16)+'" text-anchor="middle" font-size="7.5" fill="'+c.c+'" opacity="'+op+'" font-family="sans-serif">'+c.n+'</text>';
     });
     return s+'</svg>';
   }

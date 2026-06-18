@@ -35,12 +35,12 @@
 .card-tile:hover { border-color:rgba(126,204,205,0.3); }
 .card-tile.contraida { border-color:rgba(212,160,86,0.25); }
 .card-img-wrap {
-  width:100%;height:154px;overflow:hidden;
+  width:100%;height:192px;overflow:hidden;
   background:#0d0d14;
   display:flex;align-items:center;justify-content:center;
 }
 .card-img {
-  width:100%;height:100%;object-fit:cover;
+  width:100%;height:100%;object-fit:contain;
   transition:transform 0.35s ease;
 }
 .card-tile.contraida .card-img { transform:rotate(180deg); }
@@ -102,7 +102,7 @@
 
       <div class="cards-spread" id="cardsSpread"></div>
 
-      <div style="background:rgba(126,204,205,0.06);border:1px solid rgba(126,204,205,0.2);border-radius:14px;padding:1.25rem">
+      <div style="background:var(--surface2);border:1px solid rgba(126,204,205,0.25);border-radius:14px;padding:1.25rem">
         <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--calipso);margin-bottom:0.75rem">✦ Lectura del patrón</div>
         <div id="interpText" style="font-size:0.9rem;line-height:1.8;color:var(--text)"></div>
         <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--border);font-size:0.68rem;color:var(--dim)" id="sourceLabel"></div>

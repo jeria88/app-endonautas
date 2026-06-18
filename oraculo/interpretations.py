@@ -365,30 +365,37 @@ def generar_interpretacion_iching(datos: dict) -> dict:
     if ai_texto:
         return {"texto_completo": ai_texto, "fuente": "ai"}
 
-    # Static fallback — usa los datos concretos del hexagrama, no frases genéricas
+    # Static fallback — conecta el hexagrama directamente con la pregunta
     hp = datos.get("hexagrama_primario", {})
     hs = datos.get("hexagrama_secundario")
     lineas_moviles = datos.get("lineas_moviles", {})
+    pregunta = datos.get("pregunta", "").strip()
     nombre = hp.get("nombre", "")
     numero = hp.get("numero", "")
     dictamen = hp.get("dictamen", "")
     imagen = hp.get("imagen", "")
     partes = []
 
-    if dictamen:
+    # Primer párrafo: hexagrama + pregunta directamente conectados
+    if dictamen and pregunta:
+        partes.append(
+            f"Ante la pregunta «{pregunta}», el I Ching responde con {nombre} (#{numero}).\n\n"
+            f"Su dictamen: \"{dictamen}\"\n\n"
+            f"No leas esto como un consejo. Lee qué principio describe la pregunta misma — "
+            f"qué patrón de fuerza está activo en la situación que preguntas."
+        )
+    elif dictamen:
         partes.append(
             f"{nombre} (#{numero}) porta un dictamen preciso: \"{dictamen}\"\n\n"
-            f"Este no es un texto abstracto — es una descripción de la fuerza que "
-            f"opera en tu situación en este momento. El I Ching no habla del futuro; "
-            f"habla del patrón presente con una claridad que el pensamiento analítico "
-            f"raramente alcanza."
+            f"El I Ching no habla del futuro; habla del patrón presente con una claridad "
+            f"que el pensamiento analítico raramente alcanza."
         )
 
     if imagen:
         partes.append(
-            f"La imagen asociada — \"{imagen}\" — muestra el principio en su forma natural, "
-            f"antes de que la mente lo interprete. Obsérvala literalmente: ¿qué movimiento, "
-            f"qué fuerza, qué relación describe? Eso mismo está ocurriendo en tu vida ahora."
+            f"La imagen: \"{imagen}\"\n\n"
+            f"Obsérvala literalmente — ¿qué movimiento, qué fuerza, qué relación describe? "
+            f"Eso mismo está ocurriendo en el territorio que tu pregunta toca."
         )
 
     if lineas_moviles:
@@ -399,9 +406,9 @@ def generar_interpretacion_iching(datos: dict) -> dict:
         hs_dictamen = hs.get("dictamen", "")
         if hs_nombre:
             partes.append(
-                f"Las líneas en movimiento transforman el hexagrama en {hs_nombre}. "
-                f"Su dictamen dice: \"{hs_dictamen}\" "
-                f"Esta es la dirección hacia donde se mueve la energía si permites que el cambio ocurra."
+                f"Las líneas móviles transforman el hexagrama en {hs_nombre}. "
+                f"\"{hs_dictamen}\" — "
+                f"esta es la dirección que toma la energía si la transformación ocurre."
             )
 
     if not partes:
