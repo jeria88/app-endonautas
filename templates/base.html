@@ -698,8 +698,11 @@ function spaGo(e, el) {
         document.head.appendChild(s.cloneNode(true));
       });
       // Execute page-specific scripts (innerHTML doesn't run them)
+      // Preserve type + id so data scripts (type=application/json) stay readable
       target.querySelectorAll('script').forEach(old => {
         const ns = document.createElement('script');
+        if (old.type) ns.setAttribute('type', old.type);
+        if (old.id) ns.id = old.id;
         ns.textContent = old.textContent;
         old.replaceWith(ns);
       });

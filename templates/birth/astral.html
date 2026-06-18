@@ -7,8 +7,25 @@
 .astral-wrap { max-width:900px; }
 
 /* ── Rueda ── */
-.wheel-container { display:flex;justify-content:center;margin-bottom:2rem; }
+.wheel-container { display:flex;justify-content:center;margin-bottom:1.5rem; }
 .wheel-container svg { max-width:520px;width:100%;height:auto;display:block; }
+
+/* ── Sección heading ── */
+.sec-heading {
+  font-size:0.63rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--muted);padding-bottom:0.5rem;border-bottom:1px solid var(--border);margin-bottom:0.85rem;
+}
+
+/* ── Aspectos ── */
+.asp-grid { display:flex;flex-direction:column;gap:0.4rem;margin-bottom:1.75rem; }
+.asp-row {
+  display:flex;align-items:center;gap:0.65rem;font-size:0.8rem;
+  padding:0.4rem 0.65rem;background:var(--surface);border-radius:8px;border:1px solid var(--border);
+}
+.asp-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+.asp-planets { flex:1;color:var(--text); }
+.asp-type { color:var(--muted);font-size:0.72rem; }
+.asp-angle { color:var(--dim);font-size:0.68rem;margin-left:auto; }
 
 /* ── Trinidad Sol · Luna · ASC ── */
 .trinity-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.25rem; }
@@ -22,14 +39,17 @@
 .t-label { font-size:0.63rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.2rem; }
 .t-sign { font-size:1.15rem;font-weight:700;margin-bottom:0.15rem; }
 .t-house { font-size:0.72rem;color:var(--dim);margin-bottom:0.6rem; }
-.t-meaning { font-size:0.75rem;color:var(--muted);line-height:1.55; }
+.t-meaning { font-size:0.75rem;color:var(--muted);line-height:1.6; }
 
-/* ── Sección heading ── */
-.sec-heading { font-size:0.63rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;
-  color:var(--muted);padding-bottom:0.5rem;border-bottom:1px solid var(--border);margin-bottom:0.85rem; }
+/* ── Angular secundario (MC) ── */
+.angular-row { display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;margin-bottom:1.5rem; }
+.ang-card { background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0.9rem 1.1rem; }
+.ang-label { font-size:0.63rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.3rem; }
+.ang-sign { font-size:1.05rem;font-weight:700;margin-bottom:0.12rem; }
+.ang-meaning { font-size:0.72rem;color:var(--muted);line-height:1.55; }
 
 /* ── Planetas grid ── */
-.planet-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.65rem;margin-bottom:1.5rem; }
+.planet-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.65rem;margin-bottom:1.75rem; }
 .p-card {
   background:var(--surface);border:1px solid var(--border);border-radius:10px;
   padding:0.75rem 0.85rem;transition:border-color 0.2s;
@@ -38,8 +58,7 @@
 .p-label { font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.2rem; }
 .p-sign { font-size:0.95rem;font-weight:700;margin-bottom:0.15rem; }
 .p-meta { font-size:0.68rem;color:var(--dim);margin-bottom:0.35rem; }
-.p-meaning { font-size:0.7rem;color:var(--muted);line-height:1.45;
-  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden; }
+.p-meaning { font-size:0.7rem;color:var(--muted);line-height:1.5; }
 .retro { font-size:0.62rem;color:var(--rose);margin-left:3px; }
 
 /* ── Elementos ── */
@@ -47,15 +66,6 @@
 .elem-earth { color:#b0a060; }
 .elem-air   { color:#7cc0c0; }
 .elem-water { color:#6080c0; }
-
-/* ── Aspectos ── */
-.asp-grid { display:flex;flex-direction:column;gap:0.4rem;margin-bottom:1.5rem; }
-.asp-row { display:flex;align-items:center;gap:0.65rem;font-size:0.8rem;padding:0.4rem 0.65rem;
-  background:var(--surface);border-radius:8px;border:1px solid var(--border); }
-.asp-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
-.asp-planets { flex:1;color:var(--text); }
-.asp-type { color:var(--muted);font-size:0.72rem; }
-.asp-angle { color:var(--dim);font-size:0.68rem;margin-left:auto; }
 
 /* ── AI reading ── */
 .ai-panel {
@@ -65,13 +75,6 @@
 .ai-label { font-size:0.63rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;
   color:var(--amber);margin-bottom:0.75rem; }
 .ai-text { font-size:0.9rem;line-height:1.8;color:var(--text); }
-
-/* ── Angular secundario (MC) ── */
-.angular-row { display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;margin-bottom:1.5rem; }
-.ang-card { background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0.9rem 1.1rem; }
-.ang-label { font-size:0.63rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.3rem; }
-.ang-sign { font-size:1.05rem;font-weight:700;margin-bottom:0.12rem; }
-.ang-meaning { font-size:0.72rem;color:var(--muted);line-height:1.5; }
 </style>
 
 <div class="astral-wrap">
@@ -90,78 +93,12 @@
 </div>
 {% endif %}
 
-{# ── RUEDA ZODIACAL ── #}
+{# ── 1. RUEDA ZODIACAL ── #}
 <div class="wheel-container" id="zodiac-wheel"></div>
 
-{# ── TRINIDAD: Sol · Luna · ASC ── #}
-<div class="trinity-grid">
-  {% with sol=report.raw_data.planets.0 %}
-  <div class="t-card">
-    <div class="t-sym">☉</div>
-    <div class="t-label">Sol</div>
-    <div class="t-sign elem-{{ sol.element }}">{{ sol.sign }}</div>
-    <div class="t-house">Casa {{ sol.house }} · {{ sol.degree }}°{% if sol.retrograde %}<span class="retro">℞</span>{% endif %}</div>
-    {% if sol.planet_meaning %}<div class="t-meaning">{{ sol.planet_meaning|truncatechars:200 }}</div>{% endif %}
-  </div>
-  {% endwith %}
-
-  {% with luna=report.raw_data.planets.1 %}
-  <div class="t-card">
-    <div class="t-sym">☽</div>
-    <div class="t-label">Luna</div>
-    <div class="t-sign elem-{{ luna.element }}">{{ luna.sign }}</div>
-    <div class="t-house">Casa {{ luna.house }} · {{ luna.degree }}°{% if luna.retrograde %}<span class="retro">℞</span>{% endif %}</div>
-    {% if luna.planet_meaning %}<div class="t-meaning">{{ luna.planet_meaning|truncatechars:200 }}</div>{% endif %}
-  </div>
-  {% endwith %}
-
-  <div class="t-card">
-    <div class="t-sym" style="color:var(--calipso)">⬡</div>
-    <div class="t-label">Ascendente</div>
-    <div class="t-sign elem-{{ report.raw_data.ascendant.element }}">{{ report.raw_data.ascendant.sign }}</div>
-    <div class="t-house">{{ report.raw_data.ascendant.degree }}°</div>
-    {% if report.raw_data.ascendant.meaning %}<div class="t-meaning">{{ report.raw_data.ascendant.meaning|truncatechars:200 }}</div>{% endif %}
-  </div>
-</div>
-
-{# ── MC ── #}
-<div class="angular-row">
-  <div class="ang-card">
-    <div class="ang-label" style="color:var(--violet)">Medio Cielo (MC)</div>
-    <div class="ang-sign">{{ report.raw_data.midheaven.sign }}</div>
-    <div style="font-size:0.7rem;color:var(--dim);margin-bottom:0.4rem">{{ report.raw_data.midheaven.degree }}°</div>
-    {% if report.raw_data.midheaven.meaning %}<div class="ang-meaning">{{ report.raw_data.midheaven.meaning|truncatechars:200 }}</div>{% endif %}
-  </div>
-</div>
-
-{# ── AI READING ── #}
-{% if report.ai_reading %}
-<div class="ai-panel">
-  <div class="ai-label">✦ Lectura del patrón</div>
-  <div class="ai-text">{{ report.ai_reading|linebreaksbr }}</div>
-  <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--border);font-size:0.65rem;color:var(--dim)">Interpretación IA · OpenRouter</div>
-</div>
-{% endif %}
-
-{# ── PLANETAS ── #}
-<div class="sec-heading" style="margin-top:0.25rem">Planetas</div>
-<div class="planet-grid">
-  {% for planet in report.raw_data.planets %}
-  {% if not forloop.first and not forloop.parentloop %}{% endif %}
-  {% if forloop.counter > 2 %}
-  <div class="p-card">
-    <div class="p-label">{{ planet.label }}</div>
-    <div class="p-sign elem-{{ planet.element }}">{{ planet.sign }}{% if planet.retrograde %}<span class="retro">℞</span>{% endif %}</div>
-    <div class="p-meta">Casa {{ planet.house }} · {{ planet.degree }}°</div>
-    {% if planet.planet_meaning %}<div class="p-meaning">{{ planet.planet_meaning }}</div>{% endif %}
-  </div>
-  {% endif %}
-  {% endfor %}
-</div>
-
-{# ── ASPECTOS ── #}
+{# ── 2. ASPECTOS ── #}
 {% if report.raw_data.aspects %}
-<div class="sec-heading">Aspectos</div>
+<div class="sec-heading">Aspectos principales</div>
 <div class="asp-grid">
   {% for asp in report.raw_data.aspects %}
   <div class="asp-row">
@@ -174,7 +111,73 @@
 </div>
 {% endif %}
 
-{# JSON para el wheel ─ se renderiza con json_script para escape seguro #}
+{# ── 3. TRINIDAD: Sol · Luna · ASC ── #}
+<div class="sec-heading">Trinidad personal</div>
+<div class="trinity-grid">
+  {% with sol=report.raw_data.planets.0 %}
+  <div class="t-card">
+    <div class="t-sym">☉</div>
+    <div class="t-label">Sol</div>
+    <div class="t-sign elem-{{ sol.element }}">{{ sol.sign }}</div>
+    <div class="t-house">Casa {{ sol.house }} · {{ sol.degree }}°{% if sol.retrograde %}<span class="retro">℞</span>{% endif %}</div>
+    {% if sol.planet_meaning %}<div class="t-meaning">{{ sol.planet_meaning }}</div>{% endif %}
+  </div>
+  {% endwith %}
+
+  {% with luna=report.raw_data.planets.1 %}
+  <div class="t-card">
+    <div class="t-sym">☽</div>
+    <div class="t-label">Luna</div>
+    <div class="t-sign elem-{{ luna.element }}">{{ luna.sign }}</div>
+    <div class="t-house">Casa {{ luna.house }} · {{ luna.degree }}°{% if luna.retrograde %}<span class="retro">℞</span>{% endif %}</div>
+    {% if luna.planet_meaning %}<div class="t-meaning">{{ luna.planet_meaning }}</div>{% endif %}
+  </div>
+  {% endwith %}
+
+  <div class="t-card">
+    <div class="t-sym" style="color:var(--calipso)">⬡</div>
+    <div class="t-label">Ascendente</div>
+    <div class="t-sign elem-{{ report.raw_data.ascendant.element }}">{{ report.raw_data.ascendant.sign }}</div>
+    <div class="t-house">{{ report.raw_data.ascendant.degree }}°</div>
+    {% if report.raw_data.ascendant.meaning %}<div class="t-meaning">{{ report.raw_data.ascendant.meaning }}</div>{% endif %}
+  </div>
+</div>
+
+{# ── 4. MC ── #}
+<div class="angular-row">
+  <div class="ang-card">
+    <div class="ang-label" style="color:var(--violet)">Medio Cielo (MC)</div>
+    <div class="ang-sign">{{ report.raw_data.midheaven.sign }}</div>
+    <div style="font-size:0.7rem;color:var(--dim);margin-bottom:0.4rem">{{ report.raw_data.midheaven.degree }}°</div>
+    {% if report.raw_data.midheaven.meaning %}<div class="ang-meaning">{{ report.raw_data.midheaven.meaning }}</div>{% endif %}
+  </div>
+</div>
+
+{# ── 5. PLANETAS (Mercurio en adelante) ── #}
+<div class="sec-heading">Planetas</div>
+<div class="planet-grid">
+  {% for planet in report.raw_data.planets %}
+  {% if forloop.counter > 2 %}
+  <div class="p-card">
+    <div class="p-label">{{ planet.label }}</div>
+    <div class="p-sign elem-{{ planet.element }}">{{ planet.sign }}{% if planet.retrograde %}<span class="retro">℞</span>{% endif %}</div>
+    <div class="p-meta">Casa {{ planet.house }} · {{ planet.degree }}°</div>
+    {% if planet.planet_meaning %}<div class="p-meaning">{{ planet.planet_meaning }}</div>{% endif %}
+  </div>
+  {% endif %}
+  {% endfor %}
+</div>
+
+{# ── 6. AI READING ── #}
+{% if report.ai_reading %}
+<div class="ai-panel">
+  <div class="ai-label">✦ Lectura del patrón</div>
+  <div class="ai-text">{{ report.ai_reading|linebreaksbr }}</div>
+  <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--border);font-size:0.65rem;color:var(--dim)">Interpretación IA · OpenRouter</div>
+</div>
+{% endif %}
+
+{# JSON para el wheel ─ json_script lo serializa con escape seguro #}
 {{ report.raw_data|json_script:"chart-raw" }}
 
 {% elif report.status == 'error' %}
@@ -195,7 +198,6 @@
   var SIGN_ELEM={Aries:'fire',Tauro:'earth','Géminis':'air','Cáncer':'water',Leo:'fire',Virgo:'earth',Libra:'air',Escorpio:'water',Sagitario:'fire',Capricornio:'earth',Acuario:'air',Piscis:'water'};
   var PLANET_SYM={Sol:'☉',Luna:'☽',Mercurio:'☿',Venus:'♀',Marte:'♂','Júpiter':'♃',Saturno:'♄',Urano:'⛢',Neptuno:'♆','Plutón':'♇'};
 
-  // lon → SVG angle (Aries 0° at top, going clockwise)
   function toRad(lon){ return (lon - 90) * Math.PI / 180; }
 
   function arcPath(cx,cy,rout,rin,a1,a2,fill,fo){
@@ -213,10 +215,7 @@
     var Rout=230, Rzin=196, Rpl=172, Rhin=56;
     var s='<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">';
 
-    // defs: clip for aspect lines
     s+='<defs><clipPath id="aspclip"><circle cx="250" cy="250" r="170"/></clipPath></defs>';
-
-    // Background
     s+='<circle cx="250" cy="250" r="232" fill="rgba(7,7,18,0.88)"/>';
 
     // ── Zodiac ring (12 segments) ──
@@ -225,11 +224,9 @@
       var col=ELEM_COLORS[SIGN_ELEM[sign]||'air'];
       var a1=toRad(i*30), a2=toRad((i+1)*30);
       s+=arcPath(CX,CY,Rout,Rzin,a1,a2,col,0.13);
-      // Divider
       var dx1=(CX+Rzin*Math.cos(a1)).toFixed(1),dy1=(CY+Rzin*Math.sin(a1)).toFixed(1);
       var dx2=(CX+Rout*Math.cos(a1)).toFixed(1),dy2=(CY+Rout*Math.sin(a1)).toFixed(1);
       s+='<line x1="'+dx1+'" y1="'+dy1+'" x2="'+dx2+'" y2="'+dy2+'" stroke="rgba(255,255,255,0.13)" stroke-width="0.7"/>';
-      // Sign symbol
       var amid=toRad(i*30+15);
       var sx=(CX+(Rzin+19)*Math.cos(amid)).toFixed(1),sy=(CY+(Rzin+19)*Math.sin(amid)+4.5).toFixed(1);
       s+='<text x="'+sx+'" y="'+sy+'" text-anchor="middle" font-size="14" fill="'+col+'" opacity="0.82" font-family="serif">'+SIGN_SYM[sign]+'</text>';
@@ -239,113 +236,102 @@
 
     // ── House cusps ──
     var houses=data.houses||[];
-    houses.forEach(function(h,i){
+    for(var j=0;j<houses.length;j++){
+      var h=houses[j];
       var a=toRad(h.longitude);
       var isAng=[1,4,7,10].indexOf(h.number)>=0;
-      var x1=(CX+Rhin*Math.cos(a)).toFixed(1),y1=(CY+Rhin*Math.sin(a)).toFixed(1);
-      var x2=(CX+Rzin*Math.cos(a)).toFixed(1),y2=(CY+Rzin*Math.sin(a)).toFixed(1);
-      s+='<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2
+      var hx1=(CX+Rhin*Math.cos(a)).toFixed(1),hy1=(CY+Rhin*Math.sin(a)).toFixed(1);
+      var hx2=(CX+Rzin*Math.cos(a)).toFixed(1),hy2=(CY+Rzin*Math.sin(a)).toFixed(1);
+      s+='<line x1="'+hx1+'" y1="'+hy1+'" x2="'+hx2+'" y2="'+hy2
         +'" stroke="rgba(255,255,255,'+(isAng?0.45:0.18)+')" stroke-width="'+(isAng?1.3:0.6)+'"/>';
-      // House number midway between this cusp and next
-      var nh=houses[(i+1)%12];
+      var nh=houses[(j+1)%houses.length];
       var diff=(nh.longitude-h.longitude+360)%360;
       var midA=toRad(h.longitude+diff/2);
       var nr=128;
       var nx=(CX+nr*Math.cos(midA)).toFixed(1),ny=(CY+nr*Math.sin(midA)+4).toFixed(1);
       s+='<text x="'+nx+'" y="'+ny+'" text-anchor="middle" font-size="8.5" fill="rgba(255,255,255,0.28)" font-family="sans-serif">'+h.number+'</text>';
-    });
+    }
 
-    // Inner circle
     s+='<circle cx="250" cy="250" r="'+Rhin+'" fill="rgba(5,5,15,0.92)" stroke="rgba(255,255,255,0.07)" stroke-width="0.8"/>';
 
     // ── Aspect lines (clipped to inner zone) ──
     var aspects=data.aspects||[];
     s+='<g clip-path="url(#aspclip)" opacity="0.85">';
-    aspects.forEach(function(asp){
-      var a1=toRad(asp.lon1),a2=toRad(asp.lon2);
-      var x1=(CX+Rpl*Math.cos(a1)).toFixed(1),y1=(CY+Rpl*Math.sin(a1)).toFixed(1);
-      var x2=(CX+Rpl*Math.cos(a2)).toFixed(1),y2=(CY+Rpl*Math.sin(a2)).toFixed(1);
+    for(var k=0;k<aspects.length;k++){
+      var asp=aspects[k];
+      var aa1=toRad(asp.lon1),aa2=toRad(asp.lon2);
+      var lx1=(CX+Rpl*Math.cos(aa1)).toFixed(1),ly1=(CY+Rpl*Math.sin(aa1)).toFixed(1);
+      var lx2=(CX+Rpl*Math.cos(aa2)).toFixed(1),ly2=(CY+Rpl*Math.sin(aa2)).toFixed(1);
       var sw=asp.type==='conjunción'?2:(asp.type==='trígono'||asp.type==='oposición'?1.3:0.9);
       var da=asp.style==='dashed'?'4,3':'none';
-      s+='<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2
+      s+='<line x1="'+lx1+'" y1="'+ly1+'" x2="'+lx2+'" y2="'+ly2
         +'" stroke="'+asp.color+'" stroke-width="'+sw+'" opacity="0.42" stroke-dasharray="'+da+'"/>';
-    });
+    }
     s+='</g>';
 
     // ── Planets ──
     var planets=data.planets||[];
-    // Collision avoidance: slight radial offset for clusters
     var sorted=planets.slice().sort(function(a,b){return a.longitude-b.longitude;});
     var radii={};
-    for(var i=0;i<sorted.length;i++){
-      var pr=sorted[i],pp=sorted[i-1];
+    for(var m=0;m<sorted.length;m++){
+      var pr=sorted[m],pp=sorted[m-1];
       if(pp&&((pr.longitude-pp.longitude+360)%360)<13){
         radii[pr.label]=(radii[pp.label]||Rpl)===Rpl?Rpl-19:Rpl;
       } else { radii[pr.label]=Rpl; }
     }
-    planets.forEach(function(p){
-      if(p.longitude===undefined&&p.longitude!==0)return;
+    for(var n=0;n<planets.length;n++){
+      var p=planets[n];
+      if(p.longitude===undefined)continue;
       var r=radii[p.label]||Rpl;
-      var a=toRad(p.longitude);
-      var px=(CX+r*Math.cos(a)).toFixed(1),py=(CY+r*Math.sin(a)).toFixed(1);
-      var col=ELEM_COLORS[SIGN_ELEM[p.sign]||'air'];
+      var pa=toRad(p.longitude);
+      var px=(CX+r*Math.cos(pa)).toFixed(1),py=(CY+r*Math.sin(pa)).toFixed(1);
+      var col2=ELEM_COLORS[SIGN_ELEM[p.sign]||'air'];
       var sym=PLANET_SYM[p.label]||'●';
-      // Tick line to zodiac ring
-      var xout=(CX+Rzin*Math.cos(a)).toFixed(1),yout=(CY+Rzin*Math.sin(a)).toFixed(1);
-      s+='<line x1="'+px+'" y1="'+py+'" x2="'+xout+'" y2="'+yout+'" stroke="'+col+'" stroke-width="0.5" opacity="0.22"/>';
-      // Circle
-      s+='<circle cx="'+px+'" cy="'+py+'" r="13" fill="rgba(5,5,16,0.93)" stroke="'+col+'" stroke-width="1.9"/>';
-      s+='<text x="'+px+'" y="'+(parseFloat(py)+5)+'" text-anchor="middle" font-size="11" fill="'+col+'" font-family="serif">'+sym+'</text>';
+      var xout=(CX+Rzin*Math.cos(pa)).toFixed(1),yout=(CY+Rzin*Math.sin(pa)).toFixed(1);
+      s+='<line x1="'+px+'" y1="'+py+'" x2="'+xout+'" y2="'+yout+'" stroke="'+col2+'" stroke-width="0.5" opacity="0.22"/>';
+      s+='<circle cx="'+px+'" cy="'+py+'" r="13" fill="rgba(5,5,16,0.93)" stroke="'+col2+'" stroke-width="1.9"/>';
+      s+='<text x="'+px+'" y="'+(parseFloat(py)+5)+'" text-anchor="middle" font-size="11" fill="'+col2+'" font-family="serif">'+sym+'</text>';
       if(p.retrograde){
-        s+='<text x="'+(parseFloat(px)+12)+'" y="'+(parseFloat(py)-9)+'" font-size="6.5" fill="'+col+'" opacity="0.8">℞</text>';
+        s+='<text x="'+(parseFloat(px)+12)+'" y="'+(parseFloat(py)-9)+'" font-size="6.5" fill="'+col2+'" opacity="0.8">℞</text>';
       }
-    });
+    }
 
-    // ── ASC axis ──
+    // ── ASC / DSC axis ──
     if(houses[0]){
       var aAsc=toRad(houses[0].longitude);
       var axOut=(CX+Rout*Math.cos(aAsc)).toFixed(1),ayOut=(CY+Rout*Math.sin(aAsc)).toFixed(1);
       var axOpp=(CX+Rout*Math.cos(aAsc+Math.PI)).toFixed(1),ayOpp=(CY+Rout*Math.sin(aAsc+Math.PI)).toFixed(1);
       s+='<line x1="'+axOpp+'" y1="'+ayOpp+'" x2="'+axOut+'" y2="'+ayOut+'" stroke="#4ecdc4" stroke-width="1.2" stroke-dasharray="5,3" opacity="0.55"/>';
-      s+='<text x="'+(parseFloat(axOut)+Math.cos(aAsc)*12).toFixed(1)+'" y="'+(parseFloat(ayOut)+Math.sin(aAsc)*12+4).toFixed(1)+'" text-anchor="middle" font-size="8" fill="#4ecdc4" font-weight="700" font-family="sans-serif">ASC</text>';
-      s+='<text x="'+(parseFloat(axOpp)+Math.cos(aAsc+Math.PI)*12).toFixed(1)+'" y="'+(parseFloat(ayOpp)+Math.sin(aAsc+Math.PI)*12+4).toFixed(1)+'" text-anchor="middle" font-size="8" fill="#4ecdc4" opacity="0.55" font-family="sans-serif">DSC</text>';
+      s+='<text x="'+(parseFloat(axOut)+Math.cos(aAsc)*14).toFixed(1)+'" y="'+(parseFloat(ayOut)+Math.sin(aAsc)*14+4).toFixed(1)+'" text-anchor="middle" font-size="8" fill="#4ecdc4" font-weight="700" font-family="sans-serif">ASC</text>';
+      s+='<text x="'+(parseFloat(axOpp)+Math.cos(aAsc+Math.PI)*14).toFixed(1)+'" y="'+(parseFloat(ayOpp)+Math.sin(aAsc+Math.PI)*14+4).toFixed(1)+'" text-anchor="middle" font-size="8" fill="#4ecdc4" opacity="0.55" font-family="sans-serif">DSC</text>';
     }
-    // ── MC axis ──
+    // ── MC / IC axis ──
     if(houses[9]){
       var aMC=toRad(houses[9].longitude);
       var mxOut=(CX+Rout*Math.cos(aMC)).toFixed(1),myOut=(CY+Rout*Math.sin(aMC)).toFixed(1);
       var mxOpp=(CX+Rout*Math.cos(aMC+Math.PI)).toFixed(1),myOpp=(CY+Rout*Math.sin(aMC+Math.PI)).toFixed(1);
       s+='<line x1="'+mxOpp+'" y1="'+myOpp+'" x2="'+mxOut+'" y2="'+myOut+'" stroke="#9f7aea" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>';
-      s+='<text x="'+(parseFloat(mxOut)+Math.cos(aMC)*12).toFixed(1)+'" y="'+(parseFloat(myOut)+Math.sin(aMC)*12+4).toFixed(1)+'" text-anchor="middle" font-size="7.5" fill="#9f7aea" font-weight="700" font-family="sans-serif">MC</text>';
+      s+='<text x="'+(parseFloat(mxOut)+Math.cos(aMC)*14).toFixed(1)+'" y="'+(parseFloat(myOut)+Math.sin(aMC)*14+4).toFixed(1)+'" text-anchor="middle" font-size="7.5" fill="#9f7aea" font-weight="700" font-family="sans-serif">MC</text>';
     }
 
-    // Center ornament
     s+='<text x="250" y="257" text-anchor="middle" font-size="18" fill="rgba(255,255,255,0.07)" font-family="serif">✦</text>';
     s+='</svg>';
     return s;
   }
 
-  // Add sign glyphs to planet cards
-  document.querySelectorAll('.p-sign,.t-sign,.ang-sign').forEach(function(el){
-    var sign=el.closest('[data-sign]') ? el.closest('[data-sign]').dataset.sign : null;
-    if(!sign){ var t=el.textContent.trim().split(' ')[0]; sign=t; }
-    var sym=SIGN_SYM[sign];
-    if(sym&&!el.querySelector('.sign-sym')){
-      var sp=document.createElement('span');
-      sp.className='sign-sym';
-      sp.style.cssText='font-family:serif;margin-right:0.25em;opacity:0.75;font-size:1.05em';
-      sp.textContent=sym;
-      el.insertBefore(sp,el.firstChild);
-    }
-  });
-
-  var raw=document.getElementById('chart-raw');
-  if(raw){
+  function initWheel(){
+    var raw=document.getElementById('chart-raw');
+    if(!raw) return;
+    var wheelEl=document.getElementById('zodiac-wheel');
+    if(!wheelEl) return;
     try{
       var data=JSON.parse(raw.textContent);
-      document.getElementById('zodiac-wheel').innerHTML=buildWheel(data);
+      wheelEl.innerHTML=buildWheel(data);
     }catch(e){ console.error('wheel error',e); }
   }
+
+  // Run immediately (scripts re-executed by SPA after DOM is set)
+  initWheel();
 })();
 </script>
 {% endblock %}
