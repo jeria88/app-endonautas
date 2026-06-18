@@ -17,6 +17,9 @@
 .hex-line.movil { background:rgba(212,160,86,0.9); }
 .hex-line.yin.movil::before,.hex-line.yin.movil::after { background:rgba(212,160,86,0.9); }
 .hex-line.show { opacity:1;transform:translateY(0); }
+@keyframes movil-pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+.hex-line.yang.movil { animation: movil-pulse 1.8s infinite; }
+.hex-line.yin.movil::before, .hex-line.yin.movil::after { animation: movil-pulse 1.8s infinite; }
 
 .ic-section { opacity:0;transition:opacity 0.4s ease; }
 .ic-section.show { opacity:1; }
@@ -131,6 +134,19 @@ document.getElementById('consultarBtn').addEventListener('click', async () => {
   }
 });
 
+function renderHexLinesDivs(lineas, containerId) {
+  var container = document.getElementById(containerId);
+  container.innerHTML = '';
+  lineas.slice().reverse().forEach(function(linea) {
+    var val = (linea !== null && typeof linea === 'object') ? linea.valor : linea;
+    var esMovil = val === 6 || val === 9;
+    var esYang  = val === 7 || val === 9;
+    var div = document.createElement('div');
+    div.className = 'hex-line' + (esYang ? ' yang' : ' yin') + (esMovil ? ' movil' : '');
+    container.appendChild(div);
+  });
+}
+
 function renderHexLines(lineas, containerId, small) {
   var container = document.getElementById(containerId);
   var W = small ? 80 : 120;
@@ -176,18 +192,26 @@ function mostrar(data) {
   const interp = data.interpretacion;
   const moviles = data.resultado.lineas_moviles || [];
 
-  renderHexLines(hp.lineas, 'hexLines');
-  reveal('sec-hex', 50);
+  document.getElementById('resultContent').style.display = '';
+
+  renderHexLinesDivs(hp.lineas, 'hexLines');
+  reveal('sec-hex', 0);
+  var lineDivs = document.querySelectorAll('#hexLines .hex-line');
+  for (var li = 0; li < lineDivs.length; li++) {
+    (function(div, delay) {
+      setTimeout(function() { if (div) div.classList.add('show'); }, delay);
+    })(lineDivs[lineDivs.length - 1 - li], 80 + li * 160);
+  }
 
   setTimeout(() => {
     document.getElementById('hexNum').textContent = `Hexagrama ${hp.numero}`;
     document.getElementById('hexName').textContent = hp.nombre;
     document.getElementById('hexChinese').textContent = hp.chino || '';
     reveal('sec-nombre', 0);
-  }, 450);
+  }, 1200);
 
-  setTimeout(() => { document.getElementById('hexDictamen').textContent = hp.dictamen || ''; reveal('sec-dictamen', 0); }, 850);
-  setTimeout(() => { document.getElementById('hexImagen').textContent = hp.imagen || ''; reveal('sec-imagen', 0); }, 1200);
+  setTimeout(() => { document.getElementById('hexDictamen').textContent = hp.dictamen || ''; reveal('sec-dictamen', 0); }, 1700);
+  setTimeout(() => { document.getElementById('hexImagen').textContent = hp.imagen || ''; reveal('sec-imagen', 0); }, 2200);
 
   if (moviles.length) {
     setTimeout(() => {
@@ -195,7 +219,7 @@ function mostrar(data) {
       movSec.style.display = '';
       document.getElementById('hexMoviles').textContent = `Líneas móviles: ${moviles.join(', ')}`;
       reveal('sec-moviles', 0);
-    }, 1600);
+    }, 2700);
   }
 
   if (hs) {
@@ -205,15 +229,13 @@ function mostrar(data) {
       document.getElementById('hexSecNum').textContent = `Hexagrama ${hs.numero}`;
       document.getElementById('hexSecName').textContent = hs.nombre;
       renderHexLines(hs.lineas, 'hexSecLines', true);
-    }, 2100);
+    }, 3200);
   }
 
   setTimeout(() => {
     document.getElementById('interpText').innerHTML = md2html(interp.texto_completo || interp);
     document.getElementById('sourceLabel').textContent = interp.fuente === 'ai' ? 'Interpretación IA · OpenRouter' : 'Interpretación simbólica';
-  }, 2500);
-
-  document.getElementById('resultContent').style.display = '';
+  }, 3800);
 }
 </script>
 {% endblock %}

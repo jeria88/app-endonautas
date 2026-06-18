@@ -31,6 +31,20 @@
 .carta-estado { margin-top:0.6rem;font-size:0.68rem;color:var(--amber);font-family:var(--font-display); }
 .carta-desc { margin-top:0.5rem;font-size:0.72rem;color:var(--muted);line-height:1.5;border-top:1px solid var(--border);padding-top:0.5rem; }
 
+@keyframes carta-in {
+  from { opacity:0; transform:scale(0.80) translateY(24px); }
+  to   { opacity:1; transform:scale(1)    translateY(0);    }
+}
+.carta-wrap.show {
+  animation: carta-in 0.65s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+#interpPanel {
+  opacity:0; transform:translateY(16px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  pointer-events:none;
+}
+#interpPanel.show { opacity:1; transform:translateY(0); pointer-events:auto; }
+
 .typing-row { display:none;align-items:center;gap:5px;color:var(--muted);font-size:0.82rem;padding:2.5rem;justify-content:center; }
 .typing-row.show { display:flex; }
 .dot { width:5px;height:5px;background:var(--amber);border-radius:50%;animation:bounce 1.4s infinite both; }
@@ -65,7 +79,7 @@
     </div>
 
     <div id="resultContent" style="display:none">
-      <p style="text-align:center;font-size:0.72rem;color:var(--dim);margin-bottom:0.5rem">Toca la carta para girarla</p>
+      <p id="flipHint" style="text-align:center;font-size:0.72rem;color:var(--dim);margin-bottom:0.5rem;transition:opacity 0.3s">Toca la carta para girarla</p>
       <div class="carta-wrap">
         <div class="carta-flip" id="cartaFlip" onclick="flipCarta()">
           <div class="carta-face carta-dorso">
@@ -81,7 +95,7 @@
         </div>
       </div>
 
-      <div style="background:rgba(212,160,86,0.06);border:1px solid rgba(212,160,86,0.2);border-radius:14px;padding:1.25rem">
+      <div id="interpPanel" style="background:rgba(212,160,86,0.06);border:1px solid rgba(212,160,86,0.2);border-radius:14px;padding:1.25rem">
         <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:0.75rem">Lectura del arquetipo</div>
         <div id="interpText" style="font-size:0.9rem;line-height:1.8;color:var(--text)"></div>
         <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--border);font-size:0.68rem;color:var(--dim)" id="sourceLabel"></div>
@@ -95,6 +109,13 @@ let flipped = false;
 function flipCarta() {
   flipped = !flipped;
   document.getElementById('cartaFlip').classList.toggle('flipped', flipped);
+  if (flipped) {
+    var hint = document.getElementById('flipHint');
+    if (hint) hint.style.opacity = '0';
+    setTimeout(function() {
+      document.getElementById('interpPanel').classList.add('show');
+    }, 700);
+  }
 }
 function getCsrf() { const m = document.cookie.match(/csrftoken=([^;]+)/); return m ? m[1] : ''; }
 function md2html(txt) {
@@ -133,8 +154,14 @@ document.getElementById('consultarBtn').addEventListener('click', async () => {
 function mostrar(data) {
   const carta = data.carta;
   const interp = data.interpretacion;
-  const flip = document.getElementById('cartaFlip');
-  flip.classList.remove('flipped');
+  // Reset flip state
+  document.getElementById('cartaFlip').classList.remove('flipped');
+  flipped = false;
+  // Hide interpretation until card is flipped
+  document.getElementById('interpPanel').classList.remove('show');
+  // Restore flip hint
+  var hint = document.getElementById('flipHint');
+  if (hint) hint.style.opacity = '1';
   const nombre = carta.tipo === 'sefirot' ? (carta.sefirot_nombre || carta.nombre_arcano) : carta.nombre_arcano;
   const tipoLabel = carta.tipo === 'sefirot' ? 'Sefirot' : 'Arcano';
   document.getElementById('cartaFrente').innerHTML = `
@@ -148,7 +175,14 @@ function mostrar(data) {
   `;
   document.getElementById('interpText').innerHTML = md2html(interp.texto_completo || interp);
   document.getElementById('sourceLabel').textContent = interp.fuente === 'ai' ? 'Interpretación IA · OpenRouter' : 'Interpretación simbólica';
+  // Show result panel
   document.getElementById('resultContent').style.display = '';
+  // Trigger card entrance animation
+  var wrap = document.querySelector('.carta-wrap');
+  wrap.classList.remove('show');
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() { wrap.classList.add('show'); });
+  });
 }
 </script>
 {% endblock %}
