@@ -141,16 +141,20 @@ def _generate_pdf(result):
     story.append(Paragraph('Puntuaciones por dimensión', styles['Heading2']))
     story.append(Spacer(1, 0.3*cm))
 
-    table_data = [['Dimensión', 'Puntuación']]
-    for key, val in result.evaluation.items():
-        if isinstance(val, (int, float)):
-            table_data.append([key.replace('_', ' ').title(), str(round(val, 1))])
-        elif isinstance(val, dict):
-            for sub_k, sub_v in val.items():
-                if isinstance(sub_v, (int, float)):
-                    table_data.append([f'  {sub_k}', str(round(sub_v, 1))])
+    table_data = [['Dimensión', 'Puntuación', 'Porcentaje']]
+    dims = result.evaluation.get('dimensiones', [])
+    for d in dims:
+        nombre = d.get('nombre', '')
+        puntos = d.get('puntos', 0)
+        max_val = d.get('max', 0)
+        pct = d.get('pct', 0)
+        table_data.append([
+            nombre,
+            f"{round(puntos, 1)} / {round(max_val, 1)}",
+            f"{round(pct, 1)}%"
+        ])
 
-    table = Table(table_data, colWidths=[10*cm, 5*cm])
+    table = Table(table_data, colWidths=[9*cm, 3.5*cm, 3.5*cm])
     table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#7ECCCD')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
@@ -163,9 +167,15 @@ def _generate_pdf(result):
     ]))
     story.append(table)
 
+    conclusion = result.evaluation.get('conclusion', '')
+    if conclusion:
+        story.append(Spacer(1, 0.5*cm))
+        story.append(Paragraph('Lectura Endonáutica', styles['Heading2']))
+        story.append(Paragraph(conclusion, styles['Normal']))
+
     if result.ai_insight:
         story.append(Spacer(1, 0.5*cm))
-        story.append(Paragraph('Insight', styles['Heading2']))
+        story.append(Paragraph('Insight IA', styles['Heading2']))
         story.append(Paragraph(result.ai_insight, styles['Normal']))
 
     story.append(Spacer(1, 1*cm))

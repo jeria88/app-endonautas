@@ -85,7 +85,7 @@
     <h1 class="take-title" style="margin-top:0.75rem">{{ test.name }}</h1>
     {% if test.instructions %}<p class="take-instructions">{{ test.instructions }}</p>{% endif %}
     <div class="take-meta">
-      {% if test.instrument_type == 'clinical' %}<span class="badge badge-validado">Clínico</span>{% elif test.instrument_type == 'adapted' %}<span class="badge badge-adaptado">Adaptado</span>{% else %}<span class="badge badge-endonauta">Endonauta</span>{% endif %}
+      {% if test.instrument_type == 'clinical' %}<span class="badge badge-validado">Científico validado</span>{% else %}<span class="badge badge-adaptado">Adaptado</span>{% endif %}
       <span style="font-size:0.78rem;color:var(--muted)">{{ questions|length }} preguntas</span>
       {% if test.estimated_minutes %}<span style="font-size:0.78rem;color:var(--muted)">~{{ test.estimated_minutes }} min</span>{% endif %}
     </div>

@@ -27,7 +27,7 @@ class Command(BaseCommand):
     # ─────────────────────────────────────────────
 
     def _seed(self, name, dimension, description, estimated_minutes, questions_data,
-              order=0, default_scale='likert5', instrument_type='custom'):
+              order=0, default_scale='likert5', instrument_type='adapted'):
         slug = slugify(name)
         test, created = Test.objects.get_or_create(
             slug=slug,

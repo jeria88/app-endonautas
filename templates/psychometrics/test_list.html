@@ -23,7 +23,7 @@
     <a class="test-card" href="/tests/{{ t.slug }}/responder/" onclick="spaGo(event,this)">
       <div class="test-name">{{ t.name }}</div>
       <div class="test-meta">
-        <span class="badge {% if t.instrument_type == 'clinical' %}badge-validado{% elif t.instrument_type == 'adapted' %}badge-adaptado{% else %}badge-endonauta{% endif %}">
+        <span class="badge {% if t.instrument_type == 'clinical' %}badge-validado{% else %}badge-adaptado{% endif %}">
           {{ t.get_instrument_type_display }}
         </span>
         <span>~{{ t.estimated_minutes }} min</span>

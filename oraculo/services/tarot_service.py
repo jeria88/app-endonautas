@@ -12,6 +12,8 @@ import random
 from dataclasses import dataclass, field
 from typing import Optional
 
+from .visual_matrix import get_visual
+
 
 # ── Imágenes ──────────────────────────────────────────────────────────────────
 
@@ -393,8 +395,10 @@ NUMEROS_MENORES = [
 def _construir_mazo_completo() -> list[dict]:
     mazo = []
     for arcano in ARCANOS_MAYORES:
+        card_id = f"AM-{arcano['id']:02d}"
+        visual = get_visual(card_id) or arcano["visual"]
         mazo.append({
-            "id": f"AM-{arcano['id']:02d}",
+            "id": card_id,
             "nombre": arcano["nombre"],
             "tipo": "mayor",
             "palo": None,
@@ -403,36 +407,38 @@ def _construir_mazo_completo() -> list[dict]:
             "palabra_clave": arcano["palabra_clave"],
             "arquetipo": arcano["arquetipo"],
             "imagen": _imagen_mayor(arcano["id"]),
-            "visual": arcano["visual"],
+            "visual": visual,
         })
     for palo_info in PALOS_MENORES:
         for num_info in NUMEROS_MENORES:
             nombre_carta = f"{num_info['nombre']} de {palo_info['palo'].capitalize()}"
-            # Visual para figuras (cartas con personaje)
-            if num_info["num"] >= 11:
-                figura_key = f"{num_info['nombre'].lower()}_{palo_info['palo']}"
-                v = FIGURAS_VISUAL.get(figura_key, {})
-                visual = {
-                    "colores": v.get("colores", palo_info["colores_palo"]),
-                    "figura_mira": v.get("mira", "derecha"),
-                    "gesto": v.get("gesto", ""),
-                    "simbolos": [palo_info["palo"], "figura entronada o de pie"],
-                }
-            else:
-                # Naipes numéricos: sin figuras, solo disposición de símbolos del palo
-                palo_layouts = _GESTO_NUMERAL.get(palo_info["palo"], {})
-                gesto = palo_layouts.get(
-                    num_info["num"],
-                    f"{num_info['nombre']} {palo_info['palo']} en disposición geométrica",
-                )
-                visual = {
-                    "colores": palo_info.get("colores_numerales", palo_info["colores_palo"]),
-                    "figura_mira": "sin figura — naipe numeral",
-                    "gesto": gesto,
-                    "simbolos": [palo_info["visual_numerales"]],
-                }
+            card_id = f"ME-{palo_info['palo'][:3].upper()}-{num_info['num']:02d}"
+            visual = get_visual(card_id)
+            if not visual:
+                # fallback inline por si acaso la matrix no tiene la carta
+                if num_info["num"] >= 11:
+                    figura_key = f"{num_info['nombre'].lower()}_{palo_info['palo']}"
+                    v = FIGURAS_VISUAL.get(figura_key, {})
+                    visual = {
+                        "colores": v.get("colores", palo_info["colores_palo"]),
+                        "figura_mira": v.get("mira", "derecha"),
+                        "gesto": v.get("gesto", ""),
+                        "simbolos": [palo_info["palo"], "figura entronada o de pie"],
+                    }
+                else:
+                    palo_layouts = _GESTO_NUMERAL.get(palo_info["palo"], {})
+                    gesto = palo_layouts.get(
+                        num_info["num"],
+                        f"{num_info['nombre']} {palo_info['palo']} en disposición geométrica",
+                    )
+                    visual = {
+                        "colores": palo_info.get("colores_numerales", palo_info["colores_palo"]),
+                        "figura_mira": "sin figura — naipe numeral",
+                        "gesto": gesto,
+                        "simbolos": [palo_info["visual_numerales"]],
+                    }
             mazo.append({
-                "id": f"ME-{palo_info['palo'][:3].upper()}-{num_info['num']:02d}",
+                "id": card_id,
                 "nombre": nombre_carta,
                 "tipo": "menor",
                 "palo": palo_info["palo"],

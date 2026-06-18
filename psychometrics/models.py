@@ -19,9 +19,8 @@ class Test(models.Model):
         ('mente', 'Mente'),
     ]
     INSTRUMENT_CHOICES = [
-        ('clinical', 'Clínico validado'),
+        ('clinical', 'Científico validado'),
         ('adapted', 'Adaptado'),
-        ('custom', 'Endonauta'),
     ]
 
     name = models.CharField(max_length=200)

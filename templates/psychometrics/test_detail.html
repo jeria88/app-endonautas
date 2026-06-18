@@ -37,11 +37,9 @@
   <h1 class="detail-title" style="margin-top:0.75rem">{{ test.name }}</h1>
   <div class="detail-meta">
     {% if test.instrument_type == 'clinical' %}
-      <span class="badge badge-validado">Clínico</span>
-    {% elif test.instrument_type == 'adapted' %}
-      <span class="badge badge-adaptado">Adaptado</span>
+      <span class="badge badge-validado">Científico validado</span>
     {% else %}
-      <span class="badge badge-endonauta">Endonauta</span>
+      <span class="badge badge-adaptado">Adaptado</span>
     {% endif %}
     <span style="font-size:0.8rem;color:var(--muted)">{{ test.get_dimension_display }}</span>
   </div>
@@ -70,13 +68,13 @@
   </div>
   {% endif %}
 
-  {% if test.instrument_type == 'adapted' %}
-  <div class="disclaimer">
-    ⚠️ Este instrumento es una adaptación con fines reflexivos. Los resultados son orientativos y no constituyen diagnóstico clínico.
+  {% if test.instrument_type == 'clinical' %}
+  <div class="disclaimer" style="border-left-color: var(--calipso); background: rgba(126,204,205,0.06); color: var(--text);">
+    ✓ Este instrumento posee <strong>validación científica y clínica estandarizada</strong>. Es una herramienta de alta precisión diagnóstica.
   </div>
-  {% elif test.instrument_type == 'custom' %}
+  {% else %}
   <div class="disclaimer">
-    ⚠️ Este instrumento es una herramienta de reflexión endonauta. No es un diagnóstico psicológico.
+    ⚠️ Este instrumento es una adaptación con fines de autoconocimiento y reflexión. Los resultados son orientativos y no constituyen diagnóstico clínico formal.
   </div>
   {% endif %}
 

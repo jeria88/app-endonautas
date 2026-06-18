@@ -1,3 +1,224 @@
+TEST_LIMITS = {
+    'Big Five — Inventario de Personalidad': {
+        'Extraversión': (8, 40),
+        'Amabilidad': (9, 45),
+        'Responsabilidad': (9, 45),
+        'Neuroticismo': (8, 40),
+        'Apertura': (10, 50),
+    },
+    'Tipología de Jung': {
+        'Introversión': (2, 10),
+        'Sensación': (2, 10),
+        'Pensamiento': (2, 10),
+        'Juicio': (2, 10),
+        'Extraversión': (1, 5),
+        'Intuición': (1, 5),
+        'Sentimiento': (1, 5),
+        'Percepción': (1, 5),
+    },
+    'Eneagrama — Tipología de carácter': {
+        'Tipo 1 — Reformador': (1, 5),
+        'Tipo 2 — Ayudador': (1, 5),
+        'Tipo 3 — Triunfador': (1, 5),
+        'Tipo 4 — Individualista': (1, 5),
+        'Tipo 5 — Investigador': (1, 5),
+        'Tipo 6 — Leal': (1, 5),
+        'Tipo 7 — Entusiasta': (1, 5),
+        'Tipo 8 — Desafiador': (1, 5),
+        'Tipo 9 — Pacificador': (1, 5),
+    },
+    'GAD-7 — Ansiedad Generalizada': {
+        'Nivel de Ansiedad (GAD-7)': (0, 21),
+    },
+    'PHQ-9 — Cuestionario de Salud del Paciente': {
+        'Indicadores Depresivos (PHQ-9)': (0, 27),
+    },
+    'DERS — Dificultades en Regulación Emocional': {
+        'Claridad': (1, 5),
+        'Atención': (1, 5),
+        'No-aceptación': (1, 5),
+        'Interferencia': (1, 5),
+        'Impulsividad': (2, 10),
+        'Estrategias': (2, 10),
+    },
+    'TAS-20 — Alexitimia (Escala Toronto)': {
+        'Identificación': (7, 35),
+        'Descripción': (5, 25),
+        'Pensamiento Externo': (8, 40),
+    },
+    'PSS-10 — Estrés Percibido': {
+        'Estrés Percibido (PSS-10)': (0, 40),
+    },
+    'MAIA — Consciencia Interoceptiva': {
+        'Notar': (3, 15),
+        'No-Distracción': (3, 15),
+        'No-Preocupación': (2, 10),
+        'Atención': (3, 15),
+        'Consciencia Emocional': (3, 15),
+        'Auto-regulación': (3, 15),
+        'Escucha Corporal': (2, 10),
+        'Confianza': (2, 10),
+    },
+    'PSQI — Calidad del Sueño de Pittsburgh': {
+        'Calidad Subjetiva': (0, 3),
+        'Latencia': (0, 6),
+        'Duración': (0, 3),
+        'Perturbaciones': (0, 6),
+        'Medicación': (0, 3),
+        'Disfunción diurna': (0, 6),
+    },
+    'Perfil Neurosensorial': {
+        'Bajo Registro': (2, 10),
+        'Búsqueda Sensorial': (2, 10),
+        'Sensibilidad Sensorial': (2, 10),
+        'Evitación Sensorial': (2, 10),
+    },
+    'Vitalidad Subjetiva (SVI)': {
+        'Vitalidad Subjetiva': (6, 42),
+    },
+    'ECR — Estilos de Apego en Relaciones': {
+        'Ansiedad de Apego': (5, 35),
+        'Evitación de Apego': (5, 35),
+    },
+    'Heridas de la Infancia — Lise Bourbeau': {
+        'Abandono': (0, 5),
+        'Rechazo': (0, 5),
+        'Humillación': (0, 5),
+        'Injusticia': (0, 5),
+        'Traición': (0, 5),
+    },
+    'IBI — Creencias Irracionales': {
+        'Necesidad de Aprobación': (2, 10),
+        'Perfeccionismo': (2, 10),
+        'Culpa y Condena': (1, 5),
+        'Intolerancia a la Frustración': (2, 10),
+        'Irresponsabilidad Emocional': (1, 5),
+        'Ansiedad Ansiosa': (1, 5),
+        'Evitación': (1, 5),
+    },
+    'Autosabotaje': {
+        'Procrastinación': (3, 15),
+        'Perfeccionismo Paralizante': (2, 10),
+        'Miedo al Éxito': (2, 10),
+        'Síndrome del Impostor': (2, 10),
+    },
+    'Dirty Dozen — Tríada Oscura': {
+        'Maquiavelismo': (4, 20),
+        'Narcisismo': (4, 20),
+        'Psicopatía': (4, 20),
+    },
+    'Logo-Test — Sentido de Vida': {
+        'Sentido': (2, 10),
+        'Vacío Existencial': (2, 10),
+        'Resiliencia de Sentido': (1, 5),
+    },
+    'Bienestar Espiritual (SWB)': {
+        'Bienestar Existencial': (4, 20),
+        'Bienestar Religioso': (4, 20),
+    },
+    'Trascendencia de Cloninger': {
+        'Absorción Transpersonal': (2, 10),
+        'Identificación Mística': (2, 10),
+        'Aceptación Espiritual': (1, 5),
+    },
+    'Perfil de Chakras': {
+        'Muladhara (Raíz)': (2, 10),
+        'Svadhisthana (Sacro)': (2, 10),
+        'Manipura (Plexo Solar)': (2, 10),
+        'Anahata (Corazón)': (2, 10),
+        'Vishuddha (Garganta)': (2, 10),
+        'Ajna (Tercer Ojo)': (2, 10),
+        'Sahasrara (Corona)': (2, 10),
+    },
+    'Índice de Recuerdo Onírico (DRI)': {
+        'Recuerdo': (1, 5),
+        'Nitidez': (1, 5),
+        'Complejidad': (1, 5),
+        'Recurrencia': (1, 5),
+        'Impacto': (1, 5),
+    },
+    'Escala de Lucidez en Sueños (DLQ)': {
+        'Conciencia': (1, 5),
+        'Control': (1, 5),
+        'Práctica': (1, 5),
+    },
+    'VIA — Fortalezas de Carácter': {
+        'Sabiduría': (3, 15),
+        'Valor': (2, 10),
+        'Humanidad': (2, 10),
+        'Justicia': (2, 10),
+        'Templanza': (2, 10),
+        'Trascendencia': (2, 10),
+    },
+    'RIASEC — Perfil Vocacional de Holland': {
+        'Realista': (2, 10),
+        'Investigador': (2, 10),
+        'Artístico': (2, 10),
+        'Social': (2, 10),
+        'Emprendedor': (2, 10),
+        'Convencional': (2, 10),
+    },
+    'MWQ — Sentido del Trabajo': {
+        'Sentido del Trabajo': (4, 20),
+    },
+    'MOS-SSS — Apoyo Social Percibido': {
+        'Apoyo Instrumental': (2, 10),
+        'Apoyo Emocional': (3, 15),
+        'Apoyo Informacional': (2, 10),
+        'Apoyo de Compañía': (1, 5),
+    },
+    'Fortalezas Prosociales y Comunicación': {
+        'Asertividad': (2, 10),
+        'Escucha Activa': (1, 5),
+        'Empatía': (1, 5),
+        'Resolución Colaborativa': (1, 5),
+        'Expresión Emocional': (1, 5),
+    },
+    'MAQ — Actitudes hacia el Dinero': {
+        'Creencias Limitantes': (2, 10),
+        'Merecimiento': (1, 5),
+        'Claridad Financiera': (1, 5),
+        'Flujo': (1, 5),
+        'Mentalidad de Escasez': (1, 5),
+    },
+    'FSS — Estrés Financiero': {
+        'Estrés Financiero': (2, 10),
+        'Control Percibido': (1, 5),
+        'Conducta Financiera': (2, 10),
+    },
+    'Identidad Creativa (CIQ)': {
+        'Identidad Creativa': (2, 10),
+        'Creatividad Aplicada': (2, 10),
+        'Bloqueo Creativo': (2, 10),
+    },
+    'Rueda de la Vida — Integración': {
+        'Salud': (1, 5),
+        'Relaciones': (1, 5),
+        'Familia': (1, 5),
+        'Amistades': (1, 5),
+        'Trabajo': (1, 5),
+        'Finanzas': (1, 5),
+        'Desarrollo Personal': (1, 5),
+        'Espiritualidad': (1, 5),
+    },
+    'SOC-29 — Sentido de Coherencia': {
+        'Manejabilidad': (2, 14),
+        'Significatividad': (3, 21),
+        'Comprensibilidad': (2, 14),
+    },
+    'Kolb — Estilos de Aprendizaje': {
+        'Experiencia Concreta': (2, 10),
+        'Observación Reflexiva': (2, 10),
+        'Conceptualización Abstracta': (1, 5),
+        'Experimentación Activa': (1, 5),
+    },
+    'CEQ — Curiosidad Epistémica': {
+        'Curiosidad Epistémica': (3, 15),
+        'Tolerancia a la Ambigüedad': (1, 5),
+        'Pensamiento Crítico': (1, 5),
+    },
+}
+
 def evaluate_test(test_name, details):
     enriched = {
         "dimensiones": [],
@@ -79,6 +300,66 @@ def evaluate_test(test_name, details):
         enriched = _eval_soc29(details)
     else:
         enriched = _eval_generic(details)
+
+    # Post-procesamiento psicométrico: normalización Min-Max + recalcular polaridades y niveles
+    matching_key = None
+    for k in TEST_LIMITS.keys():
+        if k in test_name or (k.split(' — ')[0] in test_name):
+            matching_key = k
+            break
+
+    if matching_key:
+        limits = TEST_LIMITS[matching_key]
+        for d in enriched.get('dimensiones', []):
+            dim_name = d.get('nombre')
+            if dim_name in limits:
+                min_val, max_val = limits[dim_name]
+                score = d.get('puntos', 0)
+                
+                # Fórmula Min-Max normalizada
+                if max_val > min_val:
+                    pct = min(max(0, (score - min_val) / (max_val - min_val) * 100), 100)
+                else:
+                    pct = 0
+                
+                d['pct'] = pct
+                d['max'] = max_val
+                
+                # Recalcular polaridad
+                orig_pol = d.get('polaridad')
+                if orig_pol:
+                    es_interferencia = orig_pol in ('sombra', 'sombra_dominante') or matching_key in (
+                        'GAD-7 — Ansiedad Generalizada',
+                        'PHQ-9 — Cuestionario de Salud del Paciente',
+                        'DERS — Dificultades en Regulación Emocional',
+                        'TAS-20 — Alexitimia (Escala Toronto)',
+                        'PSS-10 — Estrés Percibido',
+                        'Heridas de la Infancia — Lise Bourbeau',
+                        'Autosabotaje',
+                        'Dirty Dozen — Tríada Oscura',
+                        'IBI — Creencias Irracionales',
+                        'FSS — Estrés Financiero'
+                    )
+                    pol, msg, acc = _get_polarity(dim_name, pct, es_interferencia=es_interferencia)
+                    d['polaridad'] = pol
+                    d['mensaje_polaridad'] = msg
+                    d['accion_sugerida'] = acc
+                
+                # Recalcular niveles
+                if 'Jung' in matching_key:
+                    d['nivel'] = "Preferencia Clara" if pct > 70 or pct < 30 else "Equilibrado"
+                elif 'DERS' in matching_key:
+                    d['nivel'] = "Saludable" if pct < 40 else "Dificultad"
+                elif 'MAIA' in matching_key:
+                    d['nivel'] = "Desconexión" if pct <= 33 else "Normal" if pct <= 66 else "Alta Consciencia"
+                elif 'TAS-20' in matching_key:
+                    d['nivel'] = "Alto" if pct > 70 else "Moderado" if pct > 40 else "Bajo"
+                elif 'SOC-29' in matching_key:
+                    d['nivel'] = "Fuerte" if pct > 70 else "Frágil"
+                elif 'Chakras' in matching_key:
+                    d['nivel'] = "Fuerte" if pct > 75 else "Equilibrado" if pct > 50 else "Débil"
+                elif 'SWB' in matching_key:
+                    d['nivel'] = "Alto" if pct > 75 else "Medio" if pct > 40 else "Bajo"
 
     return enriched
 
@@ -221,15 +502,25 @@ def _eval_big_five(details):
 # ─────────────────────────────────────────────────────────────────────
 
 def _eval_jung(details):
-    MAX_PER_DIM = 15
+    maximos = {
+        'Introversión': 10,
+        'Sensación': 10,
+        'Pensamiento': 10,
+        'Juicio': 10,
+        'Extraversión': 5,
+        'Intuición': 5,
+        'Sentimiento': 5,
+        'Percepción': 5,
+    }
     dimensiones = []
     for dim, score in details.items():
-        pct = min((score / MAX_PER_DIM) * 100, 100)
+        max_s = maximos.get(dim, 15)
+        pct = min((score / max_s) * 100, 100)
         es_extremo = pct > 87 or pct < 13
         pol, msg, acc = _get_polarity(dim, pct, es_interferencia=es_extremo)
         nivel = "Preferencia Clara" if pct > 70 or pct < 30 else "Equilibrado"
         dimensiones.append({
-            'nombre': dim, 'puntos': score, 'max': MAX_PER_DIM, 'pct': pct,
+            'nombre': dim, 'puntos': score, 'max': max_s, 'pct': pct,
             'polaridad': pol, 'mensaje_polaridad': msg, 'accion_sugerida': acc,
             'nivel': nivel, 'descripcion': f"Función {dim.lower()}.",
             'analisis': "Orientación psicológica junguiana."

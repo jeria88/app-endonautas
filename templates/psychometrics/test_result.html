@@ -107,7 +107,7 @@
   <h1 class="result-title" style="margin-top:0.75rem">{{ result.test.name }}</h1>
   <div class="result-meta">
     Completado el {{ result.completed_at|date:"d M Y · H:i" }}
-    {% if result.test.instrument_type == 'clinical' %}&nbsp;<span class="badge badge-validado">Clínico</span>{% elif result.test.instrument_type == 'adapted' %}&nbsp;<span class="badge badge-adaptado">Adaptado</span>{% else %}&nbsp;<span class="badge badge-endonauta">Endonauta</span>{% endif %}
+    {% if result.test.instrument_type == 'clinical' %}&nbsp;<span class="badge badge-validado">Científico validado</span>{% else %}&nbsp;<span class="badge badge-adaptado">Adaptado</span>{% endif %}
   </div>
 
   {# Crisis alerts para PHQ-9 y GAD-7 #}
@@ -171,14 +171,13 @@
   </div>
   {% endif %}
 
-  {% if result.test.instrument_type == 'adapted' %}
-  <div style="font-size:0.75rem;color:var(--muted);margin-bottom:1.5rem;padding:0.75rem;border:1px solid var(--border);border-radius:8px;line-height:1.5;">
-    ⚠️ Este instrumento es una adaptación del original. Los resultados son orientativos y no reemplazan evaluación clínica formal.
+  {% if result.test.instrument_type == 'clinical' %}
+  <div style="font-size:0.75rem;color:var(--text);margin-bottom:1.5rem;padding:0.75rem;border:1px solid var(--border);border-left:3px solid var(--calipso);border-radius:8px;line-height:1.5;background:rgba(126,204,205,0.06);">
+    ✓ Este instrumento posee <strong>validación científica y clínica estandarizada</strong>. Es una herramienta de alta precisión diagnóstica.
   </div>
-  {% endif %}
-  {% if result.test.instrument_type == 'custom' %}
+  {% else %}
   <div style="font-size:0.75rem;color:var(--muted);margin-bottom:1.5rem;padding:0.75rem;border:1px solid var(--border);border-radius:8px;line-height:1.5;">
-    ⚠️ Este instrumento es una herramienta de reflexión endonauta. No es un diagnóstico psicológico.
+    ⚠️ Este instrumento es una adaptación con fines de autoconocimiento y reflexión. Los resultados son orientativos y no constituyen diagnóstico clínico formal.
   </div>
   {% endif %}
 
