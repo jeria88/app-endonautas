@@ -102,16 +102,34 @@ def birth_saju(request):
 
 
 def _needs_recalc(report):
-    """Return True if the cached report predates the meanings update."""
+    """Return True if the cached report predates a significant data update."""
     data = report.raw_data or {}
     if report.report_type == 'astral':
         planets = data.get('planets', [])
-        return bool(planets) and 'planet_meaning' not in planets[0]
+        if not planets:
+            return False
+        if 'planet_meaning' not in planets[0]:
+            return True
+        if 'longitude' not in planets[0] or 'houses' not in data:
+            return True
+        return False
     if report.report_type == 'hd':
         return 'type_meaning' not in data
     if report.report_type == 'saju':
         return 'day_master_meaning' not in data
     return False
+
+
+def _try_astral_ai(report):
+    """Attempt to populate ai_reading for an astral chart report."""
+    try:
+        from oraculo.services.ai_service import interpretar_astral_ai
+        ai_text = interpretar_astral_ai(report.raw_data)
+        if ai_text:
+            report.ai_reading = ai_text
+            report.save(update_fields=['ai_reading'])
+    except Exception:
+        pass
 
 
 def _birth_report_view(request, report_type, template):
@@ -128,6 +146,9 @@ def _birth_report_view(request, report_type, template):
         report.status = 'pending'
         _compute_report(report)
         report.refresh_from_db()
+
+    if report.status == 'done' and report_type == 'astral' and not report.ai_reading:
+        _try_astral_ai(report)
 
     return render(request, template, {'birth': birth, 'report': report})
 

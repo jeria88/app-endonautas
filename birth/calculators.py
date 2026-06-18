@@ -26,6 +26,60 @@ from .meanings import (
 
 # ── Astral chart ──────────────────────────────────────────────────────────────
 
+_SIGN_ORDER_ES = [
+    'Aries', 'Tauro', 'Géminis', 'Cáncer', 'Leo', 'Virgo',
+    'Libra', 'Escorpio', 'Sagitario', 'Capricornio', 'Acuario', 'Piscis',
+]
+
+# (name_es, angle, orb, color, style)
+_ASPECT_DEFS = [
+    ('conjunción',  0,   8, '#ffd700', 'solid'),
+    ('sextil',      60,  5, '#4ecdc4', 'solid'),
+    ('cuadratura',  90,  7, '#e07060', 'dashed'),
+    ('trígono',     120, 7, '#6080c0', 'solid'),
+    ('oposición',   180, 7, '#9f7aea', 'dashed'),
+]
+
+_HOUSE_ATTRS = [
+    'first_house', 'second_house', 'third_house', 'fourth_house',
+    'fifth_house', 'sixth_house', 'seventh_house', 'eighth_house',
+    'ninth_house', 'tenth_house', 'eleventh_house', 'twelfth_house',
+]
+
+
+def _ecl_lon(sign_es: str, degree: float) -> float:
+    try:
+        idx = _SIGN_ORDER_ES.index(sign_es)
+    except ValueError:
+        idx = 0
+    return round(idx * 30 + degree, 2)
+
+
+def _compute_aspects(planets: list) -> list:
+    aspects = []
+    for i in range(len(planets)):
+        for j in range(i + 1, len(planets)):
+            p1, p2 = planets[i], planets[j]
+            diff = abs(p1['longitude'] - p2['longitude']) % 360
+            if diff > 180:
+                diff = 360 - diff
+            for name, angle, orb, color, style in _ASPECT_DEFS:
+                if abs(diff - angle) <= orb:
+                    aspects.append({
+                        'planet1': p1['label'],
+                        'planet2': p2['label'],
+                        'lon1':    p1['longitude'],
+                        'lon2':    p2['longitude'],
+                        'type':    name,
+                        'angle':   round(diff, 1),
+                        'orb':     round(abs(diff - angle), 1),
+                        'color':   color,
+                        'style':   style,
+                    })
+                    break
+    return aspects
+
+
 def calculate_astral_chart(bp):
     """Return chart_data dict for a western tropical natal chart (Placidus)."""
     from kerykeion import AstrologicalSubject
@@ -56,12 +110,14 @@ def calculate_astral_chart(bp):
     for attr, label in planet_keys:
         p = getattr(subject, attr)
         sign = SIGN_ES.get(p.sign, p.sign)
+        deg  = round(float(p.position), 2)
         planets.append({
             'key':            attr,
             'label':          label,
             'sign':           sign,
             'element':        SIGN_ELEMENT.get(sign, ''),
-            'degree':         round(float(p.position), 2),
+            'degree':         deg,
+            'longitude':      _ecl_lon(sign, deg),
             'house':          HOUSE_NUM.get(p.house, 0),
             'retrograde':     bool(p.retrograde),
             'planet_meaning': PLANET_MEANINGS.get(attr, ''),
@@ -70,19 +126,38 @@ def calculate_astral_chart(bp):
 
     asc_sign = SIGN_ES.get(subject.first_house.sign, subject.first_house.sign)
     mc_sign  = SIGN_ES.get(subject.tenth_house.sign, subject.tenth_house.sign)
+    asc_deg  = round(float(subject.first_house.position), 2)
+    mc_deg   = round(float(subject.tenth_house.position), 2)
+
+    houses = []
+    for num, attr in enumerate(_HOUSE_ATTRS, start=1):
+        h = getattr(subject, attr)
+        h_sign = SIGN_ES.get(h.sign, h.sign)
+        h_deg  = round(float(h.position), 2)
+        houses.append({
+            'number':    num,
+            'sign':      h_sign,
+            'degree':    h_deg,
+            'longitude': _ecl_lon(h_sign, h_deg),
+        })
+
     return {
         'planets': planets,
         'ascendant': {
-            'sign':    asc_sign,
-            'element': SIGN_ELEMENT.get(asc_sign, ''),
-            'degree':  round(float(subject.first_house.position), 2),
-            'meaning': ASC_MEANINGS.get(asc_sign, ''),
+            'sign':      asc_sign,
+            'element':   SIGN_ELEMENT.get(asc_sign, ''),
+            'degree':    asc_deg,
+            'longitude': _ecl_lon(asc_sign, asc_deg),
+            'meaning':   ASC_MEANINGS.get(asc_sign, ''),
         },
         'midheaven': {
-            'sign':    mc_sign,
-            'degree':  round(float(subject.tenth_house.position), 2),
-            'meaning': MC_MEANINGS.get(mc_sign, ''),
+            'sign':      mc_sign,
+            'degree':    mc_deg,
+            'longitude': _ecl_lon(mc_sign, mc_deg),
+            'meaning':   MC_MEANINGS.get(mc_sign, ''),
         },
+        'houses':           houses,
+        'aspects':          _compute_aspects(planets),
         'birth_time_known': bp.birth_time is not None,
     }
 

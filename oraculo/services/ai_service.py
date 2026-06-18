@@ -191,3 +191,67 @@ Esencia de la carta: {descripcion}
 Trata la pregunta como un símbolo y conecta la carta con el estado interno que esa pregunta revela."""
 
     return _call_openrouter(_SYSTEM_FRACTAL, prompt, max_tokens=320)
+
+
+# ─── Carta Astral ─────────────────────────────────────────────────────────────
+
+_SYSTEM_ASTRAL = """Eres un intérprete de cartas natales desde una perspectiva junguiana y arquetipal.
+
+MARCO FILOSÓFICO (aplica siempre):
+- La carta natal no es un destino — es un mapa de potenciales psíquicos. Los planetas no hacen cosas: describen patrones de energía que operan en la psique.
+- El Sol muestra el proceso de integración del yo consciente. La Luna, las necesidades emocionales y respuestas automáticas. El Ascendente, el estilo de encuentro con el mundo.
+- Los aspectos no son buenos ni malos — son tensiones creativas (cuadraturas, oposiciones) o flujos facilitados (trígonos, sextiles) entre funciones psíquicas distintas.
+- Retrógrado indica un planeta que opera de forma más interior, reflexiva o no-convencional en esa persona.
+
+REGLAS ABSOLUTAS:
+- NUNCA uses lenguaje predictivo ("tendrás", "te pasará", "tu destino es"). NUNCA uses fatalismo.
+- Responde en español. Entre 220 y 290 palabras.
+- No repitas los datos que ya son visibles al usuario (signo, casa, grado).
+- No des un tour planeta por planeta. Lee el PATRÓN que forma la carta completa.
+- El lenguaje es directo, en segunda persona, sin esoterismo vacío.
+
+ESTRUCTURA:
+1. Primera oración: el patrón central — qué tensión o integración define a esta carta. Directo, sin rodeos. Nombra la relación entre Sol, Luna y ASC.
+2. Dos o tres oraciones sobre los aspectos más significativos: qué conversación tienen entre sí los planetas más activos y cómo eso se manifiesta en la psique.
+3. Una sombra o contradicción que la carta revela — algo que la persona probablemente siente pero no ha sabido nombrar.
+4. Una pregunta o imagen concreta que invite a la reflexión interior. No genérica — específica a esta carta.
+
+NO hagas un recorrido planeta por planeta. Lee el patrón que los une como totalidad."""
+
+
+def interpretar_astral_ai(datos: dict) -> str | None:
+    planets   = datos.get("planets", [])
+    asc       = datos.get("ascendant", {})
+    mc        = datos.get("midheaven", {})
+    aspects   = datos.get("aspects", [])
+
+    sol  = next((p for p in planets if p.get("key") == "sun"),  None)
+    luna = next((p for p in planets if p.get("key") == "moon"), None)
+
+    def planet_line(p):
+        retro = " (retrógrado)" if p.get("retrograde") else ""
+        return f"- {p['label']}: {p['sign']} | Casa {p['house']}{retro}"
+
+    planets_txt = "\n".join(planet_line(p) for p in planets)
+    aspects_txt = "\n".join(
+        f"- {a['planet1']} {a['type']} {a['planet2']} (orbe {a['orb']}°)"
+        for a in aspects
+    ) or "Sin aspectos mayores en orbe"
+
+    prompt = f"""Carta natal:
+
+Trinidad central:
+Sol: {sol['sign'] if sol else '?'} | Casa {sol['house'] if sol else '?'}
+Luna: {luna['sign'] if luna else '?'} | Casa {luna['house'] if luna else '?'}
+Ascendente: {asc.get('sign','?')} ({asc.get('degree','?')}°)
+Medio Cielo: {mc.get('sign','?')}
+
+Todos los planetas:
+{planets_txt}
+
+Aspectos principales:
+{aspects_txt}
+
+Lee el patrón que forma esta carta — no describas cada planeta por separado."""
+
+    return _call_openrouter(_SYSTEM_ASTRAL, prompt, max_tokens=650)
