@@ -92,8 +92,13 @@
       backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
       transition: background 0.5s ease, backdrop-filter 0.5s ease;
     }
-    /* Mandala/tunnel: ocultar cosmos container para que el canvas del túnel sea visible */
+    /* Mandala/tunnel: ocultar cosmos; mostrar velo de contraste */
     html[data-aesthetic="mandala"] #cosmos-bg-container { display: none; }
+    #mandala-overlay {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none; display: none;
+      background: rgba(3, 3, 6, 0.44);
+    }
+    html[data-aesthetic="mandala"] #mandala-overlay { display: block; }
 
     /* ── App shell ─────────────────────────────────────────── */
     .app-shell { display: flex; height: 100vh; width: 100vw; position: relative; z-index: 2; }
@@ -281,6 +286,7 @@
 
 <div id="cosmos-bg-container"><div id="cosmos-overlay"></div></div>
 <canvas id="tunnel-bg" aria-hidden="true" style="position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;display:none"></canvas>
+<div id="mandala-overlay" aria-hidden="true"></div>
 
 {% if user.is_authenticated %}
 <button class="mobile-nav-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">
@@ -483,17 +489,21 @@ camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight,
 camera.position.set(0, 20, 149);
 
 renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+renderer.setPixelRatio(1.0);  // sin escala retina — mayor velocidad
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.domElement.id = 'bh-canvas';
 container.appendChild(renderer.domElement);
 
 composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
-bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 6.0, 0.70, 0.04);
+// Bloom a mitad de resolución — 4× menos píxeles en cada pass interno
+bloomPass = new UnrealBloomPass(
+  new THREE.Vector2(Math.round(window.innerWidth * 0.5), Math.round(window.innerHeight * 0.5)),
+  6.0, 0.70, 0.04
+);
 composer.addPass(bloomPass);
 
-const BH_R = 8, N = 190000, R_MIN = BH_R * 1.15, R_MAX = 130;
+const BH_R = 8, N = 75000, R_MIN = BH_R * 1.15, R_MAX = 130;
 const geometry = new THREE.BufferGeometry();
 const positions = new Float32Array(N*3), colors   = new Float32Array(N*3);
 const angles    = new Float32Array(N),   radii    = new Float32Array(N);
@@ -605,6 +615,7 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
   composer.setSize(window.innerWidth, window.innerHeight);
+  bloomPass.resolution.set(Math.round(window.innerWidth * 0.5), Math.round(window.innerHeight * 0.5));
 });
 
 // ── Scroll listeners para landing zoom ────────────────────────────────────────
@@ -792,7 +803,12 @@ setTimeout(showPageOnboarding, 600);
   window.__tunnelCanvas = canvas;
   var ctx = canvas.getContext('2d');
   var W, H;
-  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  // Media resolución de píxeles — CSS lo estira al 100%; 4× menos píxeles a renderizar
+  function resize() {
+    W = canvas.width  = Math.round(window.innerWidth  * 0.5);
+    H = canvas.height = Math.round(window.innerHeight * 0.5);
+  }
+  canvas.style.imageRendering = 'auto';
   window.addEventListener('resize', resize); resize();
 
   var PHI = 1.61803398875, PI = Math.PI, E = Math.E;
@@ -881,9 +897,9 @@ setTimeout(showPageOnboarding, 600);
 
   // ── Escena 0: Corriente Acuática ─────────────────────────────────────
   var liquidGrid = [];
-  for (var li = 0; li <= 50; li++) {
+  for (var li = 0; li <= 34; li++) {
     var lrow = [];
-    for (var lj = 0; lj <= 40; lj++) lrow.push({ u:(li/50)*6*PI-4.0, v:(lj/40)*2*PI });
+    for (var lj = 0; lj <= 26; lj++) lrow.push({ u:(li/34)*6*PI-4.0, v:(lj/26)*2*PI });
     liquidGrid.push(lrow);
   }
   function drawLiquid(t, cx, cy, scl) {
@@ -891,7 +907,7 @@ setTimeout(showPageOnboarding, 600);
     var density = 3 + Math.sin(t*SQ3*0.3)*1.5;
     var s = scl * 0.8;
     ctx.lineWidth = 1.0;
-    for (var i = 0; i < 50; i++) for (var j = 0; j < 40; j++) {
+    for (var i = 0; i < 34; i++) for (var j = 0; j < 26; j++) {
       if (!liquidGrid[i+1] || !liquidGrid[i+1][j+1]) continue;
       var p   = liquidGrid[i][j];
       var act = Math.sin((p.u - t*3.0)*density)*Math.cos(p.v*density + t*3.0*twist*0.2);
@@ -914,8 +930,8 @@ setTimeout(showPageOnboarding, 600);
 
   // ── Escena 1: Obsidiana ───────────────────────────────────────────────
   var obsGeo = [];
-  for (var oi = 0; oi < 40; oi++) for (var oj = 0; oj < 32; oj++)
-    obsGeo.push({ u:(oi/40)*4*PI, v:(oj/32)*2*PI });
+  for (var oi = 0; oi < 26; oi++) for (var oj = 0; oj < 20; oj++)
+    obsGeo.push({ u:(oi/26)*4*PI, v:(oj/20)*2*PI });
   function drawObsidian(t, cx, cy, scl) {
     var freq  = 3.5 + Math.sin(t*SQ3*0.3)*2.2;
     var angle = t*SQ2*0.15 + chaos(t*0.1, 0.4);
@@ -941,8 +957,8 @@ setTimeout(showPageOnboarding, 600);
 
   // ── Escena 2: Hexagonal ───────────────────────────────────────────────
   var hexPts = [];
-  for (var hi = 0; hi < 60; hi++) for (var hj = 0; hj < 60; hj++)
-    hexPts.push({ u:(hi/60)*4*PI, v:(hj/60)*2*PI });
+  for (var hi = 0; hi < 38; hi++) for (var hj = 0; hj < 38; hj++)
+    hexPts.push({ u:(hi/38)*4*PI, v:(hj/38)*2*PI });
   function drawHex(t, cx, cy, scl) {
     var A=t*PHI*0.2, ha2=A+PI/3, ha3=A-PI/3;
     var freq=4+Math.sin(t*SQ7*0.5)*3.2+chaos(t*0.2,1.0);
@@ -968,7 +984,7 @@ setTimeout(showPageOnboarding, 600);
 
   // ── Escena 3: Fibonacci ───────────────────────────────────────────────
   var fiboPts = (function(){
-    var pts=[], N=1500;
+    var pts=[], N=650;
     for (var i=1; i<=N; i++) pts.push({ angle:i*137.5*(PI/180), z:(i/N)*100, hueOffset:i*0.5 });
     return pts;
   })();
@@ -992,8 +1008,12 @@ setTimeout(showPageOnboarding, 600);
   var DRAW_FNS    = [drawLiquid, drawObsidian, drawHex, drawFibo];
   var BLEND_MODES = ['lighter','source-over','lighter','lighter'];
 
+  var _lastFrame = 0;
   function loop(ts) {
-    if (canvas.style.display === 'none') { requestAnimationFrame(loop); return; }
+    requestAnimationFrame(loop);
+    if (canvas.style.display === 'none') return;
+    if (ts - _lastFrame < 34) return;  // cap ~30fps
+    _lastFrame = ts;
     tickTime(ts);
 
     ctx.globalCompositeOperation = 'source-over';
@@ -1034,7 +1054,6 @@ setTimeout(showPageOnboarding, 600);
     }
 
     ctx.restore();
-    requestAnimationFrame(loop);
   }
 
   requestAnimationFrame(loop);
