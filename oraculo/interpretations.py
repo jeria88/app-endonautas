@@ -286,7 +286,7 @@ def generar_interpretacion_tarot(datos: dict) -> dict:
     for carta in cartas:
         posicion_clave = carta.get("posicion_clave", "")
         posicion_label = carta.get("posicion", posicion_clave)
-        estado = carta["estado"]  # "directa" o "contraída"
+        estado = carta.get("estado", "directa")
         arquetipo = carta["arquetipo"]
         nombre = carta["nombre"]
 
@@ -333,9 +333,9 @@ def _sintetizar_tirada(cartas: list, pregunta: str, tipo_tirada: str) -> str:
         tallo = por_pos["tallo"]
         flor = por_pos["flor"]
 
-        raiz_estado = "pero sin ser reconocida — opera desde la sombra" if raiz["estado"] == "contraída" else "activa y visible"
-        tallo_estado = "replegada, sin flujo libre" if tallo["estado"] == "contraída" else "en movimiento"
-        flor_estado = "bloqueado todavía" if flor["estado"] == "contraída" else "disponible si la raíz se nombra"
+        raiz_estado = "pero sin ser reconocida — opera desde la sombra" if raiz.get("estado", "directa") == "contraída" else "activa y visible"
+        tallo_estado = "replegada, sin flujo libre" if tallo.get("estado", "directa") == "contraída" else "en movimiento"
+        flor_estado = "bloqueado todavía" if flor.get("estado", "directa") == "contraída" else "disponible si la raíz se nombra"
 
         sintesis = (
             f"{intro_pregunta}las tres cartas revelan un solo arco:\n\n"
@@ -374,7 +374,7 @@ def _sintetizar_tirada(cartas: list, pregunta: str, tipo_tirada: str) -> str:
 
     # ── Genérico (Cruz Celta, Viaje del Héroe, 1 carta, otros) ───────────────
     nombres = " · ".join(f"**{c['nombre']}**" for c in cartas)
-    estado_general = "contraída" if sum(1 for c in cartas if c["estado"] == "contraída") > len(cartas) / 2 else "activa"
+    estado_general = "contraída" if sum(1 for c in cartas if c.get("estado", "directa") == "contraída") > len(cartas) / 2 else "activa"
     tension = "La energía general de la tirada está replegada — hay más actuando desde lo inconsciente que desde lo visible." \
         if estado_general == "contraída" else \
         "La energía general de la tirada está en movimiento — lo que se ve y lo que opera coinciden más de lo usual."
