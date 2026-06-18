@@ -24,10 +24,12 @@ Aplicación web de autoconocimiento construida con Django 6. Integra astrología
 config/           — settings, urls raíz, wsgi
 accounts/         — auth (email-based), UserProfile, planes
 birth/            — lecturas de nacimiento (astral, HD, saju)
-community/        — feed social, foros, mensajes
+oraculo/          — Tarot Terapéutico, I Ching, Oráculo Fractal
 mirror/           — espejo de conflictos (RAG + DeepSeek), sueños, regulación
 psychometrics/    — tests psicométricos con insights de IA
 tokens/           — sistema de Fractones (balance, transacciones, misiones)
+community/        — feed social, foros, mensajes directos
+terapeuta/        — modo terapeuta: diagnóstico por framework, técnicas somáticas
 practitioners/    — directorio de practicantes, perfiles temporales
 ```
 
@@ -38,11 +40,19 @@ practitioners/    — directorio de practicantes, perfiles temporales
 /registro/          — registro por email
 /login/             — login
 /perfil/            — perfil del usuario
-/nacimiento/        — módulo de lecturas de nacimiento
+/nacimiento/        — hub de lecturas de nacimiento
+/nacimiento/astral/ — carta astral
+/nacimiento/hd/     — Human Design
+/nacimiento/saju/   — Saju / BaZi
+/oraculo/           — hub de oráculos
+/oraculo/tarot/     — Tarot Terapéutico
+/oraculo/iching/    — I Ching
+/oraculo/fractal/   — Oráculo Fractal
 /tests/             — tests psicométricos
 /espejo/            — espejo de conflictos
 /suenos/            — diario de sueños
 /regulacion/        — técnicas somáticas / regulación
+/terapeuta/         — modo terapeuta
 /comunidad/         — feed social (posts, reacciones, comentarios)
 /foros/             — foros por tema
 /mensajes/          — mensajes directos
@@ -164,6 +174,51 @@ Usuario accede a /nacimiento/astral/ (o hd/ o saju/)
 
 ---
 
+## Módulo: oraculo
+
+Tres sistemas de oráculo terapéutico con interpretación IA y animaciones de revelación.
+
+### Modelos
+- **CartaFractal** — Arcanos Mayores + Sefirot (número, verbo, descripción breve/larga)
+- **SesionOraculo** — UUID PK, usuario, tipo (`tarot`/`iching`/`fractal`), pregunta, guardada
+- **LecturaTarot** — tipo de tirada, cartas (JSONField), interpretación
+- **LecturaIChing** — líneas (JSONField), hexagrama primario + secundario (número + nombre), interpretación
+- **LecturaFractal** — FK CartaFractal, invertida, interpretación
+
+### Tarot Terapéutico (Jodorowsky)
+- 78 cartas; tiradas de 1, 3 o 5 cartas
+- Imágenes en `static/img/tarot/` nombradas por número
+- Reverso: `static/img/tarot/cardback.jpg`
+- Interpretación: DeepSeek via `oraculo/interpretations.py`
+- **Revelación animada:** `@keyframes card-in` con stagger de 120ms por carta; `#interpPanel` aparece 770ms después de la última carta
+
+### I Ching
+- Tirada de 3 monedas × 6 líneas, 64 hexagramas con líneas móviles
+- Líneas del hexagrama primario: divs HTML con clases `.hex-line.yang/.yin[.movil]` → stagger bottom-to-top cada 160ms
+- Líneas móviles: pulso CSS `@keyframes movil-pulse`
+- Hexagrama secundario (cuando hay líneas móviles): SVG via `renderHexLines()`
+- Cadena de timing total: ~3800ms hasta interpretación
+
+### Oráculo Fractal
+- Cartas Arcanos Mayores + Sefirot con mecánica de flip (reverso → frente)
+- `#interpPanel` oculto hasta 700ms después del flip (`@keyframes carta-in` con spring)
+- `#flipHint` se desvanece al hacer flip
+
+---
+
+## Módulo: terapeuta
+
+Modo terapeuta para sesiones de orientación integrativa.
+
+- **DIAGNOSIS_CATALOG** — catálogo de diagnósticos por área con keywords
+- **FRAMEWORKS_AND_TECHNIQUES** — técnicas somáticas / frameworks terapéuticos
+- **KEYWORD_TO_FRAMEWORKS** — mapa de palabras clave a frameworks recomendados
+- **QUESTIONS_BANK** — banco de preguntas por framework
+- Visualizaciones simbólicas por marco terapéutico
+- IA: DeepSeek para fundamentación pedagógica por instrucción
+
+---
+
 ## Módulo: mirror (Espejo de Conflictos)
 
 - **RAG** sobre base de conocimiento (`KnowledgeChunk` con embeddings en JSONField)
@@ -246,6 +301,39 @@ Comandos de management propios:
 - `fix_db_state` — repara inconsistencias de BD antes de migrar
 - `create_admin` — crea superusuario desde env si no existe
 - `seed_tests` — pobla tests psicométricos iniciales
+
+---
+
+## Sistema visual — Fondos animados
+
+La app tiene dos fondos intercambiables controlados por `UserProfile.map_aesthetic`.
+
+`<body data-aesthetic="{{ map_aesthetic }}">` — JS y CSS leen este atributo.
+
+### Fondo Cosmos (aesthetic = `cosmos`)
+- Three.js 0.160 con `UnrealBloomPass` + `EffectComposer`
+- Agujero negro kepleriano con 75k partículas en espiral
+- **Performance:** `pixelRatio=1.0`, bloom a 50% resolución, 75k partículas
+- Presets por sección: cambia densidad, camZ, tamaño de partículas según URL
+- Lazy init: en modo mandala, `window.__initCosmos` guarda la función pero no la ejecuta hasta que se pida previsualización
+
+### Fondo Mandala (aesthetic = `mandala`)
+- Canvas 2D `#tunnel-bg` al 50% de resolución nativa
+- **30fps cap** para no competir con el hilo principal
+- 4 escenas / secciones: Corriente Acuática (0), Obsidiana (1), Hexagonal (2), Fibonacci (3)
+- Transición portal entre escenas: círculo negro expansivo de 2200ms
+- Overlay de contraste: `#mandala-overlay` con `rgba(3,3,6,0.44)` z-index:1
+
+### Event system para SPA
+```javascript
+// Al navegar (spaGo), se dispara:
+document.dispatchEvent(new CustomEvent('bg:preset', { detail: preset }))
+// Cosmos escucha vía window.updateCosmosPreset(preset)
+// Túnel escucha vía document.addEventListener('bg:preset', ...)
+```
+
+### Preview en perfil
+`window.__switchAesthetic(name)` — cambia el fondo en tiempo real al hacer click en las cards de aesthetic en `/perfil/`, sin recargar.
 
 ---
 
