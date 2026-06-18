@@ -15,6 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <style data-global>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
 
@@ -707,10 +708,14 @@ function spaGo(e, el) {
         old.replaceWith(ns);
       });
       window.scrollTo(0, 0);
+      if (window.lucide) lucide.createIcons();
     })
     .catch(() => { window.location.href = url; });
 }
 window.spaGo = spaGo;
+document.addEventListener('DOMContentLoaded', function(){
+  if (window.lucide) lucide.createIcons();
+});
 window.addEventListener('popstate', () => { window.location.reload(); });
 </script>
 

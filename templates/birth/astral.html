@@ -35,7 +35,12 @@
   padding:1.15rem 1.2rem;transition:border-color 0.2s;
 }
 .t-card:hover { border-color:var(--border-active); }
-.t-sym { font-family:serif;font-size:2rem;opacity:0.75;margin-bottom:0.35rem; }
+.t-sym {
+  width:36px;height:36px;margin-bottom:0.75rem;
+  color:var(--t-color, var(--muted));
+  opacity:0.85;
+}
+.t-sym svg { width:36px;height:36px;stroke-width:1.5; }
 .t-label { font-size:0.63rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.2rem; }
 .t-sign { font-size:1.15rem;font-weight:700;margin-bottom:0.15rem; }
 .t-house { font-size:0.72rem;color:var(--dim);margin-bottom:0.6rem; }
@@ -115,8 +120,8 @@
 <div class="sec-heading">Trinidad personal</div>
 <div class="trinity-grid">
   {% with sol=report.raw_data.planets.0 %}
-  <div class="t-card">
-    <div class="t-sym">☉</div>
+  <div class="t-card" style="--t-color:#f6c90e">
+    <div class="t-sym"><i data-lucide="sun"></i></div>
     <div class="t-label">Sol</div>
     <div class="t-sign elem-{{ sol.element }}">{{ sol.sign }}</div>
     <div class="t-house">Casa {{ sol.house }} · {{ sol.degree }}°{% if sol.retrograde %}<span class="retro">℞</span>{% endif %}</div>
@@ -125,8 +130,8 @@
   {% endwith %}
 
   {% with luna=report.raw_data.planets.1 %}
-  <div class="t-card">
-    <div class="t-sym">☽</div>
+  <div class="t-card" style="--t-color:#c4b5fd">
+    <div class="t-sym"><i data-lucide="moon"></i></div>
     <div class="t-label">Luna</div>
     <div class="t-sign elem-{{ luna.element }}">{{ luna.sign }}</div>
     <div class="t-house">Casa {{ luna.house }} · {{ luna.degree }}°{% if luna.retrograde %}<span class="retro">℞</span>{% endif %}</div>
@@ -134,8 +139,8 @@
   </div>
   {% endwith %}
 
-  <div class="t-card">
-    <div class="t-sym" style="color:var(--calipso)">⬡</div>
+  <div class="t-card" style="--t-color:#4ecdc4">
+    <div class="t-sym"><i data-lucide="compass"></i></div>
     <div class="t-label">Ascendente</div>
     <div class="t-sign elem-{{ report.raw_data.ascendant.element }}">{{ report.raw_data.ascendant.sign }}</div>
     <div class="t-house">{{ report.raw_data.ascendant.degree }}°</div>
@@ -146,7 +151,8 @@
 {# ── 4. MC ── #}
 <div class="angular-row">
   <div class="ang-card">
-    <div class="ang-label" style="color:var(--violet)">Medio Cielo (MC)</div>
+    <div class="ang-label" style="color:var(--violet);display:flex;align-items:center;gap:0.4rem">
+      <i data-lucide="mountain" style="width:14px;height:14px;flex-shrink:0"></i> Medio Cielo (MC)</div>
     <div class="ang-sign">{{ report.raw_data.midheaven.sign }}</div>
     <div style="font-size:0.7rem;color:var(--dim);margin-bottom:0.4rem">{{ report.raw_data.midheaven.degree }}°</div>
     {% if report.raw_data.midheaven.meaning %}<div class="ang-meaning">{{ report.raw_data.midheaven.meaning }}</div>{% endif %}
@@ -158,7 +164,7 @@
 <div class="planet-grid">
   {% for planet in report.raw_data.planets %}
   {% if forloop.counter > 2 %}
-  <div class="p-card">
+  <div class="p-card" data-planet="{{ planet.label }}">
     <div class="p-label">{{ planet.label }}</div>
     <div class="p-sign elem-{{ planet.element }}">{{ planet.sign }}{% if planet.retrograde %}<span class="retro">℞</span>{% endif %}</div>
     <div class="p-meta">Casa {{ planet.house }} · {{ planet.degree }}°</div>
@@ -196,7 +202,10 @@
   var SIGN_SYM={Aries:'♈',Tauro:'♉','Géminis':'♊','Cáncer':'♋',Leo:'♌',Virgo:'♍',Libra:'♎',Escorpio:'♏',Sagitario:'♐',Capricornio:'♑',Acuario:'♒',Piscis:'♓'};
   var ELEM_COLORS={fire:'#e07060',earth:'#b0a060',air:'#7cc0c0',water:'#6080c0'};
   var SIGN_ELEM={Aries:'fire',Tauro:'earth','Géminis':'air','Cáncer':'water',Leo:'fire',Virgo:'earth',Libra:'air',Escorpio:'water',Sagitario:'fire',Capricornio:'earth',Acuario:'air',Piscis:'water'};
-  var PLANET_SYM={Sol:'☉',Luna:'☽',Mercurio:'☿',Venus:'♀',Marte:'♂','Júpiter':'♃',Saturno:'♄',Urano:'⛢',Neptuno:'♆','Plutón':'♇'};
+  // Abreviaturas para el SVG (2 letras, sin círculo, legibles a pequeño tamaño)
+  var PLANET_ABBR={Sol:'So',Luna:'Lu',Mercurio:'Me',Venus:'Ve',Marte:'Ma','Júpiter':'Ju',Saturno:'Sa',Urano:'Ur',Neptuno:'Ne','Plutón':'Pl'};
+  // Iconos Lucide por planeta (para cards HTML)
+  var PLANET_ICON={Sol:'sun',Luna:'moon',Mercurio:'wind',Venus:'heart',Marte:'flame','Júpiter':'star',Saturno:'hourglass',Urano:'zap',Neptuno:'waves','Plutón':'eye'};
 
   function toRad(lon){ return (lon - 90) * Math.PI / 180; }
 
@@ -286,11 +295,11 @@
       var pa=toRad(p.longitude);
       var px=(CX+r*Math.cos(pa)).toFixed(1),py=(CY+r*Math.sin(pa)).toFixed(1);
       var col2=ELEM_COLORS[SIGN_ELEM[p.sign]||'air'];
-      var sym=PLANET_SYM[p.label]||'●';
+      var abbr=PLANET_ABBR[p.label]||p.label.slice(0,2);
       var xout=(CX+Rzin*Math.cos(pa)).toFixed(1),yout=(CY+Rzin*Math.sin(pa)).toFixed(1);
       s+='<line x1="'+px+'" y1="'+py+'" x2="'+xout+'" y2="'+yout+'" stroke="'+col2+'" stroke-width="0.5" opacity="0.22"/>';
-      s+='<circle cx="'+px+'" cy="'+py+'" r="13" fill="rgba(5,5,16,0.93)" stroke="'+col2+'" stroke-width="1.9"/>';
-      s+='<text x="'+px+'" y="'+(parseFloat(py)+5)+'" text-anchor="middle" font-size="11" fill="'+col2+'" font-family="serif">'+sym+'</text>';
+      s+='<circle cx="'+px+'" cy="'+py+'" r="14" fill="rgba(5,5,16,0.95)" stroke="'+col2+'" stroke-width="1.6"/>';
+      s+='<text x="'+px+'" y="'+(parseFloat(py)+4.5)+'" text-anchor="middle" font-size="9" font-weight="700" fill="'+col2+'" font-family="sans-serif" letter-spacing="0">'+abbr+'</text>';
       if(p.retrograde){
         s+='<text x="'+(parseFloat(px)+12)+'" y="'+(parseFloat(py)-9)+'" font-size="6.5" fill="'+col2+'" opacity="0.8">℞</text>';
       }
@@ -328,6 +337,20 @@
       var data=JSON.parse(raw.textContent);
       wheelEl.innerHTML=buildWheel(data);
     }catch(e){ console.error('wheel error',e); }
+
+    // Inject Lucide icons into planet cards
+    document.querySelectorAll('.p-card[data-planet]').forEach(function(card){
+      var name=card.dataset.planet;
+      var iconName=PLANET_ICON[name];
+      if(!iconName) return;
+      var lbl=card.querySelector('.p-label');
+      if(!lbl||lbl.querySelector('i[data-lucide]')) return;
+      var ico=document.createElement('i');
+      ico.setAttribute('data-lucide', iconName);
+      ico.style.cssText='width:12px;height:12px;vertical-align:middle;margin-right:5px;flex-shrink:0';
+      lbl.insertBefore(ico, lbl.firstChild);
+    });
+    if(window.lucide) lucide.createIcons();
   }
 
   // Run immediately (scripts re-executed by SPA after DOM is set)

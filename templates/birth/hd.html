@@ -122,13 +122,13 @@
     <div>
       <div class="planet-row" style="margin-bottom:{% if pair.p.meaning %}0.4rem{% else %}0{% endif %}">
         <div class="planet-p">
-          <span style="color:var(--calipso);opacity:0.6;margin-right:4px">{{ pair.p.symbol }}</span>
+          <span class="hd-planet-icon" data-planet="{{ pair.p.label }}" style="color:var(--calipso);margin-right:4px;display:inline-flex;align-items:center;vertical-align:middle"></span>
           <span style="font-weight:600">{{ pair.p.label }}</span>
           <span style="color:var(--calipso);margin-left:6px;font-weight:600">{{ pair.p.gate }}.{{ pair.p.line }}</span>
           <div style="color:var(--dim);font-size:0.73rem;margin-top:2px">{{ pair.p.name }}</div>
         </div>
         <div class="planet-d">
-          <span style="color:var(--violet);opacity:0.6;margin-right:4px">{{ pair.d.symbol }}</span>
+          <span class="hd-planet-icon" data-planet="{{ pair.d.label }}" style="color:var(--violet);margin-right:4px;display:inline-flex;align-items:center;vertical-align:middle"></span>
           <span style="font-weight:600">{{ pair.d.label }}</span>
           <span style="color:var(--violet);margin-left:6px;font-weight:600">{{ pair.d.gate }}.{{ pair.d.line }}</span>
           <div style="color:var(--dim);font-size:0.73rem;margin-top:2px">{{ pair.d.name }}</div>
@@ -156,4 +156,25 @@
   <div class="panel" style="text-align:center;padding:2.5rem;color:var(--muted)">Calculando Human Design…</div>
   {% endif %}
 </div>
+
+<script>
+(function(){
+  var PLANET_ICON={
+    Sol:'sun', Luna:'moon', Tierra:'globe', Mercurio:'wind', Venus:'heart',
+    Marte:'flame', 'Júpiter':'star', Saturno:'hourglass', Urano:'zap',
+    Neptuno:'waves', 'Plutón':'eye', 'Nodo Norte':'arrow-up-right',
+    'Nodo Sur':'arrow-down-left', 'Quirón':'cross'
+  };
+  document.querySelectorAll('.hd-planet-icon[data-planet]').forEach(function(span){
+    var name = span.dataset.planet;
+    var icon = PLANET_ICON[name];
+    if (!icon) return;
+    var ico = document.createElement('i');
+    ico.setAttribute('data-lucide', icon);
+    ico.style.cssText = 'width:13px;height:13px;flex-shrink:0';
+    span.appendChild(ico);
+  });
+  if (window.lucide) lucide.createIcons();
+})();
+</script>
 {% endblock %}
