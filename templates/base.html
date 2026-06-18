@@ -525,6 +525,17 @@ geometry.setAttribute('aSpeed',   new THREE.BufferAttribute(speeds,    1));
 geometry.setAttribute('aSize',    new THREE.BufferAttribute(sizes,     1));
 geometry.setAttribute('aRand',    new THREE.BufferAttribute(randoms,   1));
 
+// Paleta → color de glow de partículas
+const GLOW_COLORS = {
+  cosmos:   new THREE.Color(0.88, 0.92, 1.00),  // blanco-azul estelar
+  aurora:   new THREE.Color(0.42, 0.45, 1.00),  // azul-índigo
+  terra:    new THREE.Color(0.90, 0.62, 0.28),  // ámbar dorado
+  obsidian: new THREE.Color(0.65, 0.54, 0.98),  // violeta
+  sakura:   new THREE.Color(0.94, 0.38, 0.57),  // rosa
+};
+const _initPalette = document.body.dataset.palette || 'cosmos';
+const _initGlow = (GLOW_COLORS[_initPalette] || GLOW_COLORS.cosmos).clone();
+
 particleMaterial = new THREE.ShaderMaterial({
   uniforms: {
     uTime:       { value: 0 },
@@ -532,7 +543,8 @@ particleMaterial = new THREE.ShaderMaterial({
     uSpeedInner: { value: currentPreset.speedInner },
     uSpeedOuter: { value: currentPreset.speedOuter },
     uSizeMult:   { value: currentPreset.sizeMult },
-    uDensity:    { value: currentPreset.density }
+    uDensity:    { value: currentPreset.density },
+    uGlowColor:  { value: _initGlow },
   },
   vertexShader: `
     uniform float uTime, uBHR, uSpeedInner, uSpeedOuter, uSizeMult, uDensity;
@@ -558,12 +570,15 @@ particleMaterial = new THREE.ShaderMaterial({
     }
   `,
   fragmentShader: `
+    uniform vec3 uGlowColor;
     varying vec3 vColor;
     void main() {
       vec2 uv = gl_PointCoord - 0.5;
       float d = length(uv);
       if (d > 0.5) discard;
-      gl_FragColor = vec4(vColor, smoothstep(0.5, 0.04, d) * 0.92);
+      // Tint: brightness drives intensity, palette drives hue
+      vec3 tinted = vColor.r * uGlowColor;
+      gl_FragColor = vec4(tinted, smoothstep(0.5, 0.04, d) * 0.92);
     }
   `,
   transparent: true,
@@ -649,6 +664,10 @@ window.updateCosmosPreset = function(name) {
   const p = PRESETS[name] || PRESETS.general;
   targetPreset = { ...p };
   lerpBoost = 1.0;
+};
+window.updateCosmosGlow = function(palette) {
+  const c = GLOW_COLORS[palette] || GLOW_COLORS.cosmos;
+  if (particleMaterial) particleMaterial.uniforms.uGlowColor.value.copy(c);
 };
 window.presetForPath = presetForPath;
 

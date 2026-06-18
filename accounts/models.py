@@ -41,8 +41,6 @@ class UserProfile(models.Model):
     AESTHETIC_CHOICES = [
         ('cosmos', 'Cósmico'),
         ('mandala', 'Mandala'),
-        ('archipielago', 'Archipiélago'),
-        ('arbol', 'Árbol'),
     ]
     PALETTE_CHOICES = [
         ('cosmos', 'Cosmos (por defecto)'),

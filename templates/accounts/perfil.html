@@ -73,29 +73,29 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label" style="margin-bottom:0.6rem">Paleta de la app</label>
+        <label class="form-label" style="margin-bottom:0.6rem">Color del glow de partículas</label>
         <div class="palette-grid">
-          <label class="pal-card {% if profile.color_palette == 'cosmos' or not profile.color_palette %}active{% endif %}" onclick="this.closest('.palette-grid').querySelectorAll('.pal-card').forEach(c=>c.classList.remove('active'));this.classList.add('active')">
+          <label class="pal-card {% if profile.color_palette == 'cosmos' or not profile.color_palette %}active{% endif %}" onclick="this.closest('.palette-grid').querySelectorAll('.pal-card').forEach(c=>c.classList.remove('active'));this.classList.add('active');if(window.updateCosmosGlow)updateCosmosGlow(this.querySelector('input').value)">
             <input type="radio" name="color_palette" value="cosmos" {% if profile.color_palette == 'cosmos' or not profile.color_palette %}checked{% endif %}>
             <div class="pal-dot" style="background:linear-gradient(135deg,#7ECCCD,#9b8ec4)"></div>
             <span class="pal-name">Cosmos</span>
           </label>
-          <label class="pal-card {% if profile.color_palette == 'aurora' %}active{% endif %}" onclick="this.closest('.palette-grid').querySelectorAll('.pal-card').forEach(c=>c.classList.remove('active'));this.classList.add('active')">
+          <label class="pal-card {% if profile.color_palette == 'aurora' %}active{% endif %}" onclick="this.closest('.palette-grid').querySelectorAll('.pal-card').forEach(c=>c.classList.remove('active'));this.classList.add('active');if(window.updateCosmosGlow)updateCosmosGlow(this.querySelector('input').value)">
             <input type="radio" name="color_palette" value="aurora" {% if profile.color_palette == 'aurora' %}checked{% endif %}>
             <div class="pal-dot" style="background:linear-gradient(135deg,#6B73FF,#48E4C8)"></div>
             <span class="pal-name">Aurora</span>
           </label>
-          <label class="pal-card {% if profile.color_palette == 'terra' %}active{% endif %}" onclick="this.closest('.palette-grid').querySelectorAll('.pal-card').forEach(c=>c.classList.remove('active'));this.classList.add('active')">
+          <label class="pal-card {% if profile.color_palette == 'terra' %}active{% endif %}" onclick="this.closest('.palette-grid').querySelectorAll('.pal-card').forEach(c=>c.classList.remove('active'));this.classList.add('active');if(window.updateCosmosGlow)updateCosmosGlow(this.querySelector('input').value)">
             <input type="radio" name="color_palette" value="terra" {% if profile.color_palette == 'terra' %}checked{% endif %}>
             <div class="pal-dot" style="background:linear-gradient(135deg,#d4a056,#7ec49b)"></div>
             <span class="pal-name">Tierra</span>
           </label>
-          <label class="pal-card {% if profile.color_palette == 'obsidian' %}active{% endif %}" onclick="this.closest('.palette-grid').querySelectorAll('.pal-card').forEach(c=>c.classList.remove('active'));this.classList.add('active')">
+          <label class="pal-card {% if profile.color_palette == 'obsidian' %}active{% endif %}" onclick="this.closest('.palette-grid').querySelectorAll('.pal-card').forEach(c=>c.classList.remove('active'));this.classList.add('active');if(window.updateCosmosGlow)updateCosmosGlow(this.querySelector('input').value)">
             <input type="radio" name="color_palette" value="obsidian" {% if profile.color_palette == 'obsidian' %}checked{% endif %}>
             <div class="pal-dot" style="background:linear-gradient(135deg,#4A4A6A,#9b8ec4)"></div>
             <span class="pal-name">Obsidiana</span>
           </label>
-          <label class="pal-card {% if profile.color_palette == 'sakura' %}active{% endif %}" onclick="this.closest('.palette-grid').querySelectorAll('.pal-card').forEach(c=>c.classList.remove('active'));this.classList.add('active')">
+          <label class="pal-card {% if profile.color_palette == 'sakura' %}active{% endif %}" onclick="this.closest('.palette-grid').querySelectorAll('.pal-card').forEach(c=>c.classList.remove('active'));this.classList.add('active');if(window.updateCosmosGlow)updateCosmosGlow(this.querySelector('input').value)">
             <input type="radio" name="color_palette" value="sakura" {% if profile.color_palette == 'sakura' %}checked{% endif %}>
             <div class="pal-dot" style="background:linear-gradient(135deg,#c97b84,#d4a056)"></div>
             <span class="pal-name">Sakura</span>
