@@ -267,28 +267,85 @@ PALOS_MENORES = [
     {
         "palo": "bastos", "elemento": "fuego",
         "esencia": "el impulso creador, la energía vital, la libido que construye",
-        "colores_palo": ["rojo", "azul claro", "negro"],
-        "visual_numerales": "bastos rojos con extremos negros dispuestos simétricamente; ornamentos vegetales azules entre ellos; la energía crece de As a Diez",
+        "colores_palo":      ["rojo", "azul claro", "negro"],
+        "colores_numerales": ["rojo", "negro", "azul claro"],
+        "visual_numerales": "bastos rojos con extremos negros, dispuestos en ejes cruzados; ornamentos vegetales azules entre ellos; la complejidad del cruzamiento crece del As al Diez",
     },
     {
         "palo": "copas", "elemento": "agua",
         "esencia": "el mundo emocional, el amor, lo que fluye y lo que se evita sentir",
-        "colores_palo": ["azul claro", "rojo", "carne"],
-        "visual_numerales": "copas azules con detalles rojos, algunas con tapas; el As parece una catedral gótica; ornamentos florales entre las copas",
+        "colores_palo":      ["azul claro", "rojo", "carne"],
+        "colores_numerales": ["azul claro", "rojo", "amarillo claro"],
+        "visual_numerales": "copas azules con bordes y detalles rojos; algunas tienen tapa; el As tiene forma de catedral gótica con arco; ornamentos florales entre las copas; fondo crema/amarillo claro",
     },
     {
         "palo": "espadas", "elemento": "aire",
         "esencia": "la mente, la palabra, el corte, el conflicto que revela la verdad",
-        "colores_palo": ["negro", "rojo", "azul claro"],
-        "visual_numerales": "espadas negras con guarda roja y azul en disposición oval; se cruzan o entrelazan según el número; el diseño se vuelve más denso al crecer",
+        "colores_palo":      ["negro", "rojo", "azul claro"],
+        "colores_numerales": ["negro", "rojo", "azul claro"],
+        "visual_numerales": "espadas negras con guarda roja y azul; se entrecruzan o entrelazan en disposición oval; el diseño se vuelve más denso y apretado al crecer hacia el Diez",
     },
     {
         "palo": "oros", "elemento": "tierra",
         "esencia": "el cuerpo, los recursos, la materia, lo que se tiene o se carece",
-        "colores_palo": ["amarillo claro", "rojo", "verde"],
-        "visual_numerales": "círculos dorados sin número impreso (único palo sin numeración visible); disposición geométrica simétrica; los Oros son siempre redondos y vacíos",
+        "colores_palo":      ["amarillo claro", "rojo", "verde"],
+        "colores_numerales": ["amarillo claro", "rojo", "verde"],
+        "visual_numerales": "círculos dorados vacíos (sin número impreso — único palo sin numeración visible); disposición geométrica simétrica sobre fondo neutro; los Oros son redondos y uniformes",
     },
 ]
+
+# Layouts específicos por número para naipes numéricos del Tarot de Marsella.
+# Basados en el mazo Jodorowsky-Camoin. Sin figuras: solo disposición de símbolos.
+_GESTO_NUMERAL = {
+    "bastos": {
+        1:  "Un bastón único vertical en posición central — todo el espacio lo sostiene",
+        2:  "Dos bastos verticales paralelos, uno a cada lado, sin cruzarse",
+        3:  "Tres bastos: dos verticales con uno diagonal cruzándolos al centro",
+        4:  "Cuatro bastos: dos pares cruzados formando una X doble",
+        5:  "Cinco bastos en cruzamiento complejo — el quinto atraviesa el centro",
+        6:  "Seis bastos en tres pares cruzados, patrón simétrico de dos filas",
+        7:  "Siete bastos en patrón denso: tres pares más un bastón diagonal central",
+        8:  "Ocho bastos en cruzamiento muy denso — cuatro pares entrelazados",
+        9:  "Nueve bastos: máxima complejidad antes del cierre — cruzamientos en cuadrícula",
+        10: "Diez bastos entrelazados en patrón saturado — el palo carga todo su peso",
+    },
+    "copas": {
+        1:  "Una copa monumental al centro — el As tiene forma de catedral gótica con arco",
+        2:  "Dos copas simétricas: una arriba, una abajo, enfrentadas en eje vertical",
+        3:  "Tres copas: una arriba, dos abajo, formando triángulo",
+        4:  "Cuatro copas: dos arriba, dos abajo, en cuadrado simétrico",
+        5:  "Cinco copas: una al centro, cuatro en las esquinas formando cruz",
+        6:  "Seis copas: dos columnas de tres, simétricas",
+        7:  "Siete copas: tres arriba, una al centro, tres abajo — patrón 3-1-3",
+        8:  "Ocho copas: dos columnas de cuatro, una a cada lado",
+        9:  "Nueve copas: tres filas de tres, cuadrado perfecto",
+        10: "Diez copas: dos filas de cinco — el ciclo del agua completo",
+    },
+    "espadas": {
+        1:  "Una espada única vertical — hoja negra con guarda roja y azul al centro",
+        2:  "Dos espadas cruzadas en X — guardas visibles en el punto de cruce",
+        3:  "Tres espadas en disposición oval — una central rodeada de dos laterales",
+        4:  "Cuatro espadas: patrón oval simétrico, dos pares opuestos",
+        5:  "Cinco espadas: entrelazado complejo, el quinto atraviesa el nudo central",
+        6:  "Seis espadas en oval denso — guardas rojas y azules distribuidas",
+        7:  "Siete espadas: el entrelazado se vuelve intrincado, casi laberíntico",
+        8:  "Ocho espadas: patrón oval muy apretado — las guardas apenas se ven",
+        9:  "Nueve espadas: máxima densidad del entrelazado, casi abstracto",
+        10: "Diez espadas: el palo en saturación — hojas negras dominan todo el espacio",
+    },
+    "oros": {
+        1:  "Un oro grande único al centro — el círculo dorado más puro y solitario",
+        2:  "Dos oros: uno arriba, uno abajo, en eje vertical simétrico",
+        3:  "Tres oros: triángulo — uno arriba, dos abajo",
+        4:  "Cuatro oros: cuadrado — dos arriba, dos abajo",
+        5:  "Cinco oros: uno al centro, cuatro en las esquinas formando cruz",
+        6:  "Seis oros: dos columnas de tres",
+        7:  "Siete oros: tres arriba, uno al centro, tres abajo — patrón 3-1-3",
+        8:  "Ocho oros: dos columnas de cuatro",
+        9:  "Nueve oros: tres filas de tres — cuadrado completo",
+        10: "Diez oros: dos filas de cinco — el ciclo de la tierra cumplido",
+    },
+}
 
 # Figuras: la dirección varía por palo y refleja la cualidad del palo.
 # Bastos (activo): miran a la derecha.
@@ -362,12 +419,17 @@ def _construir_mazo_completo() -> list[dict]:
                     "simbolos": [palo_info["palo"], "figura entronada o de pie"],
                 }
             else:
-                # Naipes numéricos: sin figuras, solo disposición de símbolos
+                # Naipes numéricos: sin figuras, solo disposición de símbolos del palo
+                palo_layouts = _GESTO_NUMERAL.get(palo_info["palo"], {})
+                gesto = palo_layouts.get(
+                    num_info["num"],
+                    f"{num_info['nombre']} {palo_info['palo']} en disposición geométrica",
+                )
                 visual = {
-                    "colores": palo_info["colores_palo"],
-                    "figura_mira": "sin figura",
-                    "gesto": f"{num_info['nombre']} {palo_info['palo']} en disposición geométrica",
-                    "simbolos": [palo_info["palo"], f"número {num_info['num']}"],
+                    "colores": palo_info.get("colores_numerales", palo_info["colores_palo"]),
+                    "figura_mira": "sin figura — naipe numeral",
+                    "gesto": gesto,
+                    "simbolos": [palo_info["visual_numerales"]],
                 }
             mazo.append({
                 "id": f"ME-{palo_info['palo'][:3].upper()}-{num_info['num']:02d}",
