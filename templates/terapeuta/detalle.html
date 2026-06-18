@@ -13,8 +13,19 @@
 .diag-item:last-child { border-bottom:none; }
 .diag-name { font-weight:600;font-size:0.87rem;margin-bottom:0.2rem;display:flex;align-items:center;gap:0.4rem; }
 .diag-confirmed { font-size:0.62rem;color:var(--calipso);background:var(--calipso-glow);border:1px solid rgba(126,204,205,0.2);border-radius:4px;padding:1px 5px; }
-.plan-step-item { font-size:0.82rem;color:var(--muted);padding:0.25rem 0;line-height:1.5; }
-.plan-step-item::before { content:"→ ";color:var(--calipso);font-weight:700; }
+.plan-step-item { padding:0.45rem 0;border-bottom:1px solid rgba(255,255,255,0.03); }
+.plan-step-item:last-child { border-bottom:none; }
+.plan-instruccion-d { font-size:0.82rem;color:var(--text);line-height:1.5; }
+.plan-instruccion-d::before { content:"→ ";color:var(--calipso);font-weight:700; }
+.plan-fundamento-d {
+  margin-top:0.3rem;margin-left:1.1rem;
+  font-size:0.73rem;color:var(--muted);line-height:1.55;
+  padding:0.3rem 0.6rem;
+  background:rgba(126,204,205,0.04);
+  border-left:2px solid rgba(126,204,205,0.2);
+  border-radius:0 5px 5px 0;
+  font-style:italic;
+}
 .patron-tag { display:inline-block;font-size:0.68rem;background:rgba(126,204,205,0.1);border:1px solid rgba(126,204,205,0.2);border-radius:20px;padding:0.15rem 0.6rem;color:var(--calipso);margin-bottom:0.5rem; }
 .mv-block { display:none;margin:0.4rem 0 0.5rem;border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.15);padding:0.2rem 0; }
 </style>
@@ -100,7 +111,18 @@
     {% if item.patron_sindrome %}<div class="patron-tag">{{ item.patron_sindrome }}</div>{% endif %}
     <div class="mv-block"></div>
     {% if item.como_empezar %}<div style="font-size:0.78rem;color:var(--calipso);margin-bottom:0.4rem">Hoy: {{ item.como_empezar }}</div>{% endif %}
-    {% for paso in item.pasos %}<div class="plan-step-item">{{ paso }}</div>{% endfor %}
+    {% for paso in item.pasos %}
+    <div class="plan-step-item">
+      {% if paso.instruccion %}
+        <div class="plan-instruccion-d">{{ paso.instruccion }}</div>
+        {% if paso.fundamento %}
+        <div class="plan-fundamento-d">{{ paso.fundamento }}</div>
+        {% endif %}
+      {% else %}
+        <div class="plan-instruccion-d">{{ paso }}</div>
+      {% endif %}
+    </div>
+    {% endfor %}
     {% if item.duracion or item.frecuencia %}
     <div style="font-size:0.7rem;color:var(--dim);margin-top:0.4rem">{% if item.duracion %}{{ item.duracion }}{% endif %}{% if item.frecuencia %} · {{ item.frecuencia }}{% endif %}</div>
     {% endif %}

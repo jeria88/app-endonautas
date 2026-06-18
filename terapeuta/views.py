@@ -490,22 +490,22 @@ def _generar_propuesta_fallback(diagnosticos: list) -> dict:
     for d in diagnosticos:
         marco = d.marco_asociado.nombre if d.marco_asociado else "Sin marco"
         tecnica = d.tecnica_asociada.nombre if d.tecnica_asociada else "Sin técnica"
-        pasos = [d.descripcion] if d.descripcion else []
+        pasos_raw = []
+        if d.descripcion:
+            pasos_raw.append(d.descripcion)
         if d.protocolo_indicado:
-            # Limpiar citas entre paréntesis y tomar primera instrucción concreta
             clean = _re.sub(r'\(ref\.[^)]*\)', '', d.protocolo_indicado).strip()
             clean = _re.sub(r'\s+', ' ', clean)
-            # Tomar el texto después del primer punto, si hay sección con ":"
             after = clean.split(':', 1)[1].strip() if ':' in clean else clean
-            # Primer fragmento antes de punto y seguido de mayúscula
             m = _re.search(r'^(.{40,250}?)(?:\.\s+[A-ZÁÉÍÓÚ]|\.$)', after, _re.DOTALL)
             if m:
-                pasos.append(m.group(1).strip() + '.')
+                pasos_raw.append(m.group(1).strip() + '.')
             else:
-                pasos.append(after[:220] + '…')
-        pasos = [p for p in pasos if p][:2]
-        if not pasos:
-            pasos = [f"Consultar con profesional certificado en {tecnica}."]
+                pasos_raw.append(after[:220] + '…')
+        pasos_raw = [p for p in pasos_raw if p][:2]
+        if not pasos_raw:
+            pasos_raw = [f"Consultar con profesional certificado en {tecnica}."]
+        pasos = [{"instruccion": p, "fundamento": ""} for p in pasos_raw]
         precauciones_d = (d.contraindicaciones or "").split('.')[0].strip()
         plan.append({
             "marco": marco, "tecnica": tecnica, "diagnostico": d.titulo,
@@ -562,12 +562,15 @@ El campo "Protocolo indicado" ya contiene el tratamiento clínico específico. T
 1. Leer el "Protocolo indicado" de cada diagnóstico.
 2. Seleccionar los 2-3 pasos más relevantes para ESTE caso.
 3. Reformular cada paso en lenguaje directo, conservando nombres específicos (hierbas, puntos, ejercicios, dosis).
+4. Para cada paso, añadir un "fundamento" que explique al usuario el mecanismo terapéutico detrás de esa decisión — en lenguaje pedagógico accesible, no académico.
 
-Instrucciones por tipo de técnica en el campo "pasos":
+Instrucciones por tipo de técnica en el campo "instruccion":
 — ACUPUNTURA: nombre completo del punto + ubicación anatómica corporal (NO códigos). Añade instrucción de auto-estimulación en casa. Ej: "Punto Tai Chong (Hígado): dorso del pie, entre el 1° y 2° metatarsiano. En consulta: agujas en sedación. En casa: presiona con el pulgar en círculos, firmeza media, 60 segundos, 3 veces/día."
 — EJERCICIO/FISIOTERAPIA: nombre + posición inicial → movimiento → respiración → repeticiones. Ej: "Bird-Dog: en cuadrupedia, espalda neutral. Exhala y extiende brazo derecho + pierna izquierda, mantén 3 seg. 3 series × 8 reps cada lado, días alternos."
 — FITOTERAPIA: nombre de la hierba, dosis exacta y preparación. Ej: "Ashwagandha KSM-66: 600mg en cápsula con leche tibia, 1 vez al acostarse."
 — DIETA: alimentos específicos, cuándo y en qué cantidad.
+
+El campo "fundamento" de cada paso debe responder: ¿por qué se elige esta técnica/punto/hierba para ESTE síntoma concreto? Explica el mecanismo —energético, fisiológico o bioquímico— en 1-2 oraciones claras. Ej: "El Tai Chong es el punto Yuan del Hígado: dispersa el Qi estancado del meridiano y reduce la tensión cefálica asociada al exceso de Yang ascendente." o "El Bird-Dog activa simultáneamente el multífidus y el transverso del abdomen, estabilizando la columna lumbar sin cargar la zona afectada."
 
 Devuelve ÚNICAMENTE JSON válido con esta estructura:
 {{
@@ -586,7 +589,12 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
       "dosha_afectado": "solo para Ayurveda: Vata|Pitta|Kapha — omitir para otros marcos",
       "sub_dosha": "solo para Ayurveda: sub-dosha específico (Apana Vata|Prana Vata|Udana Vata|Samana Vata|Vyana Vata|Pachaka Pitta|Sadhaka Pitta|Alochaka Pitta|Ranjaka Pitta|Kledaka Kapha|Avalambaka Kapha|Tarpaka Kapha|Bodhaka Kapha|Shleshaka Kapha) — omitir para otros marcos",
       "chakra_relacionado": "solo para Ayurveda — OBLIGATORIO si es Ayurveda: chakra principal (Muladhara|Svadhisthana|Manipura|Anahata|Vishuddha|Ajna|Sahasrara) — omitir para MTC y otros marcos",
-      "pasos": ["paso detallado 1", "paso detallado 2"],
+      "pasos": [
+        {{
+          "instruccion": "descripción detallada del paso a seguir",
+          "fundamento": "mecanismo terapéutico que justifica esta decisión en lenguaje pedagógico"
+        }}
+      ],
       "duracion": "tiempo total estimado",
       "frecuencia": "frecuencia específica",
       "como_empezar": "qué hacer exactamente en los primeros 3 días"

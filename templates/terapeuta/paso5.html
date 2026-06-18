@@ -10,9 +10,19 @@
 .plan-title { font-weight:700;font-size:0.9rem; }
 .plan-sub { font-size:0.72rem;color:var(--muted);margin-top:1px; }
 .plan-steps { list-style:none;margin:0;padding:0; }
-.plan-steps li { font-size:0.82rem;color:var(--muted);line-height:1.5;padding:0.3rem 0;border-bottom:1px solid rgba(255,255,255,0.04); }
-.plan-steps li:last-child { border-bottom:none; }
-.plan-steps li::before { content:"→ ";color:var(--calipso);font-weight:700; }
+.plan-step { padding:0.55rem 0;border-bottom:1px solid rgba(255,255,255,0.04); }
+.plan-step:last-child { border-bottom:none; }
+.plan-instruccion { font-size:0.82rem;color:var(--text);line-height:1.5; }
+.plan-instruccion::before { content:"→ ";color:var(--calipso);font-weight:700; }
+.plan-fundamento {
+  margin-top:0.35rem;margin-left:1.1rem;
+  font-size:0.74rem;color:var(--muted);line-height:1.55;
+  padding:0.35rem 0.65rem;
+  background:rgba(126,204,205,0.04);
+  border-left:2px solid rgba(126,204,205,0.25);
+  border-radius:0 6px 6px 0;
+  font-style:italic;
+}
 .plan-meta { display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.75rem; }
 .plan-meta-item { font-size:0.7rem;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:5px;padding:2px 8px;color:var(--dim); }
 .fase-row { display:flex;gap:0.75rem;align-items:flex-start;padding:0.7rem 0;border-bottom:1px solid rgba(255,255,255,0.04); }
@@ -70,7 +80,18 @@
   <div class="mv-block"></div>
   {% if item.pasos %}
   <ul class="plan-steps">
-    {% for paso in item.pasos %}<li>{{ paso }}</li>{% endfor %}
+    {% for paso in item.pasos %}
+    <li class="plan-step">
+      {% if paso.instruccion %}
+        <div class="plan-instruccion">{{ paso.instruccion }}</div>
+        {% if paso.fundamento %}
+        <div class="plan-fundamento">{{ paso.fundamento }}</div>
+        {% endif %}
+      {% else %}
+        <div class="plan-instruccion">{{ paso }}</div>
+      {% endif %}
+    </li>
+    {% endfor %}
   </ul>
   {% endif %}
   {% if item.como_empezar %}
