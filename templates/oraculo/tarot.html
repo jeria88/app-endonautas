@@ -30,21 +30,32 @@
 /* Cartas */
 .cards-spread {
   display:flex;flex-wrap:wrap;gap:0.75rem;
-  justify-content:flex-start;
+  justify-content:center;
   margin-bottom:1.25rem;
 }
-.card-tile {
-  flex:0 0 auto;width:112px;
-  background:var(--surface2);
-  border:1px solid var(--border);
-  border-radius:10px;
-  overflow:hidden;
-  transition:border-color 0.2s;
-  cursor:default;
-  animation: card-in 0.42s cubic-bezier(0.34,1.56,0.64,1) both;
+
+/* Flip card */
+.card-flip-outer {
+  width:112px;flex:0 0 auto;cursor:pointer;
+  perspective:600px;
+  animation: card-in 0.7s cubic-bezier(0.34,1.56,0.64,1) both;
 }
-.card-tile:hover { border-color:rgba(126,204,205,0.3); }
-.card-tile.contraida { border-color:rgba(212,160,86,0.25); }
+.card-flip-inner {
+  width:100%;position:relative;transform-style:preserve-3d;
+  transition:transform 0.7s cubic-bezier(0.23,1,0.32,1);
+}
+.card-flip-inner.flipped { transform:rotateY(180deg); }
+.card-face {
+  width:112px;border-radius:10px;overflow:hidden;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+}
+.card-face.card-back { background:var(--surface2);border:1px solid var(--border); }
+.card-face.card-back img { width:100%;height:192px;object-fit:cover; }
+.card-face.card-front {
+  position:absolute;top:0;left:0;
+  transform:rotateY(180deg);
+  background:var(--surface2);border:1px solid var(--border);
+}
 .card-img-wrap {
   width:100%;height:192px;overflow:hidden;
   background:#0d0d14;
@@ -54,12 +65,11 @@
   width:100%;height:100%;object-fit:contain;
   transition:transform 0.35s ease;
 }
-.card-tile.contraida .card-img { transform:rotate(180deg); }
+.card-img.contraida { transform:rotate(180deg); }
 .card-body { padding:0.5rem 0.55rem 0.6rem; }
 .card-pos { font-size:0.58rem;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--muted);margin-bottom:0.2rem;line-height:1.2; }
 .card-nombre { font-size:0.8rem;font-weight:600;line-height:1.2;margin-bottom:0.2rem; }
 .card-estado { font-size:0.65rem;color:var(--calipso); }
-.card-tile.contraida .card-estado { color:var(--amber); }
 .card-kw { font-size:0.65rem;color:var(--dim);margin-top:0.15rem;line-height:1.3; }
 
 .typing-row { display:none;align-items:center;gap:5px;color:var(--muted);font-size:0.82rem;padding:2.5rem;justify-content:center; }
@@ -114,7 +124,10 @@
       <div class="cards-spread" id="cardsSpread"></div>
 
       <div id="interpPanel" style="background:var(--surface2);border:1px solid rgba(126,204,205,0.25);border-radius:14px;padding:1.25rem">
-        <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--calipso);margin-bottom:0.75rem">✦ Lectura del patrón</div>
+        <div style="display:flex;align-items:baseline;gap:0.6rem;margin-bottom:0.75rem">
+          <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--calipso)">✦ Lectura del patrón</div>
+          <div id="activeCardPos" style="font-size:0.68rem;color:var(--muted);font-style:italic"></div>
+        </div>
         <div id="interpText" style="font-size:0.9rem;line-height:1.8;color:var(--text)"></div>
         <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--border);font-size:0.68rem;color:var(--dim)" id="sourceLabel"></div>
       </div>
@@ -176,7 +189,7 @@ function md2html(txt) {
     .replace(/\*(.+?)\*/g,'<em>$1</em>')
     .replace(/\n\n/g,'</p><p>').replace(/^/,'<p>').replace(/$/,'</p>');
 }
-function getCsrf() { const m = document.cookie.match(/csrftoken=([^;]+)/); return m ? m[1] : ''; }
+function getCsrf() { return document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''; }
 
 document.getElementById('tirarBtn').addEventListener('click', async () => {
   const pregunta = document.getElementById('pregunta').value.trim();
@@ -203,11 +216,29 @@ document.getElementById('tirarBtn').addEventListener('click', async () => {
   }
 });
 
+let porCarta = {};
+let textoGlobal = '';
+
+function flipCard(outer, posicion) {
+  outer.querySelector('.card-flip-inner').classList.add('flipped');
+  const texto = porCarta[posicion] || textoGlobal;
+  if (texto) {
+    const panel = document.getElementById('interpPanel');
+    document.getElementById('interpText').innerHTML = md2html(texto);
+    document.getElementById('activeCardPos').textContent = NOMBRES_POS[posicion] || '';
+    setTimeout(() => panel.classList.add('show'), 100);
+  }
+}
+
 function mostrar(data) {
   const tirada = data.tirada;
   const interp = data.interpretacion;
 
+  porCarta = interp.por_carta || {};
+  textoGlobal = interp.texto_completo || '';
+
   document.getElementById('interpPanel').classList.remove('show');
+  document.getElementById('activeCardPos').textContent = '';
 
   document.getElementById('spreadLabel').textContent =
     NOMBRES_TIRADA[tirada.tipo_tirada] || tirada.tipo_tirada;
@@ -216,37 +247,39 @@ function mostrar(data) {
   spread.innerHTML = '';
 
   tirada.cartas.forEach((c, i) => {
-    const contraida = c.invertida;
-    const tile = document.createElement('div');
-    tile.className = 'card-tile' + (contraida ? ' contraida' : '');
-
-    const imgSrc = c.imagen
-      ? BASE_STATIC + c.imagen
-      : BASE_STATIC + 'img/tarot/cardback.jpg';
-
     const posLabel = NOMBRES_POS[c.posicion] || c.posicion;
-    const estadoLabel = contraida ? 'Energía contraída' : 'Directa';
+    const estadoLabel = c.invertida ? 'Energía contraída' : 'Directa';
+    const imgSrc = c.imagen ? BASE_STATIC + c.imagen : BASE_STATIC + 'img/tarot/cardback.jpg';
 
-    tile.innerHTML = `
-      <div class="card-img-wrap">
-        <img src="${imgSrc}" alt="${c.nombre}" class="card-img" loading="lazy">
+    const outer = document.createElement('div');
+    outer.className = 'card-flip-outer';
+    outer.style.animationDelay = (i * 220) + 'ms';
+    outer.addEventListener('click', () => flipCard(outer, c.posicion));
+
+    outer.innerHTML = `
+      <div class="card-flip-inner">
+        <div class="card-face card-back">
+          <img src="${BASE_STATIC}img/tarot/cardback.jpg" alt="Reverso">
+          <div style="padding:0.4rem 0.5rem;font-size:0.6rem;color:var(--dim);text-align:center">${posLabel}</div>
+        </div>
+        <div class="card-face card-front">
+          <div class="card-img-wrap">
+            <img src="${imgSrc}" alt="${c.nombre}" class="card-img${c.invertida?' contraida':''}" loading="lazy">
+          </div>
+          <div class="card-body">
+            <div class="card-pos">${posLabel}</div>
+            <div class="card-nombre">${c.nombre}</div>
+            <div class="card-estado">${estadoLabel}</div>
+            <div class="card-kw">${c.palabra_clave||''}</div>
+          </div>
+        </div>
       </div>
-      <div class="card-body">
-        <div class="card-pos">${posLabel}</div>
-        <div class="card-nombre">${c.nombre}</div>
-        <div class="card-estado">${estadoLabel}</div>
-        <div class="card-kw">${c.palabra_clave || ''}</div>
-      </div>`;
-    tile.style.animationDelay = (i * 120) + 'ms';
-    spread.appendChild(tile);
+    `;
+    spread.appendChild(outer);
   });
 
-  document.getElementById('interpText').innerHTML = md2html(interp.texto_completo || interp);
   document.getElementById('sourceLabel').textContent =
     interp.fuente === 'ai' ? 'Interpretación IA · OpenRouter' : 'Interpretación simbólica';
-
-  const interpDelay = (tirada.cartas.length - 1) * 120 + 420 + 350;
-  setTimeout(() => document.getElementById('interpPanel').classList.add('show'), interpDelay);
 
   document.getElementById('resultContent').style.display = '';
 }

@@ -5,7 +5,7 @@
 .iching-layout { display:grid;grid-template-columns:320px 1fr;gap:1.5rem;align-items:start; }
 @media(max-width:900px){ .iching-layout{grid-template-columns:1fr} }
 
-.hex-display { display:flex;flex-direction:column;gap:4px;margin:1rem 0; }
+.hex-display { display:flex;flex-direction:column;gap:4px;margin:1rem auto;max-width:120px; }
 .hex-line {
   height:10px;border-radius:3px;background:var(--violet);
   opacity:0;transform:translateY(4px);
@@ -101,7 +101,7 @@
 </div>
 
 <script>
-function getCsrf() { const m = document.cookie.match(/csrftoken=([^;]+)/); return m ? m[1] : ''; }
+function getCsrf() { return document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''; }
 function md2html(txt) {
   if (!txt) return '';
   return txt.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
@@ -152,7 +152,7 @@ function renderHexLines(lineas, containerId, small) {
   var W = small ? 80 : 120;
   var lh = small ? 6 : 10, gap = small ? 3 : 5;
   var totalH = 6 * lh + 5 * gap;
-  var s = '<svg viewBox="0 0 ' + W + ' ' + totalH + '" width="' + W + '" height="' + totalH + '" xmlns="http://www.w3.org/2000/svg">';
+  var s = '<svg viewBox="0 0 ' + W + ' ' + totalH + '" width="' + W + '" height="' + totalH + '" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto">';
   lineas.slice().reverse().forEach(function(linea, i) {
     var y = i * (lh + gap);
     var val = (linea !== null && typeof linea === 'object') ? linea.valor : linea;
@@ -200,7 +200,7 @@ function mostrar(data) {
   for (var li = 0; li < lineDivs.length; li++) {
     (function(div, delay) {
       setTimeout(function() { if (div) div.classList.add('show'); }, delay);
-    })(lineDivs[lineDivs.length - 1 - li], 80 + li * 160);
+    })(lineDivs[lineDivs.length - 1 - li], 80 + li * 220);
   }
 
   setTimeout(() => {
