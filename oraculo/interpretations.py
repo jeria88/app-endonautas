@@ -203,52 +203,245 @@ FRASES_POSICION_TAROT = {
     },
     # Viaje del Héroe
     "mundo_ordinario": {
-        "derecha": ["Tu punto de partida está marcado por {arquetipo}. Este es el suelo que conoces."],
-        "invertida": ["El mundo que dejaste atrás tiene {arquetipo} en su sombra. Hay algo que aún no soltaste."],
+        "directa": ["Tu punto de partida real es {arquetipo}. No donde crees estar — donde realmente estás."],
+        "derecha":  ["Tu punto de partida está marcado por {arquetipo}. Este es el suelo que conoces."],
     },
     "llamado": {
-        "derecha": ["{arquetipo} es el llamado que sientes. La aventura tiene esta forma."],
-        "invertida": ["El llamado llega distorsionado como {arquetipo}. Puede ser difícil reconocerlo."],
+        "directa": ["{arquetipo} es la forma que tiene el llamado en tu vida ahora. La aventura ya te está convocando."],
+        "derecha":  ["{arquetipo} es el llamado que sientes. La aventura tiene esta forma."],
     },
     "rechazo": {
-        "derecha": ["La resistencia que encuentras es {arquetipo}. Todo héroe teme cruzar el umbral."],
-        "invertida": ["Tu rechazo al llamado tiene la sombra de {arquetipo}. ¿Qué te detiene realmente?"],
+        "directa": ["La resistencia al cambio lleva la energía de {arquetipo}. Todo héroe teme cruzar el umbral — incluso cuando lo desea."],
+        "derecha":  ["La resistencia que encuentras es {arquetipo}. Todo héroe teme cruzar el umbral."],
     },
     "mentor": {
-        "derecha": ["{arquetipo} es la guía que aparece en tu camino. Escucha desde aquí."],
-        "invertida": ["El mentor aparece como {arquetipo} invertido: la guía puede venir de donde menos esperas."],
+        "directa": ["{arquetipo} aparece como guía en este momento. La sabiduría que necesitas tiene esta forma."],
+        "derecha":  ["{arquetipo} es la guía que aparece en tu camino. Escucha desde aquí."],
     },
     "cruce_umbral": {
-        "derecha": ["El cruce hacia lo desconocido está marcado por {arquetipo}. Este es el primer gran paso."],
-        "invertida": ["El umbral muestra {arquetipo} invertido: hay un precio oculto en este cruce."],
+        "directa": ["El primer paso hacia lo desconocido está marcado por {arquetipo}. Este es el umbral real."],
+        "derecha":  ["El cruce hacia lo desconocido está marcado por {arquetipo}. Este es el primer gran paso."],
     },
     "pruebas": {
-        "derecha": ["Las pruebas del camino traen {arquetipo}. Aliados y enemigos son espejos del mismo patrón."],
-        "invertida": ["Las pruebas revelan {arquetipo} en su cara oscura. La dificultad es la enseñanza."],
+        "directa": ["Las pruebas que enfrentas en el camino traen {arquetipo}. Aliados y obstáculos son espejos del mismo patrón."],
+        "derecha":  ["Las pruebas del camino traen {arquetipo}. Aliados y enemigos son espejos del mismo patrón."],
     },
     "caverna": {
-        "derecha": ["En lo más profundo de la prueba, {arquetipo} espera. Aquí está el corazón del viaje."],
-        "invertida": ["La caverna muestra {arquetipo} invertido: el mayor obstáculo es interior."],
+        "directa": ["En el corazón del viaje, {arquetipo} espera. Esta es la prueba más profunda — la que no puede evitarse."],
+        "derecha":  ["En lo más profundo de la prueba, {arquetipo} espera. Aquí está el corazón del viaje."],
     },
     "prueba_suprema": {
-        "derecha": ["La prueba definitiva encarna {arquetipo}. Todo lo vivido lleva a este momento."],
-        "invertida": ["La prueba suprema revela {arquetipo} en su sombra máxima. La muerte simbólica es real."],
+        "directa": ["La prueba definitiva encarna {arquetipo}. Todo lo vivido hasta aquí conduce a este momento."],
+        "derecha":  ["La prueba definitiva encarna {arquetipo}. Todo lo vivido lleva a este momento."],
     },
     "recompensa": {
-        "derecha": ["El elixir que recibes es {arquetipo}. Esto es lo que ganaste al atravesar el umbral."],
-        "invertida": ["La recompensa aparece como {arquetipo} invertido: puede no ser lo que esperabas."],
+        "directa": ["Lo que obtienes al atravesar la caverna es {arquetipo}. No necesariamente lo que esperabas — lo que realmente te transforma."],
+        "derecha":  ["El elixir que recibes es {arquetipo}. Esto es lo que ganaste al atravesar el umbral."],
     },
     "camino_regreso": {
-        "derecha": ["El retorno está marcado por {arquetipo}. Llevas algo nuevo al mundo conocido."],
-        "invertida": ["El camino de regreso muestra {arquetipo} invertido: hay una tentación de no volver."],
+        "directa": ["El retorno al mundo ordinario está marcado por {arquetipo}. Llevas algo nuevo que el mundo necesita."],
+        "derecha":  ["El retorno está marcado por {arquetipo}. Llevas algo nuevo al mundo conocido."],
     },
     "resurreccion": {
-        "derecha": ["{arquetipo} es la última transformación antes de regresar. El héroe renace aquí."],
-        "invertida": ["La resurrección muestra {arquetipo} en su sombra: algo viejo aún se aferra a ti."],
+        "directa": ["{arquetipo} es la transformación final — la última muerte y renacimiento antes de cruzar de vuelta."],
+        "derecha":  ["{arquetipo} es la última transformación antes de regresar. El héroe renace aquí."],
     },
     "elixir": {
-        "derecha": ["Lo que traes de vuelta es {arquetipo}. Esto es el regalo para tu mundo."],
-        "invertida": ["El elixir aparece como {arquetipo} invertido: el regalo puede ser difícil de dar o recibir."],
+        "directa": ["Lo que traes de vuelta para tu mundo es {arquetipo}. Este es el regalo del viaje — lo que se transforma en servicio."],
+        "derecha":  ["Lo que traes de vuelta es {arquetipo}. Esto es el regalo para tu mundo."],
+    },
+    # ── Fuerza y Flaqueza ─────────────────────────────────────────────────────
+    "fuerza": {
+        "directa": [
+            "Tu recurso activo es {arquetipo}. No lo que aspiras a ser — lo que ya opera en ti y puedes usar ahora mismo.",
+            "{arquetipo} es lo que ya tienes disponible. Esta energía no necesita ser desarrollada: necesita ser reconocida y desplegada.",
+        ],
+    },
+    "flaqueza": {
+        "directa": [
+            "Lo que aún no integraste porta la energía de {arquetipo}. No es un defecto — es la parte de ti que tiene más para darte cuando se reconoce.",
+            "{arquetipo} es la sombra que opera desde lo no visto. Nombrarla no la elimina: la transforma en recurso.",
+        ],
+    },
+    # ── El Conflicto ─────────────────────────────────────────────────────────
+    "tension": {
+        "directa": [
+            "La tensión que atraviesa esta situación porta {arquetipo}. No la bloquea ni la resuelve — la profundiza. Lee las dos cartas como un sistema.",
+            "{arquetipo} es la fuerza que complica la situación. La tensión no es el problema — es lo que revela la verdadera estructura del momento.",
+        ],
+    },
+    # ── La Duda ───────────────────────────────────────────────────────────────
+    "consultante_d": {
+        "directa": [
+            "Tú en este momento de la duda encarnas {arquetipo}. Esta es la energía que eres mientras preguntas.",
+            "{arquetipo} es quien pregunta ahora. La duda no es externa — viene de aquí, de esta energía que eres tú.",
+        ],
+    },
+    "duda_a": {
+        "directa": [
+            "Una cara de la duda porta {arquetipo}. No es la opción correcta ni la incorrecta — es una energía real con su propia lógica.",
+            "{arquetipo} es una de las fuerzas en tensión. Para verla bien, no la evalúes: observa qué describe en tu vida real.",
+        ],
+    },
+    "duda_b": {
+        "directa": [
+            "La otra cara de la duda trae {arquetipo}. Tiene el mismo peso real que la primera — no se trata de elegir la mejor sino de ver ambas.",
+            "{arquetipo} es la segunda energía en juego. Ninguna cara de la duda es superior: las dos revelan algo verdadero.",
+        ],
+    },
+    "clave_d": {
+        "directa": [
+            "La clave para ver claramente es {arquetipo}. No dice qué elegir — muestra qué hay que entender antes de poder elegir.",
+            "{arquetipo} es lo que la psique ofrece cuando deja de pelear con la duda. No es una respuesta: es una perspectiva.",
+        ],
+    },
+    # ── La Liberación ────────────────────────────────────────────────────────
+    "bloqueo": {
+        "directa": [
+            "Lo que te impide ser tú mismo en esta situación porta {arquetipo}. No es el obstáculo externo — es el patrón que se repite internamente.",
+            "{arquetipo} es la fuerza que frena el movimiento. Nombrarlo con precisión es el primer paso de la liberación.",
+        ],
+    },
+    "medio": {
+        "directa": [
+            "El medio por el que puede ocurrir la liberación es {arquetipo}. No el destino — el movimiento concreto posible.",
+            "{arquetipo} es el puente entre el bloqueo y la acción. No lo busques fuera: ya está disponible.",
+        ],
+    },
+    "accion": {
+        "directa": [
+            "La acción concreta que la liberación requiere porta {arquetipo}. No es una actitud — es un movimiento real.",
+            "{arquetipo} es el gesto que transforma el medio en resultado. La liberación tiene una forma: esta.",
+        ],
+    },
+    "transformacion": {
+        "directa": [
+            "La transformación que ese movimiento produce porta {arquetipo}. No es el destino — es lo que cambia en ti en el proceso.",
+            "{arquetipo} es quien emerges al atravesar la acción. La transformación no es la meta: es el camino haciéndose visible.",
+        ],
+    },
+    "destino": {
+        "directa": [
+            "El objetivo real de este proceso porta {arquetipo}. No lo que creías buscar — lo que la tirada completa apunta.",
+            "{arquetipo} es lo que aparece cuando la liberación ocurre de verdad. Vale la pena verificar si eso es lo que realmente querías.",
+        ],
+    },
+    # ── El Héroe (5) ─────────────────────────────────────────────────────────
+    "partida": {
+        "directa": [
+            "El punto de partida real de este viaje es {arquetipo}. No dónde crees estar — dónde realmente estás.",
+            "{arquetipo} es el suelo desde el que partes. Antes de mirar hacia la meta, vale la pena reconocer este punto de origen.",
+        ],
+    },
+    "obstaculo_a": {
+        "directa": [
+            "El obstáculo exterior porta {arquetipo}. Lo que el mundo, las circunstancias o los otros ponen en el camino.",
+            "{arquetipo} es la resistencia que viene de afuera. No es solo un impedimento — es también un espejo de lo que falta integrar.",
+        ],
+    },
+    "obstaculo_b": {
+        "directa": [
+            "El obstáculo interior porta {arquetipo}. Lo que tú mismo pones en el camino sin darte cuenta.",
+            "{arquetipo} es la resistencia que viene de adentro. Este es el obstáculo más difícil de ver — y el más poderoso cuando se reconoce.",
+        ],
+    },
+    "clave_h": {
+        "directa": [
+            "La clave o aliado porta {arquetipo}. Puede leerse antes del obstáculo (cómo prepararse) o después (qué se aprende al atravesarlo).",
+            "{arquetipo} es el recurso que el viaje te entrega. No siempre se ve antes de llegar al obstáculo — a veces solo se reconoce después.",
+        ],
+    },
+    # ── El Mundo ─────────────────────────────────────────────────────────────
+    "esencia": {
+        "directa": [
+            "Tu esencia central porta {arquetipo}. La energía que eres en el núcleo, independiente del contexto o el rol.",
+            "{arquetipo} es quien eres cuando no estás actuando para nadie. Este es el centro desde el que se leen las otras cuatro cartas.",
+        ],
+    },
+    "intelectual": {
+        "directa": [
+            "Tu vida intelectual porta {arquetipo}. Cómo piensas, qué parte de tu mente está activa o dormida en relación a la pregunta.",
+            "{arquetipo} es la energía que gobierna tu pensamiento ahora. Observa si esa mente te sirve o te limita.",
+        ],
+    },
+    "emocional": {
+        "directa": [
+            "Tu vida emocional porta {arquetipo}. Lo que fluye o se bloquea en el dominio del sentir.",
+            "{arquetipo} es la energía que habita tu mundo afectivo. La carta no juzga — describe.",
+        ],
+    },
+    "sexual_creativo": {
+        "directa": [
+            "Tu energía creativa y vital porta {arquetipo}. La libido en el sentido amplio: lo que creas, deseas, generas.",
+            "{arquetipo} es la fuerza que anima tu deseo y tu creación. Observa si esa energía fluye o está contenida.",
+        ],
+    },
+    "material": {
+        "directa": [
+            "Tu vida material porta {arquetipo}. Cómo habitas el mundo tangible — los recursos, el cuerpo, lo que tienes y lo que te falta.",
+            "{arquetipo} es la energía que gobierna tu relación con lo concreto. El cuerpo, el dinero, el espacio que ocupas.",
+        ],
+    },
+    # ── Yo Realizado ─────────────────────────────────────────────────────────
+    "protagonista": {
+        "directa": [
+            "{arquetipo} es cómo te concives a ti mismo — no necesariamente quién eres, sino quién crees ser. La narrativa del yo.",
+            "El protagonista porta {arquetipo}. Esta es la identidad que proyectas y desde la que actúas — consciente o no.",
+        ],
+    },
+    "antagonista": {
+        "directa": [
+            "{arquetipo} es lo que rechazas de ti. No el enemigo — la energía de ti mismo que aún no integraste.",
+            "El antagonista porta {arquetipo}. No es lo opuesto al protagonista: es su polaridad necesaria. Sin este, el protagonista no se completa.",
+        ],
+    },
+    "mediador": {
+        "directa": [
+            "{arquetipo} es lo que ocurre entre el protagonista y el antagonista — el puente, la función que puede unir las dos polaridades.",
+            "El mediador porta {arquetipo}. Esta carta no elige un bando: sostiene la tensión para que ambas energías puedan dialogar.",
+        ],
+    },
+    "cometa_a": {
+        "directa": [
+            "{arquetipo} es lo que te nutre. Una energía que viene hacia ti y alimenta el proceso de realizarte.",
+            "El Cometa A porta {arquetipo}. Lo que llega, lo que te sostiene, lo que aporta sin que tengas que buscarlo.",
+        ],
+    },
+    "cometa_b": {
+        "directa": [
+            "{arquetipo} es lo que te expande — otra fuente de nutrición, en una dimensión diferente al primer cometa.",
+            "El Cometa B porta {arquetipo}. Una segunda energía que te alimenta desde otro ángulo. Compara las dos: ¿en qué se complementan?",
+        ],
+    },
+    "asteroide_a": {
+        "directa": [
+            "{arquetipo} es lo que te frena — la energía que ralentiza o dificulta el movimiento del protagonista.",
+            "El Asteroide A porta {arquetipo}. No necesariamente algo externo: puede ser una parte de ti que actúa en contra del proceso.",
+        ],
+    },
+    "asteroide_b": {
+        "directa": [
+            "{arquetipo} es lo que actúa en tu perjuicio — consciente o no. La segunda resistencia.",
+            "El Asteroide B porta {arquetipo}. Compara con el primer asteroide: ¿actúan en la misma dirección o en ángulos diferentes?",
+        ],
+    },
+    "resultado_a": {
+        "directa": [
+            "{arquetipo} es lo que emerge de la síntesis protagonista–mediador–antagonista. El primer resultado visible.",
+            "El Resultado A porta {arquetipo}. Lo que comienza a manifestarse cuando la tensión entre el protagonista y el antagonista encuentra su mediador.",
+        ],
+    },
+    "resultado_b": {
+        "directa": [
+            "{arquetipo} es la personalidad que puede nacer — quién puedes llegar a ser si todo el patrón se integra.",
+            "El Resultado B porta {arquetipo}. No es un destino — es una posibilidad. El yo que emerge cuando todo el sistema se realiza.",
+        ],
+    },
+    "secreto": {
+        "directa": [
+            "{arquetipo} es el secreto íntimo que rige todo desde lo invisible. El núcleo más profundo de la tirada.",
+            "El Secreto porta {arquetipo}. Esta carta no se anuncia — opera silenciosamente debajo de todo lo demás. Ver esto puede cambiar la lectura completa.",
+        ],
     },
 }
 
@@ -349,6 +542,184 @@ def _sintetizar_tirada(cartas: list, pregunta: str, tipo_tirada: str) -> str:
             f"sigue sin ser nombrado en voz alta?"
         )
         return sintesis + random.choice(CIERRES_TAROT)
+
+    # ── Una carta ────────────────────────────────────────────────────────────
+    if tipo_tirada == "un_arcano" and len(cartas) == 1:
+        c = cartas[0]
+        return (
+            f"{intro_pregunta}el oráculo responde con una sola imagen: **{c['nombre']}**.\n\n"
+            f"Una carta no da una respuesta — da un espejo. Lo que ves en ella ya vive en ti.\n\n"
+            f"La pregunta que abre la imagen: ¿en qué parte de tu vida está actuando esta energía "
+            f"sin haber sido nombrada?"
+        ) + random.choice(CIERRES_TAROT)
+
+    # ── Fuerza y Flaqueza ────────────────────────────────────────────────────
+    if tipo_tirada == "fuerza_flaqueza" and all(k in por_pos for k in ("fuerza", "flaqueza")):
+        f_ = por_pos["fuerza"]
+        fl = por_pos["flaqueza"]
+        return (
+            f"{intro_pregunta}las dos cartas no se oponen — se complementan:\n\n"
+            f"**{f_['nombre']}** como recurso: la energía que ya opera en ti y puedes desplegar ahora mismo. "
+            f"No necesita ser construida — necesita ser reconocida.\n\n"
+            f"**{fl['nombre']}** como sombra: la energía que aún no integraste. La flaqueza no es ausencia de fuerza — "
+            f"es fuerza que todavía no encontró su forma consciente.\n\n"
+            f"La pregunta que une las dos: ¿cómo se alimentan mutuamente estas dos energías "
+            f"en lo que estás viviendo ahora?"
+        ) + random.choice(CIERRES_TAROT)
+
+    # ── El Conflicto ─────────────────────────────────────────────────────────
+    if tipo_tirada == "el_conflicto" and all(k in por_pos for k in ("situacion", "tension")):
+        sit = por_pos["situacion"]
+        ten = por_pos["tension"]
+        return (
+            f"{intro_pregunta}las dos cartas forman un sistema:\n\n"
+            f"**{sit['nombre']}** es la situación o el deseo presente — la energía que está en primer plano.\n\n"
+            f"**{ten['nombre']}** no bloquea esa situación: la atraviesa, la complica, la profundiza. "
+            f"La tensión no es el problema — es lo que revela la verdadera estructura del momento.\n\n"
+            f"¿Qué está diciendo la tensión sobre la situación que todavía no habías escuchado?"
+        ) + random.choice(CIERRES_TAROT)
+
+    # ── La Duda ──────────────────────────────────────────────────────────────
+    if tipo_tirada == "la_duda" and "consultante_d" in por_pos:
+        cons = por_pos["consultante_d"]
+        da   = por_pos.get("duda_a")
+        db   = por_pos.get("duda_b")
+        clave = por_pos.get("clave_d")
+        partes = [f"{intro_pregunta}la tirada muestra la estructura de la duda:\n"]
+        partes.append(f"**{cons['nombre']}** eres tú en este momento — la energía que encarnas mientras preguntas.")
+        if da and db:
+            partes.append(
+                f"Las dos caras de la duda son **{da['nombre']}** y **{db['nombre']}**. "
+                f"No son la opción correcta y la incorrecta — son dos energías reales con su propia lógica. "
+                f"La duda no se resuelve eligiendo la mejor: se resuelve entendiendo qué describe cada una."
+            )
+        if clave:
+            partes.append(
+                f"**{clave['nombre']}** como clave no dice qué elegir — muestra qué hay que ver antes de poder elegir."
+            )
+        partes.append("\n¿Cuál de las dos caras de la duda describe algo verdadero sobre tu situación que todavía no nombraste?")
+        return "\n\n".join(partes) + random.choice(CIERRES_TAROT)
+
+    # ── La Liberación ────────────────────────────────────────────────────────
+    if tipo_tirada == "la_liberacion" and "bloqueo" in por_pos:
+        bl = por_pos["bloqueo"]
+        me = por_pos.get("medio")
+        ac = por_pos.get("accion")
+        tr = por_pos.get("transformacion")
+        de = por_pos.get("destino")
+        partes = [f"{intro_pregunta}las cinco cartas trazan un arco de movimiento:\n"]
+        partes.append(f"**{bl['nombre']}** como bloqueo: el patrón que se repite y frena el movimiento real.")
+        if me:
+            partes.append(f"**{me['nombre']}** como medio: la forma en que la liberación puede ocurrir — no el destino, el movimiento posible.")
+        if ac:
+            partes.append(f"**{ac['nombre']}** como acción: el gesto concreto que convierte el medio en resultado.")
+        if tr:
+            partes.append(f"**{tr['nombre']}** como transformación: quién emerges al atravesar esa acción.")
+        if de:
+            partes.append(f"**{de['nombre']}** como destino: el objetivo real — lo que aparece cuando la liberación ocurre de verdad.")
+        partes.append(
+            "\nCada carta transforma la anterior. Este no es un listado de consejos — "
+            "es una historia de movimiento. ¿En cuál de estas cinco etapas estás realmente ahora?"
+        )
+        return "\n\n".join(partes) + random.choice(CIERRES_TAROT)
+
+    # ── El Héroe (5) ─────────────────────────────────────────────────────────
+    if tipo_tirada == "el_heroe_5" and "partida" in por_pos:
+        pa = por_pos["partida"]
+        me = por_pos.get("meta")
+        oa = por_pos.get("obstaculo_a")
+        ob = por_pos.get("obstaculo_b")
+        cl = por_pos.get("clave_h")
+        partes = [f"{intro_pregunta}el viaje tiene esta forma:\n"]
+        partes.append(f"**{pa['nombre']}** es el punto de partida real — el suelo desde el que el héroe se mueve.")
+        if me:
+            partes.append(f"**{me['nombre']}** es la meta — hacia dónde se dirige la energía.")
+        if oa and ob:
+            partes.append(
+                f"Los dos obstáculos forman un par: **{oa['nombre']}** (exterior — lo que el mundo pone) "
+                f"y **{ob['nombre']}** (interior — lo que el propio héroe pone). "
+                f"Leídos juntos, revelan la naturaleza real de la resistencia."
+            )
+        if cl:
+            partes.append(
+                f"**{cl['nombre']}** como clave puede leerse antes del obstáculo (cómo prepararse) "
+                f"o después (qué se aprende al atravesarlo)."
+            )
+        partes.append("\n¿Cuál de los dos obstáculos — el exterior o el interior — es en realidad el más difícil de atravesar?")
+        return "\n\n".join(partes) + random.choice(CIERRES_TAROT)
+
+    # ── El Mundo ─────────────────────────────────────────────────────────────
+    if tipo_tirada == "el_mundo" and "esencia" in por_pos:
+        es = por_pos["esencia"]
+        dims = {
+            "intelectual":     ("águila", "cómo piensas"),
+            "emocional":       ("ángel",  "cómo sientes"),
+            "sexual_creativo": ("león",   "tu energía vital y creadora"),
+            "material":        ("buey",   "cómo habitas el mundo"),
+        }
+        partes = [
+            f"{intro_pregunta}las cinco cartas dibujan el mapa completo del ser:\n",
+            f"**{es['nombre']}** en el centro es tu esencia — quien eres cuando no estás actuando para nadie.",
+        ]
+        for key, (figura, desc) in dims.items():
+            if key in por_pos:
+                partes.append(f"**{por_pos[key]['nombre']}** ({figura}) describe {desc}.")
+        partes.append(
+            "\nEl patrón que importa: ¿qué dimensión está en tensión con la esencia? "
+            "¿Cuál fluye con facilidad? Ahí está lo que la tirada quiere que veas."
+        )
+        return "\n\n".join(partes) + random.choice(CIERRES_TAROT)
+
+    # ── Yo Realizado ─────────────────────────────────────────────────────────
+    if tipo_tirada == "yo_realizado" and "protagonista" in por_pos:
+        prot = por_pos["protagonista"]
+        anta = por_pos.get("antagonista")
+        medi = por_pos.get("mediador")
+        sec  = por_pos.get("secreto")
+        rb   = por_pos.get("resultado_b")
+        partes = [f"{intro_pregunta}el Yo Realizado revela la estructura de la psique en este momento:\n"]
+        partes.append(
+            f"**{prot['nombre']}** como protagonista: cómo te concives. "
+            + (f"**{anta['nombre']}** como antagonista: lo que rechazas de ti mismo." if anta else "")
+        )
+        if medi:
+            partes.append(f"**{medi['nombre']}** como mediador: la función que puede unir esas dos polaridades.")
+        if sec:
+            partes.append(
+                f"**{sec['nombre']}** en el secreto íntimo: el núcleo que rige todo desde lo invisible. "
+                f"Este es el dato central de la tirada — todo lo demás orbita alrededor de aquí."
+            )
+        if rb:
+            partes.append(f"**{rb['nombre']}** como resultado final: quien puedes llegar a ser si todo el patrón se integra.")
+        partes.append(
+            "\nLa pregunta que abre la tirada entera: ¿qué parte del antagonista "
+            "— lo que rechazas de ti — tiene en realidad la clave de lo que más necesitas?"
+        )
+        return "\n\n".join(partes) + random.choice(CIERRES_TAROT)
+
+    # ── Viaje del Héroe ───────────────────────────────────────────────────────
+    if tipo_tirada == "viaje_heroe" and "caverna" in por_pos:
+        cav = por_pos["caverna"]
+        ps  = por_pos.get("prueba_suprema")
+        eli = por_pos.get("elixir")
+        lla = por_pos.get("llamado")
+        partes = [f"{intro_pregunta}el Viaje del Héroe despliega el arco completo:\n"]
+        if lla:
+            partes.append(f"El viaje comienza con **{lla['nombre']}** como llamado — la forma que tiene la aventura en tu vida.")
+        partes.append(
+            f"El corazón del viaje: **{cav['nombre']}** en la Caverna — "
+            + (f"y **{ps['nombre']}** como prueba suprema. " if ps else ". ")
+            + "Estas dos etapas son el núcleo real — todo lo anterior llevaba aquí, todo lo que sigue nace desde aquí."
+        )
+        if eli:
+            partes.append(
+                f"**{eli['nombre']}** como elixir: no lo que se ganó — lo que se soltó. "
+                f"El regalo del viaje raramente es lo que se esperaba al partir."
+            )
+        partes.append(
+            "\n¿Qué murió simbólicamente en la Caverna? ¿Quién regresa que no es el mismo que partió?"
+        )
+        return "\n\n".join(partes) + random.choice(CIERRES_TAROT)
 
     # ── Cruz de 5 ─────────────────────────────────────────────────────────────
     if tipo_tirada == "cruz_normal" and "presente" in por_pos:

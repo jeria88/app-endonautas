@@ -216,7 +216,7 @@
 
     <div class="panel" id="loaderState" style="display:none;text-align:center;padding:3rem">
       <div class="typing-row show"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-      <p style="font-size:0.85rem;color:var(--muted);margin-top:0.5rem">El oráculo consulta el patrón…</p>
+      <p id="loaderMsg" style="font-size:0.85rem;color:var(--muted);margin-top:0.5rem">Barajando el mazo…</p>
     </div>
 
     <div id="resultContent" style="display:none">
@@ -408,6 +408,26 @@ const GRID_LAYOUTS = {
   },
 };
 
+const LOADER_PHASES = [
+  "Barajando el mazo…",
+  "Seleccionando las cartas…",
+  "Consultando el patrón arquetípico…",
+  "El oráculo interpreta las imágenes…",
+  "Leyendo el diálogo entre cartas…",
+];
+let _loaderTimer = null;
+function startLoader() {
+  let idx = 0;
+  document.getElementById('loaderMsg').textContent = LOADER_PHASES[0];
+  _loaderTimer = setInterval(() => {
+    idx = Math.min(idx + 1, LOADER_PHASES.length - 1);
+    document.getElementById('loaderMsg').textContent = LOADER_PHASES[idx];
+  }, 5000);
+}
+function stopLoader() {
+  if (_loaderTimer) { clearInterval(_loaderTimer); _loaderTimer = null; }
+}
+
 let tiradaActual = 'tres_cartas';
 document.querySelectorAll('.tirada-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -432,6 +452,7 @@ document.getElementById('tirarBtn').addEventListener('click', async () => {
   document.getElementById('resultContent').style.display = 'none';
   document.getElementById('loaderState').style.display = '';
   document.getElementById('tirarBtn').disabled = true;
+  startLoader();
   try {
     const resp = await fetch('/oraculo/api/tarot/', {
       method:'POST',
@@ -445,6 +466,7 @@ document.getElementById('tirarBtn').addEventListener('click', async () => {
     document.getElementById('emptyState').style.display = '';
     document.getElementById('emptyState').innerHTML = '<p style="color:var(--rose);font-size:0.85rem">Error al consultar. Intenta nuevamente.</p>';
   } finally {
+    stopLoader();
     document.getElementById('loaderState').style.display = 'none';
     document.getElementById('tirarBtn').disabled = false;
   }
