@@ -1,42 +1,110 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Nacimiento — Endonautas{% endblock %}
 {% block content %}
 <style data-page-style>
-.birth-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.5rem; }
-@media(max-width:700px){ .birth-grid{grid-template-columns:1fr} }
-.birth-card {
-  position:relative;overflow:hidden;
-  background:var(--surface);
-  backdrop-filter:blur(14px);
+.birth-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1.25rem;
+  margin-top:1.5rem;
+}
+@media(max-width:700px){ .birth-grid{grid-template-columns:1fr;max-width:360px} }
+
+.birth-img-card {
+  position:relative;
+  border-radius:18px;
+  overflow:hidden;
+  text-decoration:none;
+  display:block;
   border:1px solid var(--border);
-  border-radius:16px;
-  padding:2rem 1.5rem 1.75rem;
-  text-decoration:none;color:inherit;
-  display:flex;flex-direction:column;gap:0;
-  transition:border-color 0.25s,transform 0.2s;
-  min-height:240px;
+  transition:border-color 0.3s, transform 0.25s, box-shadow 0.3s;
+  cursor:pointer;
 }
-.birth-card:hover { border-color:var(--card-accent,rgba(126,204,205,0.5));transform:translateY(-2px); }
-.birth-card::before {
-  content:'';position:absolute;inset:0;opacity:0;
-  background:radial-gradient(ellipse at 30% 20%, var(--card-glow,rgba(126,204,205,0.12)) 0%, transparent 70%);
-  transition:opacity 0.3s;
+.birth-img-card:hover {
+  border-color:var(--card-accent,rgba(78,205,196,0.6));
+  transform:translateY(-3px);
+  box-shadow:0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px var(--card-accent,rgba(78,205,196,0.3));
 }
-.birth-card:hover::before { opacity:1; }
-.bc-stripe {
-  position:absolute;top:0;left:0;right:0;height:3px;
-  background:var(--card-accent,rgba(126,204,205,0.6));
-  border-radius:16px 16px 0 0;
+
+/* 1:1 crop container */
+.bic-img-wrap {
+  position:relative;
+  width:100%;
+  aspect-ratio:1/1;
+  overflow:hidden;
 }
-.bc-symbol {
-  font-size:2.8rem;line-height:1;margin-bottom:1.1rem;
-  filter:drop-shadow(0 0 12px var(--card-glow,rgba(126,204,205,0.3)));
+.bic-img-wrap img {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center center;
+  transition:transform 0.5s ease, filter 0.3s;
+  filter:brightness(0.85) saturate(1.1);
 }
-.bc-name { font-weight:700;font-size:1.05rem;margin-bottom:0.35rem;letter-spacing:-0.01em; }
-.bc-system { font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--card-color,var(--muted));margin-bottom:0.75rem; }
-.bc-desc { font-size:0.8rem;color:var(--muted);line-height:1.6;flex:1; }
-.bc-footer { margin-top:1.25rem;display:flex;align-items:center;justify-content:space-between; }
-.bc-cta { font-size:0.78rem;color:var(--card-color,var(--accent));font-weight:600; }
+.birth-img-card:hover .bic-img-wrap img {
+  transform:scale(1.04);
+  filter:brightness(1) saturate(1.25);
+}
+
+/* color reveal overlay */
+.bic-overlay {
+  position:absolute;
+  inset:0;
+  background:linear-gradient(
+    180deg,
+    transparent 30%,
+    var(--card-overlay-start, rgba(78,205,196,0.0)) 60%,
+    var(--card-overlay-end, rgba(78,205,196,0.45)) 100%
+  );
+  opacity:0;
+  transition:opacity 0.35s;
+}
+.birth-img-card:hover .bic-overlay { opacity:1; }
+
+/* badge sobre la imagen */
+.bic-badge {
+  position:absolute;
+  top:10px;
+  right:10px;
+  z-index:2;
+}
+
+/* info debajo */
+.bic-info {
+  padding:0.85rem 1rem 0.9rem;
+  background:var(--surface);
+}
+.bic-system {
+  font-size:0.62rem;
+  text-transform:uppercase;
+  letter-spacing:0.12em;
+  color:var(--card-accent,var(--muted));
+  margin-bottom:0.2rem;
+  font-weight:600;
+}
+.bic-name {
+  font-weight:700;
+  font-size:0.97rem;
+  color:var(--text);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.bic-cta {
+  font-size:0.72rem;
+  opacity:0.4;
+  transition:opacity 0.25s;
+  font-weight:600;
+  flex-shrink:0;
+  margin-left:0.5rem;
+}
+.birth-img-card:hover .bic-cta {
+  opacity:1;
+  color:var(--card-accent);
+}
 </style>
 
 <div style="margin-bottom:1.75rem">
@@ -52,48 +120,54 @@
 
 <div class="birth-grid">
 
-  <a class="birth-card" href="/nacimiento/astral/" onclick="spaGo(event,this)"
-     style="--card-accent:#4ecdc4;--card-glow:rgba(78,205,196,0.18);--card-color:#4ecdc4">
-    <div class="bc-stripe"></div>
-    <div class="bc-symbol">✦</div>
-    <div class="bc-system">Astrología Occidental</div>
-    <div class="bc-name">Carta Astral</div>
-    <div class="bc-desc">Sol, Luna, Ascendente y los planetas personales en los 12 signos. El mapa del cielo en el momento exacto de tu nacimiento.</div>
-    <div class="bc-footer">
-      {% for r in reports %}{% if r.report_type == 'astral' %}
-      <span class="badge {% if r.status == 'done' %}badge-validado{% elif r.status == 'error' %}badge-adaptado{% else %}badge-endonauta{% endif %}">{{ r.get_status_display }}</span>
-      {% endif %}{% endfor %}
-      <span class="bc-cta">Ver lectura →</span>
+  <a class="birth-img-card" href="/nacimiento/astral/" onclick="spaGo(event,this)"
+     style="--card-accent:#4ecdc4;--card-overlay-start:rgba(78,205,196,0.0);--card-overlay-end:rgba(78,205,196,0.5)">
+    <div class="bic-img-wrap">
+      <img src="{% static 'img/carta-astral.jpg' %}" alt="Carta Astral">
+      <div class="bic-overlay"></div>
+      <div class="bic-badge">
+        {% for r in reports %}{% if r.report_type == 'astral' %}
+        <span class="badge {% if r.status == 'done' %}badge-validado{% elif r.status == 'error' %}badge-adaptado{% else %}badge-endonauta{% endif %}">{{ r.get_status_display }}</span>
+        {% endif %}{% endfor %}
+      </div>
+    </div>
+    <div class="bic-info">
+      <div class="bic-system">Astrología Occidental</div>
+      <div class="bic-name">Carta Astral <span class="bic-cta">Ver →</span></div>
     </div>
   </a>
 
-  <a class="birth-card" href="/nacimiento/hd/" onclick="spaGo(event,this)"
-     style="--card-accent:#9b8ec4;--card-glow:rgba(155,142,196,0.18);--card-color:#9b8ec4">
-    <div class="bc-stripe"></div>
-    <div class="bc-symbol">◈</div>
-    <div class="bc-system">Human Design</div>
-    <div class="bc-name">Diseño Humano</div>
-    <div class="bc-desc">Tu Tipo, Autoridad, Perfil y los nueve Centros energéticos. Instrucciones de fábrica para vivir en coherencia con tu diseño.</div>
-    <div class="bc-footer">
-      {% for r in reports %}{% if r.report_type == 'hd' %}
-      <span class="badge {% if r.status == 'done' %}badge-validado{% elif r.status == 'error' %}badge-adaptado{% else %}badge-endonauta{% endif %}">{{ r.get_status_display }}</span>
-      {% endif %}{% endfor %}
-      <span class="bc-cta">Ver lectura →</span>
+  <a class="birth-img-card" href="/nacimiento/hd/" onclick="spaGo(event,this)"
+     style="--card-accent:#9b8ec4;--card-overlay-start:rgba(155,142,196,0.0);--card-overlay-end:rgba(155,142,196,0.5)">
+    <div class="bic-img-wrap">
+      <img src="{% static 'img/dh.jpg' %}" alt="Diseño Humano">
+      <div class="bic-overlay"></div>
+      <div class="bic-badge">
+        {% for r in reports %}{% if r.report_type == 'hd' %}
+        <span class="badge {% if r.status == 'done' %}badge-validado{% elif r.status == 'error' %}badge-adaptado{% else %}badge-endonauta{% endif %}">{{ r.get_status_display }}</span>
+        {% endif %}{% endfor %}
+      </div>
+    </div>
+    <div class="bic-info">
+      <div class="bic-system">Human Design</div>
+      <div class="bic-name">Diseño Humano <span class="bic-cta">Ver →</span></div>
     </div>
   </a>
 
-  <a class="birth-card" href="/nacimiento/saju/" onclick="spaGo(event,this)"
-     style="--card-accent:#e07060;--card-glow:rgba(224,112,96,0.15);--card-color:#e07060">
-    <div class="bc-stripe"></div>
-    <div class="bc-symbol">◎</div>
-    <div class="bc-system">Astrología China</div>
-    <div class="bc-name">Saju / BaZi</div>
-    <div class="bc-desc">Los cuatro pilares del destino: año, mes, día y hora de nacimiento revelan el patrón energético de tu vida.</div>
-    <div class="bc-footer">
-      {% for r in reports %}{% if r.report_type == 'saju' %}
-      <span class="badge {% if r.status == 'done' %}badge-validado{% elif r.status == 'error' %}badge-adaptado{% else %}badge-endonauta{% endif %}">{{ r.get_status_display }}</span>
-      {% endif %}{% endfor %}
-      <span class="bc-cta">Ver lectura →</span>
+  <a class="birth-img-card" href="/nacimiento/saju/" onclick="spaGo(event,this)"
+     style="--card-accent:#e07060;--card-overlay-start:rgba(224,112,96,0.0);--card-overlay-end:rgba(224,112,96,0.5)">
+    <div class="bic-img-wrap">
+      <img src="{% static 'img/saju.jpg' %}" alt="Saju / BaZi">
+      <div class="bic-overlay"></div>
+      <div class="bic-badge">
+        {% for r in reports %}{% if r.report_type == 'saju' %}
+        <span class="badge {% if r.status == 'done' %}badge-validado{% elif r.status == 'error' %}badge-adaptado{% else %}badge-endonauta{% endif %}">{{ r.get_status_display }}</span>
+        {% endif %}{% endfor %}
+      </div>
+    </div>
+    <div class="bic-info">
+      <div class="bic-system">Astrología China</div>
+      <div class="bic-name">Saju / BaZi <span class="bic-cta">Ver →</span></div>
     </div>
   </a>
 

@@ -1,31 +1,100 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Oráculo — Endonautas{% endblock %}
 {% block content %}
 <style data-page-style>
-.oracle-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;margin-top:1.5rem;margin-bottom:1.5rem; }
-.oracle-card {
-  background:var(--surface);backdrop-filter:blur(14px);
-  border:1px solid var(--border);border-radius:var(--radius);
-  padding:1.5rem;text-decoration:none;color:inherit;
-  transition:border-color 0.25s,transform 0.25s;display:block;position:relative;overflow:hidden;
+.oracle-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1.25rem;
+  margin-top:1.5rem;
+  margin-bottom:1.5rem;
 }
-.oracle-card::before { content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--card-line);opacity:0;transition:opacity 0.25s; }
-.oracle-card:hover { border-color:var(--border-active);transform:translateY(-2px); }
-.oracle-card:hover::before { opacity:1; }
-.oracle-card.tarot  { --card-line:var(--calipso); }
-.oracle-card.iching { --card-line:var(--violet); }
-.oracle-card.fractal { --card-line:var(--amber); }
-.oc-icon { font-size:1.6rem;opacity:0.45;margin-bottom:0.75rem;display:block; }
-.oc-tag { font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;display:block;margin-bottom:0.4rem; }
-.oracle-card.tarot  .oc-tag { color:var(--calipso); }
-.oracle-card.iching .oc-tag { color:var(--violet); }
-.oracle-card.fractal .oc-tag { color:var(--amber); }
-.oc-name { font-weight:600;font-size:1.05rem;margin-bottom:0.5rem;line-height:1.2; }
-.oc-desc { font-size:0.78rem;color:var(--muted);line-height:1.6;margin-bottom:1rem; }
-.oc-cta { font-size:0.78rem;font-weight:600;opacity:0.35;transition:opacity 0.2s; }
-.oracle-card.tarot:hover  .oc-cta { opacity:1;color:var(--calipso); }
-.oracle-card.iching:hover .oc-cta { opacity:1;color:var(--violet); }
-.oracle-card.fractal:hover .oc-cta { opacity:1;color:var(--amber); }
+@media(max-width:700px){ .oracle-grid{grid-template-columns:1fr;max-width:360px} }
+
+.oracle-img-card {
+  position:relative;
+  border-radius:18px;
+  overflow:hidden;
+  text-decoration:none;
+  display:block;
+  border:1px solid var(--border);
+  transition:border-color 0.3s, transform 0.25s, box-shadow 0.3s;
+  cursor:pointer;
+}
+.oracle-img-card:hover {
+  border-color:var(--card-accent,rgba(78,205,196,0.6));
+  transform:translateY(-3px);
+  box-shadow:0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px var(--card-accent,rgba(78,205,196,0.3));
+}
+
+.oic-img-wrap {
+  position:relative;
+  width:100%;
+  aspect-ratio:1/1;
+  overflow:hidden;
+}
+.oic-img-wrap img {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center center;
+  transition:transform 0.5s ease, filter 0.3s;
+  filter:brightness(0.85) saturate(1.1);
+}
+.oracle-img-card:hover .oic-img-wrap img {
+  transform:scale(1.04);
+  filter:brightness(1) saturate(1.25);
+}
+
+.oic-overlay {
+  position:absolute;
+  inset:0;
+  background:linear-gradient(
+    180deg,
+    transparent 30%,
+    var(--card-overlay-start, rgba(78,205,196,0.0)) 60%,
+    var(--card-overlay-end, rgba(78,205,196,0.45)) 100%
+  );
+  opacity:0;
+  transition:opacity 0.35s;
+}
+.oracle-img-card:hover .oic-overlay { opacity:1; }
+
+.oic-info {
+  padding:0.85rem 1rem 0.9rem;
+  background:var(--surface);
+}
+.oic-tag {
+  font-size:0.62rem;
+  text-transform:uppercase;
+  letter-spacing:0.12em;
+  color:var(--card-accent,var(--muted));
+  margin-bottom:0.2rem;
+  font-weight:600;
+}
+.oic-name {
+  font-weight:700;
+  font-size:0.97rem;
+  color:var(--text);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.oic-cta {
+  font-size:0.72rem;
+  opacity:0.4;
+  transition:opacity 0.25s;
+  font-weight:600;
+  flex-shrink:0;
+  margin-left:0.5rem;
+}
+.oracle-img-card:hover .oic-cta {
+  opacity:1;
+  color:var(--card-accent);
+}
 </style>
 
 <div style="margin-bottom:2rem">
@@ -35,27 +104,43 @@
 </div>
 
 <div class="oracle-grid">
-  <a class="oracle-card tarot" href="/oraculo/tarot/" onclick="spaGo(event,this)" data-preset="oraculo">
-    <span class="oc-icon">⬡</span>
-    <span class="oc-tag">Tarot Terapéutico</span>
-    <div class="oc-name">Arquetipos<br>en tirada</div>
-    <p class="oc-desc">78 cartas junguianas. 5 tipos de tirada — desde un arcano hasta el Viaje del Héroe completo.</p>
-    <span class="oc-cta">Consultar →</span>
+
+  <a class="oracle-img-card" href="/oraculo/tarot/" onclick="spaGo(event,this)"
+     style="--card-accent:#4ecdc4;--card-overlay-start:rgba(78,205,196,0.0);--card-overlay-end:rgba(78,205,196,0.5)">
+    <div class="oic-img-wrap">
+      <img src="{% static 'img/tarot-hub.jpg' %}" alt="Tarot">
+      <div class="oic-overlay"></div>
+    </div>
+    <div class="oic-info">
+      <div class="oic-tag">Tarot Terapéutico</div>
+      <div class="oic-name">Arquetipos en tirada <span class="oic-cta">Consultar →</span></div>
+    </div>
   </a>
-  <a class="oracle-card iching" href="/oraculo/iching/" onclick="spaGo(event,this)" data-preset="oraculo">
-    <span class="oc-icon">☯</span>
-    <span class="oc-tag">I Ching</span>
-    <div class="oc-name">Oráculo<br>taoísta</div>
-    <p class="oc-desc">64 hexagramas. El Libro de los Cambios revela el principio en movimiento detrás de la situación.</p>
-    <span class="oc-cta">Consultar →</span>
+
+  <a class="oracle-img-card" href="/oraculo/iching/" onclick="spaGo(event,this)"
+     style="--card-accent:#f6c90e;--card-overlay-start:rgba(246,201,14,0.0);--card-overlay-end:rgba(246,201,14,0.45)">
+    <div class="oic-img-wrap">
+      <img src="{% static 'img/iching.jpg' %}" alt="I Ching">
+      <div class="oic-overlay"></div>
+    </div>
+    <div class="oic-info">
+      <div class="oic-tag">I Ching</div>
+      <div class="oic-name">Oráculo taoísta <span class="oic-cta">Consultar →</span></div>
+    </div>
   </a>
-  <a class="oracle-card fractal" href="/oraculo/fractal/" onclick="spaGo(event,this)" data-preset="oraculo">
-    <span class="oc-icon">◈</span>
-    <span class="oc-tag">Oráculo Fractal</span>
-    <div class="oc-name">33 cartas<br>kabbalísticas</div>
-    <p class="oc-desc">22 arcanos con verbos imperativos + 11 sefirot. Sistema de Alanis Mika Yuda. La pregunta convoca el arquetipo.</p>
-    <span class="oc-cta">Consultar →</span>
+
+  <a class="oracle-img-card" href="/oraculo/fractal/" onclick="spaGo(event,this)"
+     style="--card-accent:#60a5fa;--card-overlay-start:rgba(96,165,250,0.0);--card-overlay-end:rgba(96,165,250,0.5)">
+    <div class="oic-img-wrap">
+      <img src="{% static 'img/oraculo-fractal.jpg' %}" alt="Oráculo Fractal">
+      <div class="oic-overlay"></div>
+    </div>
+    <div class="oic-info">
+      <div class="oic-tag">Oráculo Fractal</div>
+      <div class="oic-name">33 cartas kabbalísticas <span class="oic-cta">Consultar →</span></div>
+    </div>
   </a>
+
 </div>
 
 <div class="panel panel-sm" style="font-size:0.82rem;color:var(--muted);line-height:1.6;display:flex;gap:0.75rem">
