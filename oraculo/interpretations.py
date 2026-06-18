@@ -309,14 +309,79 @@ def generar_interpretacion_tarot(datos: dict) -> dict:
         por_carta[posicion_clave] = texto_carta
         partes.append(texto_carta)
 
-    cierre = random.choice(CIERRES_TAROT)
-    texto_completo = "\n\n".join(partes) + cierre
+    texto_completo = _sintetizar_tirada(cartas, datos.get("pregunta", ""), datos.get("tipo_tirada", ""))
 
     return {
         "texto_completo": texto_completo,
         "por_carta": por_carta,
         "fuente": "estatico",
     }
+
+
+def _sintetizar_tirada(cartas: list, pregunta: str, tipo_tirada: str) -> str:
+    """Genera una lectura de integración que vincula las cartas entre sí y con la pregunta."""
+    por_pos = {c.get("posicion_clave", ""): c for c in cartas}
+    intro_pregunta = f"Ante «{pregunta}», " if pregunta.strip() else ""
+
+    # ── Raíz–Tallo–Flor ──────────────────────────────────────────────────────
+    if tipo_tirada == "tres_cartas" and all(k in por_pos for k in ("raiz", "tallo", "flor")):
+        raiz = por_pos["raiz"]
+        tallo = por_pos["tallo"]
+        flor = por_pos["flor"]
+
+        raiz_estado = "pero sin ser reconocida — opera desde la sombra" if raiz["estado"] == "contraída" else "activa y visible"
+        tallo_estado = "replegada, sin flujo libre" if tallo["estado"] == "contraída" else "en movimiento"
+        flor_estado = "bloqueado todavía" if flor["estado"] == "contraída" else "disponible si la raíz se nombra"
+
+        sintesis = (
+            f"{intro_pregunta}las tres cartas revelan un solo arco:\n\n"
+            f"**{raiz['nombre']}** en la raíz opera {raiz_estado}. "
+            f"Es la fuerza que origina la situación que preguntas — haya o no conciencia de ella.\n\n"
+            f"**{tallo['nombre']}** en el presente muestra cómo esa raíz se expresa hoy ({tallo_estado}). "
+            f"No es una situación separada: es la raíz manifestándose.\n\n"
+            f"**{flor['nombre']}** señala el potencial ({flor_estado}). "
+            f"No es destino — es lo que puede nacer cuando la energía de la raíz deja de operar en la sombra.\n\n"
+            f"La pregunta que atraviesa las tres: ¿qué de lo que origina esta situación "
+            f"sigue sin ser nombrado en voz alta?"
+        )
+        return sintesis + random.choice(CIERRES_TAROT)
+
+    # ── Cruz de 5 ─────────────────────────────────────────────────────────────
+    if tipo_tirada == "cruz_normal" and "presente" in por_pos:
+        presente = por_pos["presente"]
+        sombra = por_pos.get("sombra") or por_pos.get("obstaculo")
+        pasado = por_pos.get("pasado")
+        camino = por_pos.get("camino") or por_pos.get("futuro_cercano")
+        fundamento = por_pos.get("fundamento")
+
+        partes_cruz = [f"{intro_pregunta}la Cruz revela la estructura completa del momento:\n"]
+        if fundamento:
+            partes_cruz.append(f"**{fundamento['nombre']}** como fundamento inconsciente sostiene todo lo demás.")
+        partes_cruz.append(f"**{presente['nombre']}** en el centro es la energía que domina ahora mismo.")
+        if sombra:
+            partes_cruz.append(f"**{sombra['nombre']}** como sombra no se opone al presente — completa lo que el presente no puede ver solo.")
+        if pasado:
+            partes_cruz.append(f"**{pasado['nombre']}** en el pasado aún resuena en la situación actual.")
+        if camino:
+            partes_cruz.append(f"**{camino['nombre']}** indica hacia dónde se mueve la energía si el patrón continúa.")
+
+        partes_cruz.append("\nEl patrón completo: lo que el pasado dejó, lo que la sombra revela, y lo que el camino señala son una misma fuerza vista desde ángulos distintos.")
+        return "\n\n".join(partes_cruz) + random.choice(CIERRES_TAROT)
+
+    # ── Genérico (Cruz Celta, Viaje del Héroe, 1 carta, otros) ───────────────
+    nombres = " · ".join(f"**{c['nombre']}**" for c in cartas)
+    estado_general = "contraída" if sum(1 for c in cartas if c["estado"] == "contraída") > len(cartas) / 2 else "activa"
+    tension = "La energía general de la tirada está replegada — hay más actuando desde lo inconsciente que desde lo visible." \
+        if estado_general == "contraída" else \
+        "La energía general de la tirada está en movimiento — lo que se ve y lo que opera coinciden más de lo usual."
+
+    return (
+        f"{intro_pregunta}las cartas {nombres} trazan el patrón de la situación.\n\n"
+        f"{tension}\n\n"
+        f"El hilo que conecta todas las posiciones: cada carta no describe un aspecto aislado — "
+        f"describe el mismo territorio desde una perspectiva distinta. "
+        f"Presta atención a las que generan más resistencia interior: ahí suele estar el centro del patrón."
+    ) + random.choice(CIERRES_TAROT)
 
 
 # ═══════════════════════════════════════════════════
