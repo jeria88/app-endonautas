@@ -7,18 +7,6 @@
 /* Landing page específico */
 .lp-wrap { overflow-y: auto; height: 100vh; scroll-behavior: smooth; }
 
-/* Navbar */
-.public-navbar { position: sticky; top: 0; z-index: 20; background: rgba(3,3,6,0.80); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 0; }
-.navbar-container { display: flex; align-items: center; height: 64px; max-width: 1100px; margin: 0 auto; padding: 0 5%; gap: 0; }
-.navbar-logo-wrap { display: flex; align-items: center; gap: 9px; text-decoration: none; flex-shrink: 0; }
-.navbar-logo-wrap img { width: 28px; height: 28px; }
-.navbar-logo-wrap span { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: #fff; letter-spacing: -0.01em; }
-.navbar-links { display: flex; gap: 4px; margin: 0 auto; }
-.navbar-links a { color: var(--muted); text-decoration: none; font-size: 0.875rem; padding: 6px 14px; border-radius: 6px; transition: color 0.2s; }
-.navbar-links a:hover { color: var(--text); }
-.navbar-actions { display: flex; gap: 10px; flex-shrink: 0; }
-@media(max-width:700px){ .navbar-links { display: none; } }
-
 /* Sections */
 .lp-section { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 10vh 0; position: relative; overflow: hidden; }
 
@@ -69,27 +57,6 @@
 </style>
 
 <div class="lp-wrap" id="lp-wrap">
-
-<!-- Navbar -->
-<nav class="public-navbar">
-  <div class="navbar-container">
-    <a href="/" class="navbar-logo-wrap">
-      <img src="{% static 'img/logo-alt.png' %}" alt="Endonautas">
-      <span>Endonautas</span>
-    </a>
-    <div class="navbar-links">
-      <a href="#espejo">Espejo IA</a>
-      <a href="#tests">Tests</a>
-      <a href="#origen">Origen Fractal</a>
-      <a href="#oraculo">Oráculo</a>
-      <a href="#autor">Autor</a>
-    </div>
-    <div class="navbar-actions">
-      <a href="/login/" class="btn btn-outline btn-sm" style="border-radius:50px">Ingresar</a>
-      <a href="/registro/" class="btn btn-primary btn-sm" style="border-radius:50px">Comenzar gratis</a>
-    </div>
-  </div>
-</nav>
 
 <!-- HERO -->
 <section class="lp-section" id="inicio">
