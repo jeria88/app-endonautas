@@ -44,6 +44,7 @@ class CardService:
             "verbo": carta.verbo,
             "tipo": carta.tipo,
             "descripcion_breve": carta.descripcion_breve,
+            "descripcion_larga": carta.descripcion_larga,
             "sefirot_nombre": carta.sefirot_nombre,
             "es_especial": carta.es_especial,
             "invertida": invertida,

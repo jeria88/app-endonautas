@@ -459,21 +459,36 @@ def generar_interpretacion_fractal(datos: dict) -> dict:
         texto = random.choice(REFLEXIONES_DAAT)
         return {"texto_completo": texto, "fuente": "especial"}
 
-    # Try AI first — la plantilla ya muestra descripcion_breve, solo retornar lectura
+    # Try AI first
     ai_texto = interpretar_fractal_ai(datos)
     if ai_texto:
         return {"texto_completo": ai_texto, "fuente": "ai"}
 
-    # Static fallback
+    # Static fallback — usa descripcion_larga (no repetir descripcion_breve que ya está en la carta)
+    descripcion_larga = carta.get("descripcion_larga", "").strip()
+    pregunta = datos.get("pregunta", "").strip()
     partes = []
+
     if tipo == "arcano":
-        partes.append(f"**{verbo}**\n\n{descripcion}")
+        texto_base = descripcion_larga or descripcion
+        sefirot_nombre = carta.get("sefirot_nombre", "")
+        contexto = sefirot_nombre if sefirot_nombre else verbo
+        partes.append(
+            f"El arquetipo que responde a esta pregunta es **{nombre}** — el principio del {verbo.lower()}.\n\n{texto_base}"
+        )
     else:
         sefirot_nombre = carta.get("sefirot_nombre", nombre)
-        partes.append(f"**{sefirot_nombre}**\n\n{descripcion}")
+        texto_base = descripcion_larga or descripcion
+        partes.append(f"**{sefirot_nombre}**\n\n{texto_base}")
 
     if invertida:
         partes.append(random.choice(PREFIJOS_INVERTIDA))
+
+    if pregunta:
+        partes.append(
+            f"Ante la pregunta «{pregunta}»: observa en qué parte de tu vida esta energía está presente "
+            f"pero no está siendo reconocida o expresada."
+        )
 
     partes.append(random.choice(CIERRES_FRACTAL))
 

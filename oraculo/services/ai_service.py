@@ -151,19 +151,21 @@ Interpreta el principio de este hexagrama en relación directa con la pregunta."
 
 # ─── Oráculo Fractal ──────────────────────────────────────────────────────────
 
-_SYSTEM_FRACTAL = """Eres un intérprete del Oráculo Fractal — 33 cartas de arquetipos junguianos y Cábala.
+_SYSTEM_FRACTAL = """Eres un intérprete del Oráculo Fractal de Alanis Mika Yuda (adaptación web de Endonautas) — 33 cartas que combinan arquetipos junguianos y Cábala.
 
 REGLAS ABSOLUTAS:
-- NUNCA rechaces una pregunta. Dinero, éxito, peso, destino, relaciones — todo es símbolo de un estado interno. Ninguna pregunta es literal.
+- NUNCA rechaces una pregunta. Todo lo que se pregunta apunta a un estado interno real.
 - Responde siempre en español. Entre 120 y 170 palabras.
-- No predices, no aconsejas. Señalas el patrón.
+- El verbo de la carta y su descripción breve ya son visibles al consultante — NO los repitas ni los cites.
+- Usa lenguaje simple y directo. Explica qué significa este arquetipo en la situación concreta que describe la pregunta. Sin términos kabbalísticos ni junguianos sin explicar.
+- Conecta el arquetipo con la pregunta específica — no habes del arquetipo en abstracto.
 - Usa el género neutro o masculino; no asumas el género del consultante.
 
 ESTRUCTURA:
-1. Primera oración: nombra el patrón arquetípico que conecta esta carta con la pregunta. Sin rodeos.
-2. Dos o tres oraciones que desarrollen ese patrón — cómo la energía de la carta ilumina la pregunta simbólicamente.
-3. Si está invertida: una oración sobre qué aspecto de ese arquetipo el consultante aún no ha integrado.
-4. Última oración: una pregunta concreta que invite a mirar adentro — algo que el consultante pueda responder solo."""
+1. Primera oración: describe en palabras cotidianas qué dinámica real está presente en la situación que se pregunta, según lo que este arquetipo señala.
+2. Dos o tres oraciones explicando cómo esa dinámica opera en la situación concreta de quien pregunta — traduciendo el símbolo a términos de vida real.
+3. Si está invertida: qué aspecto específico de esa energía está bloqueado o actuando sin ser reconocido, en términos concretos.
+4. Última oración: una pregunta específica y verificable que quien pregunta pueda responder mirando su situación real — no una invitación a meditar, sino algo concreto."""
 
 
 def interpretar_fractal_ai(datos: dict) -> str | None:
@@ -172,25 +174,28 @@ def interpretar_fractal_ai(datos: dict) -> str | None:
 
     verbo = carta.get("verbo", "")
     nombre = carta.get("nombre_arcano", "")
-    descripcion = carta.get("descripcion_breve", "")
+    descripcion_breve = carta.get("descripcion_breve", "")
+    descripcion_larga = carta.get("descripcion_larga", "").strip()
     invertida = carta.get("invertida", False)
     tipo = carta.get("tipo", "arcano")
     sefirot = carta.get("sefirot_nombre", "")
 
-    estado = "invertida — la energía actúa desde la sombra, no integrada" if invertida else "posición directa"
+    estado = "invertida — la energía actúa desde lo inconsciente, sin ser reconocida" if invertida else "directa — energía activa"
 
     if tipo == "arcano":
-        identidad = f"Arcano '{nombre}' — verbo imperativo: {verbo}"
+        identidad = f"Arcano '{nombre}' — verbo: {verbo}"
     else:
         identidad = f"Sefirot '{sefirot}'"
+
+    desc_txt = descripcion_larga or descripcion_breve
 
     prompt = f"""Pregunta del consultante: "{pregunta}"
 
 Carta: {identidad}
 Estado: {estado}
-Esencia de la carta: {descripcion}
+Contexto de la carta (NO repetir textualmente): {desc_txt}
 
-Trata la pregunta como un símbolo y conecta la carta con el estado interno que esa pregunta revela."""
+Conecta el arquetipo con la situación concreta que describe la pregunta, en lenguaje simple."""
 
     return _call_openrouter(_SYSTEM_FRACTAL, prompt, max_tokens=320)
 
