@@ -17,6 +17,7 @@ if _railway_domain:
         ALLOWED_HOSTS.append(_railway_domain)
     if '*' not in ALLOWED_HOSTS:
         ALLOWED_HOSTS.append('*')
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 CSRF_TRUSTED_ORIGINS = [
     f'https://{h}' for h in ALLOWED_HOSTS
@@ -24,7 +25,6 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 if not DEBUG:
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
