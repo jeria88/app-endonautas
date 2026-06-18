@@ -60,11 +60,17 @@ def tarot_api(request):
             return JsonResponse({"error": "Escribe una pregunta"}, status=400)
 
         TIRADAS = {
-            "un_arcano":   tarot_service.tirar_un_arcano,
-            "tres_cartas": tarot_service.tirar_tres_cartas,
-            "cruz_normal": tarot_service.tirar_cruz_normal,
-            "yo_realizado": tarot_service.tirar_yo_realizado,
-            "viaje_heroe": tarot_service.tirar_viaje_heroe,
+            "un_arcano":      tarot_service.tirar_un_arcano,
+            "fuerza_flaqueza":tarot_service.tirar_fuerza_flaqueza,
+            "el_conflicto":   tarot_service.tirar_conflicto,
+            "tres_cartas":    tarot_service.tirar_tres_cartas,
+            "la_duda":        tarot_service.tirar_duda,
+            "la_liberacion":  tarot_service.tirar_liberacion,
+            "el_heroe_5":     tarot_service.tirar_heroe_5,
+            "el_mundo":       tarot_service.tirar_mundo,
+            "cruz_normal":    tarot_service.tirar_cruz_normal,
+            "yo_realizado":   tarot_service.tirar_yo_realizado,
+            "viaje_heroe":    tarot_service.tirar_viaje_heroe,
         }
         tirar = TIRADAS.get(tipo_tirada, tarot_service.tirar_tres_cartas)
         tirada = tirar(pregunta)

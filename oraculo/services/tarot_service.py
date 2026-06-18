@@ -436,22 +436,42 @@ class TarotService:
     """
     Barajado, selección de tiradas y preparación de datos.
 
-    Tiradas disponibles:
-    — un_arcano:    1 carta · espejo directo
-    — tres_cartas:  Raíz–Tallo–Flor
-    — cruz_normal:  Cruz de 5 cartas
-    — yo_realizado: Tarot del Yo Realizado (10 cartas · Jodorowsky)
-    — viaje_heroe:  12 etapas solo con Arcanos Mayores (narrativa Campbell)
+    Tiradas disponibles (Jodorowsky, "La Vía del Tarot"):
+    — un_arcano:       1 carta · espejo directo
+    — fuerza_flaqueza: 2 cartas · Fuerza y Flaqueza
+    — el_conflicto:    2 cartas · El Conflicto
+    — tres_cartas:     3 cartas · Raíz–Tallo–Flor
+    — la_duda:         4 cartas · La Duda
+    — la_liberacion:   5 cartas · La Liberación
+    — el_heroe_5:      5 cartas · El Héroe
+    — el_mundo:        5 cartas · El Mundo
+    — cruz_normal:     5 cartas · La Cruz
+    — yo_realizado:    10 cartas · El Yo Realizado
+    — viaje_heroe:     12 arcanos mayores · Viaje del Héroe
     """
 
+    POSICIONES_FUERZA_FLAQUEZA = ["fuerza", "flaqueza"]
+
+    # El Conflicto: situacion normal + tension cruzada encima (crossing pair)
+    POSICIONES_CONFLICTO = ["situacion", "tension"]
+
     POSICIONES_TRES = ["raiz", "tallo", "flor"]
+
+    # La Duda: quién soy + las dos caras de la duda + la clave
+    POSICIONES_DUDA = ["duda_a", "consultante_d", "duda_b", "clave_d"]
+
+    # La Liberación: bloqueo → medio → acción → transformación → destino
+    POSICIONES_LIBERACION = ["bloqueo", "medio", "accion", "transformacion", "destino"]
+
+    # El Héroe (5 cartas): partida → meta, con dos obstáculos (leídos en par) y clave
+    POSICIONES_HEROE_5 = ["partida", "obstaculo_a", "meta", "obstaculo_b", "clave_h"]
+
+    # El Mundo: inspirado en el Arcano XXI — esencia central + 4 dimensiones del ser
+    POSICIONES_MUNDO = ["esencia", "intelectual", "emocional", "sexual_creativo", "material"]
 
     POSICIONES_CRUZ_NORMAL = ["presente", "sombra", "pasado", "camino", "fundamento"]
 
     # Tarot del Yo Realizado (Jodorowsky, "La Vía del Tarot", Quinta parte)
-    # A=protagonista, B=antagonista, C=mediador,
-    # D-E=cometas (encuentros que nutren), F-G=asteroides (lo que perjudica),
-    # H-I=resultado (la personalidad que emerge de A+B), J=el secreto más íntimo
     POSICIONES_YO_REALIZADO = [
         "protagonista", "mediador", "antagonista",
         "cometa_a", "secreto", "asteroide_a",
@@ -466,42 +486,71 @@ class TarotService:
     ]
 
     NOMBRES_POSICIONES = {
-        # Tres cartas
-        "raiz":          "Raíz — causa profunda inconsciente",
-        "tallo":         "Tallo — presente vivido",
-        "flor":          "Flor — potencial que puede nacer",
         # Una carta
-        "unica":         "Carta espejo",
+        "unica":             "Carta espejo",
+        # Fuerza y Flaqueza
+        "fuerza":            "Tu recurso — lo que ya tienes",
+        "flaqueza":          "Tu sombra — lo que aún no integraste",
+        # El Conflicto
+        "situacion":         "La situación o deseo",
+        "tension":           "La tensión que la atraviesa",
+        # Tres cartas
+        "raiz":              "Raíz — causa profunda inconsciente",
+        "tallo":             "Tallo — presente vivido",
+        "flor":              "Flor — potencial que puede nacer",
+        # La Duda
+        "consultante_d":     "Tú en este momento",
+        "duda_a":            "Una cara de la duda",
+        "duda_b":            "La otra cara de la duda",
+        "clave_d":           "La clave para decidir",
+        # La Liberación
+        "bloqueo":           "Qué me impide ser yo",
+        "medio":             "Cómo liberarme",
+        "accion":            "Para qué acción concreta",
+        "transformacion":    "Hacia qué transformación",
+        "destino":           "Mi objetivo real",
+        # El Héroe (5 cartas)
+        "partida":           "De dónde parto",
+        "meta":              "Hacia dónde voy",
+        "obstaculo_a":       "Obstáculo — cara exterior",
+        "obstaculo_b":       "Obstáculo — cara interior",
+        "clave_h":           "El aliado o clave",
+        # El Mundo
+        "esencia":           "Tu esencia — quién eres",
+        "intelectual":       "Tu vida intelectual",
+        "emocional":         "Tu vida emocional",
+        "sexual_creativo":   "Tu energía creativa y vital",
+        "material":          "Tu vida material",
         # Cruz de 5
-        "presente":      "Presente",
-        "sombra":        "Sombra — la cara oculta del presente",
-        "pasado":        "Pasado reciente",
-        "camino":        "Camino abierto",
-        "fundamento":    "Fundamento inconsciente",
+        "presente":          "Presente",
+        "sombra":            "Sombra — la cara oculta del presente",
+        "pasado":            "Pasado reciente",
+        "camino":            "Camino abierto",
+        "fundamento":        "Fundamento inconsciente",
         # Tarot del Yo Realizado
-        "protagonista":  "Protagonista — cómo me concibo",
-        "antagonista":   "Antagonista — lo que rechazo de mí",
-        "mediador":      "Mediador — lo que pasa entre ambos",
-        "cometa_a":      "Cometa A — lo que me nutre",
-        "cometa_b":      "Cometa B — lo que me expande",
-        "asteroide_a":   "Asteroide A — lo que me frena",
-        "asteroide_b":   "Asteroide B — lo que me perjudica",
-        "resultado_a":   "Resultado A — lo que emerge",
-        "resultado_b":   "Resultado B — la personalidad que nace",
-        "secreto":       "El Secreto — mi lugar más íntimo",
+        "protagonista":      "Protagonista — cómo me concibo",
+        "antagonista":       "Antagonista — lo que rechazo de mí",
+        "mediador":          "Mediador — lo que pasa entre ambos",
+        "cometa_a":          "Cometa A — lo que me nutre",
+        "cometa_b":          "Cometa B — lo que me expande",
+        "asteroide_a":       "Asteroide A — lo que me frena",
+        "asteroide_b":       "Asteroide B — lo que me perjudica",
+        "resultado_a":       "Resultado A — lo que emerge",
+        "resultado_b":       "Resultado B — la personalidad que nace",
+        "secreto":           "El Secreto — mi lugar más íntimo",
         # Viaje del Héroe
-        "mundo_ordinario": "Mundo ordinario",
-        "llamado":          "El llamado",
-        "rechazo":          "Rechazo del llamado",
-        "mentor":           "El mentor",
-        "cruce_umbral":     "Cruce del umbral",
-        "pruebas":          "Pruebas y aliados",
-        "caverna":          "La caverna profunda",
-        "prueba_suprema":   "La prueba suprema",
-        "recompensa":       "La recompensa",
-        "camino_regreso":   "Camino de regreso",
-        "resurreccion":     "Resurrección",
-        "elixir":           "El elixir",
+        "mundo_ordinario":   "Mundo ordinario",
+        "llamado":           "El llamado",
+        "rechazo":           "Rechazo del llamado",
+        "mentor":            "El mentor",
+        "cruce_umbral":      "Cruce del umbral",
+        "pruebas":           "Pruebas y aliados",
+        "caverna":           "La caverna profunda",
+        "prueba_suprema":    "La prueba suprema",
+        "recompensa":        "La recompensa",
+        "camino_regreso":    "Camino de regreso",
+        "resurreccion":      "Resurrección",
+        "elixir":            "El elixir",
     }
 
     def __init__(self):
@@ -542,14 +591,31 @@ class TarotService:
     def tirar_un_arcano(self, pregunta: str, semilla: Optional[int] = None) -> TiradaTarot:
         return self._hacer_tirada("un_arcano", ["unica"], self.barajar(semilla), pregunta)
 
+    def tirar_fuerza_flaqueza(self, pregunta: str, semilla: Optional[int] = None) -> TiradaTarot:
+        return self._hacer_tirada("fuerza_flaqueza", self.POSICIONES_FUERZA_FLAQUEZA, self.barajar(semilla), pregunta)
+
+    def tirar_conflicto(self, pregunta: str, semilla: Optional[int] = None) -> TiradaTarot:
+        return self._hacer_tirada("el_conflicto", self.POSICIONES_CONFLICTO, self.barajar(semilla), pregunta)
+
     def tirar_tres_cartas(self, pregunta: str, semilla: Optional[int] = None) -> TiradaTarot:
         return self._hacer_tirada("tres_cartas", self.POSICIONES_TRES, self.barajar(semilla), pregunta)
+
+    def tirar_duda(self, pregunta: str, semilla: Optional[int] = None) -> TiradaTarot:
+        return self._hacer_tirada("la_duda", self.POSICIONES_DUDA, self.barajar(semilla), pregunta)
+
+    def tirar_liberacion(self, pregunta: str, semilla: Optional[int] = None) -> TiradaTarot:
+        return self._hacer_tirada("la_liberacion", self.POSICIONES_LIBERACION, self.barajar(semilla), pregunta)
+
+    def tirar_heroe_5(self, pregunta: str, semilla: Optional[int] = None) -> TiradaTarot:
+        return self._hacer_tirada("el_heroe_5", self.POSICIONES_HEROE_5, self.barajar(semilla), pregunta)
+
+    def tirar_mundo(self, pregunta: str, semilla: Optional[int] = None) -> TiradaTarot:
+        return self._hacer_tirada("el_mundo", self.POSICIONES_MUNDO, self.barajar(semilla), pregunta)
 
     def tirar_cruz_normal(self, pregunta: str, semilla: Optional[int] = None) -> TiradaTarot:
         return self._hacer_tirada("cruz_normal", self.POSICIONES_CRUZ_NORMAL, self.barajar(semilla), pregunta)
 
     def tirar_yo_realizado(self, pregunta: str, semilla: Optional[int] = None) -> TiradaTarot:
-        """Tarot del Yo Realizado — 10 cartas — Jodorowsky, 'La Vía del Tarot'."""
         return self._hacer_tirada("yo_realizado", self.POSICIONES_YO_REALIZADO, self.barajar(semilla), pregunta)
 
     def tirar_viaje_heroe(self, pregunta: str, semilla: Optional[int] = None) -> TiradaTarot:

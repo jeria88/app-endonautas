@@ -64,6 +64,48 @@
   justify-content:center; margin-bottom:1.25rem;
   overflow:visible;
 }
+/* Fuerza y Flaqueza: 2 cols × 1 fila */
+.cards-spread.layout-fuerza {
+  display:grid;
+  grid-template-columns: repeat(2, 112px);
+  grid-template-rows: 262px;
+  gap:0.5rem; justify-content:center;
+}
+/* El Conflicto: 1 celda — situacion normal, tension crossing encima */
+.cards-spread.layout-conflicto {
+  display:grid;
+  grid-template-columns: 112px;
+  grid-template-rows: 262px;
+  gap:0.5rem; justify-content:center;
+}
+/* La Duda: 3 cols × 2 filas */
+.cards-spread.layout-duda {
+  display:grid;
+  grid-template-columns: repeat(3, 112px);
+  grid-template-rows: repeat(2, 262px);
+  gap:0.5rem; justify-content:center;
+}
+/* La Liberación: 5 cols × 1 fila (flujo lineal) */
+.cards-spread.layout-liberacion {
+  display:grid;
+  grid-template-columns: repeat(5, 112px);
+  grid-template-rows: 262px;
+  gap:0.5rem; justify-content:center;
+}
+/* El Héroe (5): 3 cols × 2 filas */
+.cards-spread.layout-heroe5 {
+  display:grid;
+  grid-template-columns: repeat(3, 112px);
+  grid-template-rows: repeat(2, 262px);
+  gap:0.5rem; justify-content:center;
+}
+/* El Mundo: cruz de 5 inspirada en el Arcano XXI */
+.cards-spread.layout-mundo {
+  display:grid;
+  grid-template-columns: repeat(3, 112px);
+  grid-template-rows: repeat(3, 262px);
+  gap:0.5rem; justify-content:center;
+}
 /* Cruz de 5: 3 cols × 2 filas. Sombra se superpone al centro (crossing). */
 .cards-spread.layout-cruz {
   display:grid;
@@ -150,8 +192,14 @@
       <div class="form-label">Tirada</div>
       <div class="tirada-grid">
         <button class="tirada-btn" data-tirada="un_arcano"><span class="tb-n">1</span>Carta espejo</button>
+        <button class="tirada-btn" data-tirada="fuerza_flaqueza"><span class="tb-n">2</span>Fuerza y Flaqueza</button>
+        <button class="tirada-btn" data-tirada="el_conflicto"><span class="tb-n">2</span>El Conflicto</button>
         <button class="tirada-btn active" data-tirada="tres_cartas"><span class="tb-n">3</span>Raíz–Tallo–Flor</button>
-        <button class="tirada-btn" data-tirada="cruz_normal"><span class="tb-n">5</span>Cruz</button>
+        <button class="tirada-btn" data-tirada="la_duda"><span class="tb-n">4</span>La Duda</button>
+        <button class="tirada-btn" data-tirada="la_liberacion"><span class="tb-n">5</span>La Liberación</button>
+        <button class="tirada-btn" data-tirada="el_heroe_5"><span class="tb-n">5</span>El Héroe</button>
+        <button class="tirada-btn" data-tirada="el_mundo"><span class="tb-n">5</span>El Mundo</button>
+        <button class="tirada-btn" data-tirada="cruz_normal"><span class="tb-n">5</span>La Cruz</button>
         <button class="tirada-btn" data-tirada="yo_realizado"><span class="tb-n">10</span>Yo Realizado</button>
         <button class="tirada-btn full" data-tirada="viaje_heroe"><span class="tb-n">12</span>Viaje del Héroe · solo arcanos mayores</button>
       </div>
@@ -193,52 +241,133 @@
 const BASE_STATIC = "{% static '' %}";
 
 const NOMBRES_POS = {
-  unica:          'Carta espejo',
-  raiz:           'Raíz — causa profunda',
-  tallo:          'Tallo — presente vivido',
-  flor:           'Flor — potencial real',
-  presente:       'Presente',
-  sombra:         'Sombra',
-  pasado:         'Pasado',
-  camino:         'Camino abierto',
-  fundamento:     'Fundamento',
+  unica:            'Carta espejo',
+  // Fuerza y Flaqueza
+  fuerza:           'Tu recurso',
+  flaqueza:         'Tu sombra',
+  // El Conflicto
+  situacion:        'La situación',
+  tension:          'La tensión',
+  // Raíz-Tallo-Flor
+  raiz:             'Raíz',
+  tallo:            'Tallo',
+  flor:             'Flor',
+  // La Duda
+  consultante_d:    'Tú ahora',
+  duda_a:           'Cara A de la duda',
+  duda_b:           'Cara B de la duda',
+  clave_d:          'La clave',
+  // La Liberación
+  bloqueo:          'El bloqueo',
+  medio:            'El medio',
+  accion:           'La acción',
+  transformacion:   'La transformación',
+  destino:          'El destino',
+  // El Héroe (5)
+  partida:          'De dónde parto',
+  meta:             'Hacia dónde voy',
+  obstaculo_a:      'Obstáculo exterior',
+  obstaculo_b:      'Obstáculo interior',
+  clave_h:          'La clave',
+  // El Mundo
+  esencia:          'Esencia',
+  intelectual:      'Vida intelectual',
+  emocional:        'Vida emocional',
+  sexual_creativo:  'Energía creativa',
+  material:         'Vida material',
+  // La Cruz
+  presente:         'Presente',
+  sombra:           'Sombra',
+  pasado:           'Pasado',
+  camino:           'Camino',
+  fundamento:       'Fundamento',
   // Yo Realizado
-  protagonista:   'Protagonista',
-  antagonista:    'Antagonista',
-  mediador:       'Mediador',
-  cometa_a:       'Cometa A',
-  cometa_b:       'Cometa B',
-  asteroide_a:    'Asteroide A',
-  asteroide_b:    'Asteroide B',
-  resultado_a:    'Resultado A',
-  resultado_b:    'Resultado B',
-  secreto:        'El Secreto',
+  protagonista:     'Protagonista',
+  antagonista:      'Antagonista',
+  mediador:         'Mediador',
+  cometa_a:         'Cometa A',
+  cometa_b:         'Cometa B',
+  asteroide_a:      'Asteroide A',
+  asteroide_b:      'Asteroide B',
+  resultado_a:      'Resultado A',
+  resultado_b:      'Resultado B',
+  secreto:          'El Secreto',
   // Viaje del Héroe
-  mundo_ordinario:   'Mundo ordinario',
-  llamado:           'El llamado',
-  rechazo:           'Rechazo del llamado',
-  mentor:            'El mentor',
-  cruce_umbral:      'Cruce del umbral',
-  pruebas:           'Pruebas y aliados',
-  caverna:           'La caverna profunda',
-  prueba_suprema:    'La prueba suprema',
-  recompensa:        'La recompensa',
-  camino_regreso:    'Camino de regreso',
-  resurreccion:      'Resurrección',
-  elixir:            'El elixir',
+  mundo_ordinario:  'Mundo ordinario',
+  llamado:          'El llamado',
+  rechazo:          'Rechazo',
+  mentor:           'El mentor',
+  cruce_umbral:     'Cruce del umbral',
+  pruebas:          'Pruebas',
+  caverna:          'La caverna',
+  prueba_suprema:   'Prueba suprema',
+  recompensa:       'La recompensa',
+  camino_regreso:   'Camino de vuelta',
+  resurreccion:     'Resurrección',
+  elixir:           'El elixir',
 };
 const NOMBRES_TIRADA = {
-  un_arcano:    '1 carta · Espejo',
-  tres_cartas:  '3 cartas · Raíz–Tallo–Flor',
-  cruz_normal:  '5 cartas · Cruz',
-  yo_realizado: '10 cartas · Yo Realizado · Jodorowsky',
-  viaje_heroe:  '12 arcanos · Viaje del Héroe',
+  un_arcano:       '1 carta · Carta espejo',
+  fuerza_flaqueza: '2 cartas · Fuerza y Flaqueza',
+  el_conflicto:    '2 cartas · El Conflicto',
+  tres_cartas:     '3 cartas · Raíz–Tallo–Flor',
+  la_duda:         '4 cartas · La Duda',
+  la_liberacion:   '5 cartas · La Liberación',
+  el_heroe_5:      '5 cartas · El Héroe',
+  el_mundo:        '5 cartas · El Mundo',
+  cruz_normal:     '5 cartas · La Cruz',
+  yo_realizado:    '10 cartas · El Yo Realizado',
+  viaje_heroe:     '12 arcanos · Viaje del Héroe',
 };
 
 /* Grid positions por tirada.
    crossing:true → carta horizontal sobre la celda central (rotate 90°)
    pair → posición gemela: se revelan juntas al hacer clic en cualquiera */
 const GRID_LAYOUTS = {
+  // Fuerza y Flaqueza: lado a lado
+  fuerza_flaqueza: {
+    fuerza:   { row:1, col:1 },
+    flaqueza: { row:1, col:2 },
+  },
+  // El Conflicto: situacion normal + tension crossing encima
+  el_conflicto: {
+    situacion: { row:1, col:1, pair:'tension' },
+    tension:   { row:1, col:1, crossing:true, pair:'situacion' },
+  },
+  // La Duda: duda_a | consultante | duda_b  /  _ | clave | _
+  la_duda: {
+    duda_a:       { row:1, col:1 },
+    consultante_d:{ row:1, col:2 },
+    duda_b:       { row:1, col:3 },
+    clave_d:      { row:2, col:2 },
+  },
+  // La Liberación: flujo lineal bloqueo→medio→acción→transformación→destino
+  la_liberacion: {
+    bloqueo:       { row:1, col:1 },
+    medio:         { row:1, col:2 },
+    accion:        { row:1, col:3 },
+    transformacion:{ row:1, col:4 },
+    destino:       { row:1, col:5 },
+  },
+  // El Héroe (5): partida | obstáculo_a | meta  /  _ | obstáculo_b | clave
+  el_heroe_5: {
+    partida:    { row:1, col:1 },
+    obstaculo_a:{ row:1, col:2 },
+    meta:       { row:1, col:3 },
+    obstaculo_b:{ row:2, col:2 },
+    clave_h:    { row:2, col:3 },
+  },
+  // El Mundo: cruz inspirada en el Arcano XXI
+  //   _ | intelectual | _
+  //   emocional | esencia | sexual_creativo
+  //   _ | material | _
+  el_mundo: {
+    intelectual:    { row:1, col:2 },
+    emocional:      { row:2, col:1 },
+    esencia:        { row:2, col:2 },
+    sexual_creativo:{ row:2, col:3 },
+    material:       { row:3, col:2 },
+  },
   cruz_normal: {
     pasado:     { row:1, col:1 },
     presente:   { row:1, col:2, pair:'sombra' },
@@ -246,11 +375,11 @@ const GRID_LAYOUTS = {
     camino:     { row:1, col:3 },
     fundamento: { row:2, col:2 },
   },
-  // Tarot del Yo Realizado (Jodorowsky):
-  // Fila 1: Protagonista | Mediador | Antagonista
-  // Fila 2: Cometa A     | Secreto  | Asteroide A
-  // Fila 3: Cometa B     | Result A | Asteroide B
-  // Fila 4:              | Result B |
+  // Tarot del Yo Realizado:
+  // Protagonista | Mediador   | Antagonista
+  // Cometa A     | Secreto    | Asteroide A
+  // Cometa B     | Resultado A| Asteroide B
+  //              | Resultado B|
   yo_realizado: {
     protagonista: { row:1, col:1 },
     mediador:     { row:1, col:2 },
@@ -437,9 +566,15 @@ function mostrar(data) {
   const spread = document.getElementById('cardsSpread');
   spread.className = 'cards-spread';
   const layoutMap = {
-    cruz_normal:  'layout-cruz',
-    yo_realizado: 'layout-yo',
-    viaje_heroe:  'layout-heroe',
+    fuerza_flaqueza: 'layout-fuerza',
+    el_conflicto:    'layout-conflicto',
+    la_duda:         'layout-duda',
+    la_liberacion:   'layout-liberacion',
+    el_heroe_5:      'layout-heroe5',
+    el_mundo:        'layout-mundo',
+    cruz_normal:     'layout-cruz',
+    yo_realizado:    'layout-yo',
+    viaje_heroe:     'layout-heroe',
   };
   if (layoutMap[tirada.tipo_tirada]) spread.classList.add(layoutMap[tirada.tipo_tirada]);
   spread.innerHTML = '';
