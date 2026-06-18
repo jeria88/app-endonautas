@@ -270,9 +270,13 @@ CIERRES_TAROT = [
 
 def generar_interpretacion_tarot(datos: dict) -> dict:
     """Genera interpretación terapéutica completa para una tirada de tarot."""
-    ai_texto = interpretar_tarot_ai(datos)
-    if ai_texto:
-        return {"texto_completo": ai_texto, "por_carta": {}, "fuente": "ai"}
+    ai_result = interpretar_tarot_ai(datos)
+    if ai_result:
+        return {
+            "texto_completo": ai_result.get("integracion", ""),
+            "por_carta": ai_result.get("por_carta", {}),
+            "fuente": "ai",
+        }
 
     # Fallback simbólico
     cartas = datos["cartas"]

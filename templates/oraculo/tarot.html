@@ -19,22 +19,17 @@
 
 @keyframes card-in {
   from { opacity:0; transform:translateY(22px) scale(0.94); }
-  to   { opacity:1; transform:translateY(0)    scale(1);    }
-}
-/* Cartas */
-.cards-spread {
-  display:flex;flex-wrap:wrap;gap:0.75rem;
-  justify-content:center;
-  margin-bottom:1.25rem;
+  to   { opacity:1; transform:translateY(0)    scale(1); }
 }
 
-/* Flip card — ambas caras absolute, altura fija para evitar overflow */
+/* ── Flip card ── */
 .card-flip-outer {
   width:112px; height:262px;
-  flex:0 0 auto; cursor:pointer; perspective:700px;
+  cursor:pointer; perspective:700px;
   animation: card-in 0.7s cubic-bezier(0.34,1.56,0.64,1) both;
 }
-.card-flip-outer.revealed { cursor:default; }
+.card-flip-outer.revealed { cursor:pointer; }
+.card-flip-outer.active-interp .card-flip-inner { box-shadow:0 0 0 2px var(--calipso); border-radius:10px; }
 .card-flip-inner {
   width:100%; height:100%;
   position:relative; transform-style:preserve-3d;
@@ -63,20 +58,68 @@
 .card-estado { font-size:0.65rem;color:var(--calipso); }
 .card-kw { font-size:0.65rem;color:var(--dim);margin-top:0.15rem;line-height:1.3; }
 
-/* Interpretaciones por carta y panel de integración */
-.carta-interp-panel {
-  background:var(--surface2); border:1px solid rgba(126,204,205,0.2);
-  border-radius:12px; padding:1rem 1.25rem; margin-bottom:0.75rem;
+/* ── Layouts posicionales ── */
+.cards-spread {
+  display:flex; flex-wrap:wrap; gap:0.5rem;
+  justify-content:center; margin-bottom:1.25rem;
+}
+/* Cruz de 5: 3×3 con celda central y sombra debajo */
+.cards-spread.layout-cruz {
+  display:grid;
+  grid-template-columns: repeat(3, 112px);
+  grid-template-rows: repeat(3, 262px);
+  gap:0.5rem; justify-content:center;
+}
+/* Cruz Celta: cruz (3×4) + gap + columna (1×4) */
+.cards-spread.layout-celta {
+  display:grid;
+  grid-template-columns: 112px 112px 112px 1.5rem 112px;
+  grid-template-rows: repeat(4, 262px);
+  gap:0.5rem; justify-content:center;
+}
+/* Viaje del Héroe: 4×3 */
+.cards-spread.layout-heroe {
+  display:grid;
+  grid-template-columns: repeat(4, 112px);
+  grid-template-rows: repeat(3, 262px);
+  gap:0.5rem; justify-content:center;
+}
+
+/* ── Nav pills ── */
+.card-nav {
+  display:flex; flex-wrap:wrap; gap:0.4rem;
+  margin-bottom:0.75rem;
+  opacity:0; transform:translateY(8px);
+  transition:opacity 0.4s ease, transform 0.4s ease;
+}
+.card-nav.show { opacity:1; transform:translateY(0); }
+.nav-pill {
+  font-size:0.65rem; font-weight:600; letter-spacing:0.06em;
+  padding:0.3rem 0.7rem; border-radius:20px; cursor:pointer;
+  border:1px solid var(--border); color:var(--muted);
+  background:rgba(255,255,255,0.03);
+  transition:all 0.15s;
+}
+.nav-pill:hover { border-color:rgba(126,204,205,0.4); color:var(--text); }
+.nav-pill.active { border-color:var(--calipso); background:var(--calipso-glow); color:var(--calipso); }
+.nav-pill.integ-pill { border-color:rgba(126,204,205,0.45); color:var(--calipso); background:rgba(126,204,205,0.06); }
+.nav-pill.integ-pill.active { background:rgba(126,204,205,0.15); }
+
+/* ── Panel único de interpretación ── */
+.interp-panel {
+  background:var(--surface2); border:1px solid rgba(126,204,205,0.25);
+  border-radius:14px; padding:1.25rem;
   opacity:0; transform:translateY(12px);
   transition:opacity 0.5s ease, transform 0.5s ease;
 }
-.carta-interp-panel.show { opacity:1; transform:translateY(0); }
-.carta-interp-label {
+.interp-panel.show { opacity:1; transform:translateY(0); }
+.interp-panel.mode-integ { border-color:rgba(126,204,205,0.5); background:rgba(126,204,205,0.04); }
+.interp-label {
   font-size:0.63rem; font-weight:700; letter-spacing:0.1em;
-  text-transform:uppercase; color:var(--calipso); margin-bottom:0.5rem;
+  text-transform:uppercase; color:var(--calipso); margin-bottom:0.75rem;
 }
-.carta-interp-text { font-size:0.88rem; line-height:1.75; color:var(--text); }
-.integration-panel { border-color:rgba(126,204,205,0.45); background:rgba(126,204,205,0.04); }
+.interp-text { font-size:0.9rem; line-height:1.8; color:var(--text); }
+.interp-source { margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--border);font-size:0.68rem;color:var(--dim); }
 
 .typing-row { display:none;align-items:center;gap:5px;color:var(--muted);font-size:0.82rem;padding:2.5rem;justify-content:center; }
 .typing-row.show { display:flex; }
@@ -129,12 +172,12 @@
 
       <div class="cards-spread" id="cardsSpread"></div>
 
-      <div id="perCardInterps"></div>
+      <div class="card-nav" id="cardNav"></div>
 
-      <div id="integrationPanel" class="carta-interp-panel integration-panel" style="display:none">
-        <div class="carta-interp-label">✦ Lectura de integración</div>
-        <div id="integrationText" class="carta-interp-text"></div>
-        <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--border);font-size:0.68rem;color:var(--dim)" id="sourceLabel"></div>
+      <div class="interp-panel" id="interpPanel">
+        <div class="interp-label" id="interpLabel"></div>
+        <div class="interp-text" id="interpText"></div>
+        <div class="interp-source" id="sourceLabel"></div>
       </div>
     </div>
   </div>
@@ -174,12 +217,49 @@ const NOMBRES_POS = {
 const NOMBRES_TIRADA = {
   un_arcano:   '1 carta · Espejo',
   tres_cartas: '3 cartas · Raíz–Tallo–Flor',
-  cruz_normal: '5 cartas · Cruz',
+  cruz_normal: '5 cartas · Cruz de Jodorowsky',
   cruz_celta:  '10 cartas · Cruz Celta',
   viaje_heroe: '12 arcanos · Viaje del Héroe',
 };
-let tiradaActual = 'tres_cartas';
 
+/* Grid positions por tirada */
+const GRID_LAYOUTS = {
+  cruz_normal: {
+    fundamento: { row:1, col:2 },
+    pasado:     { row:2, col:1 },
+    presente:   { row:2, col:2 },
+    camino:     { row:2, col:3 },
+    sombra:     { row:3, col:2 },
+  },
+  cruz_celta: {
+    meta:              { row:1, col:2 },
+    pasado:            { row:2, col:1 },
+    presente:          { row:2, col:2 },
+    camino:            { row:2, col:3 },
+    sombra:            { row:3, col:2 },
+    fundamento:        { row:4, col:2 },
+    resultado:         { row:1, col:5 },
+    esperanzas_miedos: { row:2, col:5 },
+    influencias:       { row:3, col:5 },
+    consultante:       { row:4, col:5 },
+  },
+  viaje_heroe: {
+    mundo_ordinario: { row:1, col:1 },
+    llamado:         { row:1, col:2 },
+    rechazo:         { row:1, col:3 },
+    mentor:          { row:1, col:4 },
+    cruce_umbral:    { row:2, col:1 },
+    pruebas:         { row:2, col:2 },
+    caverna:         { row:2, col:3 },
+    prueba_suprema:  { row:2, col:4 },
+    recompensa:      { row:3, col:1 },
+    camino_regreso:  { row:3, col:2 },
+    resurreccion:    { row:3, col:3 },
+    elixir:          { row:3, col:4 },
+  },
+};
+
+let tiradaActual = 'tres_cartas';
 document.querySelectorAll('.tirada-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tirada-btn').forEach(b => b.classList.remove('active'));
@@ -223,30 +303,74 @@ document.getElementById('tirarBtn').addEventListener('click', async () => {
 
 let porCarta = {};
 let textoGlobal = '';
+let fuenteLabel = '';
 let totalCartas = 0;
 let cartasReveladas = new Set();
+let outerByPos = {};   // posicion → outer element
+let activePosicion = null;
 
-function flipCard(outer, posicion) {
-  if (outer.classList.contains('revealed')) return;
-  outer.classList.add('revealed');
-  outer.querySelector('.card-flip-inner').classList.add('flipped');
+function showInterp(posicion, fromClick) {
+  activePosicion = posicion;
+  const isInteg = posicion === '__integ__';
+  const texto = isInteg ? textoGlobal : (porCarta[posicion] || textoGlobal);
+  const label = isInteg ? '✦ Lectura de integración' : (NOMBRES_POS[posicion] || posicion);
 
-  cartasReveladas.add(posicion);
+  /* Update nav pills */
+  document.querySelectorAll('.nav-pill').forEach(p => p.classList.remove('active'));
+  const activePill = document.querySelector(`.nav-pill[data-pos="${posicion}"]`);
+  if (activePill) activePill.classList.add('active');
 
-  const texto = porCarta[posicion] || textoGlobal;
-  if (texto) {
-    const panel = document.createElement('div');
-    panel.className = 'carta-interp-panel';
-    panel.innerHTML = `<div class="carta-interp-label">${NOMBRES_POS[posicion] || posicion}</div><div class="carta-interp-text">${md2html(texto)}</div>`;
-    document.getElementById('perCardInterps').appendChild(panel);
+  /* Highlight card */
+  Object.values(outerByPos).forEach(o => o.classList.remove('active-interp'));
+  if (!isInteg && outerByPos[posicion]) outerByPos[posicion].classList.add('active-interp');
+
+  /* Update panel */
+  const panel = document.getElementById('interpPanel');
+  document.getElementById('interpLabel').textContent = label;
+  document.getElementById('interpText').innerHTML = md2html(texto);
+  document.getElementById('sourceLabel').textContent = fuenteLabel;
+  panel.classList.toggle('mode-integ', isInteg);
+
+  if (!panel.classList.contains('show')) {
     requestAnimationFrame(() => requestAnimationFrame(() => panel.classList.add('show')));
   }
 
+  if (fromClick) panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function flipCard(outer, posicion) {
+  if (outer.classList.contains('revealed')) {
+    /* already revealed — re-show its interpretation */
+    showInterp(posicion, true);
+    return;
+  }
+  outer.classList.add('revealed');
+  outer.querySelector('.card-flip-inner').classList.add('flipped');
+  cartasReveladas.add(posicion);
+
+  /* Add nav pill */
+  const nav = document.getElementById('cardNav');
+  if (!nav.classList.contains('show')) {
+    requestAnimationFrame(() => requestAnimationFrame(() => nav.classList.add('show')));
+  }
+  const pill = document.createElement('button');
+  pill.className = 'nav-pill';
+  pill.dataset.pos = posicion;
+  pill.textContent = NOMBRES_POS[posicion] || posicion;
+  pill.onclick = () => showInterp(posicion, true);
+  nav.appendChild(pill);
+
+  showInterp(posicion, false);
+
   if (cartasReveladas.size >= totalCartas && totalCartas > 1) {
     setTimeout(() => {
-      const integPanel = document.getElementById('integrationPanel');
-      integPanel.style.display = '';
-      requestAnimationFrame(() => requestAnimationFrame(() => integPanel.classList.add('show')));
+      const integPill = document.createElement('button');
+      integPill.className = 'nav-pill integ-pill';
+      integPill.dataset.pos = '__integ__';
+      integPill.textContent = '✦ Integración';
+      integPill.onclick = () => showInterp('__integ__', true);
+      nav.appendChild(integPill);
+      showInterp('__integ__', false);
     }, 700);
   }
 }
@@ -255,24 +379,39 @@ function mostrar(data) {
   const tirada = data.tirada;
   const interp = data.interpretacion;
 
-  porCarta = interp.por_carta || {};
-  textoGlobal = interp.texto_completo || '';
+  porCarta     = interp.por_carta || {};
+  textoGlobal  = interp.texto_completo || '';
+  fuenteLabel  = interp.fuente === 'ai' ? 'Interpretación IA · OpenRouter' : 'Interpretación simbólica';
   cartasReveladas.clear();
+  outerByPos = {};
+  activePosicion = null;
   totalCartas = tirada.cartas.length;
 
   document.getElementById('spreadLabel').textContent =
     NOMBRES_TIRADA[tirada.tipo_tirada] || tirada.tipo_tirada;
-  document.getElementById('perCardInterps').innerHTML = '';
 
-  const integPanel = document.getElementById('integrationPanel');
-  integPanel.style.display = 'none';
-  integPanel.classList.remove('show');
-  document.getElementById('integrationText').innerHTML = md2html(textoGlobal);
-  document.getElementById('sourceLabel').textContent =
-    interp.fuente === 'ai' ? 'Interpretación IA · OpenRouter' : 'Interpretación simbólica';
+  /* Reset nav + panel */
+  const nav = document.getElementById('cardNav');
+  nav.innerHTML = '';
+  nav.classList.remove('show');
+  const panel = document.getElementById('interpPanel');
+  panel.classList.remove('show','mode-integ');
+  document.getElementById('interpLabel').textContent = '';
+  document.getElementById('interpText').innerHTML = '';
+  document.getElementById('sourceLabel').textContent = '';
 
+  /* Set spread layout class */
   const spread = document.getElementById('cardsSpread');
+  spread.className = 'cards-spread';
+  const layoutMap = {
+    cruz_normal: 'layout-cruz',
+    cruz_celta:  'layout-celta',
+    viaje_heroe: 'layout-heroe',
+  };
+  if (layoutMap[tirada.tipo_tirada]) spread.classList.add(layoutMap[tirada.tipo_tirada]);
   spread.innerHTML = '';
+
+  const gridDef = GRID_LAYOUTS[tirada.tipo_tirada] || null;
 
   tirada.cartas.forEach((c, i) => {
     const posLabel = NOMBRES_POS[c.posicion] || c.posicion;
@@ -281,8 +420,18 @@ function mostrar(data) {
 
     const outer = document.createElement('div');
     outer.className = 'card-flip-outer';
-    outer.style.animationDelay = (i * 220) + 'ms';
+    outer.style.animationDelay = (i * 180) + 'ms';
+    outer.dataset.posicion = c.posicion;
+
+    /* Grid placement */
+    if (gridDef && gridDef[c.posicion]) {
+      const gp = gridDef[c.posicion];
+      outer.style.gridRow    = gp.row;
+      outer.style.gridColumn = gp.col;
+    }
+
     outer.addEventListener('click', () => flipCard(outer, c.posicion));
+    outerByPos[c.posicion] = outer;
 
     outer.innerHTML = `
       <div class="card-flip-inner">
@@ -301,8 +450,7 @@ function mostrar(data) {
             <div class="card-kw">${c.palabra_clave||''}</div>
           </div>
         </div>
-      </div>
-    `;
+      </div>`;
     spread.appendChild(outer);
   });
 

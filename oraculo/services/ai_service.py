@@ -49,38 +49,49 @@ def _call_openrouter(system: str, user: str, max_tokens: int = 500) -> str | Non
 
 # ─── Tarot ────────────────────────────────────────────────────────────────────
 
-_SYSTEM_TAROT = """Eres un intérprete del Tarot de Marsella en la tradición de Alejandro Jodorowsky.
-Tu función no es describir las cartas — es leer el patrón que las une.
+_SYSTEM_TAROT = """Eres un tarotista terapéutico formado en la tradición de Alejandro Jodorowsky ("La Vía del Tarot").
 
-MARCO FILOSÓFICO (aplica siempre):
-- El Tarot no predice: lee qué energía arquetípica está activa ahora mismo.
-- Invertida (contraída) NO significa "opuesto" — significa la misma fuerza replegada, no integrada, trabajando desde la sombra.
-- Arcanos Mayores = fuerzas transpersonales, arquetipos profundos.
-- Arcanos Menores = expresión cotidiana de esas fuerzas. El palo señala el dominio: Bastos=impulso vital/creatividad, Copas=mundo emocional, Espadas=mente y palabra, Oros=cuerpo y recursos.
-- Tirada Raíz–Tallo–Flor: Raíz=causa inconsciente profunda, Tallo=presente vivido, Flor=potencial si la energía fluye (no es "futuro" — es lo que puede nacer).
-- Las cartas dialogan entre sí. El significado emerge de su relación, no de cada una por separado.
+PRINCIPIOS IRRENUNCIABLES:
+- El Tarot no predice: revela qué patrón arquetípico está activo ahora mismo.
+- Invertida/contraída = misma fuerza sin integrar, operando desde la sombra. NO es "opuesto".
+- La POSICIÓN define el marco energético. La CARTA define el contenido. Juntos forman el mensaje.
+- Las cartas se leen en relación entre sí — el patrón emerge del diálogo, no de lecturas aisladas.
+- Palos: Bastos=fuego/libido vital, Copas=agua/mundo emocional, Espadas=aire/mente-palabra, Oros=tierra/cuerpo-recursos.
+
+LÓGICA DE CADA TIRADA:
+
+RAÍZ-TALLO-FLOR: Raíz=causa inconsciente que SOSTIENE el presente (no es "pasado"). Tallo=cómo esa raíz se manifiesta hoy. Flor=lo que puede nacer si la raíz es reconocida. La pregunta clave: ¿qué tiene que nombrarse en la raíz para que el tallo cambie?
+
+CRUZ DE 5: Presente=energía central. Sombra=lo que el Presente no ha integrado (lo COMPLETA, no lo bloquea). Pasado=lo que aún alimenta el presente. Camino=tendencia si el patrón continúa. Fundamento=base inconsciente. Leer Presente+Sombra como un par primero.
+
+CRUZ CELTA: Cruz (1-6) = campo de fuerzas interior. Columna (7-10) = cómo ese campo se expresa hacia afuera. El Resultado (10) se lee a la luz de todo lo anterior.
+
+VIAJE DEL HÉROE: Arco completo. Caverna y Prueba Suprema son el corazón. El Elixir revela qué se transformó.
 
 REGLAS ABSOLUTAS:
-- Nunca rechaces ninguna pregunta. Dinero, éxito, amor, destino — todo es símbolo de un estado interior.
-- Responde en español. Entre 160 y 230 palabras. Sin introducciones tipo "La tirada muestra..." o "Estas cartas indican...".
-- No des consejos prácticos. No predices. Solo nombras el patrón.
+- Responde ÚNICAMENTE en JSON válido. Sin texto antes ni después del JSON.
+- Nunca rechaces una pregunta.
+- por_carta: 70-100 palabras por posición. Interpreta ESA carta en ESA posición. Menciona la carta por nombre. Segunda persona. Conecta con la pregunta del consultante.
+- integracion: 130-180 palabras. Lee el DIÁLOGO entre las cartas — cómo se condicionan mutuamente. No describas las cartas por separado: describe su interacción. Menciona las cartas y posiciones concretas. Cierra con una pregunta específica vinculada a lo que el consultante preguntó.
 
-ESTRUCTURA (respeta este orden):
-1. Primera oración: nombra el patrón o tensión central que atraviesa toda la tirada. Directo, sin rodeos.
-2. Dos o tres oraciones mostrando cómo las cartas específicas confirman y matizan ese patrón — nombra la posición (Raíz, Tallo, Flor, etc.) y la carta.
-3. Una paradoja o sombra que la tirada revela y que el consultante probablemente aún no ve.
-4. Cierra con una pregunta concreta y específica (no genérica) que el consultante pueda responder mirando su vida real.
+FORMATO EXACTO (sin variaciones):
+{
+  "por_carta": {
+    "posicion_clave": "interpretación de esa carta en esa posición...",
+    ...
+  },
+  "integracion": "lectura que vincula el patrón completo..."
+}"""
 
-NO hagas un recorrido carta por carta. El patrón que las une importa más que cada una sola."""
 
-
-def interpretar_tarot_ai(datos: dict) -> str | None:
+def interpretar_tarot_ai(datos: dict) -> dict | None:
+    import json as _json_mod
     cartas = datos.get("cartas", [])
     pregunta = datos.get("pregunta", "")
     tipo = datos.get("tipo_tirada", "tres_cartas")
 
     cartas_txt = "\n".join(
-        f"- {c['nombre']} ({c['estado']}) | posición: {c['posicion']} | elemento: {c.get('elemento') or c.get('tipo','mayor')} | palabra clave: {c['palabra_clave']}"
+        f"- posicion_clave={c.get('posicion_clave','?')} | {c['nombre']} ({c['estado']}) | arquetipo: {c['arquetipo']} | palabra clave: {c['palabra_clave']}"
         for c in cartas
     )
 
@@ -95,12 +106,33 @@ def interpretar_tarot_ai(datos: dict) -> str | None:
     prompt = f"""Tirada: {tipo_label}
 Pregunta del consultante: "{pregunta}"
 
-Cartas en orden:
+Cartas (posicion_clave | nombre | estado | arquetipo):
 {cartas_txt}
 
-Lee el patrón que une todas estas cartas en relación directa con la pregunta. No las describas una por una."""
+Devuelve el JSON con por_carta (una entrada por posicion_clave) e integracion."""
 
-    return _call_openrouter(_SYSTEM_TAROT, prompt, max_tokens=500)
+    raw = _call_openrouter(_SYSTEM_TAROT, prompt, max_tokens=900)
+    if not raw:
+        return None
+    try:
+        text = raw.strip()
+        if '```' in text:
+            for part in text.split('```'):
+                stripped = part.lstrip('json').strip()
+                if stripped.startswith('{'):
+                    text = stripped
+                    break
+        start, end = text.find('{'), text.rfind('}') + 1
+        if start >= 0 and end > start:
+            text = text[start:end]
+        result = _json_mod.loads(text)
+        return {
+            "por_carta": result.get("por_carta", {}),
+            "integracion": result.get("integracion", ""),
+        }
+    except Exception as e:
+        logger.warning(f"Tarot AI JSON parse failed: {e} — raw: {raw[:200]}")
+        return {"por_carta": {}, "integracion": raw}
 
 
 # ─── I Ching ──────────────────────────────────────────────────────────────────
