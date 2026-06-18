@@ -5,6 +5,7 @@ Falls back silently to None if key is missing or call fails.
 
 import json as _json
 import logging
+import re
 import requests
 from django.conf import settings
 
@@ -174,30 +175,35 @@ Aplica el proceso de lectura completo (inventario visual → posicionamiento →
 Devuelve el JSON con por_carta (una entrada por posicion_clave) e integracion."""
 
     n = len(cartas)
-    max_tok = min(500 + n * 110, 1800)
+    max_tok = min(1000 + n * 200, 4000)
 
     raw = _call_openrouter(_SYSTEM_TAROT, prompt, max_tokens=max_tok)
     if not raw:
         return None
     try:
         text = raw.strip()
+        # Eliminar bloques <think>...</think> (DeepSeek R1 y similares)
+        text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
+        # Extraer desde bloque ```json si existe
         if '```' in text:
             for part in text.split('```'):
                 stripped = part.lstrip('json').strip()
                 if stripped.startswith('{'):
                     text = stripped
                     break
+        # Encontrar el objeto JSON más externo
         start, end = text.find('{'), text.rfind('}') + 1
         if start >= 0 and end > start:
             text = text[start:end]
         result = _json_mod.loads(text)
-        return {
-            "por_carta": result.get("por_carta", {}),
-            "integracion": result.get("integracion", ""),
-        }
+        por_carta = result.get("por_carta", {})
+        integracion = result.get("integracion", "")
+        if not por_carta:
+            return None
+        return {"por_carta": por_carta, "integracion": integracion}
     except Exception as e:
-        logger.warning(f"Tarot AI JSON parse failed: {e} — raw: {raw[:200]}")
-        return {"por_carta": {}, "integracion": raw}
+        logger.warning(f"Tarot AI JSON parse failed: {e} — raw: {raw[:300]}")
+        return None
 
 
 # ─── I Ching ──────────────────────────────────────────────────────────────────

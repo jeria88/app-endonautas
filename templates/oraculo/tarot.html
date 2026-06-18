@@ -461,7 +461,8 @@ let activePosicion = null;
 function showInterp(posicion, fromClick) {
   activePosicion = posicion;
   const isInteg = posicion === '__integ__';
-  const texto = isInteg ? textoGlobal : (porCarta[posicion] || textoGlobal);
+  const cartaTxt = porCarta[posicion];
+  const texto = isInteg ? textoGlobal : (cartaTxt || (textoGlobal && totalCartas === 1 ? textoGlobal : ''));
   const label = isInteg ? '✦ Lectura de integración' : (NOMBRES_POS[posicion] || posicion);
 
   /* Update nav pills */

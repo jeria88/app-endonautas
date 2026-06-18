@@ -271,10 +271,10 @@ CIERRES_TAROT = [
 def generar_interpretacion_tarot(datos: dict) -> dict:
     """Genera interpretación terapéutica completa para una tirada de tarot."""
     ai_result = interpretar_tarot_ai(datos)
-    if ai_result:
+    if ai_result and ai_result.get("por_carta"):
         return {
             "texto_completo": ai_result.get("integracion", ""),
-            "por_carta": ai_result.get("por_carta", {}),
+            "por_carta": ai_result["por_carta"],
             "fuente": "ai",
         }
 
