@@ -300,6 +300,7 @@ class TarotService:
                 "palo": carta.palo,
                 "elemento": carta.elemento,
                 "tipo": carta.tipo,
+                "numero": carta.numero,
                 "imagen": carta.imagen,
             })
         return {

@@ -62,15 +62,16 @@
 .cards-spread {
   display:flex; flex-wrap:wrap; gap:0.5rem;
   justify-content:center; margin-bottom:1.25rem;
+  overflow:visible;
 }
-/* Cruz de 5: 3×3 con celda central y sombra debajo */
+/* Cruz de 5: 3 cols × 2 filas. Sombra se superpone al centro (crossing). */
 .cards-spread.layout-cruz {
   display:grid;
   grid-template-columns: repeat(3, 112px);
-  grid-template-rows: repeat(3, 262px);
+  grid-template-rows: repeat(2, 262px);
   gap:0.5rem; justify-content:center;
 }
-/* Cruz Celta: cruz (3×4) + gap + columna (1×4) */
+/* Cruz Celta: cruz (3×3) + gap + columna (1×4) */
 .cards-spread.layout-celta {
   display:grid;
   grid-template-columns: 112px 112px 112px 1.5rem 112px;
@@ -83,6 +84,11 @@
   grid-template-columns: repeat(4, 112px);
   grid-template-rows: repeat(3, 262px);
   gap:0.5rem; justify-content:center;
+}
+/* Carta que cruza el centro (posición horizontal — Cruz / Cruz Celta) */
+.card-flip-outer.crossing-card {
+  transform: rotate(90deg);
+  z-index: 5;
 }
 
 /* ── Nav pills ── */
@@ -222,22 +228,24 @@ const NOMBRES_TIRADA = {
   viaje_heroe: '12 arcanos · Viaje del Héroe',
 };
 
-/* Grid positions por tirada */
+/* Grid positions por tirada.
+   crossing:true → carta horizontal sobre la celda central (rotate 90°)
+   pair → posición gemela: se revelan juntas al hacer clic en cualquiera */
 const GRID_LAYOUTS = {
   cruz_normal: {
-    fundamento: { row:1, col:2 },
-    pasado:     { row:2, col:1 },
-    presente:   { row:2, col:2 },
-    camino:     { row:2, col:3 },
-    sombra:     { row:3, col:2 },
+    pasado:     { row:1, col:1 },
+    presente:   { row:1, col:2, pair:'sombra' },
+    sombra:     { row:1, col:2, crossing:true, pair:'presente' },
+    camino:     { row:1, col:3 },
+    fundamento: { row:2, col:2 },
   },
   cruz_celta: {
     meta:              { row:1, col:2 },
     pasado:            { row:2, col:1 },
-    presente:          { row:2, col:2 },
+    presente:          { row:2, col:2, pair:'sombra' },
+    sombra:            { row:2, col:2, crossing:true, pair:'presente' },
     camino:            { row:2, col:3 },
-    sombra:            { row:3, col:2 },
-    fundamento:        { row:4, col:2 },
+    fundamento:        { row:3, col:2 },
     resultado:         { row:1, col:5 },
     esperanzas_miedos: { row:2, col:5 },
     influencias:       { row:3, col:5 },
@@ -338,17 +346,8 @@ function showInterp(posicion, fromClick) {
   if (fromClick) panel.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 
-function flipCard(outer, posicion) {
-  if (outer.classList.contains('revealed')) {
-    /* already revealed — re-show its interpretation */
-    showInterp(posicion, true);
-    return;
-  }
-  outer.classList.add('revealed');
-  outer.querySelector('.card-flip-inner').classList.add('flipped');
-  cartasReveladas.add(posicion);
-
-  /* Add nav pill */
+function addNavPill(posicion) {
+  if (document.querySelector(`.nav-pill[data-pos="${posicion}"]`)) return;
   const nav = document.getElementById('cardNav');
   if (!nav.classList.contains('show')) {
     requestAnimationFrame(() => requestAnimationFrame(() => nav.classList.add('show')));
@@ -359,20 +358,42 @@ function flipCard(outer, posicion) {
   pill.textContent = NOMBRES_POS[posicion] || posicion;
   pill.onclick = () => showInterp(posicion, true);
   nav.appendChild(pill);
+}
 
-  showInterp(posicion, false);
+function checkAllRevealed() {
+  if (cartasReveladas.size < totalCartas || totalCartas <= 1) return;
+  setTimeout(() => {
+    if (document.querySelector('.nav-pill[data-pos="__integ__"]')) return;
+    const nav = document.getElementById('cardNav');
+    const integPill = document.createElement('button');
+    integPill.className = 'nav-pill integ-pill';
+    integPill.dataset.pos = '__integ__';
+    integPill.textContent = '✦ Integración';
+    integPill.onclick = () => showInterp('__integ__', true);
+    nav.appendChild(integPill);
+    showInterp('__integ__', false);
+  }, 700);
+}
 
-  if (cartasReveladas.size >= totalCartas && totalCartas > 1) {
-    setTimeout(() => {
-      const integPill = document.createElement('button');
-      integPill.className = 'nav-pill integ-pill';
-      integPill.dataset.pos = '__integ__';
-      integPill.textContent = '✦ Integración';
-      integPill.onclick = () => showInterp('__integ__', true);
-      nav.appendChild(integPill);
-      showInterp('__integ__', false);
-    }, 700);
+/* silent=true: revela visualmente y agrega píldora sin cambiar el panel de interp */
+function flipCard(outer, posicion, silent) {
+  if (outer.classList.contains('revealed')) {
+    if (!silent) showInterp(posicion, true);
+    return;
   }
+  outer.classList.add('revealed');
+  outer.querySelector('.card-flip-inner').classList.add('flipped');
+  cartasReveladas.add(posicion);
+  addNavPill(posicion);
+  if (!silent) showInterp(posicion, false);
+
+  /* Si esta carta tiene par (crossing pair), revelar el par en silencio */
+  const pairPos = outer.dataset.pair;
+  if (pairPos && outerByPos[pairPos] && !outerByPos[pairPos].classList.contains('revealed')) {
+    setTimeout(() => flipCard(outerByPos[pairPos], pairPos, true), 480);
+  }
+
+  checkAllRevealed();
 }
 
 function mostrar(data) {
@@ -428,6 +449,8 @@ function mostrar(data) {
       const gp = gridDef[c.posicion];
       outer.style.gridRow    = gp.row;
       outer.style.gridColumn = gp.col;
+      if (gp.crossing) outer.classList.add('crossing-card');
+      if (gp.pair)     outer.dataset.pair = gp.pair;
     }
 
     outer.addEventListener('click', () => flipCard(outer, c.posicion));
