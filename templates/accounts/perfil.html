@@ -63,7 +63,7 @@
         <label class="form-label" style="margin-bottom:0.6rem">Fondo visual</label>
         <div class="aesthetic-grid">
           {% for val, label in profile.AESTHETIC_CHOICES %}
-          <label class="aes-card {% if profile.map_aesthetic == val %}active{% endif %}" onclick="this.closest('.aesthetic-grid').querySelectorAll('.aes-card').forEach(c=>c.classList.remove('active'));this.classList.add('active')">
+          <label class="aes-card {% if profile.map_aesthetic == val %}active{% endif %}" onclick="this.closest('.aesthetic-grid').querySelectorAll('.aes-card').forEach(c=>c.classList.remove('active'));this.classList.add('active');if(window.__switchAesthetic)window.__switchAesthetic(this.querySelector('input').value)">
             <input type="radio" name="map_aesthetic" value="{{ val }}" {% if profile.map_aesthetic == val %}checked{% endif %}>
             <span class="aes-icon">{% if val == 'cosmos' %}✦{% elif val == 'mandala' %}◎{% elif val == 'archipielago' %}◈{% else %}⬡{% endif %}</span>
             <span class="aes-name">{{ label }}</span>
