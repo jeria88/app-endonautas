@@ -92,8 +92,71 @@ def chat_message(request, pk):
 
 @login_required
 def regulacion(request):
-    ejercicios = EjercicioRegulacion.objects.filter(active=True).order_by('order')
-    return render(request, 'mirror/regulacion.html', {'ejercicios': ejercicios})
+    ejercicio_id = request.GET.get('ejercicio')
+    categoria = request.GET.get('categoria', '')
+    estado = request.GET.get('estado', '')  # para futuras recomendaciones cruzadas
+
+    ejercicios_qs = EjercicioRegulacion.objects.filter(active=True)
+
+    # Serializar todos para JS
+    import json
+    todos = {str(e.pk): e.as_json() for e in ejercicios_qs}
+
+    # Ejercicio inicial si viene en URL
+    ejercicio_inicial = None
+    if ejercicio_id:
+        try:
+            ejercicio_inicial = str(ejercicios_qs.get(pk=ejercicio_id).pk)
+        except EjercicioRegulacion.DoesNotExist:
+            pass
+
+    return render(request, 'mirror/regulacion.html', {
+        'ejercicios_json': json.dumps(todos, ensure_ascii=False),
+        'ejercicio_inicial': ejercicio_inicial,
+        'categoria_inicial': categoria,
+        'total': ejercicios_qs.count(),
+    })
+
+
+@login_required
+def regulacion_api(request):
+    """Endpoint para otros módulos — sugiere ejercicios por estado o categoría."""
+    categoria = request.GET.get('categoria', '')
+    estado = request.GET.get('estado', '')
+    limit = min(int(request.GET.get('limit', 3)), 10)
+
+    qs = EjercicioRegulacion.objects.filter(active=True)
+    if categoria:
+        qs = qs.filter(category=categoria)
+    if estado:
+        qs = [e for e in qs if estado in (e.emotional_targets or [])]
+    else:
+        qs = list(qs)
+
+    import random
+    sample = random.sample(qs, min(limit, len(qs)))
+    return JsonResponse({
+        'ejercicios': [e.as_json() for e in sample]
+    })
+
+
+@login_required
+@require_POST
+def regulacion_completado(request):
+    import json
+    try:
+        data = json.loads(request.body)
+        ejercicio_id = data.get('ejercicio_id')
+        ejercicio = EjercicioRegulacion.objects.get(pk=ejercicio_id, active=True)
+        BitacoraEntry.objects.create(
+            user=request.user,
+            entry_type='auto_regulacion',
+            content=f'Ejercicio completado: {ejercicio.title} ({ejercicio.get_category_display()})',
+            meta={'ejercicio_id': ejercicio.pk, 'categoria': ejercicio.category, 'ui_mode': ejercicio.ui_mode},
+        )
+    except Exception:
+        pass
+    return JsonResponse({'ok': True})
 
 
 @login_required

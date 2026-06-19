@@ -13,6 +13,8 @@ urlpatterns = [
     path('tests/', include('psychometrics.urls')),
     path('espejo/', include('mirror.urls')),
     path('regulacion/', mirror_views.regulacion, name='regulacion'),
+    path('regulacion/api/', mirror_views.regulacion_api, name='regulacion_api'),
+    path('regulacion/completado/', mirror_views.regulacion_completado, name='regulacion_completado'),
     path('suenos/', mirror_views.suenos_list, name='suenos_list'),
     path('suenos/nuevo/', mirror_views.sueno_create, name='sueno_create'),
     path('suenos/<int:pk>/', mirror_views.sueno_detail, name='sueno_detail'),

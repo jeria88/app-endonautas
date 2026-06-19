@@ -110,24 +110,56 @@ class BitacoraEntry(models.Model):
 
 class EjercicioRegulacion(models.Model):
     CATEGORY_CHOICES = [
-        ('respiracion', 'Respiración'),
-        ('movimiento', 'Movimiento corporal'),
-        ('sensorial', 'Anclaje sensorial'),
-        ('cognitivo', 'Reencuadre cognitivo'),
-        ('emocional', 'Regulación emocional'),
+        ('aliento',    'Aliento'),      # Respiración
+        ('integracion','Integración'),  # Movimiento/Brain Gym
+        ('resonancia', 'Resonancia'),   # Sonido/vibración
+        ('espectro',   'Espectro'),     # Color y luz
+        ('campo',      'Campo'),        # Contacto energético
+        ('presencia',  'Presencia'),    # Consciencia e intención
+    ]
+    UI_MODE_CHOICES = [
+        ('respiracion',  'Timer de respiración guiada'),
+        ('pasos',        'Secuencia de pasos'),
+        ('vocal',        'Guía vocal'),
+        ('visualizacion','Visualización guiada'),
+        ('reflexion',    'Reflexión libre'),
     ]
 
-    title = models.CharField(max_length=200)
-    description = models.TextField(blank=True)
-    instructions = models.TextField()
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
-    duration_minutes = models.IntegerField(default=5)
-    image = models.ImageField(upload_to='regulacion/', blank=True, null=True)
-    order = models.IntegerField(default=0)
-    active = models.BooleanField(default=True)
+    title             = models.CharField(max_length=200)
+    subtitle          = models.CharField(max_length=300, blank=True)
+    description       = models.TextField(blank=True)
+    instructions      = models.TextField()
+    category          = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    ui_mode           = models.CharField(max_length=20, choices=UI_MODE_CHOICES, default='pasos')
+    duration_minutes  = models.IntegerField(default=5)
+    phases            = models.JSONField(default=list, blank=True)   # para ui_mode='respiracion'
+    steps             = models.JSONField(default=list, blank=True)   # para ui_mode='pasos'/'vocal'
+    emotional_targets = models.JSONField(default=list, blank=True)   # ['ansiedad','ira',...]
+    body_zones        = models.JSONField(default=list, blank=True)   # ['mandibula','plexo',...]
+    precaution        = models.CharField(max_length=400, blank=True)
+    image             = models.ImageField(upload_to='regulacion/', blank=True, null=True)
+    order             = models.IntegerField(default=0)
+    active            = models.BooleanField(default=True)
 
     class Meta:
-        ordering = ['order', 'title']
+        ordering = ['category', 'order', 'title']
 
     def __str__(self):
         return f'[{self.category}] {self.title}'
+
+    def as_json(self):
+        return {
+            'id': self.pk,
+            'title': self.title,
+            'subtitle': self.subtitle,
+            'description': self.description,
+            'instructions': self.instructions,
+            'category': self.category,
+            'ui_mode': self.ui_mode,
+            'duration_minutes': self.duration_minutes,
+            'phases': self.phases,
+            'steps': self.steps,
+            'emotional_targets': self.emotional_targets,
+            'body_zones': self.body_zones,
+            'precaution': self.precaution,
+        }
