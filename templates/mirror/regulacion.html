@@ -50,7 +50,9 @@
 .back-btn:hover { color:#fff; border-color:var(--border-active); }
 .player-cat-tag { font-size:0.6rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; }
 
-.player-panel { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.75rem; }
+.player-panel { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.75rem; position:relative; overflow:hidden; }
+#animCanvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; display:block; }
+.pcw { position:relative; z-index:1; }
 .player-title { font-family:var(--font-display); font-size:1.3rem; font-weight:700; color:#fff; margin-bottom:0.2rem; }
 .player-sub { font-size:0.82rem; color:var(--muted); margin-bottom:1rem; }
 .player-desc { font-size:0.82rem; color:var(--dim); line-height:1.6; margin-bottom:1.5rem;
@@ -127,6 +129,15 @@
 
 /* ── Vacío ── */
 .empty-cat { text-align:center; padding:3rem 1rem; color:var(--dim); font-size:0.82rem; }
+
+/* ── Audio toggle ── */
+.audio-btn {
+  margin-left:auto; display:flex; align-items:center; gap:0.3rem;
+  background:rgba(255,255,255,0.04); border:1px solid var(--border);
+  border-radius:8px; padding:0.28rem 0.65rem; color:var(--dim);
+  font-size:0.68rem; cursor:pointer; transition:all 0.2s; font-family:var(--font-display);
+}
+.audio-btn.on { border-color:rgba(126,204,205,0.45); color:var(--calipso); background:rgba(126,204,205,0.08); }
 </style>
 
 <div style="margin-bottom:1.75rem; display:flex; align-items:flex-end; gap:1rem; flex-wrap:wrap;">
@@ -184,8 +195,11 @@
       <div class="player-header">
         <button class="back-btn" onclick="cerrarPlayer()">← Volver</button>
         <span class="player-cat-tag" id="playerCatTag" style="color:var(--calipso)"></span>
+        <button class="audio-btn" id="audioToggle" onclick="audioEngine.toggle()">♪ Sonido</button>
       </div>
       <div class="player-panel">
+        <canvas id="animCanvas"></canvas>
+        <div class="pcw">
         <div class="player-title" id="playerTitle"></div>
         <div class="player-sub" id="playerSub"></div>
         <div class="player-desc" id="playerDesc"></div>
@@ -195,6 +209,7 @@
         <div id="playerBody"></div>
         <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid var(--border); display:flex; gap:0.75rem; flex-wrap:wrap;">
           <button class="btn-reg btn-done" onclick="marcarCompletado()">Ejercicio completado</button>
+        </div>
         </div>
       </div>
     </div>
@@ -287,10 +302,13 @@ function abrirEjercicio(id) {
   document.getElementById('biblioteca').style.display = 'none';
   document.getElementById('playerWrap').classList.add('active');
   document.getElementById('regWrap').scrollIntoView({behavior:'smooth', block:'start'});
+  setTimeout(() => animEngine.start(e.ui_mode, e.category, CAT_COLORS[e.category]), 60);
 }
 
 function cerrarPlayer(silent) {
   stopBreath();
+  animEngine.stop();
+  audioEngine.stop();
   document.getElementById('playerWrap').classList.remove('active');
   document.getElementById('biblioteca').style.display = '';
   ejercActual = null;
@@ -382,6 +400,7 @@ function tickBreath() {
 
   if (phaseName) phaseName.textContent = phase.name;
   if (cueEl) cueEl.textContent = phase.cue || '';
+  animEngine.setPhase(phase.name);
 
   // Update dots
   phases.forEach((_,i) => {
@@ -552,6 +571,169 @@ function marcarCompletado() {
   const btn = document.querySelector('.btn-done');
   if (btn) { btn.textContent = '✓ Registrado en bitácora'; btn.disabled = true; }
 }
+
+// ── Animation Engine ──────────────────────────────────────────────────────────
+const animEngine = {
+  raf:null, t:0, mode:null, clr:'#7ECCCD',
+  blobCur:0.35, blobTgt:0.35,
+  pts:[], rings:[],
+
+  _rgb(hex){
+    return [parseInt(hex.slice(1,3),16),parseInt(hex.slice(3,5),16),parseInt(hex.slice(5,7),16)];
+  },
+
+  start(mode, cat, color){
+    this.stop();
+    this.mode=mode; this.clr=color||'#7ECCCD'; this.t=0;
+    const cv=document.getElementById('animCanvas');
+    if(!cv) return;
+    const panel=cv.parentElement;
+    cv.width=panel.offsetWidth||620;
+    cv.height=panel.offsetHeight||420;
+    if(mode==='pasos'||mode==='visualizacion'||mode==='reflexion') this._mkPts(cv.width,cv.height);
+    if(mode==='vocal') this._mkRings(cv.width,cv.height);
+    if(mode==='respiracion'){ this.blobCur=0.35; this.blobTgt=0.35; }
+    this._loop();
+  },
+
+  stop(){
+    if(this.raf){ cancelAnimationFrame(this.raf); this.raf=null; }
+    const cv=document.getElementById('animCanvas');
+    if(cv){ const ctx=cv.getContext('2d'); ctx&&ctx.clearRect(0,0,cv.width,cv.height); }
+  },
+
+  setPhase(name){
+    const n=(name||'').toLowerCase();
+    if(n.includes('inhal')||n.includes('inspir')) this.blobTgt=1.0;
+    else if(n.includes('exhal')||n.includes('espir')) this.blobTgt=0.18;
+    else if(n.includes('sost')||n.includes('ret')||n.includes('hold')) this.blobTgt=0.88;
+    else this.blobTgt=0.35;
+  },
+
+  _mkPts(w,h){
+    this.pts=Array.from({length:55},()=>({
+      x:Math.random()*w, y:Math.random()*h,
+      r:Math.random()*2+0.5,
+      sp:Math.random()*0.35+0.12,
+      fr:Math.random()*0.015+0.004,
+      ph:Math.random()*Math.PI*2,
+    }));
+  },
+
+  _mkRings(w,h){
+    const maxR=Math.min(w,h)*0.38;
+    this.rings=Array.from({length:5},(_,i)=>({r:i*(maxR/5), maxR, speed:0.75}));
+  },
+
+  _loop(){
+    const cv=document.getElementById('animCanvas');
+    if(!cv){ this.raf=null; return; }
+    const ctx=cv.getContext('2d'), w=cv.width, h=cv.height;
+    ctx.clearRect(0,0,w,h);
+    this.t+=0.016;
+    if(this.mode==='respiracion') this._blob(ctx,w,h);
+    else if(this.mode==='vocal') this._rings(ctx,w,h);
+    else this._particles(ctx,w,h);
+    this.raf=requestAnimationFrame(()=>this._loop());
+  },
+
+  _blob(ctx,w,h){
+    this.blobCur+=(this.blobTgt-this.blobCur)*0.018;
+    const cx=w/2, cy=h/2, base=Math.min(w,h)*0.28;
+    const [r,g,b]=this._rgb(this.clr);
+    for(let layer=3;layer>=0;layer--){
+      const lr=base*this.blobCur*(1+layer*0.18);
+      const N=120; ctx.beginPath();
+      for(let i=0;i<=N;i++){
+        const a=(i/N)*Math.PI*2;
+        const noise=
+          Math.sin(a*3+this.t*0.7)*0.11+
+          Math.sin(a*5-this.t*0.45)*0.06+
+          Math.sin(a*7+this.t*0.9)*0.03+
+          Math.sin(a*2-this.t*0.3)*0.05;
+        const rad=lr*(1+noise);
+        const x=cx+Math.cos(a)*rad, y=cy+Math.sin(a)*rad;
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+      ctx.closePath();
+      const alpha=layer===0?0.22:(0.07/(layer+0.5));
+      const grd=ctx.createRadialGradient(cx,cy,0,cx,cy,lr*1.15);
+      grd.addColorStop(0,`rgba(${r},${g},${b},${alpha*2})`);
+      grd.addColorStop(0.6,`rgba(${r},${g},${b},${alpha})`);
+      grd.addColorStop(1,`rgba(${r},${g},${b},0)`);
+      ctx.fillStyle=grd; ctx.fill();
+    }
+  },
+
+  _particles(ctx,w,h){
+    const [r,g,b]=this._rgb(this.clr);
+    this.pts.forEach(p=>{
+      p.y-=p.sp;
+      p.x+=Math.sin(this.t*p.fr*60+p.ph)*0.28;
+      if(p.y<-4){ p.y=h+4; p.x=Math.random()*w; }
+      const alpha=(p.y/h)*0.35+0.04;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${r},${g},${b},${Math.min(alpha,0.38)})`; ctx.fill();
+    });
+  },
+
+  _rings(ctx,w,h){
+    const [r,g,b]=this._rgb(this.clr);
+    const cx=w/2, cy=h/2;
+    this.rings.forEach(ring=>{
+      ring.r+=ring.speed;
+      if(ring.r>ring.maxR) ring.r=0;
+      const alpha=(1-ring.r/ring.maxR)*0.5;
+      ctx.beginPath(); ctx.arc(cx,cy,ring.r,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(${r},${g},${b},${alpha})`;
+      ctx.lineWidth=1.5; ctx.stroke();
+    });
+  },
+};
+
+// ── Audio Engine ──────────────────────────────────────────────────────────────
+const audioEngine = {
+  Ctx:null, osc:null, gain:null, active:false,
+  FREQS:{aliento:128,integracion:174,resonancia:285,espectro:396,campo:432,presencia:528},
+
+  toggle(){
+    if(this.active) this.stop();
+    else if(ejercActual) this.start(ejercActual.category);
+  },
+
+  start(cat){
+    try{
+      if(!this.Ctx) this.Ctx=new(window.AudioContext||window.webkitAudioContext)();
+      if(this.Ctx.state==='suspended') this.Ctx.resume();
+      if(this.osc){ try{this.osc.stop();}catch(e){} this.osc=null; }
+      const freq=this.FREQS[cat]||174;
+      this.osc=this.Ctx.createOscillator();
+      this.gain=this.Ctx.createGain();
+      this.osc.type='sine';
+      this.osc.frequency.value=freq;
+      this.gain.gain.setValueAtTime(0,this.Ctx.currentTime);
+      this.gain.gain.linearRampToValueAtTime(0.05,this.Ctx.currentTime+2.5);
+      this.osc.connect(this.gain); this.gain.connect(this.Ctx.destination);
+      this.osc.start();
+      this.active=true;
+      const btn=document.getElementById('audioToggle');
+      if(btn){btn.textContent='♪ Sonando';btn.classList.add('on');}
+    }catch(e){console.warn('Audio:',e);}
+  },
+
+  stop(){
+    if(this.gain&&this.Ctx){
+      try{
+        this.gain.gain.linearRampToValueAtTime(0,this.Ctx.currentTime+0.8);
+        const o=this.osc;
+        setTimeout(()=>{try{o&&o.stop();}catch(e){}},950);
+      }catch(e){}
+    }
+    this.active=false;
+    const btn=document.getElementById('audioToggle');
+    if(btn){btn.textContent='♪ Sonido';btn.classList.remove('on');}
+  },
+};
 
 // ── Init ─────────────────────────────────────────────────────────────────────
 initCounts();
