@@ -78,7 +78,7 @@ def chat_message(request, pk):
         session.title = content[:60].strip()
         session.save(update_fields=['title'])
         new_title = session.title
-    reply = _get_reply(session, content)
+    reply = _get_reply(session, content, user=request.user)
     msg = ChatMessage.objects.create(session=session, role='assistant', content=reply)
 
     from tokens.service import credit_mission
@@ -294,10 +294,12 @@ def _load_system_prompt():
         return 'Eres el Espejo de Conflictos, un acompañante de autoconocimiento.'
 
 
-def _get_reply(session, user_content):
-    from config.ai_client import call_ai
+def _get_reply(session, user_content, user=None):
+    from config.ai_client import call_ai, user_intent_context
+    intent = user_intent_context(user) if user else ''
+    system = intent + _load_system_prompt()
     history = list(session.messages.values('role', 'content'))
-    messages = [{'role': 'system', 'content': _load_system_prompt()}]
+    messages = [{'role': 'system', 'content': system}]
     messages += [{'role': m['role'] if m['role'] == 'user' else 'assistant', 'content': m['content']} for m in history[-10:]]
     messages.append({'role': 'user', 'content': user_content})
     return call_ai(messages, max_tokens=500) or 'No pude conectar con el espejo en este momento.'

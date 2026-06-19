@@ -1,61 +1,349 @@
 {% extends "base.html" %}
-{% block title %}Onboarding — Endonautas{% endblock %}
+{% block title %}Bienvenido — Endonautas{% endblock %}
 
 {% block public_content %}
 <style data-page-style>
-.onb-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
-.onb-box { background: rgba(0,0,0,0.88); border: 1px solid rgba(255,255,255,0.14); border-radius: 20px; padding: 2.5rem 2rem; width: 100%; max-width: 500px; }
-.onb-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; }
-.onb-sub { font-size: 0.88rem; color: var(--muted); margin-bottom: 2rem; line-height: 1.6; }
-.option-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
-.option-card { border: 1px solid var(--border); border-radius: 12px; padding: 1rem; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
-.option-card:hover, .option-card.selected { border-color: var(--accent); background: rgba(78,205,196,0.08); }
-.option-card input { display: none; }
-.option-label { font-size: 0.88rem; font-weight: 500; display: block; }
-.option-desc { font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }
+.onb-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem 1rem; }
+.onb-box  { width:100%; max-width:520px; }
+
+/* Pantallas */
+.onb-screen { display:none; }
+.onb-screen.active { display:block; }
+
+/* Pantalla 1 — Filosofía */
+.onb-quote {
+  font-family:var(--font-display); font-size:clamp(1.5rem,4vw,2.1rem);
+  font-weight:300; color:#fff; line-height:1.3; letter-spacing:-0.02em;
+  margin-bottom:1.5rem; font-style:italic;
+}
+.onb-quote em { font-style:normal; color:var(--calipso); }
+.onb-tagline {
+  font-family:var(--font-display); font-size:1.05rem; font-weight:700;
+  color:#fff; margin-bottom:0.65rem;
+}
+.onb-sub { font-size:0.82rem; color:var(--muted); line-height:1.7; margin-bottom:2rem; }
+.onb-logo { font-size:0.75rem; color:var(--dim); letter-spacing:0.18em; text-transform:uppercase; margin-bottom:2.5rem; }
+
+/* Pantalla 2 — Drag priorities */
+.onb-lead { font-size:0.78rem; color:var(--muted); line-height:1.6; margin-bottom:1.5rem; }
+.priority-list { display:flex; flex-direction:column; gap:0.5rem; margin-bottom:2rem; user-select:none; }
+.priority-item {
+  display:flex; align-items:center; gap:0.85rem;
+  background:var(--surface); border:1px solid var(--border); border-radius:12px;
+  padding:0.9rem 1rem; cursor:grab; transition:all 0.15s;
+}
+.priority-item:active { cursor:grabbing; }
+.priority-item.dragging { opacity:0.4; border-style:dashed; }
+.priority-item.drag-over { border-color:var(--calipso); background:rgba(126,204,205,0.07); }
+.priority-handle { color:var(--dim); font-size:1rem; flex-shrink:0; }
+.priority-num {
+  width:22px; height:22px; border-radius:50%; background:rgba(255,255,255,0.06);
+  font-size:0.7rem; font-weight:700; color:var(--dim);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  transition:all 0.2s;
+}
+.priority-item:first-child .priority-num { background:rgba(126,204,205,0.18); color:var(--calipso); }
+.priority-text { font-size:0.85rem; color:rgba(255,255,255,0.85); line-height:1.35; }
+.priority-hint { font-size:0.6rem; color:var(--dim); margin-top:0.15rem; }
+
+/* Pantalla 3 — Mapa personalizado */
+.onb-map-header { font-family:var(--font-display); font-size:1.1rem; font-weight:700; color:#fff; margin-bottom:0.4rem; line-height:1.35; }
+.onb-map-sub { font-size:0.78rem; color:var(--muted); margin-bottom:1.5rem; line-height:1.6; }
+.module-cards { display:flex; flex-direction:column; gap:0.6rem; margin-bottom:2rem; }
+.module-card {
+  display:flex; align-items:flex-start; gap:0.85rem;
+  background:var(--surface); border:1px solid var(--border); border-radius:12px;
+  padding:0.9rem 1rem;
+}
+.module-icon { font-size:1.1rem; color:var(--calipso); flex-shrink:0; margin-top:0.05rem; }
+.module-name { font-size:0.82rem; font-weight:700; color:#fff; margin-bottom:0.2rem; }
+.module-desc { font-size:0.75rem; color:var(--muted); line-height:1.5; }
+
+/* Botones */
+.onb-btn {
+  width:100%; padding:0.85rem; border-radius:12px; font-size:0.85rem;
+  font-family:var(--font-display); font-weight:700; letter-spacing:0.04em;
+  cursor:pointer; transition:all 0.2s; border:none;
+  background:var(--calipso); color:#0a0a14;
+}
+.onb-btn:hover { filter:brightness(1.1); }
+.onb-back { background:transparent; border:1px solid var(--border); color:var(--muted); margin-bottom:0.5rem; }
+.onb-back:hover { border-color:var(--border-active); color:#fff; }
+
+/* Progress dots */
+.onb-dots { display:flex; justify-content:center; gap:6px; margin-bottom:2.5rem; }
+.onb-dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.12); transition:all 0.3s; }
+.onb-dot.active { background:var(--calipso); width:18px; border-radius:100px; }
 </style>
+
 <div class="onb-wrap">
   <div class="onb-box">
-    <div style="color:var(--accent);font-size:0.85rem;margin-bottom:1.25rem">endonautas ✦</div>
-    <h1 class="onb-title">¿Desde dónde llegas?</h1>
-    <p class="onb-sub">Esto nos ayuda a personalizar tu experiencia. Puedes cambiarlo después.</p>
 
-    <form method="post">
-      {% csrf_token %}
-      <input type="hidden" name="step" value="final">
+    <div class="onb-dots" id="onbDots">
+      <div class="onb-dot active" id="dot0"></div>
+      <div class="onb-dot" id="dot1"></div>
+      <div class="onb-dot" id="dot2"></div>
+    </div>
 
-      <div style="margin-bottom:1.5rem">
-        <div class="form-label" style="margin-bottom:0.75rem">¿Cuál es tu área de ruido interno principal?</div>
-        <div class="option-grid">
-          {% for val, label in entry_points %}
-          <label class="option-card">
-            <input type="radio" name="entry_point" value="{{ val }}">
-            <span class="option-label">{{ label }}</span>
-          </label>
-          {% empty %}
-          <label class="option-card"><input type="radio" name="entry_point" value="ansiedad"><span class="option-label">Ansiedad</span></label>
-          <label class="option-card"><input type="radio" name="entry_point" value="relaciones"><span class="option-label">Relaciones</span></label>
-          <label class="option-card"><input type="radio" name="entry_point" value="proposito"><span class="option-label">Propósito</span></label>
-          <label class="option-card"><input type="radio" name="entry_point" value="autocuidado"><span class="option-label">Autocuidado</span></label>
-          {% endfor %}
-        </div>
+    <!-- ── Pantalla 1: Filosofía ── -->
+    <div class="onb-screen active" id="screen1">
+      <div class="onb-logo">endonautas ✦</div>
+      <div class="onb-quote">"Conócete, y <em>conocerás</em> el universo."</div>
+      <div class="onb-tagline">Endonautas te muestra el mapa, tú eres la brújula.</div>
+      <div class="onb-sub">
+        Plataforma para facilitar la integración de tu viaje interior — con herramientas de psicología, sabiduría ancestral y regulación somática.
+      </div>
+      <button class="onb-btn" onclick="goScreen(2)">Comenzar el viaje →</button>
+    </div>
+
+    <!-- ── Pantalla 2: Drag priorities ── -->
+    <div class="onb-screen" id="screen2">
+      <div class="onb-tagline">¿Para qué quieres usar el autoconocimiento?</div>
+      <div class="onb-lead">
+        Ordena estas opciones desde la más importante para ti hasta la menos.<br>
+        <span style="color:var(--dim)">Arrastra para reordenar — esto personaliza toda tu experiencia.</span>
       </div>
 
-      <div class="form-group">
-        <label class="form-label">¿Hay algo que quieras explorar en particular?</label>
-        <textarea name="noise_area" class="form-input" rows="3" placeholder="Opcional — escribe con libertad"></textarea>
-      </div>
+      <ul class="priority-list" id="priorityList">
+        <li class="priority-item" data-slug="propio">
+          <span class="priority-handle">⠿</span>
+          <span class="priority-num">1</span>
+          <div>
+            <div class="priority-text">Para mi propio desarrollo</div>
+            <div class="priority-hint">Autoconocimiento, patrones internos, crecimiento personal</div>
+          </div>
+        </li>
+        <li class="priority-item" data-slug="familia">
+          <span class="priority-handle">⠿</span>
+          <span class="priority-num">2</span>
+          <div>
+            <div class="priority-text">Para el desarrollo de mi familia</div>
+            <div class="priority-hint">Vínculos, crianza, dinámicas relacionales</div>
+          </div>
+        </li>
+        <li class="priority-item" data-slug="negocio">
+          <span class="priority-handle">⠿</span>
+          <span class="priority-num">3</span>
+          <div>
+            <div class="priority-text">Para el desarrollo de mi negocio</div>
+            <div class="priority-hint">Liderazgo, decisiones, resiliencia emprendedora</div>
+          </div>
+        </li>
+        <li class="priority-item" data-slug="carrera">
+          <span class="priority-handle">⠿</span>
+          <span class="priority-num">4</span>
+          <div>
+            <div class="priority-text">Para el desarrollo de mi carrera</div>
+            <div class="priority-hint">Rendimiento, claridad profesional, manejo del estrés</div>
+          </div>
+        </li>
+        <li class="priority-item" data-slug="colectiva">
+          <span class="priority-handle">⠿</span>
+          <span class="priority-num">5</span>
+          <div>
+            <div class="priority-text">Para el desarrollo de la conciencia colectiva</div>
+            <div class="priority-hint">Facilitar, enseñar, liderar grupos o comunidades</div>
+          </div>
+        </li>
+      </ul>
 
-      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">Comenzar exploración →</button>
-    </form>
+      <button class="onb-btn" onclick="goScreen(3)">Continuar →</button>
+      <button class="onb-btn onb-back" onclick="goScreen(1)">← Volver</button>
+    </div>
+
+    <!-- ── Pantalla 3: Mapa personalizado ── -->
+    <div class="onb-screen" id="screen3">
+      <div class="onb-logo">tu mapa ✦</div>
+      <div class="onb-map-header" id="mapHeader"></div>
+      <div class="onb-map-sub">Estas son las herramientas que vas a encontrar — y lo que pueden hacer por ti:</div>
+      <div class="module-cards" id="moduleCards"></div>
+
+      <form method="post" id="onbForm">
+        {% csrf_token %}
+        <input type="hidden" name="priorities" id="prioritiesInput">
+        <button type="submit" class="onb-btn">Empezar a explorar →</button>
+      </form>
+      <button class="onb-btn onb-back" onclick="goScreen(2)" style="margin-top:0.5rem">← Volver</button>
+    </div>
+
   </div>
 </div>
+
 <script>
-document.querySelectorAll('.option-card').forEach(card => {
-  card.addEventListener('click', () => {
-    card.closest('.option-grid').querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
-    card.classList.add('selected');
+// ── Datos ────────────────────────────────────────────────────────────────────
+const HEADERS = {
+  propio:   'Tu mapa para el viaje más profundo — el que va hacia adentro.',
+  familia:  'Tu mapa para las relaciones que más importan.',
+  negocio:  'Tu mapa para liderar desde un lugar más consciente.',
+  carrera:  'Tu mapa para avanzar con más claridad profesional.',
+  colectiva:'Tu mapa para transformar primero lo que estás llamado a transmitir.',
+};
+
+const MODULES = {
+  propio: [
+    { icon:'◎', nombre:'Espejo de Conflictos',   desc:'Comprende los patrones que se repiten en ti — sin juicio, con precisión.' },
+    { icon:'◈', nombre:'Tests Psicométricos',     desc:'Mapea tu mundo emocional interno con rigor clínico.' },
+    { icon:'✦', nombre:'Lecturas de Nacimiento',  desc:'Descubre tu diseño de personalidad desde múltiples marcos.' },
+    { icon:'◌', nombre:'Regulación',              desc:'Herramientas somáticas para cuando el cuerpo se desregula.' },
+    { icon:'○', nombre:'Oráculo',                 desc:'Claridad simbólica cuando la mente racional no alcanza.' },
+  ],
+  familia: [
+    { icon:'◎', nombre:'Espejo de Conflictos',   desc:'Entiende las dinámicas que tensan tus relaciones más cercanas.' },
+    { icon:'◈', nombre:'Tests Psicométricos',     desc:'Conoce tu estilo de apego y cómo afecta tus vínculos.' },
+    { icon:'✦', nombre:'Lecturas de Nacimiento',  desc:'Comprende por qué piensas tan diferente a tu pareja o hijos.' },
+    { icon:'◌', nombre:'Regulación',              desc:'Practica antes de las conversaciones difíciles en familia.' },
+    { icon:'○', nombre:'Oráculo',                 desc:'Orientación en momentos de decisión familiar compleja.' },
+  ],
+  negocio: [
+    { icon:'◎', nombre:'Espejo de Conflictos',   desc:'Identifica qué patrones internos están afectando tus decisiones clave.' },
+    { icon:'◈', nombre:'Tests Psicométricos',     desc:'Mide tu perfil de estrés, liderazgo y tolerancia a la incertidumbre.' },
+    { icon:'✦', nombre:'Lecturas de Nacimiento',  desc:'Conoce tu estrategia natural de decisión y cómo lideras mejor.' },
+    { icon:'◌', nombre:'Regulación',              desc:'Reseteo antes de reuniones importantes. Sin colapsar bajo presión.' },
+    { icon:'○', nombre:'Oráculo',                 desc:'Perspectiva simbólica cuando la lógica no alcanza para una decisión.' },
+  ],
+  carrera: [
+    { icon:'◎', nombre:'Espejo de Conflictos',   desc:'Reconoce los patrones que frenan tu crecimiento profesional.' },
+    { icon:'◈', nombre:'Tests Psicométricos',     desc:'Identifica tus fortalezas y puntos ciegos en el entorno laboral.' },
+    { icon:'✦', nombre:'Lecturas de Nacimiento',  desc:'Descubre cómo trabajas y produces mejor según tu diseño energético.' },
+    { icon:'◌', nombre:'Regulación',              desc:'Manejo del estrés sin colapsar el rendimiento.' },
+    { icon:'○', nombre:'Oráculo',                 desc:'Orientación en decisiones de carrera cuando el camino no está claro.' },
+  ],
+  colectiva: [
+    { icon:'◎', nombre:'Espejo de Conflictos',   desc:'Lee los conflictos colectivos desde el espejo individual primero.' },
+    { icon:'◈', nombre:'Tests Psicométricos',     desc:'Comprende los arquetipos que emergen en los grupos que facilitas.' },
+    { icon:'✦', nombre:'Lecturas de Nacimiento',  desc:'Comprende los patrones cíclicos que afectan a los colectivos.' },
+    { icon:'◌', nombre:'Regulación',              desc:'Regula el campo antes de facilitar un grupo o espacio.' },
+    { icon:'⊕', nombre:'Modo Terapeuta',          desc:'Herramientas para trabajar el autoconocimiento con tus clientes.' },
+  ],
+};
+
+// ── Navegación entre pantallas ────────────────────────────────────────────────
+function goScreen(n) {
+  document.querySelectorAll('.onb-screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen' + n).classList.add('active');
+  document.querySelectorAll('.onb-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === n - 1);
   });
-});
+  if (n === 3) buildMap();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Construir pantalla 3 ──────────────────────────────────────────────────────
+function buildMap() {
+  const slugs = getOrder();
+  const primary = slugs[0] || 'propio';
+  document.getElementById('mapHeader').textContent = HEADERS[primary] || HEADERS.propio;
+  const cards = (MODULES[primary] || MODULES.propio).map(m => `
+    <div class="module-card">
+      <div class="module-icon">${m.icon}</div>
+      <div>
+        <div class="module-name">${m.nombre}</div>
+        <div class="module-desc">${m.desc}</div>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('moduleCards').innerHTML = cards;
+  document.getElementById('prioritiesInput').value = JSON.stringify(slugs);
+}
+
+function getOrder() {
+  return [...document.querySelectorAll('.priority-item')].map(el => el.dataset.slug);
+}
+
+// ── Drag & drop (desktop + móvil) ────────────────────────────────────────────
+let dragSrc = null;
+
+function initDrag() {
+  const list = document.getElementById('priorityList');
+
+  // Desktop
+  list.querySelectorAll('.priority-item').forEach(item => {
+    item.setAttribute('draggable', true);
+
+    item.addEventListener('dragstart', e => {
+      dragSrc = item;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+      list.querySelectorAll('.priority-item').forEach(i => i.classList.remove('drag-over'));
+      updateNums();
+    });
+    item.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (item !== dragSrc) {
+        list.querySelectorAll('.priority-item').forEach(i => i.classList.remove('drag-over'));
+        item.classList.add('drag-over');
+      }
+    });
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      if (dragSrc && item !== dragSrc) {
+        const items = [...list.querySelectorAll('.priority-item')];
+        const fromIdx = items.indexOf(dragSrc);
+        const toIdx   = items.indexOf(item);
+        if (fromIdx < toIdx) list.insertBefore(dragSrc, item.nextSibling);
+        else list.insertBefore(dragSrc, item);
+      }
+    });
+  });
+
+  // Móvil (touch)
+  let touchItem = null, clone = null, startY = 0, offsetY = 0;
+
+  list.addEventListener('touchstart', e => {
+    touchItem = e.target.closest('.priority-item');
+    if (!touchItem) return;
+    const rect = touchItem.getBoundingClientRect();
+    startY  = e.touches[0].clientY;
+    offsetY = startY - rect.top;
+    clone = touchItem.cloneNode(true);
+    clone.style.cssText = `position:fixed;left:${rect.left}px;width:${rect.width}px;
+      top:${rect.top}px;opacity:0.9;z-index:999;pointer-events:none;
+      background:var(--surface2);border-color:var(--calipso);`;
+    document.body.appendChild(clone);
+    touchItem.classList.add('dragging');
+    e.preventDefault();
+  }, { passive: false });
+
+  list.addEventListener('touchmove', e => {
+    if (!clone) return;
+    const y = e.touches[0].clientY;
+    clone.style.top = (y - offsetY) + 'px';
+    const over = document.elementFromPoint(e.touches[0].clientX, y)?.closest('.priority-item');
+    if (over && over !== touchItem) {
+      list.querySelectorAll('.priority-item').forEach(i => i.classList.remove('drag-over'));
+      over.classList.add('drag-over');
+    }
+    e.preventDefault();
+  }, { passive: false });
+
+  list.addEventListener('touchend', e => {
+    if (!clone) return;
+    clone.remove(); clone = null;
+    const y = e.changedTouches[0].clientY;
+    const over = document.elementFromPoint(e.changedTouches[0].clientX, y)?.closest('.priority-item');
+    if (over && over !== touchItem) {
+      const items = [...list.querySelectorAll('.priority-item')];
+      const fromIdx = items.indexOf(touchItem);
+      const toIdx   = items.indexOf(over);
+      if (fromIdx < toIdx) list.insertBefore(touchItem, over.nextSibling);
+      else list.insertBefore(touchItem, over);
+    }
+    touchItem?.classList.remove('dragging');
+    list.querySelectorAll('.priority-item').forEach(i => i.classList.remove('drag-over'));
+    touchItem = null;
+    updateNums();
+  });
+}
+
+function updateNums() {
+  document.querySelectorAll('.priority-item').forEach((item, i) => {
+    item.querySelector('.priority-num').textContent = i + 1;
+  });
+}
+
+initDrag();
 </script>
 {% endblock %}

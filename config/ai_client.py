@@ -1,5 +1,8 @@
 """
 Cliente de IA centralizado.
+
+Uso:
+    from config.ai_client import call_ai, user_intent_context
 Todos los módulos deben llamar a call_ai() — nunca a la API directamente.
 
 Orden de prioridad:
@@ -9,6 +12,38 @@ Orden de prioridad:
 """
 import requests
 from django.conf import settings
+
+
+_PRIORITY_LABELS = {
+    'propio':   'desarrollo personal propio',
+    'familia':  'desarrollo de su familia',
+    'negocio':  'desarrollo de su negocio',
+    'carrera':  'desarrollo de su carrera profesional',
+    'colectiva':'desarrollo de la conciencia colectiva',
+}
+
+
+def user_intent_context(user):
+    """
+    Devuelve un bloque de contexto para inyectar al inicio del system prompt.
+    Vacío si el usuario no completó el onboarding o no tiene prioridades.
+    """
+    try:
+        priorities = user.userprofile.onboarding_priorities or []
+        if not priorities:
+            return ''
+        lines = '\n'.join(
+            f'{i+1}. {_PRIORITY_LABELS.get(p, p)}'
+            for i, p in enumerate(priorities)
+        )
+        return (
+            f'Contexto del usuario:\n'
+            f'Sus propósitos con el autoconocimiento, en orden de prioridad:\n'
+            f'{lines}\n\n'
+            f'Habla desde este contexto sin mencionarlo explícitamente.\n\n'
+        )
+    except Exception:
+        return ''
 
 
 def call_ai(messages, max_tokens=500, timeout=25):

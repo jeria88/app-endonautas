@@ -58,10 +58,12 @@ class UserProfile(models.Model):
     bio = models.TextField(blank=True)
 
     # Onboarding
-    onboarding_complete = models.BooleanField(default=False)
+    onboarding_complete    = models.BooleanField(default=False)
     onboarding_entry_point = models.CharField(max_length=100, blank=True)
-    onboarding_noise_area = models.CharField(max_length=100, blank=True)
-    onboarding_nucleo = models.JSONField(default=dict, blank=True)
+    onboarding_noise_area  = models.CharField(max_length=100, blank=True)
+    onboarding_nucleo      = models.JSONField(default=dict, blank=True)
+    # Prioridades ordenadas por el usuario en el onboarding (lista de slugs)
+    onboarding_priorities  = models.JSONField(default=list, blank=True)
 
     # Hotmart
     hotmart_subscriber_code = models.CharField(max_length=100, blank=True)

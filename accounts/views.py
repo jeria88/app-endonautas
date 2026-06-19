@@ -148,13 +148,17 @@ def onboarding(request):
     if profile.onboarding_complete:
         return redirect('dashboard')
     if request.method == 'POST':
-        step = request.POST.get('step', '1')
-        if step == 'final':
-            profile.onboarding_entry_point = request.POST.get('entry_point', '')
-            profile.onboarding_noise_area = request.POST.get('noise_area', '')
-            profile.onboarding_complete = True
-            profile.save()
-            from tokens.service import credit_mission
-            credit_mission(request.user, 'onboarding')
-            return redirect('dashboard')
+        import json as _json
+        raw = request.POST.get('priorities', '')
+        try:
+            priorities = _json.loads(raw) if raw.startswith('[') else [p.strip() for p in raw.split(',') if p.strip()]
+        except Exception:
+            priorities = []
+        profile.onboarding_priorities  = priorities
+        profile.onboarding_entry_point = priorities[0] if priorities else ''
+        profile.onboarding_complete    = True
+        profile.save(update_fields=['onboarding_priorities', 'onboarding_entry_point', 'onboarding_complete'])
+        from tokens.service import credit_mission
+        credit_mission(request.user, 'onboarding')
+        return redirect('dashboard')
     return render(request, 'accounts/onboarding.html')
