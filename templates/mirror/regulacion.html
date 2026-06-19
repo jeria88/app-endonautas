@@ -80,6 +80,18 @@
 .breath-cycle-info { font-size:0.72rem; color:var(--dim); }
 .breath-controls { display:flex; gap:0.75rem; }
 
+/* ── Square breathing overlay ── */
+.breath-sq { display:flex; flex-direction:column; align-items:center; gap:1.4rem; padding:3rem 0 2rem; min-height:260px; }
+.sq-phase-name { font-family:var(--font-display); font-size:0.68rem; font-weight:700; letter-spacing:0.32em; text-transform:uppercase; transition:color 1.2s ease; color:var(--calipso); }
+.sq-countdown { font-family:var(--font-display); font-size:5rem; font-weight:200; color:rgba(255,255,255,0.85); letter-spacing:-0.04em; line-height:1; min-width:3.5rem; text-align:center; text-shadow:0 0 60px rgba(126,204,205,0.15); }
+.sq-cue { font-size:0.73rem; color:var(--dim); text-align:center; max-width:260px; min-height:2.2em; line-height:1.55; }
+.sq-dots { display:flex; gap:10px; }
+.sq-dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.06); transition:all 0.5s; }
+.sq-dot.active { background:currentColor; box-shadow:0 0 10px currentColor; }
+.sq-cycle { font-size:0.58rem; color:var(--dim); letter-spacing:0.22em; text-transform:uppercase; }
+.sq-btn { padding:0.45rem 1.6rem; border-radius:8px; font-size:0.7rem; font-family:var(--font-display); font-weight:700; letter-spacing:0.12em; text-transform:uppercase; cursor:pointer; background:transparent; border:1px solid rgba(126,204,205,0.25); color:rgba(126,204,205,0.65); transition:all 0.25s; }
+.sq-btn:hover { border-color:rgba(126,204,205,0.65); color:#7ECCCD; box-shadow:0 0 20px rgba(126,204,205,0.12); }
+
 /* ── Player: Pasos ── */
 .steps-player { display:flex; flex-direction:column; gap:1.25rem; }
 .step-progress { display:flex; gap:4px; margin-bottom:0.25rem; }
@@ -326,7 +338,26 @@ function renderPlayer(e) {
 // ── Respiración ──────────────────────────────────────────────────────────────
 let breathTimer = null, breathPhaseIdx = 0, breathCountdown = 0, breathCycles = 0, breathRunning = false;
 
+// Phase colors matching the canvas animation
+const SQ_PHASE_COLORS = ['hsl(186,90%,72%)','hsl(215,75%,82%)','hsl(265,72%,72%)','hsl(195,55%,62%)'];
+
 function renderBreath(e) {
+  // Square breathing: neon overlay — no SVG circle, matches canvas aesthetic
+  if (getAnimType(e) === 'square') {
+    const first = e.phases&&e.phases[0];
+    const dots = (e.phases||[]).map((_,i) =>
+      `<div class="sq-dot" id="bdot-${i}" style="color:${SQ_PHASE_COLORS[i]||'var(--calipso)'}"></div>`
+    ).join('');
+    return `<div class="breath-sq">
+      <div class="sq-phase-name" id="bPhaseName">${first?first.name:'—'}</div>
+      <div class="sq-countdown" id="bCountdown">—</div>
+      <div class="sq-cue" id="bCue">${first?first.cue||'':''}</div>
+      <div class="sq-dots">${dots}</div>
+      <div class="sq-cycle" id="bCycleInfo">Ciclo 0</div>
+      <button class="sq-btn" id="breathStartBtn" onclick="toggleBreath()">Iniciar</button>
+    </div>`;
+  }
+  // Generic breathing: SVG ring timer
   const r = 68, circ = 2*Math.PI*r;
   const dots = (e.phases||[]).map((_,i)=>`<div class="breath-dot" id="bdot-${i}"></div>`).join('');
   return `<div class="breath-player">
@@ -401,6 +432,10 @@ function tickBreath() {
   if (phaseName) phaseName.textContent = phase.name;
   if (cueEl) cueEl.textContent = phase.cue || '';
   animEngine.setPhase(phase.name, phase.duration);
+  // Square mode: color phase name matching canvas line color
+  if (animEngine.animType === 'square' && phaseName) {
+    phaseName.style.color = SQ_PHASE_COLORS[breathPhaseIdx % phases.length] || SQ_PHASE_COLORS[0];
+  }
 
   // Update dots
   phases.forEach((_,i) => {
