@@ -601,7 +601,7 @@ VISUAL_MATRIX: dict[str, dict] = {
         "verificado":  False,
     },
     "ME-ORO-10": {
-        "colores":     ["amarillo claro", "rojo", "verde"],
+        "colores":     ["amarillo claro", "rojo", "negro", "azul claro"],
         "figura_mira": "sin figura — naipe numeral",
         "gesto":       "Diez oros: dos filas de cinco — el ciclo de la tierra cumplido",
         "simbolos":    ["dos filas de cinco círculos dorados", "saturación armónica"],
