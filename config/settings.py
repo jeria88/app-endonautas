@@ -168,12 +168,14 @@ LOGGING = {
     },
 }
 
-# AI — DeepSeek directo o vía OpenRouter
-DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY', '') or os.getenv('OPENROUTER_API_KEY', '')
-DEEPSEEK_MODEL = os.getenv('AI_MODEL', 'deepseek-chat')
+# AI — proveedor centralizado
+# AI_PROVIDER: 'deepseek' | 'openrouter' | 'auto' (default: openrouter si hay key, si no deepseek)
+AI_PROVIDER        = os.getenv('AI_PROVIDER', 'auto')
+DEEPSEEK_API_KEY   = os.getenv('DEEPSEEK_API_KEY', '')
+DEEPSEEK_MODEL     = os.getenv('DEEPSEEK_MODEL', 'deepseek-chat')
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '')
-OPENROUTER_MODEL = os.getenv('OPENROUTER_MODEL', 'openrouter/auto')
-OPENROUTER_MODEL_PROPUESTA = os.getenv('OPENROUTER_MODEL_PROPUESTA', 'openrouter/auto')
+# Modelo free por defecto; cambiar a cualquier modelo de openrouter.ai/models
+OPENROUTER_MODEL   = os.getenv('OPENROUTER_MODEL', 'meta-llama/llama-3.1-8b-instruct:free')
 
 # Email
 EMAIL_BACKEND = 'post_office.EmailBackend'

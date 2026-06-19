@@ -295,26 +295,12 @@ def _load_system_prompt():
 
 
 def _get_reply(session, user_content):
-    import requests
-    from django.conf import settings
-    if not settings.DEEPSEEK_API_KEY:
-        return 'El espejo no puede responder ahora (configura DEEPSEEK_API_KEY).'
-
+    from config.ai_client import call_ai
     history = list(session.messages.values('role', 'content'))
     messages = [{'role': 'system', 'content': _load_system_prompt()}]
     messages += [{'role': m['role'] if m['role'] == 'user' else 'assistant', 'content': m['content']} for m in history[-10:]]
     messages.append({'role': 'user', 'content': user_content})
-
-    try:
-        r = requests.post(
-            'https://api.deepseek.com/chat/completions',
-            json={'model': settings.DEEPSEEK_MODEL, 'messages': messages, 'max_tokens': 500},
-            headers={'Authorization': f'Bearer {settings.DEEPSEEK_API_KEY}'},
-            timeout=25,
-        )
-        return r.json()['choices'][0]['message']['content']
-    except Exception:
-        return 'No pude conectar con el espejo en este momento.'
+    return call_ai(messages, max_tokens=500) or 'No pude conectar con el espejo en este momento.'
 
 
 @login_required

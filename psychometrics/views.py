@@ -264,33 +264,13 @@ def reponer_resultados(request):
 
 
 def _generate_insight(result):
-    import requests
-    from django.conf import settings
-    api_key = getattr(settings, 'DEEPSEEK_API_KEY', '') or getattr(settings, 'OPENROUTER_API_KEY', '')
-    if not api_key:
-        return ''
-    base_url = 'https://api.deepseek.com/chat/completions'
-    model = getattr(settings, 'DEEPSEEK_MODEL', 'deepseek-chat')
-    if getattr(settings, 'OPENROUTER_API_KEY', '') and not getattr(settings, 'DEEPSEEK_API_KEY', ''):
-        base_url = 'https://openrouter.ai/api/v1/chat/completions'
-        model = 'meta-llama/llama-3.1-8b-instruct:free'
-        api_key = settings.OPENROUTER_API_KEY
-    payload = {
-        'model': model,
-        'messages': [{
-            'role': 'user',
-            'content': (
-                f'Dame un insight breve (3-4 oraciones) sobre este resultado de test psicométrico. '
-                f'Test: {result.test.name}. Dimensión: {result.test.dimension}. '
-                f'Evaluación: {json.dumps(result.evaluation, ensure_ascii=False)}. '
-                f'Recuerda: los resultados NO son deterministas, son puntos de exploración.'
-            )
-        }],
-        'max_tokens': 300,
-    }
-    try:
-        r = requests.post(base_url, json=payload,
-                          headers={'Authorization': f'Bearer {api_key}'}, timeout=20)
-        return r.json()['choices'][0]['message']['content']
-    except Exception:
-        return ''
+    from config.ai_client import call_ai
+    return call_ai([{
+        'role': 'user',
+        'content': (
+            f'Dame un insight breve (3-4 oraciones) sobre este resultado de test psicométrico. '
+            f'Test: {result.test.name}. Dimensión: {result.test.dimension}. '
+            f'Evaluación: {json.dumps(result.evaluation, ensure_ascii=False)}. '
+            f'Recuerda: los resultados NO son deterministas, son puntos de exploración.'
+        )
+    }], max_tokens=300, timeout=20)
