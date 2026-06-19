@@ -50,9 +50,12 @@
 .back-btn:hover { color:#fff; border-color:var(--border-active); }
 .player-cat-tag { font-size:0.6rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; }
 
-.player-panel { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.75rem; position:relative; overflow:hidden; }
+.player-panel { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; }
+.anim-zone { position:relative; height:260px; overflow:hidden; background:rgba(2,4,16,0.55); }
 #animCanvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; display:block; }
-.pcw { position:relative; z-index:1; }
+.anim-overlay { position:absolute; inset:0; z-index:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1rem; pointer-events:none; }
+.anim-overlay .sq-controls { pointer-events:auto; }
+.content-zone { padding:1.5rem 1.75rem; }
 .player-title { font-family:var(--font-display); font-size:1.3rem; font-weight:700; color:#fff; margin-bottom:0.2rem; }
 .player-sub { font-size:0.82rem; color:var(--muted); margin-bottom:1rem; }
 .player-desc { font-size:0.82rem; color:var(--dim); line-height:1.6; margin-bottom:1.5rem;
@@ -81,9 +84,9 @@
 .breath-controls { display:flex; gap:0.75rem; }
 
 /* ── Square breathing overlay ── */
-.breath-sq { display:flex; flex-direction:column; align-items:center; gap:1.4rem; padding:3rem 0 2rem; min-height:260px; }
-.sq-phase-name { font-family:var(--font-display); font-size:0.68rem; font-weight:700; letter-spacing:0.32em; text-transform:uppercase; transition:color 1.2s ease; color:var(--calipso); }
-.sq-countdown { font-family:var(--font-display); font-size:5rem; font-weight:200; color:rgba(255,255,255,0.85); letter-spacing:-0.04em; line-height:1; min-width:3.5rem; text-align:center; text-shadow:0 0 60px rgba(126,204,205,0.15); }
+.breath-sq { display:flex; flex-direction:column; align-items:center; gap:1rem; padding:1.2rem 0 0.5rem; }
+.sq-phase-name { font-family:var(--font-display); font-size:0.65rem; font-weight:700; letter-spacing:0.32em; text-transform:uppercase; transition:color 1.2s ease; color:var(--calipso); }
+.sq-countdown { font-family:var(--font-display); font-size:4rem; font-weight:200; color:rgba(255,255,255,0.85); letter-spacing:-0.04em; line-height:1; min-width:3rem; text-align:center; text-shadow:0 0 60px rgba(126,204,205,0.15); }
 .sq-cue { font-size:0.73rem; color:var(--dim); text-align:center; max-width:260px; min-height:2.2em; line-height:1.55; }
 .sq-dots { display:flex; gap:10px; }
 .sq-dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.06); transition:all 0.5s; }
@@ -211,18 +214,23 @@
         <button class="audio-btn" id="audioToggle" onclick="audioEngine.toggle()">♪ Sonido</button>
       </div>
       <div class="player-panel">
-        <canvas id="animCanvas"></canvas>
-        <div class="pcw">
-        <div class="player-title" id="playerTitle"></div>
-        <div class="player-sub" id="playerSub"></div>
-        <div class="player-desc" id="playerDesc"></div>
-        <div class="precaution" id="playerPrecaution" style="display:none">
-          <span>⚠</span><span id="playerPrecautionText"></span>
+        <!-- Zona animación: canvas + overlay de controles de respiración -->
+        <div class="anim-zone">
+          <canvas id="animCanvas"></canvas>
+          <div class="anim-overlay" id="animOverlay"></div>
         </div>
-        <div id="playerBody"></div>
-        <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid var(--border); display:flex; gap:0.75rem; flex-wrap:wrap;">
-          <button class="btn-reg btn-done" onclick="marcarCompletado()">Ejercicio completado</button>
-        </div>
+        <!-- Zona contenido: título, descripción, pasos, botones -->
+        <div class="content-zone">
+          <div class="player-title" id="playerTitle"></div>
+          <div class="player-sub" id="playerSub"></div>
+          <div class="player-desc" id="playerDesc"></div>
+          <div class="precaution" id="playerPrecaution" style="display:none">
+            <span>⚠</span><span id="playerPrecautionText"></span>
+          </div>
+          <div id="playerBody"></div>
+          <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid var(--border); display:flex; gap:0.75rem; flex-wrap:wrap;">
+            <button class="btn-reg btn-done" onclick="marcarCompletado()">Ejercicio completado</button>
+          </div>
         </div>
       </div>
     </div>
@@ -309,7 +317,15 @@ function abrirEjercicio(id) {
     prec.style.display = 'none';
   }
 
-  document.getElementById('playerBody').innerHTML = renderPlayer(e);
+  // Respiración con animación custom → overlay dentro de la zona de animación
+  // Todo lo demás → playerBody debajo de la animación
+  document.getElementById('animOverlay').innerHTML = '';
+  document.getElementById('playerBody').innerHTML = '';
+  if (e.ui_mode === 'respiracion' && ANIM_TYPE_MAP[e.title]) {
+    document.getElementById('animOverlay').innerHTML = renderBreath(e);
+  } else {
+    document.getElementById('playerBody').innerHTML = renderPlayer(e);
+  }
   initPlayer(e);
 
   document.getElementById('biblioteca').style.display = 'none';
@@ -322,6 +338,8 @@ function cerrarPlayer(silent) {
   stopBreath();
   animEngine.stop();
   audioEngine.stop();
+  document.getElementById('animOverlay').innerHTML = '';
+  document.getElementById('playerBody').innerHTML = '';
   document.getElementById('playerWrap').classList.remove('active');
   document.getElementById('biblioteca').style.display = '';
   ejercActual = null;
@@ -343,11 +361,11 @@ let breathTimer = null, breathPhaseIdx = 0, breathCountdown = 0, breathCycles = 
 const SQ_PHASE_COLORS = ['hsl(186,90%,72%)','hsl(215,75%,82%)','hsl(265,72%,72%)','hsl(195,55%,62%)'];
 
 function renderBreath(e) {
-  // Square breathing: neon overlay — no SVG circle, matches canvas aesthetic
-  if (getAnimType(e) === 'square') {
+  // Todos los ejercicios con animación canvas custom: overlay neon (sin SVG ring)
+  if (ANIM_TYPE_MAP[e.title]) {
     const first = e.phases&&e.phases[0];
     const dots = (e.phases||[]).map((_,i) =>
-      `<div class="sq-dot" id="bdot-${i}" style="color:${SQ_PHASE_COLORS[i]||'var(--calipso)'}"></div>`
+      `<div class="sq-dot" id="bdot-${i}" style="color:${SQ_PHASE_COLORS[i%4]||'var(--calipso)'}"></div>`
     ).join('');
     return `<div class="breath-sq">
       <div class="sq-phase-name" id="bPhaseName">${first?first.name:'—'}</div>
@@ -360,7 +378,7 @@ function renderBreath(e) {
       <button class="sq-btn" id="breathStartBtn" onclick="toggleBreath()">Iniciar</button>
     </div>`;
   }
-  // Generic breathing: SVG ring timer
+  // Generic breathing (sin animación custom): SVG ring timer
   const r = 68, circ = 2*Math.PI*r;
   const dots = (e.phases||[]).map((_,i)=>`<div class="breath-dot" id="bdot-${i}"></div>`).join('');
   return `<div class="breath-player">
@@ -435,8 +453,8 @@ function tickBreath() {
   if (phaseName) phaseName.textContent = phase.name;
   if (cueEl) cueEl.textContent = phase.cue || '';
   animEngine.setPhase(phase.name, phase.duration);
-  // Square mode: color phase name matching canvas line color
-  if (animEngine.animType === 'square' && phaseName) {
+  // Todas las animaciones custom: colorear el phase name
+  if (ejercActual && ANIM_TYPE_MAP[ejercActual.title] && phaseName) {
     phaseName.style.color = SQ_PHASE_COLORS[breathPhaseIdx % phases.length] || SQ_PHASE_COLORS[0];
   }
 
@@ -660,9 +678,9 @@ const animEngine = {
     this.expl=null; this.cr=null; this.cord=null; this.wr=null; this.flowPts=null;
     const cv=document.getElementById('animCanvas');
     if(!cv) return;
-    const panel=cv.parentElement;
-    cv.width=panel.offsetWidth||620;
-    cv.height=panel.offsetHeight||420;
+    const zone=cv.parentElement; // .anim-zone — fixed height
+    cv.width=zone.offsetWidth||620;
+    cv.height=zone.offsetHeight||260;
     if(this.animType==='square'){
       this.sq={phase:0,phaseStart:0,phaseDuration:4000,started:false};
     } else if(mode==='pasos'||mode==='visualizacion'||mode==='reflexion'){
