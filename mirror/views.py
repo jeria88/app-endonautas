@@ -5,7 +5,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from .models import BitacoraEntry, ChatMessage, ChatSession, DreamEntry, EjercicioRegulacion
+from .models import BitacoraEntry, CategoriaNecesidad, ChatMessage, ChatSession, DreamEntry, EjercicioRegulacion, MomentoRegulacion
 
 
 def _get_token_balance(user):
@@ -92,29 +92,23 @@ def chat_message(request, pk):
 
 @login_required
 def regulacion(request):
-    ejercicio_id = request.GET.get('ejercicio')
-    categoria = request.GET.get('categoria', '')
-    estado = request.GET.get('estado', '')  # para futuras recomendaciones cruzadas
-
-    ejercicios_qs = EjercicioRegulacion.objects.filter(active=True)
-
-    # Serializar todos para JS
     import json
-    todos = {str(e.pk): e.as_json() for e in ejercicios_qs}
 
-    # Ejercicio inicial si viene en URL
-    ejercicio_inicial = None
-    if ejercicio_id:
-        try:
-            ejercicio_inicial = str(ejercicios_qs.get(pk=ejercicio_id).pk)
-        except EjercicioRegulacion.DoesNotExist:
-            pass
+    momentos_qs = MomentoRegulacion.objects.filter(activo=True).prefetch_related(
+        'categorias', 'momentoejercicio_set__ejercicio'
+    )
+    categorias_qs = CategoriaNecesidad.objects.all()
+
+    momentos_json = [m.as_json() for m in momentos_qs]
+    categorias_json = [
+        {'slug': c.slug, 'nombre': c.nombre, 'tipo': c.tipo}
+        for c in categorias_qs
+    ]
 
     return render(request, 'mirror/regulacion.html', {
-        'ejercicios_json': json.dumps(todos, ensure_ascii=False),
-        'ejercicio_inicial': ejercicio_inicial,
-        'categoria_inicial': categoria,
-        'total': ejercicios_qs.count(),
+        'momentos_json': json.dumps(momentos_json, ensure_ascii=False),
+        'categorias_json': json.dumps(categorias_json, ensure_ascii=False),
+        'total': momentos_qs.count(),
     })
 
 

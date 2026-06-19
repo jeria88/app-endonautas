@@ -163,3 +163,64 @@ class EjercicioRegulacion(models.Model):
             'body_zones': self.body_zones,
             'precaution': self.precaution,
         }
+
+
+class CategoriaNecesidad(models.Model):
+    TIPO_CHOICES = [('cotidiano', 'Cotidiano'), ('crisis', 'Crisis')]
+    nombre = models.CharField(max_length=100)
+    slug   = models.SlugField(unique=True)
+    tipo   = models.CharField(max_length=20, choices=TIPO_CHOICES)
+    orden  = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ['orden']
+
+    def __str__(self):
+        return self.nombre
+
+
+class MomentoRegulacion(models.Model):
+    TIPO_CHOICES = [('cotidiano', 'Cotidiano'), ('crisis', 'Crisis')]
+    nombre      = models.CharField(max_length=200)
+    slug        = models.SlugField(unique=True)
+    tagline     = models.CharField(max_length=300, blank=True)
+    image_key   = models.CharField(max_length=100, blank=True)  # slug para imagen futura
+    duracion_min= models.PositiveSmallIntegerField(default=5)
+    tipo        = models.CharField(max_length=20, choices=TIPO_CHOICES)
+    categorias  = models.ManyToManyField(CategoriaNecesidad, blank=True, related_name='momentos')
+    ejercicios  = models.ManyToManyField(EjercicioRegulacion, through='MomentoEjercicio', blank=True)
+    orden       = models.PositiveSmallIntegerField(default=0)
+    activo      = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['tipo', 'orden']
+
+    def __str__(self):
+        return self.nombre
+
+    def as_json(self):
+        ejercicios_ordenados = [
+            me.ejercicio.as_json()
+            for me in self.momentoejercicio_set.select_related('ejercicio').order_by('orden')
+        ]
+        return {
+            'id': self.pk,
+            'nombre': self.nombre,
+            'slug': self.slug,
+            'tagline': self.tagline,
+            'image_key': self.image_key,
+            'duracion_min': self.duracion_min,
+            'tipo': self.tipo,
+            'categorias': list(self.categorias.values_list('slug', flat=True)),
+            'ejercicios': ejercicios_ordenados,
+        }
+
+
+class MomentoEjercicio(models.Model):
+    momento   = models.ForeignKey(MomentoRegulacion, on_delete=models.CASCADE)
+    ejercicio = models.ForeignKey(EjercicioRegulacion, on_delete=models.CASCADE)
+    orden     = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ['orden']
+        unique_together = [('momento', 'ejercicio')]

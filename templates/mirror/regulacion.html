@@ -7,35 +7,75 @@
 @media(max-width:780px){ .reg-wrap { grid-template-columns:1fr; } }
 
 /* ── Sidebar categorías ── */
-.cat-nav { display:flex; flex-direction:column; gap:0.4rem; }
+.cat-nav { display:flex; flex-direction:column; gap:0.3rem; }
+.cat-section-label { font-size:0.55rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase;
+  color:var(--dim); padding:0.65rem 0.9rem 0.25rem; }
 .cat-btn {
-  display:flex; align-items:center; gap:0.75rem;
-  padding:0.65rem 0.9rem; border-radius:12px;
+  display:flex; align-items:center; gap:0.65rem;
+  padding:0.55rem 0.9rem; border-radius:10px;
   background:transparent; border:1px solid transparent;
-  color:var(--muted); font-size:0.8rem; font-family:var(--font-display);
-  cursor:pointer; transition:all 0.2s; text-align:left; width:100%;
+  color:var(--muted); font-size:0.77rem; font-family:var(--font-display);
+  cursor:pointer; transition:all 0.18s; text-align:left; width:100%;
 }
 .cat-btn:hover { background:var(--surface); color:#fff; }
 .cat-btn.active { background:var(--surface2); border-color:var(--border-active); color:var(--calipso); }
-.cat-icon { font-size:1.1rem; width:22px; text-align:center; flex-shrink:0; }
-.cat-count { margin-left:auto; font-size:0.65rem; color:var(--dim);
-  background:rgba(255,255,255,0.06); border-radius:100px; padding:1px 7px; }
+.cat-btn.active.crisis { border-color:rgba(201,123,132,0.3); color:var(--rose); }
+.cat-icon { font-size:1rem; width:20px; text-align:center; flex-shrink:0; }
+.cat-count { margin-left:auto; font-size:0.62rem; color:var(--dim);
+  background:rgba(255,255,255,0.06); border-radius:100px; padding:1px 6px; }
 
-/* ── Grid de ejercicios ── */
-.ejerc-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1rem; }
-.ejerc-card {
-  background:var(--surface); border:1px solid var(--border); border-radius:14px;
-  padding:1.1rem 1.1rem 1rem; cursor:pointer; transition:all 0.2s;
-  display:flex; flex-direction:column; gap:0.4rem;
+/* ── Catálogo de momentos ── */
+.momentos-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:1.1rem; }
+.momento-card {
+  border-radius:16px; overflow:hidden; cursor:pointer;
+  border:1px solid var(--border); transition:all 0.22s;
+  position:relative; display:flex; flex-direction:column;
+  min-height:200px;
 }
-.ejerc-card:hover { border-color:var(--border-active); background:var(--surface2); transform:translateY(-2px); }
-.ejerc-cat-tag { font-size:0.58rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; }
-.ejerc-title { font-family:var(--font-display); font-size:0.88rem; font-weight:600; color:#fff; line-height:1.3; }
-.ejerc-sub { font-size:0.72rem; color:var(--muted); line-height:1.3; }
-.ejerc-footer { display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem; }
-.ejerc-dur { font-size:0.65rem; color:var(--dim); }
-.ejerc-mode-badge { font-size:0.6rem; background:rgba(255,255,255,0.06); color:var(--dim);
-  border-radius:100px; padding:2px 8px; }
+.momento-card:hover { border-color:var(--border-active); transform:translateY(-3px); box-shadow:0 12px 32px rgba(0,0,0,0.35); }
+.momento-img {
+  position:absolute; inset:0;
+  background:rgba(12,10,26,0.85);
+}
+.momento-img.has-image { background-size:cover; background-position:center; }
+.momento-img::after { content:''; position:absolute; inset:0;
+  background:linear-gradient(to top, rgba(4,3,14,0.92) 40%, rgba(4,3,14,0.45) 100%); }
+.momento-body { position:relative; z-index:1; padding:1.2rem 1.2rem 1rem; margin-top:auto; }
+.momento-tipo-row { display:flex; align-items:center; gap:0.5rem; margin-bottom:0.55rem; }
+.momento-tipo-badge {
+  font-size:0.56rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase;
+  padding:2px 8px; border-radius:100px;
+}
+.tipo-cotidiano .momento-tipo-badge { background:rgba(126,204,205,0.12); color:var(--calipso); }
+.tipo-crisis .momento-tipo-badge    { background:rgba(201,123,132,0.12); color:var(--rose); }
+.momento-dur { font-size:0.6rem; color:var(--dim); }
+.momento-nombre { font-family:var(--font-display); font-size:1rem; font-weight:700; color:#fff; line-height:1.25; margin-bottom:0.4rem; }
+.momento-tagline { font-size:0.73rem; color:rgba(255,255,255,0.48); line-height:1.5; margin-bottom:0.65rem; }
+.momento-cats { display:flex; flex-wrap:wrap; gap:0.3rem; }
+.momento-cat-pill {
+  font-size:0.56rem; color:var(--dim); background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.07); border-radius:100px; padding:2px 8px;
+}
+.momento-ejerc-count { font-size:0.6rem; color:var(--dim); margin-top:0.5rem; }
+
+/* ── Secuencia de momento en player ── */
+.seq-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:1.25rem; padding:0.9rem 1.1rem; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--border); }
+.seq-momento-name { font-size:0.78rem; color:var(--muted); font-family:var(--font-display); font-weight:600; flex:1; }
+.seq-progress-text { font-size:0.65rem; color:var(--dim); white-space:nowrap; }
+.seq-bar { display:flex; gap:3px; margin-top:0.35rem; }
+.seq-pip { height:3px; border-radius:100px; flex:1; background:rgba(255,255,255,0.07); transition:all 0.3s; }
+.seq-pip.done { background:var(--calipso); }
+.seq-pip.current { background:rgba(126,204,205,0.4); }
+
+/* ── Placeholder de imagen por paso ── */
+.step-img-slot {
+  width:100%; aspect-ratio:16/9; border-radius:10px; margin-bottom:1rem;
+  background:rgba(255,255,255,0.03); border:1px dashed rgba(255,255,255,0.1);
+  display:flex; align-items:center; justify-content:center;
+  color:rgba(255,255,255,0.12); font-size:0.68rem; letter-spacing:0.08em;
+  text-transform:uppercase; font-family:var(--font-display);
+}
+.step-img-slot img { width:100%; height:100%; object-fit:cover; border-radius:10px; }
 
 /* ── Player ── */
 .player-wrap { display:none; }
@@ -164,65 +204,38 @@
 <div style="margin-bottom:1.75rem; display:flex; align-items:flex-end; gap:1rem; flex-wrap:wrap;">
   <div>
     <h1 style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;color:#fff;letter-spacing:-0.02em;margin:0">Regulación</h1>
-    <p style="font-size:0.8rem;color:var(--dim);margin:4px 0 0">{{ total }} ejercicio{{ total|pluralize }} · Elige una categoría o un ejercicio directo</p>
+    <p style="font-size:0.8rem;color:var(--dim);margin:4px 0 0">{{ total }} momentos · Elige según lo que estás viviendo ahora</p>
   </div>
 </div>
 
 <div class="reg-wrap" id="regWrap">
 
-  <!-- Sidebar navegación de categorías -->
-  <nav class="cat-nav" id="catNav">
-    <button class="cat-btn active" data-cat="" onclick="setCat(this,'')">
-      <span class="cat-icon">◎</span> Todos
-      <span class="cat-count" id="count-all">{{ total }}</span>
-    </button>
-    <button class="cat-btn" data-cat="aliento" onclick="setCat(this,'aliento')">
-      <span class="cat-icon">◌</span> Aliento
-      <span class="cat-count" id="count-aliento">–</span>
-    </button>
-    <button class="cat-btn" data-cat="integracion" onclick="setCat(this,'integracion')">
-      <span class="cat-icon">⊕</span> Integración
-      <span class="cat-count" id="count-integracion">–</span>
-    </button>
-    <button class="cat-btn" data-cat="resonancia" onclick="setCat(this,'resonancia')">
-      <span class="cat-icon">∿</span> Resonancia
-      <span class="cat-count" id="count-resonancia">–</span>
-    </button>
-    <button class="cat-btn" data-cat="espectro" onclick="setCat(this,'espectro')">
-      <span class="cat-icon">◈</span> Espectro
-      <span class="cat-count" id="count-espectro">–</span>
-    </button>
-    <button class="cat-btn" data-cat="campo" onclick="setCat(this,'campo')">
-      <span class="cat-icon">⬡</span> Campo
-      <span class="cat-count" id="count-campo">–</span>
-    </button>
-    <button class="cat-btn" data-cat="presencia" onclick="setCat(this,'presencia')">
-      <span class="cat-icon">◉</span> Presencia
-      <span class="cat-count" id="count-presencia">–</span>
-    </button>
-  </nav>
+  <!-- Sidebar navegación de categorías (dinámico) -->
+  <nav class="cat-nav" id="catNav"></nav>
 
   <!-- Área principal -->
   <div id="mainArea">
 
-    <!-- Biblioteca -->
+    <!-- Catálogo de momentos -->
     <div id="biblioteca">
-      <div class="ejerc-grid" id="ejercGrid"></div>
-      <div class="empty-cat" id="emptyMsg" style="display:none">Sin ejercicios en esta categoría.</div>
+      <div class="momentos-grid" id="catalogoGrid"></div>
+      <div class="empty-cat" id="emptyMsg" style="display:none">Sin momentos para esta categoría.</div>
     </div>
 
-    <!-- Player -->
+    <!-- Player de momento -->
     <div class="player-wrap" id="playerWrap">
       <div class="player-header">
         <button class="back-btn" onclick="cerrarPlayer()">← Volver</button>
         <span class="player-cat-tag" id="playerCatTag" style="color:var(--calipso)"></span>
-        <button class="audio-btn" id="audioToggle" onclick="audioEngine.toggle()">♪ Sonido</button>
       </div>
       <div class="player-panel">
-        <!-- Zona animación: canvas + overlay de controles de respiración -->
-        <div class="anim-zone">
-          <canvas id="animCanvas"></canvas>
-          <div class="anim-overlay" id="animOverlay"></div>
+        <!-- Cabecera de secuencia (progreso del momento) -->
+        <div class="seq-header" id="seqHeader" style="display:none">
+          <div style="flex:1">
+            <div class="seq-momento-name" id="seqMomentoName"></div>
+            <div class="seq-bar" id="seqBar"></div>
+          </div>
+          <div class="seq-progress-text" id="seqProgressText"></div>
         </div>
         <!-- Zona contenido: título, descripción, pasos, botones -->
         <div class="content-zone">
@@ -233,9 +246,7 @@
             <span>⚠</span><span id="playerPrecautionText"></span>
           </div>
           <div id="playerBody"></div>
-          <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid var(--border); display:flex; gap:0.75rem; flex-wrap:wrap;">
-            <button class="btn-reg btn-done" onclick="marcarCompletado()">Ejercicio completado</button>
-          </div>
+          <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid var(--border); display:flex; gap:0.75rem; flex-wrap:wrap;" id="playerActions"></div>
         </div>
       </div>
     </div>
@@ -244,119 +255,201 @@
 </div>
 
 <script>
-const EJERCICIOS = {{ ejercicios_json|safe }};
-const EJERCICIO_INICIAL = {{ ejercicio_inicial|default:"null" }};
-const CATEGORIA_INICIAL = "{{ categoria_inicial }}";
+const MOMENTOS   = {{ momentos_json|safe }};
+const CATEGORIAS = {{ categorias_json|safe }};
 
-const CAT_COLORS = {
-  aliento:'#7ECCCD', integracion:'#9b8ec4', resonancia:'#c97b84',
-  espectro:'#d4a056', campo:'#7ECCCD', presencia:'#9b8ec4',
-};
-const CAT_LABELS = {
-  aliento:'Aliento', integracion:'Integración', resonancia:'Resonancia',
-  espectro:'Espectro', campo:'Campo', presencia:'Presencia',
-};
-const MODE_LABELS = {
-  respiracion:'Timer', pasos:'Guiado', vocal:'Vocal',
-  visualizacion:'Visualización', reflexion:'Reflexión',
-};
+const CAT_TIPO_ICONS = { cotidiano:'◌', crisis:'◈' };
+const CAT_COLORS = { cotidiano:'var(--calipso)', crisis:'var(--rose)' };
 
-let catActual = CATEGORIA_INICIAL || '';
-let ejercActual = null;
+let catActual      = '';
+let momentoActual  = null;
+let ejercicioIdx   = 0;
+let ejercActual    = null;  // ejercicio activo dentro del momento
 
-// ── Conteos ──────────────────────────────────────────────────────────────────
-function initCounts() {
-  const counts = {};
-  Object.values(EJERCICIOS).forEach(e => { counts[e.category] = (counts[e.category]||0)+1; });
-  Object.keys(counts).forEach(c => {
-    const el = document.getElementById('count-' + c);
-    if (el) el.textContent = counts[c];
-  });
+// ── Sidebar dinámico ──────────────────────────────────────────────────────────
+function buildSidebar() {
+  const nav = document.getElementById('catNav');
+  const cotidianas = CATEGORIAS.filter(c => c.tipo === 'cotidiano');
+  const crisis     = CATEGORIAS.filter(c => c.tipo === 'crisis');
+
+  const allCount = MOMENTOS.length;
+
+  let html = `<button class="cat-btn active" data-cat="" onclick="setCat(this,'')">
+    <span class="cat-icon">◎</span> Todos
+    <span class="cat-count">${allCount}</span>
+  </button>`;
+
+  if (cotidianas.length) {
+    html += `<div class="cat-section-label">Cotidiano</div>`;
+    cotidianas.forEach(c => {
+      const n = MOMENTOS.filter(m => m.categorias.includes(c.slug)).length;
+      html += `<button class="cat-btn" data-cat="${c.slug}" onclick="setCat(this,'${c.slug}')">
+        <span class="cat-icon">${CAT_TIPO_ICONS.cotidiano}</span> ${c.nombre}
+        <span class="cat-count">${n}</span>
+      </button>`;
+    });
+  }
+  if (crisis.length) {
+    html += `<div class="cat-section-label">Crisis</div>`;
+    crisis.forEach(c => {
+      const n = MOMENTOS.filter(m => m.categorias.includes(c.slug)).length;
+      html += `<button class="cat-btn crisis" data-cat="${c.slug}" onclick="setCat(this,'${c.slug}')">
+        <span class="cat-icon">${CAT_TIPO_ICONS.crisis}</span> ${c.nombre}
+        <span class="cat-count">${n}</span>
+      </button>`;
+    });
+  }
+  nav.innerHTML = html;
 }
 
-// ── Biblioteca ────────────────────────────────────────────────────────────────
+// ── Catálogo ──────────────────────────────────────────────────────────────────
 function setCat(btn, cat) {
   catActual = cat;
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  renderGrid();
+  renderCatalogo();
 }
 
-function renderGrid() {
+function renderCatalogo() {
   cerrarPlayer(true);
-  const grid = document.getElementById('ejercGrid');
+  const grid  = document.getElementById('catalogoGrid');
   const empty = document.getElementById('emptyMsg');
-  const lista = Object.values(EJERCICIOS).filter(e => !catActual || e.category === catActual);
+  const lista = catActual
+    ? MOMENTOS.filter(m => m.categorias.includes(catActual))
+    : MOMENTOS;
   if (!lista.length) { grid.innerHTML=''; empty.style.display=''; return; }
   empty.style.display = 'none';
-  grid.innerHTML = lista.map(e => `
-    <div class="ejerc-card" onclick="abrirEjercicio('${e.id}')">
-      <div class="ejerc-cat-tag" style="color:${CAT_COLORS[e.category]||'var(--calipso)'}">${CAT_LABELS[e.category]||e.category}</div>
-      <div class="ejerc-title">${e.title}</div>
-      <div class="ejerc-sub">${e.subtitle||''}</div>
-      <div class="ejerc-footer">
-        <span class="ejerc-dur">⏱ ${e.duration_minutes} min</span>
-        <span class="ejerc-mode-badge">${MODE_LABELS[e.ui_mode]||e.ui_mode}</span>
+  grid.innerHTML = lista.map(m => {
+    const cats = (m.categorias||[]).map(s => {
+      const c = CATEGORIAS.find(x=>x.slug===s);
+      return c ? `<span class="momento-cat-pill">${c.nombre}</span>` : '';
+    }).join('');
+    const nEj = (m.ejercicios||[]).length;
+    return `<div class="momento-card tipo-${m.tipo}" onclick="abrirMomento(${m.id})">
+      <div class="momento-img"></div>
+      <div class="momento-body">
+        <div class="momento-tipo-row">
+          <span class="momento-tipo-badge">${m.tipo === 'cotidiano' ? 'Cotidiano' : 'Crisis'}</span>
+          <span class="momento-dur">⏱ ${m.duracion_min} min</span>
+        </div>
+        <div class="momento-nombre">${m.nombre}</div>
+        <div class="momento-tagline">${m.tagline||''}</div>
+        <div class="momento-cats">${cats}</div>
+        <div class="momento-ejerc-count">${nEj} ejercicio${nEj!==1?'s':''}</div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
-// ── Player ────────────────────────────────────────────────────────────────────
-function abrirEjercicio(id) {
-  const e = EJERCICIOS[String(id)];
-  if (!e) return;
-  ejercActual = e;
+// ── Abrir momento ─────────────────────────────────────────────────────────────
+function abrirMomento(id) {
+  const m = MOMENTOS.find(x => x.id === id);
+  if (!m) return;
+  momentoActual = m;
+  ejercicioIdx  = 0;
 
-  document.getElementById('playerTitle').textContent = e.title;
-  document.getElementById('playerSub').textContent = e.subtitle || '';
-  document.getElementById('playerDesc').textContent = e.description || '';
-  document.getElementById('playerCatTag').textContent = CAT_LABELS[e.category] || e.category;
-  document.getElementById('playerCatTag').style.color = CAT_COLORS[e.category] || 'var(--calipso)';
+  // Cabecera de secuencia
+  const nEj = (m.ejercicios||[]).length;
+  document.getElementById('seqMomentoName').textContent = m.nombre;
+  document.getElementById('seqHeader').style.display = 'flex';
+  document.getElementById('seqBar').innerHTML =
+    Array.from({length:nEj},(_,i)=>`<div class="seq-pip" id="seqpip-${i}"></div>`).join('');
 
-  const prec = document.getElementById('playerPrecaution');
-  if (e.precaution) {
-    document.getElementById('playerPrecautionText').textContent = e.precaution;
-    prec.style.display = 'flex';
-  } else {
-    prec.style.display = 'none';
-  }
-
-  // Respiración con animación custom → overlay dentro de la zona de animación
-  // Todo lo demás → playerBody debajo de la animación
-  document.getElementById('animOverlay').innerHTML = '';
-  document.getElementById('playerBody').innerHTML = '';
-  if (e.ui_mode === 'respiracion' && ANIM_TYPE_MAP[e.title]) {
-    document.getElementById('animOverlay').innerHTML = renderBreath(e);
-  } else {
-    document.getElementById('playerBody').innerHTML = renderPlayer(e);
-  }
-  initPlayer(e);
+  // Cat tag
+  const tagEl = document.getElementById('playerCatTag');
+  tagEl.textContent = m.tipo === 'cotidiano' ? 'Cotidiano' : 'Crisis';
+  tagEl.style.color = m.tipo === 'cotidiano' ? 'var(--calipso)' : 'var(--rose)';
 
   document.getElementById('biblioteca').style.display = 'none';
   document.getElementById('playerWrap').classList.add('active');
   document.getElementById('regWrap').scrollIntoView({behavior:'smooth', block:'start'});
-  setTimeout(() => animEngine.start(e.ui_mode, e.category, CAT_COLORS[e.category], getAnimType(e)), 60);
+
+  renderEjercicioMomento(m, 0);
+}
+
+function renderEjercicioMomento(m, idx) {
+  const ejercicios = m.ejercicios || [];
+  const n = ejercicios.length;
+  ejercicioIdx = Math.max(0, Math.min(idx, n-1));
+  ejercActual  = ejercicios[ejercicioIdx];
+
+  // Actualizar barra de secuencia
+  document.getElementById('seqProgressText').textContent = `Ejercicio ${ejercicioIdx+1} de ${n}`;
+  for (let i=0; i<n; i++) {
+    const pip = document.getElementById('seqpip-'+i);
+    if (!pip) continue;
+    pip.classList.remove('done','current');
+    if (i < ejercicioIdx) pip.classList.add('done');
+    else if (i === ejercicioIdx) pip.classList.add('current');
+  }
+
+  // Encabezado del ejercicio
+  document.getElementById('playerTitle').textContent = ejercActual.title;
+  document.getElementById('playerSub').textContent   = ejercActual.subtitle || '';
+  document.getElementById('playerDesc').textContent  = ejercActual.description || '';
+
+  const prec = document.getElementById('playerPrecaution');
+  if (ejercActual.precaution) {
+    document.getElementById('playerPrecautionText').textContent = ejercActual.precaution;
+    prec.style.display = 'flex';
+  } else { prec.style.display = 'none'; }
+
+  // Contenido del ejercicio
+  document.getElementById('playerBody').innerHTML = renderPlayer(ejercActual);
+  initPlayer(ejercActual);
+
+  // Botones de acción
+  const isLast = ejercicioIdx === n-1;
+  document.getElementById('playerActions').innerHTML = isLast
+    ? `<button class="btn-reg btn-done" onclick="completarMomento()">Momento completado ✓</button>`
+    : `<button class="btn-reg btn-done" onclick="avanzarMomento()">Siguiente ejercicio →</button>`;
+}
+
+function avanzarMomento() {
+  if (!momentoActual) return;
+  registrarEjercicio();
+  renderEjercicioMomento(momentoActual, ejercicioIdx + 1);
+  document.getElementById('playerWrap').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function completarMomento() {
+  registrarEjercicio();
+  const btn = document.querySelector('#playerActions .btn-done');
+  if (btn) { btn.textContent = '✓ Registrado'; btn.disabled = true; }
+  // Marcar todos los pips como done
+  (momentoActual.ejercicios||[]).forEach((_,i) => {
+    const pip = document.getElementById('seqpip-'+i);
+    if (pip) { pip.classList.remove('current'); pip.classList.add('done'); }
+  });
+}
+
+function registrarEjercicio() {
+  if (!ejercActual) return;
+  fetch('/regulacion/completado/', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','X-CSRFToken':document.querySelector('[name=csrfmiddlewaretoken]')?.value||''},
+    body: JSON.stringify({ejercicio_id: ejercActual.id}),
+  }).catch(()=>{});
 }
 
 function cerrarPlayer(silent) {
   stopBreath();
-  animEngine.stop();
   audioEngine.stop();
-  document.getElementById('animOverlay').innerHTML = '';
   document.getElementById('playerBody').innerHTML = '';
   document.getElementById('playerWrap').classList.remove('active');
+  document.getElementById('seqHeader').style.display = 'none';
   document.getElementById('biblioteca').style.display = '';
-  ejercActual = null;
+  momentoActual = null;
+  ejercActual   = null;
   if (!silent) document.getElementById('regWrap').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 function renderPlayer(e) {
   const d = getDiagram(e);
-  if (e.ui_mode === 'respiracion') return d + renderBreath(e);
   if (e.ui_mode === 'vocal') return d + renderVocal(e);
   if (e.ui_mode === 'visualizacion') return d + renderVisual(e);
   if (e.ui_mode === 'reflexion') return d + renderReflex(e);
+  // respiracion y pasos: mismo flujo instructivo paso a paso
   return d + renderPasos(e);
 }
 
@@ -516,7 +609,12 @@ function renderStep(e, idx) {
   const step = steps[currentStep];
   const body = document.getElementById('stepBody');
   if (body) {
+    // image_key en el paso → <img>, si no → placeholder de texto
+    const imgHtml = step.image_key
+      ? `<div class="step-img-slot"><img src="/static/img/regulacion/${step.image_key}.jpg" alt="${step.title}" loading="lazy"></div>`
+      : `<div class="step-img-slot">imagen · paso ${currentStep+1}</div>`;
     body.innerHTML = `
+      ${imgHtml}
       <div class="step-num">PASO ${currentStep+1} DE ${n}</div>
       <div class="step-title-main">${step.title}</div>
       <div class="step-instructions">${step.body}</div>
@@ -528,10 +626,10 @@ function renderStep(e, idx) {
   const next = document.getElementById('nextBtn');
   if (prev) prev.disabled = currentStep === 0;
   if (next) {
-    next.textContent = currentStep === n-1 ? 'Finalizar ✓' : 'Siguiente →';
-    next.onclick = currentStep === n-1 ? marcarCompletado : () => moveStep(1);
+    const isLastStep = currentStep === n-1;
+    next.textContent = isLastStep ? 'Listo ✓' : 'Siguiente →';
+    next.onclick = isLastStep ? avanzarDesdeEjercicio : () => moveStep(1);
   }
-  // Update pips
   for (let i=0;i<n;i++) {
     const pip = document.getElementById('pip-'+i);
     if (pip) {
@@ -540,6 +638,13 @@ function renderStep(e, idx) {
       else if (i === currentStep) pip.classList.add('current');
     }
   }
+}
+
+function avanzarDesdeEjercicio() {
+  if (!momentoActual) return;
+  const n = (momentoActual.ejercicios||[]).length;
+  if (ejercicioIdx < n-1) avanzarMomento();
+  else completarMomento();
 }
 
 function moveStep(dir) {
@@ -622,17 +727,8 @@ function renderReflex(e) {
   return renderVisual(e);
 }
 
-// ── Completado ────────────────────────────────────────────────────────────────
-function marcarCompletado() {
-  if (!ejercActual) return;
-  fetch('/regulacion/completado/', {
-    method:'POST',
-    headers:{'Content-Type':'application/json','X-CSRFToken':document.querySelector('[name=csrfmiddlewaretoken]')?.value||''},
-    body: JSON.stringify({ejercicio_id: ejercActual.id}),
-  }).catch(()=>{});
-  const btn = document.querySelector('.btn-done');
-  if (btn) { btn.textContent = '✓ Registrado en bitácora'; btn.disabled = true; }
-}
+// ── Completado (alias para compatibilidad con vocal/visual renderers) ─────────
+function marcarCompletado() { avanzarDesdeEjercicio(); }
 
 // ── Exercise diagrams (inline SVG, CC0-based) ─────────────────────────────────
 const EXERCISE_DIAGRAMS = {
@@ -1795,21 +1891,8 @@ const audioEngine = {
 };
 
 // ── Init ─────────────────────────────────────────────────────────────────────
-initCounts();
-
-// Aplicar categoría inicial si viene por URL
-if (CATEGORIA_INICIAL) {
-  const btn = document.querySelector(`.cat-btn[data-cat="${CATEGORIA_INICIAL}"]`);
-  if (btn) { document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
-  catActual = CATEGORIA_INICIAL;
-}
-
-renderGrid();
-
-// Abrir ejercicio directamente si viene en URL
-if (EJERCICIO_INICIAL) {
-  setTimeout(()=>abrirEjercicio(EJERCICIO_INICIAL), 100);
-}
+buildSidebar();
+renderCatalogo();
 </script>
 {% csrf_token %}
 {% endblock %}
