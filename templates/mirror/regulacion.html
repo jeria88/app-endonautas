@@ -96,6 +96,11 @@
 .sq-btn:hover { border-color:rgba(126,204,205,0.65); color:#7ECCCD; box-shadow:0 0 20px rgba(126,204,205,0.12); }
 .sq-controls { display:flex; justify-content:center; padding:0.5rem 0 0; }
 
+/* ── Exercise diagram ── */
+.exercise-diagram { margin-bottom:1.25rem; padding:1rem 0.75rem 0.75rem; background:rgba(2,4,16,0.35); border:1px solid var(--border); border-radius:12px; display:flex; flex-direction:column; align-items:center; gap:0.6rem; }
+.exercise-diagram svg { max-width:200px; width:100%; }
+.diagram-label { font-size:0.62rem; color:var(--dim); text-align:center; letter-spacing:0.08em; text-transform:uppercase; }
+
 /* ── Player: Pasos ── */
 .steps-player { display:flex; flex-direction:column; gap:1.25rem; }
 .step-progress { display:flex; gap:4px; margin-bottom:0.25rem; }
@@ -347,11 +352,12 @@ function cerrarPlayer(silent) {
 }
 
 function renderPlayer(e) {
-  if (e.ui_mode === 'respiracion') return renderBreath(e);
-  if (e.ui_mode === 'vocal') return renderVocal(e);
-  if (e.ui_mode === 'visualizacion') return renderVisual(e);
-  if (e.ui_mode === 'reflexion') return renderReflex(e);
-  return renderPasos(e); // default: pasos
+  const d = getDiagram(e);
+  if (e.ui_mode === 'respiracion') return d + renderBreath(e);
+  if (e.ui_mode === 'vocal') return d + renderVocal(e);
+  if (e.ui_mode === 'visualizacion') return d + renderVisual(e);
+  if (e.ui_mode === 'reflexion') return d + renderReflex(e);
+  return d + renderPasos(e);
 }
 
 // ── Respiración ──────────────────────────────────────────────────────────────
@@ -627,6 +633,214 @@ function marcarCompletado() {
   const btn = document.querySelector('.btn-done');
   if (btn) { btn.textContent = '✓ Registrado en bitácora'; btn.disabled = true; }
 }
+
+// ── Exercise diagrams (inline SVG, CC0-based) ─────────────────────────────────
+const EXERCISE_DIAGRAMS = {
+
+'Botones del Cerebro': `<div class="exercise-diagram">
+<svg viewBox="0 0 200 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- torso bust -->
+  <ellipse cx="100" cy="60" rx="30" ry="34" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+  <path d="M70 90 C55 105 48 130 45 160 L155 160 C152 130 145 105 130 90" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+  <!-- neck -->
+  <rect x="86" y="88" width="28" height="18" rx="4" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <!-- clavicles -->
+  <path d="M72 115 Q100 108 128 115" stroke="rgba(255,255,255,0.22)" stroke-width="1.2" stroke-dasharray="3,2"/>
+  <!-- K-27 left -->
+  <circle cx="76" cy="118" r="7" fill="rgba(126,204,205,0.15)" stroke="#7ECCCD" stroke-width="1.5"/>
+  <text x="76" y="122" text-anchor="middle" font-size="7" fill="#7ECCCD" font-family="monospace">K-27</text>
+  <!-- K-27 right -->
+  <circle cx="124" cy="118" r="7" fill="rgba(126,204,205,0.15)" stroke="#7ECCCD" stroke-width="1.5"/>
+  <text x="124" y="122" text-anchor="middle" font-size="7" fill="#7ECCCD" font-family="monospace">K-27</text>
+  <!-- navel -->
+  <circle cx="100" cy="152" r="7" fill="rgba(155,142,196,0.18)" stroke="#9b8ec4" stroke-width="1.5"/>
+  <text x="100" y="156" text-anchor="middle" font-size="6.5" fill="#9b8ec4" font-family="monospace">Ombl.</text>
+  <!-- labels -->
+  <text x="100" y="185" text-anchor="middle" font-size="7.5" fill="rgba(255,255,255,0.35)" font-family="monospace">Estimular K-27 + Ombligo</text>
+  <text x="100" y="197" text-anchor="middle" font-size="7" fill="rgba(255,255,255,0.2)" font-family="monospace">huecos bajo clavículas</text>
+</svg>
+<span class="diagram-label">Puntos de energía</span>
+</div>`,
+
+'Puntos Neurovasculares': `<div class="exercise-diagram">
+<svg viewBox="0 0 200 210" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- head silhouette -->
+  <ellipse cx="100" cy="80" rx="52" ry="60" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+  <!-- forehead zone -->
+  <ellipse cx="100" cy="55" rx="30" ry="14" fill="rgba(126,204,205,0.1)" stroke="rgba(126,204,205,0.5)" stroke-width="1.2" stroke-dasharray="4,2"/>
+  <text x="100" y="59" text-anchor="middle" font-size="7.5" fill="#7ECCCD" font-family="monospace">Frontales</text>
+  <!-- left bump -->
+  <circle cx="76" cy="52" r="5" fill="rgba(126,204,205,0.2)" stroke="#7ECCCD" stroke-width="1.2"/>
+  <!-- right bump -->
+  <circle cx="124" cy="52" r="5" fill="rgba(126,204,205,0.2)" stroke="#7ECCCD" stroke-width="1.2"/>
+  <!-- occipital zone -->
+  <ellipse cx="100" cy="125" rx="28" ry="10" fill="rgba(201,123,132,0.1)" stroke="rgba(201,123,132,0.5)" stroke-width="1.2" stroke-dasharray="4,2"/>
+  <text x="100" y="128" text-anchor="middle" font-size="7.5" fill="#c97b84" font-family="monospace">Occipucio</text>
+  <!-- hand icons schematic -->
+  <path d="M58 50 C48 45 40 52 42 60 C44 67 52 68 58 65" stroke="rgba(255,255,255,0.25)" stroke-width="1.2" fill="none"/>
+  <path d="M142 50 C152 45 160 52 158 60 C156 67 148 68 142 65" stroke="rgba(255,255,255,0.25)" stroke-width="1.2" fill="none"/>
+  <text x="100" y="160" text-anchor="middle" font-size="7.5" fill="rgba(255,255,255,0.35)" font-family="monospace">Palma frente + palma nuca</text>
+  <text x="100" y="172" text-anchor="middle" font-size="7" fill="rgba(255,255,255,0.2)" font-family="monospace">eminencias frontales</text>
+</svg>
+<span class="diagram-label">Contacto neurovascular</span>
+</div>`,
+
+'Equilibrio del Ombligo': `<div class="exercise-diagram">
+<svg viewBox="0 0 200 230" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- body outline -->
+  <ellipse cx="100" cy="52" rx="26" ry="30" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+  <path d="M74 80 C62 95 57 120 55 155 L145 155 C143 120 138 95 126 80" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+  <!-- entrecejo point -->
+  <circle cx="100" cy="46" r="6" fill="rgba(155,142,196,0.2)" stroke="#9b8ec4" stroke-width="1.5"/>
+  <text x="114" y="49" font-size="7" fill="#9b8ec4" font-family="monospace">Entrecejo</text>
+  <!-- ombligo point -->
+  <circle cx="100" cy="135" r="7" fill="rgba(126,204,205,0.15)" stroke="#7ECCCD" stroke-width="1.5"/>
+  <text x="113" y="138" font-size="7" fill="#7ECCCD" font-family="monospace">Ombligo</text>
+  <!-- connecting dotted line -->
+  <line x1="100" y1="52" x2="100" y2="128" stroke="rgba(255,255,255,0.2)" stroke-width="1" stroke-dasharray="4,3"/>
+  <!-- pulse dots on line -->
+  <circle cx="100" cy="80" r="2" fill="rgba(255,255,255,0.25)"/>
+  <circle cx="100" cy="100" r="2" fill="rgba(255,255,255,0.25)"/>
+  <text x="100" y="180" text-anchor="middle" font-size="7.5" fill="rgba(255,255,255,0.35)" font-family="monospace">Dedo medio: ombligo</text>
+  <text x="100" y="192" text-anchor="middle" font-size="7" fill="rgba(255,255,255,0.2)" font-family="monospace">otro dedo medio: entrecejo</text>
+</svg>
+<span class="diagram-label">Eje central</span>
+</div>`,
+
+'Flujo Central': `<div class="exercise-diagram">
+<svg viewBox="0 0 200 270" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- body -->
+  <ellipse cx="100" cy="42" rx="24" ry="28" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1.4"/>
+  <path d="M76 68 C64 82 60 108 58 175 L142 175 C140 108 136 82 124 68" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1.4"/>
+  <!-- right hand always at top (coronilla) -->
+  <circle cx="100" cy="16" r="6" fill="rgba(212,160,86,0.2)" stroke="#d4a056" stroke-width="1.5"/>
+  <text x="112" y="19" font-size="6.5" fill="#d4a056" font-family="monospace">Coronilla ✋</text>
+  <!-- 6 sequential touch points -->
+  <circle cx="100" cy="36" r="4.5" fill="rgba(126,204,205,0.15)" stroke="#7ECCCD" stroke-width="1.2"/>
+  <text x="108" y="39" font-size="6" fill="#7ECCCD" font-family="monospace">1 Entrecejo</text>
+  <circle cx="100" cy="54" r="4.5" fill="rgba(126,204,205,0.15)" stroke="#7ECCCD" stroke-width="1.2"/>
+  <text x="108" y="57" font-size="6" fill="#7ECCCD" font-family="monospace">2 Nariz</text>
+  <circle cx="100" cy="80" r="4.5" fill="rgba(126,204,205,0.15)" stroke="#7ECCCD" stroke-width="1.2"/>
+  <text x="108" y="83" font-size="6" fill="#7ECCCD" font-family="monospace">3 Esternón</text>
+  <circle cx="100" cy="108" r="4.5" fill="rgba(126,204,205,0.15)" stroke="#7ECCCD" stroke-width="1.2"/>
+  <text x="108" y="111" font-size="6" fill="#7ECCCD" font-family="monospace">4 Plexo</text>
+  <circle cx="100" cy="136" r="4.5" fill="rgba(126,204,205,0.15)" stroke="#7ECCCD" stroke-width="1.2"/>
+  <text x="108" y="139" font-size="6" fill="#7ECCCD" font-family="monospace">5 Pubis</text>
+  <circle cx="100" cy="160" r="4.5" fill="rgba(126,204,205,0.15)" stroke="#7ECCCD" stroke-width="1.2"/>
+  <text x="108" y="163" font-size="6" fill="#7ECCCD" font-family="monospace">6 Cóccix</text>
+  <!-- vertical axis -->
+  <line x1="100" y1="22" x2="100" y2="155" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="100" y="205" text-anchor="middle" font-size="7" fill="rgba(255,255,255,0.3)" font-family="monospace">Mano dcha. fija en coronilla</text>
+  <text x="100" y="217" text-anchor="middle" font-size="7" fill="rgba(255,255,255,0.2)" font-family="monospace">Mano izqda. recorre el eje</text>
+</svg>
+<span class="diagram-label">7 puntos del eje central</span>
+</div>`,
+
+'Armonización por Dedos': `<div class="exercise-diagram">
+<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- palm base -->
+  <path d="M52 130 C48 110 50 90 52 75 L58 72 L58 130 Z" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.15)" stroke-width="1.2"/>
+  <path d="M58 130 L58 60 L68 58 L68 130 Z" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.15)" stroke-width="1.2"/>
+  <path d="M68 130 L68 55 L80 53 L80 130 Z" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.15)" stroke-width="1.2"/>
+  <path d="M80 130 L80 58 L90 60 L90 130 Z" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.15)" stroke-width="1.2"/>
+  <path d="M90 130 L90 70 L98 80 L98 130 Z" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.15)" stroke-width="1.2"/>
+  <rect x="48" y="128" width="54" height="30" rx="8" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.15)" stroke-width="1.2"/>
+  <!-- colored finger zones -->
+  <!-- Pulgar (Preocupación) -->
+  <rect x="50" y="76" width="6" height="52" rx="3" fill="rgba(212,160,86,0.35)" stroke="#d4a056" stroke-width="1"/>
+  <text x="130" y="106" font-size="7" fill="#d4a056" font-family="monospace">Pulgar</text>
+  <text x="130" y="116" font-size="6.5" fill="rgba(212,160,86,0.7)" font-family="monospace">Preocupación</text>
+  <!-- Índice (Miedo) -->
+  <rect x="60" y="60" width="6" height="68" rx="3" fill="rgba(126,204,205,0.35)" stroke="#7ECCCD" stroke-width="1"/>
+  <text x="130" y="78" font-size="7" fill="#7ECCCD" font-family="monospace">Índice</text>
+  <text x="130" y="88" font-size="6.5" fill="rgba(126,204,205,0.7)" font-family="monospace">Miedo</text>
+  <!-- Medio (Ira) -->
+  <rect x="70" y="55" width="8" height="73" rx="3" fill="rgba(201,123,132,0.35)" stroke="#c97b84" stroke-width="1"/>
+  <text x="130" y="64" font-size="7" fill="#c97b84" font-family="monospace">Medio</text>
+  <text x="130" y="74" font-size="6.5" fill="rgba(201,123,132,0.7)" font-family="monospace">Ira</text>
+  <!-- Anular (Tristeza) -->
+  <rect x="81" y="60" width="7" height="68" rx="3" fill="rgba(155,142,196,0.35)" stroke="#9b8ec4" stroke-width="1"/>
+  <text x="130" y="136" font-size="7" fill="#9b8ec4" font-family="monospace">Anular</text>
+  <text x="130" y="146" font-size="6.5" fill="rgba(155,142,196,0.7)" font-family="monospace">Tristeza</text>
+  <!-- Meñique (Sobreesfuerzo) -->
+  <rect x="91" y="72" width="5" height="56" rx="3" fill="rgba(126,200,110,0.35)" stroke="rgba(126,200,110,0.9)" stroke-width="1"/>
+  <text x="130" y="158" font-size="7" fill="rgba(126,200,110,0.9)" font-family="monospace">Meñique</text>
+  <text x="130" y="168" font-size="6.5" fill="rgba(126,200,110,0.6)" font-family="monospace">Sobreesfuerzo</text>
+  <!-- connector lines -->
+  <line x1="108" y1="100" x2="128" y2="103" stroke="rgba(212,160,86,0.3)" stroke-width="0.8"/>
+  <line x1="108" y1="75" x2="128" y2="75" stroke="rgba(126,204,205,0.3)" stroke-width="0.8"/>
+  <line x1="108" y1="62" x2="128" y2="62" stroke="rgba(201,123,132,0.3)" stroke-width="0.8"/>
+  <line x1="108" y1="90" x2="128" y2="133" stroke="rgba(155,142,196,0.3)" stroke-width="0.8"/>
+  <line x1="108" y1="85" x2="128" y2="155" stroke="rgba(126,200,110,0.3)" stroke-width="0.8"/>
+</svg>
+<span class="diagram-label">Jin Shin Jyutsu — 5 actitudes</span>
+</div>`,
+
+'Entonación de Vocales': `<div class="exercise-diagram">
+<svg viewBox="0 0 200 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- body column simplified -->
+  <ellipse cx="100" cy="38" rx="20" ry="24" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1.4"/>
+  <path d="M80 60 C72 74 69 100 68 180 L132 180 C131 100 128 74 120 60" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1.4"/>
+  <!-- 7 vowel zones top to bottom -->
+  <circle cx="100" cy="28" r="5" fill="rgba(155,142,196,0.25)" stroke="#9b8ec4" stroke-width="1.2"/>
+  <text x="112" y="31" font-size="7" fill="#9b8ec4" font-family="monospace">MMM — Corona</text>
+  <circle cx="100" cy="40" r="5" fill="rgba(126,204,205,0.2)" stroke="#7ECCCD" stroke-width="1.2"/>
+  <text x="112" y="43" font-size="7" fill="#7ECCCD" font-family="monospace">I — 3er Ojo</text>
+  <circle cx="100" cy="62" r="5" fill="rgba(100,180,255,0.2)" stroke="#64b4ff" stroke-width="1.2"/>
+  <text x="112" y="65" font-size="7" fill="#64b4ff" font-family="monospace">E — Garganta</text>
+  <circle cx="100" cy="88" r="5" fill="rgba(201,123,132,0.2)" stroke="#c97b84" stroke-width="1.2"/>
+  <text x="112" y="91" font-size="7" fill="#c97b84" font-family="monospace">Ah — Corazón</text>
+  <circle cx="100" cy="118" r="5" fill="rgba(212,160,86,0.2)" stroke="#d4a056" stroke-width="1.2"/>
+  <text x="112" y="121" font-size="7" fill="#d4a056" font-family="monospace">A — Plexo</text>
+  <circle cx="100" cy="148" r="5" fill="rgba(126,200,110,0.2)" stroke="rgba(126,200,110,0.9)" stroke-width="1.2"/>
+  <text x="112" y="151" font-size="7" fill="rgba(126,200,110,0.8)" font-family="monospace">O — Sacro</text>
+  <circle cx="100" cy="170" r="5" fill="rgba(255,100,100,0.2)" stroke="rgba(255,100,100,0.7)" stroke-width="1.2"/>
+  <text x="112" y="173" font-size="7" fill="rgba(255,100,100,0.7)" font-family="monospace">U — Raíz</text>
+  <!-- vertical gradient axis -->
+  <line x1="100" y1="33" x2="100" y2="165" stroke="rgba(255,255,255,0.1)" stroke-width="1" stroke-dasharray="2,4"/>
+  <text x="100" y="210" text-anchor="middle" font-size="7" fill="rgba(255,255,255,0.3)" font-family="monospace">Resonar vocalmente</text>
+  <text x="100" y="222" text-anchor="middle" font-size="7" fill="rgba(255,255,255,0.18)" font-family="monospace">de Corona a Raíz</text>
+</svg>
+<span class="diagram-label">7 vocales · 7 centros</span>
+</div>`,
+
+'Seis Sonidos Curativos': `<div class="exercise-diagram">
+<svg viewBox="0 0 200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- torso front -->
+  <ellipse cx="100" cy="45" rx="25" ry="28" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.4"/>
+  <path d="M75 70 C63 84 60 110 58 165 L142 165 C140 110 137 84 125 70" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.4"/>
+  <!-- 6 organ zones -->
+  <!-- Hígado (right side, mid) — verde/ira -->
+  <ellipse cx="118" cy="115" rx="14" ry="10" fill="rgba(126,200,110,0.15)" stroke="rgba(126,200,110,0.6)" stroke-width="1"/>
+  <text x="118" y="118" text-anchor="middle" font-size="6" fill="rgba(126,200,110,0.9)" font-family="monospace">Hígado</text>
+  <text x="140" y="112" font-size="6.5" fill="rgba(126,200,110,0.7)" font-family="monospace">Shhh</text>
+  <!-- Corazón (center, upper) — rojo/calipso -->
+  <ellipse cx="96" cy="92" rx="11" ry="9" fill="rgba(201,123,132,0.15)" stroke="rgba(201,123,132,0.6)" stroke-width="1"/>
+  <text x="96" y="95" text-anchor="middle" font-size="6" fill="#c97b84" font-family="monospace">Corazón</text>
+  <text x="38" y="88" font-size="6.5" fill="rgba(201,123,132,0.7)" font-family="monospace">Haaa</text>
+  <!-- Bazo (left side) — amarillo -->
+  <ellipse cx="82" cy="115" rx="11" ry="9" fill="rgba(212,160,86,0.15)" stroke="rgba(212,160,86,0.6)" stroke-width="1"/>
+  <text x="82" y="118" text-anchor="middle" font-size="6" fill="#d4a056" font-family="monospace">Bazo</text>
+  <text x="38" y="115" font-size="6.5" fill="rgba(212,160,86,0.7)" font-family="monospace">Huuu</text>
+  <!-- Pulmones (both sides, upper) — blanco/azul -->
+  <ellipse cx="84" cy="92" rx="8" ry="12" fill="rgba(126,204,205,0.1)" stroke="rgba(126,204,205,0.4)" stroke-width="1"/>
+  <ellipse cx="116" cy="92" rx="8" ry="12" fill="rgba(126,204,205,0.1)" stroke="rgba(126,204,205,0.4)" stroke-width="1"/>
+  <text x="140" y="88" font-size="6.5" fill="rgba(126,204,205,0.7)" font-family="monospace">Ssss</text>
+  <!-- Riñones (back implied, lower) — azul oscuro -->
+  <ellipse cx="82" cy="138" rx="10" ry="7" fill="rgba(100,120,220,0.15)" stroke="rgba(100,120,220,0.6)" stroke-width="1"/>
+  <ellipse cx="118" cy="138" rx="10" ry="7" fill="rgba(100,120,220,0.15)" stroke="rgba(100,120,220,0.6)" stroke-width="1"/>
+  <text x="38" y="138" font-size="6.5" fill="rgba(100,120,220,0.8)" font-family="monospace">Chooo</text>
+  <!-- Triple Calentador (full torso) -->
+  <rect x="70" y="80" width="60" height="80" rx="6" fill="none" stroke="rgba(155,142,196,0.25)" stroke-width="0.8" stroke-dasharray="4,3"/>
+  <text x="140" y="162" font-size="6" fill="rgba(155,142,196,0.7)" font-family="monospace">Hiiii</text>
+  <text x="100" y="195" text-anchor="middle" font-size="7" fill="rgba(255,255,255,0.28)" font-family="monospace">Exhalar con el sonido</text>
+  <text x="100" y="207" text-anchor="middle" font-size="7" fill="rgba(255,255,255,0.18)" font-family="monospace">correspondiente al órgano</text>
+</svg>
+<span class="diagram-label">6 órganos · 6 sonidos</span>
+</div>`,
+
+};
+function getDiagram(e){ return EXERCISE_DIAGRAMS[e.title] || ''; }
 
 // ── Animation type map ────────────────────────────────────────────────────────
 const ANIM_TYPE_MAP = {
