@@ -63,6 +63,41 @@ practitioners/    — directorio de practicantes, perfiles temporales
 
 ---
 
+## Mapa del código (codegraph)
+
+Análisis estático al 2026-06-20 — `codegraph init`:
+
+| Métrica | Valor |
+|---------|-------|
+| Archivos Python | 138 |
+| Nodos totales | 1.054 |
+| Dependencias (edges) | 1.431 |
+| DB codegraph | 1.94 MB |
+
+**Nodos por tipo:**
+
+| Tipo | Cantidad |
+|------|----------|
+| import | 251 |
+| function | 186 |
+| variable | 160 |
+| class | 141 |
+| file | 138 |
+| route | 90 |
+| method | 88 |
+
+**Archivos más densos (símbolos):**
+
+| Archivo | Símbolos | Nota |
+|---------|----------|------|
+| `psychometrics/evaluator.py` | 40 | lógica de evaluación + dispatcher |
+| `terapeuta/views.py` | 37 | el view más complejo de la app |
+| `birth/calculators.py` | 34 | 3 calculadoras + helpers |
+| `oraculo/services/tarot_service.py` | 35 | tiradas + interpretación |
+| `config/settings.py` | 58 | configuración completa |
+
+---
+
 ## Módulo: accounts
 
 **Modelo User** — hereda `AbstractUser`, usa `email` como `USERNAME_FIELD` (sin username).
@@ -372,3 +407,15 @@ python manage.py runserver
 ```
 
 Para Railway, push al repositorio activa deploy automático.
+
+### Análisis de código (codegraph)
+
+```bash
+codegraph init          # primera vez — indexa los 138 archivos
+codegraph sync          # actualizar tras cambios
+codegraph status        # estadísticas del índice
+codegraph query <símbolo>           # buscar por nombre
+codegraph callers <función>         # quién llama a esta función
+codegraph callees <función>         # qué llama esta función
+codegraph impact <función>          # qué se rompe si cambia
+```

@@ -85,7 +85,7 @@ def _call_openrouter(messages, max_tokens, timeout):
         r = requests.post(
             'https://openrouter.ai/api/v1/chat/completions',
             json={
-                'model': getattr(settings, 'OPENROUTER_MODEL', 'meta-llama/llama-3.1-8b-instruct:free'),
+                'model': getattr(settings, 'OPENROUTER_MODEL', 'google/gemma-4-31b-it:free'),
                 'messages': messages,
                 'max_tokens': max_tokens,
             },

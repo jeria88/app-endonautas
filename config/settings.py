@@ -175,7 +175,7 @@ DEEPSEEK_API_KEY   = os.getenv('DEEPSEEK_API_KEY', '')
 DEEPSEEK_MODEL     = os.getenv('DEEPSEEK_MODEL', 'deepseek-chat')
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '')
 # Modelo free por defecto; cambiar a cualquier modelo de openrouter.ai/models
-OPENROUTER_MODEL   = os.getenv('OPENROUTER_MODEL', 'meta-llama/llama-3.1-8b-instruct:free')
+OPENROUTER_MODEL   = os.getenv('OPENROUTER_MODEL', 'google/gemma-4-31b-it:free')
 
 # Email
 EMAIL_BACKEND = 'post_office.EmailBackend'
