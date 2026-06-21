@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from django.db import connection, OperationalError
+from django.db import connection, OperationalError, ProgrammingError
 
 
 class Command(BaseCommand):
@@ -98,5 +98,5 @@ class Command(BaseCommand):
                     for dep_app in dependents:
                         self._drop_app_tables_and_migrations(cursor, dep_app)
                         self.stdout.write(f'Cleared migration state for {dep_app} (dependency on {app} was cleared)')
-        except OperationalError:
+        except (OperationalError, ProgrammingError):
             self.stdout.write('django_migrations not found — fresh database, skipping fix')
