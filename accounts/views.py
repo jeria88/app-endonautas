@@ -3,6 +3,7 @@ import random
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+from django.db.models import F
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import UserProfile
@@ -21,10 +22,20 @@ FRASES = [
 ]
 
 
+def referral_redirect(request, code):
+    from tokens.models import ReferralCode
+    try:
+        ReferralCode.objects.filter(code=code).update(click_count=F('click_count') + 1)
+        request.session['ref_code'] = code
+    except Exception:
+        pass
+    return redirect('register')
+
+
 def home(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
-    return render(request, 'accounts/home.html')
+    return redirect('login')
 
 
 def login_view(request):
@@ -63,6 +74,11 @@ def register_view(request):
                 tp.save()
             except TemporaryProfile.DoesNotExist:
                 pass
+
+        ref_code = request.session.pop('ref_code', None)
+        if ref_code:
+            from tokens.service import process_referral_signup
+            process_referral_signup(ref_code, user)
 
         login(request, user)
         return redirect('onboarding')
@@ -106,6 +122,8 @@ def dashboard(request):
 
 @login_required
 def perfil(request):
+    from tokens.service import get_or_create_referral_code
+    from tokens.models import Referral
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
         profile.map_aesthetic = request.POST.get('map_aesthetic', profile.map_aesthetic)
@@ -118,7 +136,15 @@ def perfil(request):
             request.user.first_name = request.POST['first_name']
             request.user.save(update_fields=['first_name'])
         return redirect('perfil')
-    return render(request, 'accounts/perfil.html', {'profile': profile})
+    referral_code = get_or_create_referral_code(request.user)
+    referrals_made = Referral.objects.filter(referrer=request.user)
+    conversions = referrals_made.filter(conversion_rewarded=True).count()
+    return render(request, 'accounts/perfil.html', {
+        'profile': profile,
+        'referral_code': referral_code,
+        'referrals_count': referrals_made.count(),
+        'conversions_count': conversions,
+    })
 
 
 @login_required
