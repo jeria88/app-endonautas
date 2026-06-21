@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: endonautas
+      POSTGRES_USER: endonautas
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - coolify
+
+  web:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: "False"
+      DATABASE_URL: postgres://endonautas:${DB_PASSWORD}@db:5432/endonautas
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      DEFAULT_FROM_EMAIL: hola@endonautas.cl
+      ALLOWED_HOSTS: app.endonautas.cl,localhost
+    networks:
+      - coolify
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.endonautas-app.rule=Host(`app.endonautas.cl`)
+      - traefik.http.routers.endonautas-app.entrypoints=https
+      - traefik.http.routers.endonautas-app.tls=true
+      - traefik.http.routers.endonautas-app.tls.certresolver=letsencrypt
+      - traefik.http.services.endonautas-app.loadbalancer.server.port=8000
+      - traefik.docker.network=coolify
+
+volumes:
+  pgdata:
+
+networks:
+  coolify:
+    external: true
