@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Pago — Endonautas{% endblock %}
+{% block content %}
+<div style="max-width:480px;margin:0 auto;padding:2rem 0">
+  <div class="panel" style="text-align:center;padding:2.5rem 2rem">
+
+    {% if exito and not pendiente %}
+      <div style="width:56px;height:56px;border-radius:50%;background:rgba(126,204,205,0.12);border:1px solid rgba(126,204,205,0.4);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:1.6rem">✓</div>
+      <h1 style="font-size:1.2rem;font-weight:700;color:var(--calipso);margin-bottom:0.6rem">
+        {% if es_suscripcion %}Plan activado{% elif es_pack %}Fractones acreditados{% else %}Pago confirmado{% endif %}
+      </h1>
+      <p style="color:var(--muted);font-size:0.9rem;line-height:1.7;margin-bottom:2rem">{{ mensaje }}</p>
+      {% if es_pack and fractones %}
+        <div style="font-family:var(--font-display,serif);font-size:2.2rem;font-weight:700;color:var(--calipso);margin-bottom:0.4rem">+{{ fractones }}</div>
+        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:2rem">fractones permanentes</p>
+      {% endif %}
+      {% if gateway %}
+        <p style="font-size:0.72rem;color:var(--muted);margin-bottom:2rem;opacity:.6">Procesado via {{ gateway }}</p>
+      {% endif %}
+      <div style="display:flex;flex-direction:column;gap:0.75rem">
+        <a href="/" onclick="spaGo(event,this)" class="btn btn-primary">Ir al inicio</a>
+        <a href="/tokens/balance/" onclick="spaGo(event,this)" class="btn btn-ghost" style="font-size:0.82rem">Ver mis fractones →</a>
+      </div>
+
+    {% elif pendiente %}
+      <div style="width:56px;height:56px;border-radius:50%;background:rgba(212,160,86,0.12);border:1px solid rgba(212,160,86,0.4);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:1.6rem">◑</div>
+      <h1 style="font-size:1.2rem;font-weight:700;color:var(--amber);margin-bottom:0.6rem">Pago en proceso</h1>
+      <p style="color:var(--muted);font-size:0.9rem;line-height:1.7;margin-bottom:2rem">{{ mensaje|default:"Te notificaremos cuando se confirme." }}</p>
+      <a href="/" onclick="spaGo(event,this)" class="btn btn-ghost">Volver al inicio</a>
+
+    {% else %}
+      <div style="width:56px;height:56px;border-radius:50%;background:rgba(201,123,132,0.12);border:1px solid rgba(201,123,132,0.4);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:1.6rem">✕</div>
+      <h1 style="font-size:1.2rem;font-weight:700;color:var(--rose);margin-bottom:0.6rem">Algo salió mal</h1>
+      <p style="color:var(--muted);font-size:0.9rem;line-height:1.7;margin-bottom:2rem">{{ mensaje|default:"No se pudo completar el pago." }}</p>
+      <div style="display:flex;flex-direction:column;gap:0.75rem">
+        <a href="javascript:history.back()" class="btn btn-ghost">Intentar de nuevo</a>
+        <a href="/" onclick="spaGo(event,this)" class="btn btn-ghost" style="font-size:0.82rem;opacity:.6">Ir al inicio</a>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

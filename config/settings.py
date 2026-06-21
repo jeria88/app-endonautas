@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'practitioners',
     'oraculo',
     'terapeuta',
+    'payments',
 ]
 
 SITE_ID = 1
@@ -221,8 +222,18 @@ PLAN_MONTHLY_TOKENS = {
     'practicante': 5000,
     'empresa': 20000,
 }
+# Pagos — PayPal
+PAYPAL_CLIENT_ID = os.getenv('PAYPAL_CLIENT_ID', '')
+PAYPAL_CLIENT_SECRET = os.getenv('PAYPAL_CLIENT_SECRET', '')
+PAYPAL_MODE = os.getenv('PAYPAL_MODE', 'sandbox')
+PAYPAL_WEBHOOK_ID = os.getenv('PAYPAL_WEBHOOK_ID', '')
+
+# Pagos — MercadoPago
+MERCADOPAGO_ACCESS_TOKEN = os.getenv('MERCADOPAGO_ACCESS_TOKEN', '')
+MERCADOPAGO_WEBHOOK_SECRET = os.getenv('MERCADOPAGO_WEBHOOK_SECRET', '')
+
 REFERRAL_REWARDS = {
-    'signup_referrer': 60,   # quien invita recibe al registrarse el referido
-    'signup_referred': 40,   # nuevo usuario por llegar via invitación
-    'conversion_referrer': 250,  # quien invita recibe cuando el referido pasa a plan pago
+    'signup_referrer': 60,
+    'signup_referred': 40,
+    'conversion_referrer': 250,
 }
