@@ -23,11 +23,15 @@
     <a class="test-card" href="/tests/{{ t.slug }}/responder/" onclick="spaGo(event,this)">
       <div class="test-name">{{ t.name }}</div>
       <div class="test-meta">
-        <span class="badge {% if t.instrument_type == 'clinical' %}badge-validado{% else %}badge-adaptado{% endif %}">
-          {{ t.get_instrument_type_display }}
-        </span>
+        {% if t.instrument_type == 'clinical' %}
+        <span class="badge badge-validado" data-tooltip="Instrumento científico validado en español">{{ t.get_instrument_type_display }}</span>
+        {% elif t.instrument_type == 'adapted' %}
+        <span class="badge badge-adaptado" data-tooltip="Basado en instrumento validado, adaptado al contexto">{{ t.get_instrument_type_display }}</span>
+        {% else %}
+        <span class="badge badge-endonauta" data-tooltip="Herramienta de autoexploración — no es diagnóstico clínico">{{ t.get_instrument_type_display }}</span>
+        {% endif %}
         <span>~{{ t.estimated_minutes }} min</span>
-        {% if t.token_cost %}<span>⬡ {{ t.token_cost }}</span>{% endif %}
+        {% if t.token_cost %}<span title="Consume ⬡ {{ t.token_cost }} fractones al completarlo">⬡ {{ t.token_cost }}</span>{% endif %}
       </div>
     </a>
     {% endfor %}

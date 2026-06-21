@@ -192,7 +192,45 @@
 </div>
 <a href="/nacimiento/" onclick="spaGo(event,this)" class="btn btn-ghost" style="margin-top:1rem;font-size:0.82rem">Volver</a>
 {% else %}
-<div class="panel" style="text-align:center;padding:2.5rem;color:var(--muted);font-size:0.88rem">Calculando carta astral…</div>
+<div id="birth-loading">
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.25rem">
+    <div class="skel" style="height:128px;border-radius:14px"></div>
+    <div class="skel" style="height:128px;border-radius:14px"></div>
+    <div class="skel" style="height:128px;border-radius:14px"></div>
+  </div>
+  <div class="skel" style="height:340px;border-radius:14px;margin-bottom:1.25rem"></div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.65rem;margin-bottom:1.25rem">
+    <div class="skel" style="height:88px;border-radius:10px"></div>
+    <div class="skel" style="height:88px;border-radius:10px"></div>
+    <div class="skel" style="height:88px;border-radius:10px"></div>
+    <div class="skel" style="height:88px;border-radius:10px"></div>
+  </div>
+  <p style="text-align:center;color:var(--muted);font-size:0.8rem;padding:0.5rem 0">Calculando carta astral…</p>
+</div>
+<script>
+(function(){
+  var _t = setInterval(function(){
+    fetch(window.location.href, {headers:{'X-Requested-With':'XMLHttpRequest'}})
+      .then(function(r){ return r.text(); })
+      .then(function(html){
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        var pc = doc.getElementById('page-content');
+        if (!pc || pc.querySelector('#birth-loading')) return;
+        clearInterval(_t);
+        var target = document.getElementById('page-content');
+        target.innerHTML = pc.innerHTML;
+        target.querySelectorAll('script').forEach(function(old){
+          var ns = document.createElement('script');
+          if (old.type) ns.setAttribute('type', old.type);
+          if (old.id) ns.id = old.id;
+          ns.textContent = old.textContent;
+          old.replaceWith(ns);
+        });
+        if (window.lucide) lucide.createIcons();
+      });
+  }, 2500);
+})();
+</script>
 {% endif %}
 </div>
 

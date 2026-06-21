@@ -45,13 +45,33 @@ async function react(pk, btn) {
   const fd = new FormData();
   fd.append('csrfmiddlewaretoken', document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '');
   fd.append('type', 'resonar');
+
+  // Optimistic: actualizar UI antes de esperar al servidor
+  const prevText = btn.textContent;
+  const prevColor = btn.style.color;
+  const prevBorder = btn.style.borderColor;
+  const wasActive = !!prevColor;
+  const currentScore = parseInt(btn.textContent.replace(/\D/g, '')) || 0;
+  btn.textContent = `⬡ ${wasActive ? currentScore - 1 : currentScore + 1}`;
+  btn.style.color = wasActive ? '' : 'var(--accent)';
+  btn.style.borderColor = wasActive ? '' : 'var(--accent)';
+  btn.disabled = true;
+
   try {
     const r = await fetch(`/comunidad/post/${pk}/reaccionar/`, {method:'POST', body:fd});
     const data = await r.json();
+    // Confirmar con el valor real del servidor
     btn.textContent = `⬡ ${data.score}`;
     btn.style.color = data.active ? 'var(--accent)' : '';
     btn.style.borderColor = data.active ? 'var(--accent)' : '';
-  } catch(e) {}
+  } catch(e) {
+    // Revertir si falló
+    btn.textContent = prevText;
+    btn.style.color = prevColor;
+    btn.style.borderColor = prevBorder;
+  } finally {
+    btn.disabled = false;
+  }
 }
 </script>
 {% endblock %}

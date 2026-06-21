@@ -1,6 +1,7 @@
 import json
 
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -23,7 +24,10 @@ DIMENSION_COLORS = {
 
 
 def test_list(request):
-    tests = Test.objects.filter(active=True).order_by('dimension', 'order')
+    tests = cache.get('active_tests')
+    if tests is None:
+        tests = list(Test.objects.filter(active=True).order_by('dimension', 'order'))
+        cache.set('active_tests', tests, 60 * 60)
     by_dimension = {}
     for t in tests:
         by_dimension.setdefault(t.get_dimension_display(), []).append(t)

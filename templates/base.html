@@ -238,6 +238,35 @@
     .badge-adaptado  { background: var(--amber-glow);   color: var(--amber);   border: 1px solid rgba(212,160,86,0.3);  }
     .badge-endonauta { background: var(--violet-glow);  color: var(--violet);  border: 1px solid rgba(155,142,196,0.3); }
 
+    /* ── Tooltips ──────────────────────────────────────────── */
+    [data-tooltip] { position: relative; }
+    [data-tooltip]::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: calc(100% + 7px);
+      left: 50%; transform: translateX(-50%);
+      background: rgba(6,4,14,0.97);
+      border: 1px solid var(--border-active);
+      border-radius: 6px; padding: 5px 11px;
+      font-size: 0.70rem; color: var(--text);
+      white-space: nowrap; pointer-events: none;
+      opacity: 0; transition: opacity 0.15s;
+      z-index: 9999; font-family: var(--font-ui); font-weight: 500; letter-spacing: 0;
+    }
+    [data-tooltip]:hover::after { opacity: 1; }
+
+    /* ── Skeletons ─────────────────────────────────────────── */
+    @keyframes skel-shine {
+      0%   { background-position: -200% 0; }
+      100% { background-position:  200% 0; }
+    }
+    .skel {
+      background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.04) 75%);
+      background-size: 200% 100%;
+      animation: skel-shine 1.8s ease-in-out infinite;
+      border-radius: 8px;
+    }
+
     /* ── Alerts ────────────────────────────────────────────── */
     .alert { padding: 12px 16px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 1rem; }
     .alert-error   { background: rgba(201,123,132,0.12); border: 1px solid rgba(201,123,132,0.3); color: #e09098; }
@@ -388,7 +417,7 @@
         </div>
         <div style="flex:1;min-width:0">
           <div style="font-family:var(--font-display);font-size:0.875rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ user.first_name|default:user.email }}</div>
-          <div style="font-size:0.68rem;color:var(--calipso);font-weight:500">Mi Cuenta · ⬡ {{ token_balance }}</div>
+          <div style="font-size:0.68rem;color:var(--calipso);font-weight:500" title="Fractones — moneda de la app. Se consumen al usar el Espejo, Oráculos y más.">Mi Cuenta · ⬡ {{ token_balance }}</div>
         </div>
         <form method="post" action="/logout/" style="margin:0;flex-shrink:0">
           {% csrf_token %}
@@ -698,6 +727,15 @@ function spaGo(e, el) {
   if (e) e.preventDefault();
   const url = el.href || el.dataset.href;
   if (!url) return;
+  const target = document.getElementById('page-content');
+  if (target) target.innerHTML = `
+    <div style="padding:4px 0">
+      <div class="skel" style="height:1.6rem;width:36%;margin-bottom:1.5rem"></div>
+      <div class="skel" style="height:116px;border-radius:14px;margin-bottom:0.75rem"></div>
+      <div class="skel" style="height:84px;border-radius:14px;margin-bottom:0.75rem"></div>
+      <div class="skel" style="height:100px;border-radius:14px;margin-bottom:0.75rem"></div>
+      <div class="skel" style="height:84px;border-radius:14px"></div>
+    </div>`;
   fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
     .then(r => {
       const finalUrl = r.url || url;  // URL real tras seguir redirects

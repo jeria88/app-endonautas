@@ -8,13 +8,165 @@ Aplicación web de autoconocimiento construida con Django 6. Integra astrología
 |------|-----------|
 | Framework | Django 6.0.4 |
 | Servidor | Gunicorn (2 workers, 2 threads) |
-| Base de datos | PostgreSQL (Railway prod) / SQLite (dev) |
+| Base de datos | PostgreSQL 16 (Oracle Cloud prod) / SQLite (dev) |
 | Archivos estáticos | WhiteNoise |
-| Deploy | Railway (nixpacks) |
+| Deploy | Coolify v4.1.2 en Oracle Cloud ARM64 |
 | IA | DeepSeek-chat via API compatible OpenAI / OpenRouter |
+| Auth social | Google OAuth 2.0 (allauth) |
 | Astrología | kerykeion 5.12.8 |
 | Zona horaria | timezonefinder 8.2.4 + pytz |
 | Cosmología china | sxtwl 2.0.7 |
+
+---
+
+## Infraestructura de producción
+
+### Servidor
+- **Oracle Cloud ARM64** — IP: `146.181.39.4`
+- **Coolify v4.1.2** (PaaS self-hosted) en puerto 8000 internamente; expuesto vía Traefik v3.6
+- **Traefik v3.6** como reverse proxy / TLS terminator (Let's Encrypt automático)
+
+### Proyectos Coolify
+
+| Proyecto | UUID | Apps |
+|----------|------|------|
+| Endonautas | `bmyudzu3wkclojezggc5tfd1` | app Django + PostgreSQL |
+| Agency | `qf3aoateif565dzl1i8bd55k` | n8n + Flowise + Redis |
+| Herramientas | `k1ui2bvkptqneglns34gj422` | Umami + Uptime Kuma + Listmonk + Serpbear |
+
+### App Endonautas en Coolify
+
+| Campo | Valor |
+|-------|-------|
+| App UUID | `psaza8rlhc5vk7gsmu4xc8l8` |
+| DB UUID | `ox72b94tsgzuhcf0768xipf1` |
+| Repo | `github.com/jeria88/app-endonautas` |
+| Branch | `master` |
+| Auto-deploy | Sí — push a master activa deploy en Coolify |
+| URL | `https://app.endonautas.cl` |
+
+---
+
+## Stack de herramientas (proyecto Herramientas)
+
+| Servicio | URL | Función |
+|---------|-----|---------|
+| Umami | `https://analytics.endonautas.cl` | Analytics web (open source) |
+| Uptime Kuma | `https://status.endonautas.cl` | Monitoreo de uptime |
+| Listmonk | `https://mail.endonautas.cl` | Email marketing |
+| Serpbear | `https://seo.endonautas.cl` | Seguimiento de keywords SEO |
+
+### Credenciales de acceso
+
+> Guardar en gestor de contraseñas. No compartir.
+
+| Servicio | Usuario | Contraseña |
+|---------|---------|-----------|
+| Umami | admin | `Endo44e4e1af3cfda5e8!` |
+| Uptime Kuma | admin | `Endo2026Status!` |
+| Listmonk | admin | `Endo2026Mail!` |
+| Serpbear | admin (UI) | configurar en primer acceso |
+
+### Umami — sitios trackeados
+
+| Sitio | Website ID |
+|-------|-----------|
+| Landing (astro-endonautas) | `e03fa69e-9931-411c-9838-7f6ffea90426` |
+| App Django | `9aa0968f-0cd2-4c77-9c70-fbb745d31754` |
+
+Script de tracking (ya integrado en ambos frontends):
+```html
+<script defer data-website-id="<SITE_ID>" src="https://analytics.endonautas.cl/script.js"></script>
+```
+
+### Uptime Kuma — monitores configurados
+
+6 monitores activos (vía inserción directa en SQLite `/app/data/kuma.db`):
+1. App Endonautas — `https://app.endonautas.cl`
+2. Landing — `https://endonautas.cl`
+3. Umami Analytics — `https://analytics.endonautas.cl`
+4. Listmonk Mail — `https://mail.endonautas.cl`
+5. Serpbear SEO — `https://seo.endonautas.cl`
+6. Coolify Panel — `http://146.181.39.4:8000`
+
+### Listmonk — listas creadas
+
+| Lista | Descripción |
+|-------|-------------|
+| Endonautas — Usuarios App | Registrados en app.endonautas.cl |
+| Endonautas — Interesados | Leads de la landing page |
+| Endonautas — Newsletter | Suscriptores al blog/contenido |
+
+**Pendiente:** configurar proveedor SMTP en Settings > SMTP.
+
+### Serpbear — pendiente manual
+
+Serpbear requiere configuración inicial vía UI en `https://seo.endonautas.cl`:
+1. Agregar dominio `endonautas.cl`
+2. Añadir keywords objetivo
+3. Configurar API key de Google Search Console (opcional)
+
+---
+
+## Deploy (Coolify — producción actual)
+
+### Proceso automático
+
+```
+git push origin master
+    → Coolify detecta el push vía webhook de GitHub
+    → Build Docker con el Dockerfile del repo
+    → Corre el startCommand en el nuevo contenedor
+    → Traefik actualiza el routing automáticamente
+```
+
+### startCommand
+
+```bash
+python manage.py fix_db_state && \
+python manage.py migrate --noinput && \
+python manage.py create_admin && \
+python manage.py seed_tests && \
+gunicorn config.wsgi --workers 2 --threads 2 --timeout 60 --bind 0.0.0.0:8000
+```
+
+### API Coolify (para administración)
+
+```
+Base URL: http://localhost:8000/api/v1/  (desde el servidor)
+Bearer token: 2|I36Uuw6S5funJQG3zcgY7vTBitE5kOE8PwIkQd1Bc3831ca2
+
+# Deploy manual de la app
+curl -X POST "http://localhost:8000/api/v1/deploy?uuid=psaza8rlhc5vk7gsmu4xc8l8" \
+  -H "Authorization: Bearer <token>"
+```
+
+### Comandos de management propios
+
+| Comando | Función |
+|---------|---------|
+| `fix_db_state` | Repara inconsistencias de migraciones antes de `migrate` |
+| `create_admin` | Crea superusuario desde env vars si no existe |
+| `seed_tests` | Pobla 35 tests psicométricos iniciales |
+| `seed_fractal_cards` | Pobla cartas del Oráculo Fractal |
+
+---
+
+## Variables de entorno (producción)
+
+Configuradas en Coolify UI — Environment Variables del proyecto Endonautas.
+
+| Variable | Requerida | Descripción |
+|----------|-----------|-------------|
+| `SECRET_KEY` | Sí | Django secret key |
+| `DEBUG` | No | `False` en prod |
+| `DATABASE_URL` | Sí | `postgres://endonautas:<pass>@db:5432/endonautas` |
+| `ALLOWED_HOSTS` | Sí | `app.endonautas.cl,localhost` |
+| `DEEPSEEK_API_KEY` | Para IA | Clave API DeepSeek |
+| `OPENROUTER_API_KEY` | Para IA | Alternativa a DeepSeek |
+| `GOOGLE_CLIENT_ID` | OAuth | ID de Google Cloud Console |
+| `GOOGLE_CLIENT_SECRET` | OAuth | Secret de Google Cloud Console |
+| `DEFAULT_FROM_EMAIL` | No | `hola@endonautas.cl` |
 
 ---
 
@@ -22,7 +174,7 @@ Aplicación web de autoconocimiento construida con Django 6. Integra astrología
 
 ```
 config/           — settings, urls raíz, wsgi
-accounts/         — auth (email-based), UserProfile, planes
+accounts/         — auth (email-based + Google OAuth), UserProfile, planes
 birth/            — lecturas de nacimiento (astral, HD, saju)
 oraculo/          — Tarot Terapéutico, I Ching, Oráculo Fractal
 mirror/           — espejo de conflictos (RAG + DeepSeek), sueños, regulación
@@ -107,6 +259,13 @@ Análisis estático al 2026-06-20 — `codegraph init`:
 - `map_aesthetic`: cosmos / mandala / archipielago / arbol
 - `onboarding_completed`, `onboarding_step`
 - Campos Hotmart: `hotmart_purchase_id`, `hotmart_product_id`, `plan_expires_at`
+
+### Registro y onboarding (señales)
+
+`accounts/signals.py` — `post_save` en User: al crear usuario (cualquier path, email o Google OAuth):
+1. Crea `UserProfile`
+2. Crea `TokenBalance` y acredita `PLAN_MONTHLY_TOKENS['free']` fractones con reason `'signup'`
+3. Crea `ReferralCode`
 
 ---
 
@@ -283,6 +442,14 @@ Dimensiones: identidad, emociones, cuerpo, vínculos, sombra, espiritualidad, su
 - **TokenTransaction** — log de cada movimiento con razón
 - Misiones: acciones que otorgan tokens
 
+### Economía
+
+| Plan | Fractones/mes |
+|------|--------------|
+| free | 100 |
+| navegante | 600 |
+| practicante | 3.000 |
+
 ---
 
 ## Módulo: community
@@ -299,43 +466,6 @@ Dimensiones: identidad, emociones, cuerpo, vínculos, sombra, espiritualidad, su
 
 - Directorio de practicantes de salud integrativa
 - **TemporaryProfile** — permite calcular carta natal para un cliente sin cuenta
-
----
-
-## Variables de entorno
-
-| Variable | Requerida | Descripción |
-|----------|-----------|-------------|
-| `SECRET_KEY` | Sí | Django secret key |
-| `DEBUG` | No | `True` en dev, `False` en prod |
-| `DATABASE_URL` | Prod | URL PostgreSQL (Railway la inyecta) |
-| `ALLOWED_HOSTS` | No | Hosts permitidos (Railway inyecta `RAILWAY_PUBLIC_DOMAIN`) |
-| `DEEPSEEK_API_KEY` | Para IA | Clave API DeepSeek o OpenRouter |
-| `OPENROUTER_API_KEY` | Para IA | Alternativa a DeepSeek |
-| `AI_MODEL` | No | Modelo a usar (default: `deepseek-chat`) |
-| `DEFAULT_FROM_EMAIL` | No | Email remitente (default: `hola@endonautas.cl`) |
-
----
-
-## Deploy (Railway)
-
-```toml
-# railway.toml
-[build]
-builder = "nixpacks"
-buildCommand = "pip install -r requirements.txt && python manage.py collectstatic --noinput"
-
-[deploy]
-startCommand = "python manage.py fix_db_state && python manage.py migrate --noinput && python manage.py create_admin && python manage.py seed_tests && gunicorn config.wsgi --workers 2 --threads 2 --timeout 60 --bind 0.0.0.0:$PORT"
-healthcheckPath = "/"
-healthcheckTimeout = 300
-restartPolicyType = "on_failure"
-```
-
-Comandos de management propios:
-- `fix_db_state` — repara inconsistencias de BD antes de migrar
-- `create_admin` — crea superusuario desde env si no existe
-- `seed_tests` — pobla tests psicométricos iniciales
 
 ---
 
@@ -406,8 +536,6 @@ python manage.py seed_tests
 python manage.py runserver
 ```
 
-Para Railway, push al repositorio activa deploy automático.
-
 ### Análisis de código (codegraph)
 
 ```bash
@@ -419,3 +547,15 @@ codegraph callers <función>         # quién llama a esta función
 codegraph callees <función>         # qué llama esta función
 codegraph impact <función>          # qué se rompe si cambia
 ```
+
+---
+
+## GitHub
+
+| Repo | Branch | URL |
+|------|--------|-----|
+| App Django | `master` | `github.com/jeria88/app-endonautas` |
+| Landing Astro | `main` | `github.com/jeria88/astro-endonautas` |
+| Blog/CRM | `main` | `github.com/jeria88/blog-endonautas` |
+
+Push a `master` en `app-endonautas` activa el auto-deploy en Coolify automáticamente.

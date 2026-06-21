@@ -153,7 +153,41 @@
   <div class="alert alert-error">{{ report.error_message|default:"Error al calcular Human Design." }}</div>
   <a href="/nacimiento/" onclick="spaGo(event,this)" class="btn btn-secondary btn-sm" style="margin-top:1rem">Volver</a>
   {% else %}
-  <div class="panel" style="text-align:center;padding:2.5rem;color:var(--muted)">Calculando Human Design…</div>
+  <div id="birth-loading">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0.75rem;margin-bottom:1.5rem">
+      <div class="skel" style="height:110px;border-radius:var(--radius)"></div>
+      <div class="skel" style="height:110px;border-radius:var(--radius)"></div>
+      <div class="skel" style="height:110px;border-radius:var(--radius)"></div>
+      <div class="skel" style="height:110px;border-radius:var(--radius)"></div>
+    </div>
+    <div class="skel" style="height:180px;border-radius:var(--radius);margin-bottom:1rem"></div>
+    <div class="skel" style="height:120px;border-radius:var(--radius)"></div>
+    <p style="text-align:center;color:var(--muted);font-size:0.8rem;padding:1rem 0">Calculando Human Design…</p>
+  </div>
+  <script>
+  (function(){
+    var _t = setInterval(function(){
+      fetch(window.location.href, {headers:{'X-Requested-With':'XMLHttpRequest'}})
+        .then(function(r){ return r.text(); })
+        .then(function(html){
+          var doc = new DOMParser().parseFromString(html, 'text/html');
+          var pc = doc.getElementById('page-content');
+          if (!pc || pc.querySelector('#birth-loading')) return;
+          clearInterval(_t);
+          var target = document.getElementById('page-content');
+          target.innerHTML = pc.innerHTML;
+          target.querySelectorAll('script').forEach(function(old){
+            var ns = document.createElement('script');
+            if (old.type) ns.setAttribute('type', old.type);
+            if (old.id) ns.id = old.id;
+            ns.textContent = old.textContent;
+            old.replaceWith(ns);
+          });
+          if (window.lucide) lucide.createIcons();
+        });
+    }, 2500);
+  })();
+  </script>
   {% endif %}
 </div>
 
