@@ -14,6 +14,7 @@ urlpatterns = [
     path('perfil-social/', views.perfil_social, name='perfil_social'),
     path('perfil-social/<str:username>/', views.perfil_social, name='perfil_social_user'),
     path('onboarding/', views.onboarding, name='onboarding'),
+    path('r/<str:code>/', views.referral_redirect, name='referral_redirect'),
 
     # Password reset (Django built-in)
     path('recuperar/', auth_views.PasswordResetView.as_view(

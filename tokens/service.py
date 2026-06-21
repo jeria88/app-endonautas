@@ -38,8 +38,48 @@ def credit_mission(user, mission_slug):
 def renew_monthly(user):
     from django.utils import timezone
     plan = getattr(getattr(user, 'profile', None), 'plan', 'free')
-    amount = settings.PLAN_MONTHLY_TOKENS.get(plan, 100)
+    amount = settings.PLAN_MONTHLY_TOKENS.get(plan, 80)
     balance = _get_balance(user)
     balance.monthly = amount
     balance.monthly_last_renewed = timezone.now().date()
     balance.save()
+
+
+def get_or_create_referral_code(user):
+    from .models import ReferralCode
+    code, _ = ReferralCode.objects.get_or_create(user=user)
+    return code
+
+
+def process_referral_signup(code_str, new_user):
+    from .models import Referral, ReferralCode
+    try:
+        ref_code = ReferralCode.objects.get(code=code_str)
+    except ReferralCode.DoesNotExist:
+        return False
+    if ref_code.user_id == new_user.pk:
+        return False
+    referral, created = Referral.objects.get_or_create(
+        referred=new_user,
+        defaults={'referrer': ref_code.user},
+    )
+    if created:
+        rewards = settings.REFERRAL_REWARDS
+        _get_balance(ref_code.user).credit_permanent(rewards['signup_referrer'], reason='referral:signup')
+        _get_balance(new_user).credit_permanent(rewards['signup_referred'], reason='referral:welcome')
+        referral.signup_rewarded = True
+        referral.save(update_fields=['signup_rewarded'])
+    return True
+
+
+def process_referral_conversion(user):
+    from .models import Referral
+    updated = Referral.objects.filter(referred=user, conversion_rewarded=False).first()
+    if not updated:
+        return False
+    _get_balance(updated.referrer).credit_permanent(
+        settings.REFERRAL_REWARDS['conversion_referrer'], reason='referral:conversion'
+    )
+    updated.conversion_rewarded = True
+    updated.save(update_fields=['conversion_rewarded'])
+    return True

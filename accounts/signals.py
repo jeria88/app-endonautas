@@ -9,8 +9,11 @@ def create_user_profile_and_balance(sender, instance, created, **kwargs):
         return
     try:
         from accounts.models import UserProfile
-        from tokens.models import TokenBalance
+        from tokens.models import ReferralCode, TokenBalance
         UserProfile.objects.get_or_create(user=instance)
-        TokenBalance.objects.get_or_create(user=instance)
+        balance, balance_created = TokenBalance.objects.get_or_create(user=instance)
+        if balance_created:
+            balance.credit_monthly(settings.PLAN_MONTHLY_TOKENS['free'], reason='signup')
+        ReferralCode.objects.get_or_create(user=instance)
     except Exception:
         pass
