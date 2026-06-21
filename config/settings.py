@@ -25,6 +25,7 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
@@ -198,14 +199,23 @@ FRACTON_REWARDS = {
     'first_dimension': 50,
 }
 TOKEN_COSTS = {
-    'espejo_exchange': 4,
-    'ai_insight': 20,
-    'report': 30,
-    'birth_report': 15,
+    'espejo_exchange': 6,
+    'ai_insight': 15,
+    'oraculo_tarot': 8,
+    'oraculo_iching': 6,
+    'oraculo_fractal': 5,
+    'birth_report': 20,
+    'terapeuta_session': 10,
+    'report': 40,
 }
 PLAN_MONTHLY_TOKENS = {
-    'free': 100,
-    'navegante': 600,
-    'practicante': 3000,
-    'empresa': 10000,
+    'free': 80,
+    'navegante': 800,
+    'practicante': 5000,
+    'empresa': 20000,
+}
+REFERRAL_REWARDS = {
+    'signup_referrer': 60,   # quien invita recibe al registrarse el referido
+    'signup_referred': 40,   # nuevo usuario por llegar via invitación
+    'conversion_referrer': 250,  # quien invita recibe cuando el referido pasa a plan pago
 }
