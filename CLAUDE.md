@@ -168,29 +168,34 @@ Clase `.panel`: glassmorphism oscuro con `backdrop-filter:blur(14px)`.
 
 ---
 
-## Sistema de Fractones
+## Sistema de Planes (sin fractones)
 
-### Economía
-| Plan | Fractones/mes (expiran) |
-|------|------------------------|
-| free | 100 |
-| navegante ($10) | 600 |
-| practicante ($39) | 3.000 |
+### Acceso por feature
+| Feature | Free | Navegante ($10/mes) | Practicante ($39/mes) |
+|---------|------|--------------------|-----------------------|
+| Comunidad, Bitácora, Espejo, Regulación | ✓ | ✓ | ✓ |
+| Carta Astral | ✓ | ✓ | ✓ |
+| Tests: Big Five, Heridas Infancia, Dirty Dozen | ✓ | ✓ | ✓ |
+| I Ching, Tarot 1 carta | ✓ | ✓ | ✓ |
+| Todos los tests (35+) | — | ✓ | ✓ |
+| AI Insights en tests | — | ✓ | ✓ |
+| Diseño Humano, Saju/BaZi | — | ✓ | ✓ |
+| Tarot todas las tiradas, Oráculo Fractal | — | ✓ | ✓ |
+| Módulo Terapeuta | — | ✓ | ✓ |
+| Portal Profesional (practitioners) | — | — | ✓ |
 
-### Costos (TOKEN_COSTS en settings)
+### Gating (`accounts/plan_utils.py`)
 ```python
-'espejo_exchange': 4    # 1 mensaje + respuesta
-'ai_insight':      20
-'report':          30
+from accounts.plan_utils import plan_at_least, upgrade_wall, FREE_TEST_SLUGS, FREE_TAROT_TIRADAS
+
+plan_at_least(user, 'navegante')   # True si plan >= navegante
+upgrade_wall(request, 'navegante', 'Nombre del feature')  # devuelve HttpResponse con muro
 ```
 
-### API pública (`tokens/service.py`)
-```python
-from tokens.service import spend, has_balance, credit_mission, renew_monthly
-spend(user, 'espejo_exchange')      # True/False — descuenta y registra
-has_balance(user, 'ai_insight')     # True/False — sin descontar
-credit_mission(user, 'first_espejo')  # idempotente
-```
+### Estado de tokens (deshabilitado)
+- `tokens/signals.py`: vaciado — ya no genera fractones automáticamente
+- `tokens/views.py`: redirige a /pagos/planes/
+- Las tablas TokenBalance, Mission, etc. siguen en DB pero sin uso activo
 
 ---
 
@@ -278,18 +283,9 @@ Cuando se modifica cualquier feature (costo, nombre, comportamiento, flujo), hay
 
 ---
 
-## Modelo de costos Espejo — PENDIENTE DE DECIDIR
+## Modelo Espejo — IMPLEMENTADO
 
-El modelo económico del Espejo está en discusión. Opciones evaluadas (ninguna aprobada aún):
-
-- **Por mensaje:** problema original — cobra por reflexión, genera ansiedad, mal UX terapéutico
-- **Por sesión nueva:** un solo costo al crear conversación — problema: usuario puede usar una sesión para siempre
-- **Por tiempo:** complejo técnicamente, castiga el silencio y la reflexión
-- **Diferenciado por plan:** free paga por respuesta IA, navegante/practicante ilimitado — propuesta en evaluación
-
-**También pendiente de definir:** mensaje de bienvenida instructivo al abrir el espejo.
-
-No implementar nada de esto hasta que Franco confirme el modelo.
+Espejo es **gratis e ilimitado** para todos los planes. No hay cobro por mensaje ni por sesión. La diferencia entre planes se da en otras features, no en el espejo.
 
 ---
 
