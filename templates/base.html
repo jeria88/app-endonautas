@@ -1121,5 +1121,58 @@ window.__switchAesthetic = function(name) {
 };
 </script>
 
+<!-- Fractone cost tooltips -->
+<div id="ft-tip" style="position:fixed;z-index:9999;pointer-events:none;opacity:0;transition:opacity .15s;max-width:220px"></div>
+<style>
+#ft-tip { background:rgba(8,6,18,0.96);border:1px solid rgba(126,204,205,0.35);border-radius:10px;padding:9px 13px;box-shadow:0 4px 24px rgba(0,0,0,0.5); }
+#ft-tip .ft-cost { font-size:.72rem;font-weight:700;color:var(--calipso);font-family:var(--font-display);letter-spacing:.04em;margin-bottom:4px; }
+#ft-tip .ft-desc { font-size:.75rem;color:var(--muted);line-height:1.45; }
+</style>
+<script>
+(function(){
+  var tip = document.getElementById('ft-tip');
+  var cur = null;
+
+  function show(el) {
+    var val = el.dataset.ftTip;
+    if (!val) return;
+    var parts = val.split('|');
+    var cost = parts[0];
+    var desc = parts[1] || '';
+    tip.innerHTML = '<div class="ft-cost">⬡ ' + cost + ' fractones</div>' + (desc ? '<div class="ft-desc">' + desc + '</div>' : '');
+    tip.style.opacity = '1';
+    cur = el;
+    position(el);
+  }
+
+  function hide() {
+    tip.style.opacity = '0';
+    cur = null;
+  }
+
+  function position(el) {
+    var r = el.getBoundingClientRect();
+    var tw = tip.offsetWidth || 220;
+    var th = tip.offsetHeight || 60;
+    var left = r.left + r.width / 2 - tw / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+    var top = r.top - th - 8;
+    if (top < 8) top = r.bottom + 8;
+    tip.style.left = left + 'px';
+    tip.style.top = top + 'px';
+  }
+
+  document.addEventListener('mouseover', function(e) {
+    var el = e.target.closest('[data-ft-tip]');
+    if (el) show(el); else if (cur) hide();
+  });
+  document.addEventListener('mouseleave', function(e) {
+    if (e.target.closest('[data-ft-tip]')) hide();
+  }, true);
+  document.addEventListener('click', function() { hide(); });
+  window.addEventListener('scroll', function() { if (cur) position(cur); }, {passive:true});
+})();
+</script>
+
 </body>
 </html>
