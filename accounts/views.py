@@ -95,6 +95,8 @@ def dashboard(request):
     from tokens.models import TokenBalance, MissionCompletion, Mission
 
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    if not profile.onboarding_complete:
+        return redirect('onboarding')
     frase = random.choice(FRASES)
 
     ultima_sesion = ChatSession.objects.filter(user=request.user).order_by('-updated_at').first()
