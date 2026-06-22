@@ -119,12 +119,54 @@
 
   <div style="display:flex;flex-direction:column;gap:1rem">
     <div class="panel" style="padding:1rem 1.25rem">
-      <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.5rem">Plan activo</div>
-      <div style="font-size:0.9rem;font-weight:600">{{ profile.get_plan_display }}</div>
-      <div style="font-size:0.72rem;color:var(--muted);margin-top:0.3rem;margin-bottom:0.75rem">{{ user.email }}</div>
-      <a href="/planes/" onclick="spaGo(event,this)" style="display:block;text-align:center;padding:0.5rem;border-radius:10px;font-size:0.78rem;font-weight:600;text-decoration:none;background:rgba(126,204,205,0.08);border:1px solid rgba(126,204,205,0.2);color:var(--calipso);transition:opacity .15s" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">
-        {% if profile.plan == 'free' %}Mejorar plan → {% else %}Ver planes y recargar →{% endif %}
-      </a>
+      <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.5rem">Plan y suscripción</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+        <div>
+          <div style="font-size:0.9rem;font-weight:600">{{ profile.get_plan_display }}</div>
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:0.2rem">{{ user.email }}</div>
+        </div>
+        <div style="font-size:0.72rem;color:var(--calipso);font-weight:600">⬡ {{ request.user.tokenbalance.balance }} fractones</div>
+      </div>
+
+      {% if profile.plan != 'practicante' %}
+      <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.6rem">
+        {% if profile.plan == 'free' %}Mejorar plan{% else %}Subir a Practicante{% endif %}
+      </div>
+
+      {% if profile.plan == 'free' %}
+      <div style="margin-bottom:0.75rem">
+        <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.4rem">Navegante — ⬡ 800/mes</div>
+        <div style="display:flex;gap:0.5rem">
+          <a href="/pago/mp/suscribir/navegante/" style="flex:1;text-align:center;padding:0.45rem;border-radius:8px;font-size:0.72rem;font-weight:600;text-decoration:none;background:rgba(0,180,130,.1);border:1px solid rgba(0,180,130,.25);color:#00cc96">MercadoPago<br><span style="font-weight:400;font-size:0.65rem">$9.990 CLP/mes</span></a>
+          <a href="/pago/paypal/suscribir/navegante/" style="flex:1;text-align:center;padding:0.45rem;border-radius:8px;font-size:0.72rem;font-weight:600;text-decoration:none;background:rgba(22,103,173,.1);border:1px solid rgba(22,103,173,.3);color:#6ab3f5">PayPal<br><span style="font-weight:400;font-size:0.65rem">$9.99 USD/mes</span></a>
+        </div>
+      </div>
+      {% endif %}
+
+      <div style="margin-bottom:0.75rem">
+        <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.4rem">Practicante — ⬡ 5.000/mes</div>
+        <div style="display:flex;gap:0.5rem">
+          <a href="/pago/mp/suscribir/practicante/" style="flex:1;text-align:center;padding:0.45rem;border-radius:8px;font-size:0.72rem;font-weight:600;text-decoration:none;background:rgba(0,180,130,.1);border:1px solid rgba(0,180,130,.25);color:#00cc96">MercadoPago<br><span style="font-weight:400;font-size:0.65rem">$39.990 CLP/mes</span></a>
+          <a href="/pago/paypal/suscribir/practicante/" style="flex:1;text-align:center;padding:0.45rem;border-radius:8px;font-size:0.72rem;font-weight:600;text-decoration:none;background:rgba(22,103,173,.1);border:1px solid rgba(22,103,173,.3);color:#6ab3f5">PayPal<br><span style="font-weight:400;font-size:0.65rem">$39.99 USD/mes</span></a>
+        </div>
+      </div>
+
+      <div style="height:1px;background:var(--border);margin:0.75rem 0"></div>
+      {% endif %}
+
+      <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.6rem">Recargar Fractones</div>
+      {% for slug, pack in packs.items %}
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem">
+        <div>
+          <span style="font-size:0.85rem;font-weight:700;color:#d4a056">⬡ {{ pack.fractones }}</span>
+          <span style="font-size:0.72rem;color:var(--muted);margin-left:0.4rem">{{ pack.price_clp|stringformat:",.0f" }} CLP · ${{ pack.price_usd }} USD</span>
+        </div>
+        <div style="display:flex;gap:0.35rem">
+          <a href="/pago/mp/pack/{{ slug }}/" style="padding:0.3rem 0.55rem;border-radius:7px;font-size:0.65rem;font-weight:600;text-decoration:none;background:rgba(0,180,130,.1);border:1px solid rgba(0,180,130,.25);color:#00cc96;white-space:nowrap">MP</a>
+          <a href="/pago/paypal/pack/{{ slug }}/" style="padding:0.3rem 0.55rem;border-radius:7px;font-size:0.65rem;font-weight:600;text-decoration:none;background:rgba(22,103,173,.1);border:1px solid rgba(22,103,173,.3);color:#6ab3f5;white-space:nowrap">PP</a>
+        </div>
+      </div>
+      {% endfor %}
     </div>
 
     <div class="panel" style="padding:1rem 1.25rem">

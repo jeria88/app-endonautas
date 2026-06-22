@@ -139,11 +139,13 @@ def perfil(request):
     referral_code = get_or_create_referral_code(request.user)
     referrals_made = Referral.objects.filter(referrer=request.user)
     conversions = referrals_made.filter(conversion_rewarded=True).count()
+    from payments.constants import PACKS
     return render(request, 'accounts/perfil.html', {
         'profile': profile,
         'referral_code': referral_code,
         'referrals_count': referrals_made.count(),
         'conversions_count': conversions,
+        'packs': PACKS,
     })
 
 
