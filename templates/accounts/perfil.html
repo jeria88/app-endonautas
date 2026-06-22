@@ -174,6 +174,18 @@
     </div>
 
     <div class="panel" style="padding:1rem 1.25rem">
+      <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.75rem">Cuenta y datos</div>
+      <a href="mailto:hola@endonautas.cl?subject=Solicitud%20de%20mis%20datos%20personales&body=Hola%2C%20solicito%20una%20copia%20de%20todos%20mis%20datos%20personales%20almacenados%20en%20Endonautas.%0A%0ACuenta%3A%20{{ user.email }}" style="display:flex;align-items:center;justify-content:space-between;padding:0.55rem 0;border-bottom:1px solid var(--border);text-decoration:none;color:var(--muted);font-size:0.82rem">
+        <span>Solicitar mis datos</span>
+        <span style="font-size:0.75rem;opacity:0.5">→</span>
+      </a>
+      <button onclick="document.getElementById('modal-delete').style.display='flex'" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:0.55rem 0;background:none;border:none;cursor:pointer;color:rgba(201,123,132,0.7);font-size:0.82rem;font-family:inherit;margin-top:0.1rem">
+        <span>Eliminar mi cuenta</span>
+        <span style="font-size:0.75rem;opacity:0.5">→</span>
+      </button>
+    </div>
+
+    <div class="panel" style="padding:1rem 1.25rem">
       <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.75rem">Invita y gana Fractones</div>
 
       <p style="font-size:0.75rem;color:var(--muted);margin-bottom:0.75rem;line-height:1.5">
@@ -220,6 +232,31 @@
   </div>
 </div>
 {% endblock %}
+
+<!-- Modal eliminar cuenta -->
+<div id="modal-delete" style="display:{% if show_delete_modal %}flex{% else %}none{% endif %};position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:900;align-items:center;justify-content:center;padding:1rem" onclick="if(event.target===this)this.style.display='none'">
+  <div style="background:#0e0c1a;border:1px solid rgba(201,123,132,0.2);border-radius:16px;padding:2rem;max-width:420px;width:100%">
+    <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:0.5rem">Eliminar mi cuenta</div>
+    <p style="font-size:0.83rem;color:rgba(255,255,255,0.45);line-height:1.7;margin-bottom:1.25rem">
+      Esta acción es <strong style="color:rgba(201,123,132,0.8)">irreversible</strong>. Se borrarán todos tus datos: perfil, tests, sesiones con el Espejo, sueños y bitácoras. Los fractones permanentes no son reembolsables.<br><br>
+      Si tienes suscripción activa, será cancelada automáticamente.
+    </p>
+    {% if delete_error %}
+    <div style="background:rgba(185,80,80,0.1);border:1px solid rgba(185,80,80,0.2);border-radius:8px;padding:0.65rem 0.85rem;font-size:0.8rem;color:#e07b7b;margin-bottom:1rem">{{ delete_error }}</div>
+    {% endif %}
+    <form method="post" action="/eliminar-cuenta/">
+      {% csrf_token %}
+      <div style="margin-bottom:1rem">
+        <label style="font-size:0.75rem;color:rgba(255,255,255,0.4);display:block;margin-bottom:0.4rem">Escribe tu email <strong style="color:rgba(255,255,255,0.6)">{{ user.email }}</strong> para confirmar</label>
+        <input type="email" name="email_confirm" class="form-input" placeholder="{{ user.email }}" required autocomplete="off">
+      </div>
+      <div style="display:flex;gap:0.75rem">
+        <button type="submit" style="flex:1;padding:0.65rem;border-radius:10px;font-size:0.85rem;font-weight:600;background:rgba(185,80,80,0.15);border:1px solid rgba(185,80,80,0.3);color:#e07b7b;cursor:pointer;font-family:inherit">Eliminar cuenta</button>
+        <button type="button" onclick="document.getElementById('modal-delete').style.display='none'" style="flex:1;padding:0.65rem;border-radius:10px;font-size:0.85rem;background:transparent;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);cursor:pointer;font-family:inherit">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 {% block extra_js %}
 <script>

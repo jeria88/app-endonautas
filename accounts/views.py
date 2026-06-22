@@ -176,6 +176,51 @@ def configuracion(request):
 
 
 @login_required
+def eliminar_cuenta(request):
+    if request.method == 'POST':
+        email_confirm = request.POST.get('email_confirm', '').strip().lower()
+        if email_confirm != request.user.email.lower():
+            from payments.constants import PACKS
+            from tokens.service import get_or_create_referral_code
+            from tokens.models import Referral
+            profile, _ = UserProfile.objects.get_or_create(user=request.user)
+            referral_code = get_or_create_referral_code(request.user)
+            referrals_made = Referral.objects.filter(referrer=request.user)
+            conversions = referrals_made.filter(conversion_rewarded=True).count()
+            return render(request, 'accounts/perfil.html', {
+                'profile': profile,
+                'referral_code': referral_code,
+                'referrals_count': referrals_made.count(),
+                'conversions_count': conversions,
+                'packs': PACKS,
+                'delete_error': 'El email no coincide. Escribe exactamente tu email para confirmar.',
+                'show_delete_modal': True,
+            })
+
+        # Cancel active subscription before deleting
+        try:
+            from payments.models import Subscription
+            from payments.services import paypal as paypal_service
+            from payments.services import mp as mp_service
+            sub = Subscription.objects.filter(user=request.user, status='active').first()
+            if sub:
+                if sub.gateway == 'paypal':
+                    paypal_service.cancel_subscription(sub.gateway_subscription_id)
+                elif sub.gateway == 'mp':
+                    mp_service.cancel_preapproval(sub.gateway_subscription_id)
+        except Exception:
+            pass
+
+        from django.contrib.auth import logout
+        user = request.user
+        logout(request)
+        user.delete()
+        return redirect('https://endonautas.cl')
+
+    return redirect('perfil')
+
+
+@login_required
 def perfil_social(request, username=None):
     from django.contrib.auth import get_user_model
     from community.models import Post
