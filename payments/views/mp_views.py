@@ -2,7 +2,7 @@ import json
 import logging
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -169,6 +169,39 @@ def retorno_pack(request):
     return render(request, 'payments/resultado.html', {
         'exito': False, 'mensaje': 'No se pudo confirmar el pago. Si ya fue cobrado, escríbenos.',
     })
+
+
+@login_required
+@require_POST
+def api_preferencia_pack(request, slug):
+    if slug not in _PACK_SLUGS:
+        return JsonResponse({'error': 'Pack inválido'}, status=400)
+
+    base_url = request.build_absolute_uri(reverse('pago_mp_pack_retorno'))
+
+    try:
+        preference_id, _ = mp_service.create_preference(
+            pack_slug=slug,
+            user=request.user,
+            success_url=f'{base_url}?slug={slug}&status=success',
+            failure_url=f'{base_url}?slug={slug}&status=failure',
+            pending_url=f'{base_url}?slug={slug}&status=pending',
+        )
+    except Exception as e:
+        logger.error(f'MP api_preferencia_pack error: {e}')
+        return JsonResponse({'error': 'No se pudo crear la preferencia'}, status=500)
+
+    pack_info = PACKS[slug]
+    FractonesPack.objects.filter(user=request.user, gateway='mp', pack_slug=slug, status='pending').delete()
+    FractonesPack.objects.create(
+        user=request.user, gateway='mp', pack_slug=slug,
+        fractones=pack_info['fractones'],
+        amount_local=pack_info['price_clp'],
+        currency='CLP',
+        gateway_payment_id=preference_id,
+        status='pending',
+    )
+    return JsonResponse({'preference_id': preference_id})
 
 
 @csrf_exempt

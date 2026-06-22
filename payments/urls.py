@@ -22,4 +22,6 @@ urlpatterns = [
     # MercadoPago — packs (retorno ANTES del parámetro variable)
     path('mp/pack/retorno/', mp_views.retorno_pack, name='pago_mp_pack_retorno'),
     path('mp/pack/<str:slug>/', mp_views.pack, name='pago_mp_pack'),
+    # MercadoPago — AJAX para crear preferencia (Wallet Brick)
+    path('mp/api/preferencia/<str:slug>/', mp_views.api_preferencia_pack, name='pago_mp_api_preferencia'),
 ]
