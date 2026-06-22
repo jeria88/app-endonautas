@@ -121,7 +121,10 @@
     <div class="panel" style="padding:1rem 1.25rem">
       <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.5rem">Plan activo</div>
       <div style="font-size:0.9rem;font-weight:600">{{ profile.get_plan_display }}</div>
-      <div style="font-size:0.72rem;color:var(--muted);margin-top:0.3rem">{{ user.email }}</div>
+      <div style="font-size:0.72rem;color:var(--muted);margin-top:0.3rem;margin-bottom:0.75rem">{{ user.email }}</div>
+      <a href="/planes/" onclick="spaGo(event,this)" style="display:block;text-align:center;padding:0.5rem;border-radius:10px;font-size:0.78rem;font-weight:600;text-decoration:none;background:rgba(126,204,205,0.08);border:1px solid rgba(126,204,205,0.2);color:var(--calipso);transition:opacity .15s" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">
+        {% if profile.plan == 'free' %}Mejorar plan → {% else %}Ver planes y recargar →{% endif %}
+      </a>
     </div>
 
     <div class="panel" style="padding:1rem 1.25rem">

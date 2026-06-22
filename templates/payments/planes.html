@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Planes y Fractones — Endonautas{% endblock %}
+{% block content %}
+<style data-page-style>
+.planes-section-title { font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:1rem }
+.plan-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2.5rem }
+.pack-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:1rem }
+@media(max-width:700px){.plan-grid,.pack-grid{grid-template-columns:1fr}}
+.plan-card { display:flex;flex-direction:column;gap:.75rem;position:relative }
+.plan-badge { position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--calipso);color:#000;font-size:.65rem;font-weight:700;letter-spacing:.06em;padding:.2rem .7rem;border-radius:20px;white-space:nowrap }
+.plan-name { font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim) }
+.plan-price-clp { font-size:1.4rem;font-weight:700;color:#fff;line-height:1 }
+.plan-price-usd { font-size:.75rem;color:var(--dim);margin-top:.15rem }
+.plan-tokens { font-size:.82rem;color:var(--calipso);font-weight:600;margin:.25rem 0 }
+.plan-divider { height:1px;background:var(--border) }
+.btn-mp { display:block;padding:.55rem .9rem;border-radius:10px;font-size:.78rem;font-weight:600;text-align:center;text-decoration:none;transition:opacity .15s;background:rgba(0,180,130,.12);border:1px solid rgba(0,180,130,.3);color:#00cc96 }
+.btn-mp:hover { opacity:.8 }
+.btn-pp { display:block;padding:.55rem .9rem;border-radius:10px;font-size:.78rem;font-weight:600;text-align:center;text-decoration:none;transition:opacity .15s;background:rgba(22,103,173,.12);border:1px solid rgba(22,103,173,.35);color:#6ab3f5 }
+.btn-pp:hover { opacity:.8 }
+.btn-actual { display:block;padding:.55rem .9rem;border-radius:10px;font-size:.78rem;font-weight:600;text-align:center;background:rgba(126,204,205,.06);border:1px solid rgba(126,204,205,.15);color:var(--calipso);cursor:default }
+.pack-frac { font-family:var(--font-display,serif);font-size:1.8rem;font-weight:700;color:var(--am,#d4a056);line-height:1 }
+.pack-name { font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim) }
+.pack-note { font-size:.72rem;color:var(--muted);margin:.2rem 0 .5rem }
+</style>
+
+<div style="max-width:860px;margin:0 auto">
+  <h1 style="font-size:1.2rem;font-weight:700;margin-bottom:.35rem">Planes y Fractones</h1>
+  <p style="font-size:.83rem;color:var(--muted);margin-bottom:2rem">
+    Tu plan actual: <strong style="color:var(--calipso)">{{ plan_actual|title }}</strong>
+    &nbsp;·&nbsp; Balance: <strong style="color:#d4a056">⬡ {{ request.user.tokenbalance.balance }}</strong>
+  </p>
+
+  <!-- PLANES -->
+  <div class="planes-section-title">Suscripciones mensuales</div>
+  <div class="plan-grid">
+
+    <!-- Free -->
+    <div class="panel plan-card" style="padding:1.25rem">
+      {% if plan_actual == 'free' %}<div class="plan-badge">Tu plan actual</div>{% endif %}
+      <div>
+        <div class="plan-name">Free</div>
+        <div class="plan-price-clp" style="margin-top:.5rem">Gratis</div>
+        <div class="plan-tokens">⬡ {{ tokens_mes.free }} fractones / mes</div>
+      </div>
+      <div class="plan-divider"></div>
+      <div class="btn-actual">Plan base</div>
+    </div>
+
+    <!-- Navegante -->
+    <div class="panel plan-card" style="padding:1.25rem;border-color:rgba(126,204,205,.2)">
+      {% if plan_actual == 'navegante' %}<div class="plan-badge">Tu plan actual</div>{% endif %}
+      <div>
+        <div class="plan-name">Navegante</div>
+        <div style="margin-top:.5rem">
+          <div class="plan-price-clp">$9.990 <span style="font-size:.75rem;font-weight:400;color:var(--dim)">CLP/mes</span></div>
+          <div class="plan-price-usd">$9.99 USD/mes</div>
+        </div>
+        <div class="plan-tokens">⬡ {{ tokens_mes.navegante }} fractones / mes</div>
+      </div>
+      <div class="plan-divider"></div>
+      {% if plan_actual == 'navegante' %}
+        <div class="btn-actual">Plan actual</div>
+      {% elif plan_actual != 'practicante' %}
+        <a href="/pago/mp/suscribir/navegante/" class="btn-mp">MercadoPago · CLP</a>
+        <a href="/pago/paypal/suscribir/navegante/" class="btn-pp">PayPal · USD</a>
+      {% else %}
+        <div class="btn-actual" style="opacity:.4">Plan inferior</div>
+      {% endif %}
+    </div>
+
+    <!-- Practicante -->
+    <div class="panel plan-card" style="padding:1.25rem;border-color:rgba(155,142,196,.25)">
+      {% if plan_actual == 'practicante' %}<div class="plan-badge" style="background:var(--violet,#9b8ec4)">Tu plan actual</div>{% endif %}
+      <div>
+        <div class="plan-name" style="color:var(--violet,#9b8ec4)">Practicante</div>
+        <div style="margin-top:.5rem">
+          <div class="plan-price-clp">$39.990 <span style="font-size:.75rem;font-weight:400;color:var(--dim)">CLP/mes</span></div>
+          <div class="plan-price-usd">$39.99 USD/mes</div>
+        </div>
+        <div class="plan-tokens" style="color:var(--violet,#9b8ec4)">⬡ {{ tokens_mes.practicante }} fractones / mes</div>
+      </div>
+      <div class="plan-divider"></div>
+      {% if plan_actual == 'practicante' %}
+        <div class="btn-actual" style="border-color:rgba(155,142,196,.25);color:var(--violet,#9b8ec4)">Plan actual</div>
+      {% else %}
+        <a href="/pago/mp/suscribir/practicante/" class="btn-mp">MercadoPago · CLP</a>
+        <a href="/pago/paypal/suscribir/practicante/" class="btn-pp">PayPal · USD</a>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- PACKS -->
+  <div class="planes-section-title">Recargar Fractones — pago único</div>
+  <p style="font-size:.78rem;color:var(--muted);margin-bottom:1rem;margin-top:-.5rem">Los fractones de packs son permanentes — no expiran.</p>
+  <div class="pack-grid">
+
+    <div class="panel plan-card" style="padding:1.25rem">
+      <div>
+        <div class="pack-frac">200</div>
+        <div class="pack-name" style="margin-top:.3rem">Explorador</div>
+        <div class="pack-note">$3.990 CLP &nbsp;·&nbsp; $3.99 USD</div>
+      </div>
+      <div class="plan-divider"></div>
+      <a href="/pago/mp/pack/pack_200/" class="btn-mp">MercadoPago · CLP</a>
+      <a href="/pago/paypal/pack/pack_200/" class="btn-pp">PayPal · USD</a>
+    </div>
+
+    <div class="panel plan-card" style="padding:1.25rem">
+      <div>
+        <div class="pack-frac">500</div>
+        <div class="pack-name" style="margin-top:.3rem">Navegante+</div>
+        <div class="pack-note">$7.990 CLP &nbsp;·&nbsp; $7.99 USD</div>
+      </div>
+      <div class="plan-divider"></div>
+      <a href="/pago/mp/pack/pack_500/" class="btn-mp">MercadoPago · CLP</a>
+      <a href="/pago/paypal/pack/pack_500/" class="btn-pp">PayPal · USD</a>
+    </div>
+
+    <div class="panel plan-card" style="padding:1.25rem">
+      <div>
+        <div class="pack-frac">1.200</div>
+        <div class="pack-name" style="margin-top:.3rem">Practicante+</div>
+        <div class="pack-note">$14.990 CLP &nbsp;·&nbsp; $14.99 USD</div>
+      </div>
+      <div class="plan-divider"></div>
+      <a href="/pago/mp/pack/pack_1200/" class="btn-mp">MercadoPago · CLP</a>
+      <a href="/pago/paypal/pack/pack_1200/" class="btn-pp">PayPal · USD</a>
+    </div>
+
+  </div>
+
+  <p style="font-size:.72rem;color:var(--dim);text-align:center;margin-top:1.5rem">
+    Pagos procesados por MercadoPago (CLP) y PayPal (USD). Podés cancelar tu suscripción en cualquier momento.
+  </p>
+</div>
+{% endblock %}

@@ -5,6 +5,7 @@ from django.urls import include, path
 
 from community import views as community_views
 from mirror import views as mirror_views
+from payments.views import planes_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,6 +30,7 @@ urlpatterns = [
     path('practicantes/', include('practitioners.urls')),
     path('oraculo/', include('oraculo.urls', namespace='oraculo')),
     path('terapeuta/', include('terapeuta.urls', namespace='terapeuta')),
+    path('planes/', planes_views.planes, name='planes'),
     path('pago/', include('payments.urls')),
 ]
 
