@@ -16,7 +16,16 @@ def espejo_home(request):
 
 @login_required
 def chat_new(request):
+    from accounts.plan_utils import plan_at_least
+    from django.utils import timezone
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    if not plan_at_least(request.user, 'navegante'):
+        today = timezone.now().date()
+        existing = ChatSession.objects.filter(user=request.user, created_at__date=today).first()
+        if existing:
+            if is_ajax:
+                return JsonResponse({'pk': existing.pk, 'title': existing.title or 'Tu sesión de hoy', 'reused': True})
+            return redirect('espejo_chat', pk=existing.pk)
     session = ChatSession.objects.create(user=request.user)
     if is_ajax:
         return JsonResponse({'pk': session.pk, 'title': session.title or 'Nueva conversación'})
@@ -42,7 +51,16 @@ def chat_session_api(request, pk):
 @login_required
 @require_POST
 def chat_message(request, pk):
+    from accounts.plan_utils import plan_at_least
+    from django.utils import timezone
     session = get_object_or_404(ChatSession, pk=pk, user=request.user)
+    if not plan_at_least(request.user, 'navegante'):
+        age = timezone.now() - session.created_at
+        if age > datetime.timedelta(minutes=45):
+            return JsonResponse({
+                'error': 'Tu sesión de hoy ha alcanzado el límite de 45 minutos. Actualiza al plan Navegante para sesiones sin límite.',
+                'upgrade_required': True,
+            }, status=403)
     content = request.POST.get('content', '').strip()
     if not content:
         return JsonResponse({'error': 'Mensaje vacío'}, status=400)

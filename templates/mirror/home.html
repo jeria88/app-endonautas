@@ -251,7 +251,6 @@ async function newChat() {
     fd.append('csrfmiddlewaretoken', csrf());
     const r = await fetch('/espejo/chat/', {method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'}});
     const data = await r.json();
-    if (r.status === 402) { alert('Error al enviar mensaje.'); return; }
     activeSessionPk = data.pk;
     const list = document.getElementById('sessions-list');
     const emptyMsg = document.getElementById('empty-sessions-msg');
@@ -329,8 +328,10 @@ async function sendMessage() {
     fd.append('csrfmiddlewaretoken', csrf());
     const r = await fetch(`/espejo/chat/${activeSessionPk}/mensaje/`, {method:'POST', body:fd});
     const data = await r.json();
-    if (r.status === 402) { alert('Error al enviar mensaje.'); }
-    else if (data.reply) {
+    if (r.status === 403 && data.upgrade_required) {
+      enableChat(false);
+      addBubble('assistant', data.error + '\n\n→ <a href="/pagos/planes/" style="color:var(--calipso)">Ver plan Navegante</a>', '—');
+    } else if (data.reply) {
       const t = new Date(data.created_at).toLocaleTimeString('es-CL', {hour:'2-digit',minute:'2-digit'});
       addBubble('assistant', data.reply, t);
       if (data.title) {

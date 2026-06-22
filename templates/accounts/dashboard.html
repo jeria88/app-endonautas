@@ -43,14 +43,38 @@
 </div>
 {% endif %}
 
+{% if not ultima_sesion and not ultimos_resultados and not ultimas_bitacora %}
+<div class="panel" style="padding:1.25rem;margin-bottom:1.5rem;border-color:rgba(126,204,205,0.2)">
+  <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--calipso);margin-bottom:0.9rem">Empieza aquí</div>
+  <div style="display:flex;flex-direction:column;gap:0.65rem">
+    <a href="/espejo/nueva/" onclick="spaGo(event,this)" style="display:flex;align-items:center;gap:0.9rem;padding:0.75rem;background:rgba(126,204,205,0.05);border:1px solid rgba(126,204,205,0.15);border-radius:10px;text-decoration:none;color:inherit;transition:border-color 0.15s" data-tip="Tu primer espejo — el Espejo de Conflictos escucha sin juzgar">
+      <div style="width:36px;height:36px;border-radius:8px;background:var(--calipso-glow);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--calipso);font-size:1.1rem">◈</div>
+      <div><div style="font-size:0.88rem;font-weight:600">Abre una sesión con el Espejo</div><div style="font-size:0.74rem;color:var(--muted);margin-top:0.15rem">Comparte lo que te trae — sin guión</div></div>
+    </a>
+    <a href="/tests/" onclick="spaGo(event,this)" style="display:flex;align-items:center;gap:0.9rem;padding:0.75rem;background:rgba(155,142,196,0.05);border:1px solid rgba(155,142,196,0.15);border-radius:10px;text-decoration:none;color:inherit;transition:border-color 0.15s" data-tip="Tres tests validados disponibles en el plan gratuito — Big Five, Heridas, Tríada Oscura">
+      <div style="width:36px;height:36px;border-radius:8px;background:rgba(155,142,196,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--violet);font-size:1.1rem">◉</div>
+      <div><div style="font-size:0.88rem;font-weight:600">Completa un test psicométrico</div><div style="font-size:0.74rem;color:var(--muted);margin-top:0.15rem">Big Five, Heridas de infancia o Tríada Oscura</div></div>
+    </a>
+    <a href="/regulacion/" onclick="spaGo(event,this)" style="display:flex;align-items:center;gap:0.9rem;padding:0.75rem;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;text-decoration:none;color:inherit;transition:border-color 0.15s" data-tip="Técnicas somáticas para regular el estado interno antes o después de una sesión">
+      <div style="width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--muted);font-size:1.1rem">◈</div>
+      <div><div style="font-size:0.88rem;font-weight:600">Explora la Regulación</div><div style="font-size:0.74rem;color:var(--muted);margin-top:0.15rem">Técnicas somáticas para anclar lo que trabajas</div></div>
+    </a>
+  </div>
+</div>
+{% endif %}
+
 <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.7rem">Accesos rápidos</div>
 <div class="shortcut-grid" style="margin-bottom:1.5rem">
   <a class="shortcut" href="/onboarding/" onclick="spaGo(event,this)" data-tip="Establece tu norte interior y revisa tus dimensiones de desarrollo personal"><span class="shortcut-icon" style="color:var(--calipso)">◎</span>Onboarding</a>
   <a class="shortcut" href="/tests/mapa-interior/" onclick="spaGo(event,this)" data-tip="Visualiza tu perfil psicológico completo a partir de todos tus tests completados"><span class="shortcut-icon" style="color:var(--violet)">◉</span>Mapa Interior</a>
   <a class="shortcut" href="/tests/mis-resultados/" onclick="spaGo(event,this)" data-tip="Historial completo de todos tus resultados psicométricos con evolución temporal"><span class="shortcut-icon" style="color:var(--amber)">◉</span>Reportes</a>
   <a class="shortcut" href="/bitacora/" onclick="spaGo(event,this)" data-tip="Tu diario interior: sueños, sombras, patrones y signos registrados"><span class="shortcut-icon">◈</span>Bitácora</a>
-  <a class="shortcut" href="/regulacion/" onclick="spaGo(event,this)" data-tip="Técnicas somáticas y ejercicios guiados para la regulación emocional"><span class="shortcut-icon" style="color:var(--green)">◈</span>Regulación</a>
+  <a class="shortcut" href="/regulacion/" onclick="spaGo(event,this)" data-tip="Técnicas somáticas y ejercicios guiados para la regulación emocional"><span class="shortcut-icon" style="color:var(--muted)">◈</span>Regulación</a>
+  {% if user_plan != 'free' %}
   <a class="shortcut" href="/terapeuta/" onclick="spaGo(event,this)" data-tip="Diagnóstico guiado por frameworks terapéuticos con técnicas somáticas recomendadas"><span class="shortcut-icon" style="color:var(--calipso)">♥</span>Terapeuta</a>
+  {% else %}
+  <a class="shortcut" href="/pagos/planes/" onclick="spaGo(event,this)" data-tip="Módulo Terapeuta — Plan Navegante" style="opacity:0.4"><span class="shortcut-icon">♥</span>Terapeuta</a>
+  {% endif %}
   <a class="shortcut" href="/oraculo/" onclick="spaGo(event,this)" data-tip="Perspectiva simbólica a través del Tarot Terapéutico, I Ching y Oráculo Fractal"><span class="shortcut-icon" style="color:var(--amber)">✦</span>Oráculo</a>
   <a class="shortcut" href="/nacimiento/" onclick="spaGo(event,this)" data-tip="Lecturas de tu Carta Astral, Diseño Humano y mapa Saju/BaZi"><span class="shortcut-icon" style="color:var(--violet)">✦</span>Nacimiento</a>
 </div>

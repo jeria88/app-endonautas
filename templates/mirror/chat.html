@@ -107,8 +107,11 @@ async function sendMessage() {
     fd.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]')?.value || '');
     const r = await fetch(`/espejo/chat/${sessionId}/mensaje/`, {method:'POST', body: fd});
     const data = await r.json();
-    if (r.status === 402) { alert('Error al enviar mensaje.'); }
-    else if (data.reply) {
+    if (r.status === 403 && data.upgrade_required) {
+      inputEl.disabled = true;
+      sendBtn.disabled = true;
+      addBubble('assistant', data.error + '\n\n→ <a href="/pagos/planes/" style="color:var(--calipso)">Ver plan Navegante</a>', '—');
+    } else if (data.reply) {
       const t = new Date(data.created_at).toLocaleTimeString('es-CL', {hour:'2-digit',minute:'2-digit'});
       addBubble('assistant', data.reply, t);
     }
