@@ -107,6 +107,15 @@ def capture_order(order_id):
     return resp.json()
 
 
+def cancel_subscription(subscription_id, reason=''):
+    resp = requests.post(
+        f'{_base()}/v1/billing/subscriptions/{subscription_id}/cancel',
+        json={'reason': reason or 'Cancelled by user'},
+        headers=_headers(), timeout=15,
+    )
+    resp.raise_for_status()
+
+
 def verify_webhook_signature(request_headers, raw_body):
     webhook_id = getattr(settings, 'PAYPAL_WEBHOOK_ID', '')
     if not webhook_id:

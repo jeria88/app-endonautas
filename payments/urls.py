@@ -1,8 +1,12 @@
 from django.urls import path
 
-from .views import mp_views, paypal_views
+from .views import cancel_views, mp_views, paypal_views
 
 urlpatterns = [
+    # Cancelación de suscripción
+    path('cancelar/', cancel_views.cancelar_vista, name='pago_cancelar'),
+    path('cancelar/confirmar/', cancel_views.cancelar_confirmar, name='pago_cancelar_confirmar'),
+
     # PayPal — suscripciones
     path('paypal/suscribir/<str:plan>/', paypal_views.suscribir, name='pago_paypal_suscribir'),
     path('paypal/retorno/', paypal_views.retorno_suscripcion, name='pago_paypal_retorno'),

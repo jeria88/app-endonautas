@@ -72,6 +72,15 @@ def create_preference(pack_slug, user, success_url, failure_url, pending_url):
     return data['id'], data['init_point']
 
 
+def cancel_preapproval(preapproval_id):
+    resp = requests.patch(
+        f'{_BASE}/preapproval/{preapproval_id}',
+        json={'status': 'cancelled'},
+        headers=_headers(), timeout=15,
+    )
+    resp.raise_for_status()
+
+
 def get_payment(payment_id):
     resp = requests.get(f'{_BASE}/v1/payments/{payment_id}', headers=_headers(), timeout=15)
     resp.raise_for_status()

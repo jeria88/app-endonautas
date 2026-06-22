@@ -2,6 +2,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import TemplateView
 
 from community import views as community_views
 from mirror import views as mirror_views
@@ -32,6 +33,7 @@ urlpatterns = [
     path('terapeuta/', include('terapeuta.urls', namespace='terapeuta')),
     path('planes/', planes_views.planes, name='planes'),
     path('pago/', include('payments.urls')),
+    path('terminos/', TemplateView.as_view(template_name='legal/terminos.html'), name='terminos'),
 ]
 
 if settings.DEBUG:

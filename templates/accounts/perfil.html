@@ -154,6 +154,10 @@
       <div style="height:1px;background:var(--border);margin:0.75rem 0"></div>
       {% endif %}
 
+      {% if profile.plan != 'free' %}
+      <a href="/pago/cancelar/" style="display:block;font-size:0.72rem;color:rgba(255,255,255,0.25);text-decoration:none;text-align:right;margin-bottom:0.75rem">Cancelar suscripción →</a>
+      {% endif %}
+
       <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.6rem">Recargar Fractones</div>
       {% for slug, pack in packs.items %}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem">

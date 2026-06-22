@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cancelar suscripción — Endonautas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #07060f; color: #e8e6f0; font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
+    .wrap { max-width: 480px; width: 100%; }
+    .nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 3rem; }
+    .nav-logo { font-family: 'Syne', sans-serif; font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(126,204,205,0.6); text-decoration: none; }
+    .nav-back { font-size: 0.78rem; color: rgba(255,255,255,0.3); text-decoration: none; }
+    .nav-back:hover { color: rgba(255,255,255,0.6); }
+    h1 { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem; }
+    .sub { font-size: 0.88rem; color: rgba(255,255,255,0.45); line-height: 1.7; margin-bottom: 2rem; }
+    .info-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1.25rem 1.5rem; margin-bottom: 2rem; }
+    .info-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem; }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: rgba(255,255,255,0.4); }
+    .info-val { color: #fff; font-weight: 500; }
+    .warn-box { background: rgba(212,160,86,0.07); border: 1px solid rgba(212,160,86,0.2); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 2rem; font-size: 0.83rem; color: rgba(255,255,255,0.55); line-height: 1.7; }
+    .warn-box strong { color: #d4a056; }
+    .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .btn { display: inline-block; padding: 0.7rem 1.4rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: opacity 0.15s; font-family: inherit; }
+    .btn:hover { opacity: 0.75; }
+    .btn-danger { background: rgba(185,80,80,0.15); border: 1px solid rgba(185,80,80,0.3); color: #e07b7b; }
+    .btn-ghost { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
+    .success-box { background: rgba(126,204,205,0.06); border: 1px solid rgba(126,204,205,0.2); border-radius: 14px; padding: 2rem; text-align: center; }
+    .success-title { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem; }
+    .success-sub { font-size: 0.85rem; color: rgba(255,255,255,0.45); line-height: 1.7; margin-bottom: 1.5rem; }
+    .error-msg { background: rgba(185,80,80,0.1); border: 1px solid rgba(185,80,80,0.2); border-radius: 10px; padding: 0.85rem 1rem; font-size: 0.83rem; color: #e07b7b; margin-bottom: 1.5rem; }
+    .no-sub { text-align: center; padding: 2rem 0; }
+    .no-sub p { font-size: 0.88rem; color: rgba(255,255,255,0.4); margin-bottom: 1.5rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="nav">
+      <a href="/" class="nav-logo">endonautas ✦</a>
+      <a href="/configuracion/" class="nav-back">← Configuración</a>
+    </nav>
+
+    {% if cancelado %}
+      <div class="success-box">
+        <div class="success-title">Suscripción cancelada</div>
+        <p class="success-sub">
+          Tu acceso al plan pagado se mantiene hasta el fin del período facturado actual.<br>
+          Después, tu cuenta volverá automáticamente al plan gratuito.<br><br>
+          Si cambias de opinión, puedes volver a suscribirte desde tu configuración.
+        </p>
+        <a href="/configuracion/" class="btn btn-ghost">Volver a configuración</a>
+      </div>
+
+    {% elif not sub %}
+      <div class="no-sub">
+        {% if error %}
+          <div class="error-msg">{{ error }}</div>
+        {% endif %}
+        <h1>Sin suscripción activa</h1>
+        <p>No tienes una suscripción de pago activa en este momento.</p>
+        <a href="/planes/" class="btn btn-ghost">Ver planes</a>
+      </div>
+
+    {% else %}
+      <h1>Cancelar suscripción</h1>
+      <p class="sub">Estás a punto de cancelar tu plan actual. Lee la información a continuación antes de confirmar.</p>
+
+      {% if error %}
+        <div class="error-msg">{{ error }}</div>
+      {% endif %}
+
+      <div class="info-box">
+        <div class="info-row">
+          <span class="info-label">Plan actual</span>
+          <span class="info-val">{{ sub.plan|title }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Procesador de pago</span>
+          <span class="info-val">{% if sub.gateway == 'paypal' %}PayPal{% else %}MercadoPago{% endif %}</span>
+        </div>
+        {% if sub.next_billing_date %}
+        <div class="info-row">
+          <span class="info-label">Próximo cobro</span>
+          <span class="info-val">{{ sub.next_billing_date|date:"d/m/Y" }}</span>
+        </div>
+        {% endif %}
+        <div class="info-row">
+          <span class="info-label">Activa desde</span>
+          <span class="info-val">{{ sub.started_at|date:"d/m/Y"|default:"—" }}</span>
+        </div>
+      </div>
+
+      <div class="warn-box">
+        <strong>¿Qué pasa al cancelar?</strong><br>
+        Tu acceso al plan <strong>{{ sub.plan|title }}</strong> se mantiene hasta el fin del período actual ya pagado.
+        No se emitirán nuevos cargos. Luego tu cuenta vuelve al plan gratuito (100 fractones/mes).
+        Los fractones permanentes que hayas comprado <strong>no se pierden</strong>.
+      </div>
+
+      <div class="actions">
+        <form method="post" action="/pago/cancelar/confirmar/">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Confirmar cancelación</button>
+        </form>
+        <a href="/configuracion/" class="btn btn-ghost">Mantener suscripción</a>
+      </div>
+    {% endif %}
+  </div>
+</body>
+</html>
