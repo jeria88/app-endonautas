@@ -236,16 +236,24 @@ credit_mission(user, 'first_espejo')  # idempotente
 
 ---
 
-## Deploy (Railway)
+## Deploy (Oracle Cloud + Coolify)
 
-```toml
-# railway.toml
-[deploy]
-startCommand = "python manage.py fix_db_state && python manage.py migrate --noinput && python manage.py create_admin && python manage.py seed_tests && gunicorn config.wsgi --workers 2 --threads 2 --timeout 60 --bind 0.0.0.0:$PORT"
+**Infraestructura:** Oracle Cloud Free Tier ARM64 · IP `146.181.39.4` · Coolify v4.1.2 · Traefik
+**Dominio:** `app.endonautas.cl`
+**SSH:** `ssh -i '/home/nikka/DevTools/oracle-free/ssh/ssh-key-2026-06-14.key' ubuntu@146.181.39.4`
+
+Start command configurado en Coolify:
+```
+python manage.py fix_db_state && python manage.py migrate --noinput && python manage.py create_admin && python manage.py seed_tests && gunicorn config.wsgi --workers 2 --threads 2 --timeout 60 --bind 0.0.0.0:8000
 ```
 
 Variables de entorno requeridas: `SECRET_KEY`, `DATABASE_URL`, `DEEPSEEK_API_KEY`  
-Variables opcionales: `DEBUG`, `ALLOWED_HOSTS`, `OPENROUTER_API_KEY`, `AI_MODEL`
+Variables opcionales: `DEBUG`, `ALLOWED_HOSTS`, `OPENROUTER_API_KEY`, `AI_MODEL`  
+Pagos: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MODE`, `PAYPAL_WEBHOOK_ID`, `MERCADOPAGO_ACCESS_TOKEN`, `MERCADOPAGO_WEBHOOK_SECRET`
+
+**Coolify API** (acceso desde el servidor vía SSH, base: `http://localhost:8000/api/v1/`):
+- App UUID: `psaza8rlhc5vk7gsmu4xc8l8`
+- PATCH no funciona para env vars — usar DELETE + POST
 
 ---
 

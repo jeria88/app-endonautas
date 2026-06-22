@@ -274,112 +274,90 @@
     Pagos procesados por MercadoPago (CLP) y PayPal (USD). Podés cancelar tu suscripción en cualquier momento.
   </p>
 </div>
-{% endblock %}
 
-{% block extra_js %}
 {% if paypal_client_id %}
-{# vault=true habilita suscripciones; sin intent=subscription el SDK acepta tanto createSubscription como createOrder en la misma página #}
-<script src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&vault=true&currency=USD&components=buttons&disable-funding=credit,card,venmo,paylater"></script>
 <script>
-function __getCsrf() {
-  var m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
-  return m ? m[1] : '';
-}
-
 (function() {
-  /* ── SUSCRIPCIONES ── */
-  var plans = {
-    navegante:   { id: '{{ paypal_plan_ids.navegante }}',   slug: 'navegante',   container: 'pp-btn-navegante' },
-    practicante: { id: '{{ paypal_plan_ids.practicante }}', slug: 'practicante', container: 'pp-btn-practicante' },
-  };
-  Object.values(plans).forEach(function(plan) {
-    var el = document.getElementById(plan.container);
-    if (!el) return;
-    paypal.Buttons({
-      style: { layout: 'vertical', color: 'blue', shape: 'rect', label: 'subscribe', height: 42 },
-      createSubscription: function(data, actions) {
-        return actions.subscription.create({ plan_id: plan.id });
-      },
-      onApprove: function(data) {
-        window.location.href = '/pago/paypal/retorno/?subscription_id=' + data.subscriptionID + '&plan=' + plan.slug;
-      },
-      onError: function(err) { console.error('PayPal sub error:', err); },
-      onCancel: function() {},
-    }).render('#' + plan.container);
-  });
-
-  /* ── PACKS — pago único con createOrder ── */
-  var packs = [
-    { slug: 'pack_200',  container: 'pp-pack-pack_200' },
-    { slug: 'pack_500',  container: 'pp-pack-pack_500' },
-    { slug: 'pack_1200', container: 'pp-pack-pack_1200' },
-  ];
-  packs.forEach(function(pack) {
-    var el = document.getElementById(pack.container);
-    if (!el) return;
-    paypal.Buttons({
-      style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'paypal', height: 45 },
-      createOrder: function(data, actions) {
-        return fetch('/pago/paypal/api/orden/' + pack.slug + '/', {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: { 'X-CSRFToken': __getCsrf() },
-        })
-        .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
-        .then(function(d) {
-          if (!d.order_id) throw new Error('no order_id');
-          return d.order_id;
-        });
-      },
-      onApprove: function(data) {
-        window.location.href = '/pago/paypal/pack/retorno/?token=' + data.orderID + '&slug=' + pack.slug;
-      },
-      onError: function(err) {
-        console.error('PayPal pack error ' + pack.slug, err);
-        el.style.display = 'none';
-        var fb = document.getElementById('pp-pack-fallback-' + pack.slug);
-        if (fb) fb.style.display = 'flex';
-      },
-      onCancel: function() {},
-    }).render('#' + pack.container);
-  });
+  var PP_URL = 'https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&vault=true&currency=USD&components=buttons&disable-funding=credit,card,venmo,paylater';
+  function _csrf() { var m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/); return m ? m[1] : ''; }
+  function _initPayPal() {
+    console.log('[PayPal] init');
+    var plans = {
+      navegante:   { id: '{{ paypal_plan_ids.navegante }}',   slug: 'navegante',   container: 'pp-btn-navegante' },
+      practicante: { id: '{{ paypal_plan_ids.practicante }}', slug: 'practicante', container: 'pp-btn-practicante' },
+    };
+    Object.values(plans).forEach(function(plan) {
+      var c = document.getElementById(plan.container);
+      if (!c) return;
+      c.innerHTML = '';
+      paypal.Buttons({
+        style: { layout: 'vertical', color: 'blue', shape: 'rect', label: 'subscribe', height: 42 },
+        createSubscription: function(data, actions) { return actions.subscription.create({ plan_id: plan.id }); },
+        onApprove: function(data) { window.location.href = '/pago/paypal/retorno/?subscription_id=' + data.subscriptionID + '&plan=' + plan.slug; },
+        onError: function(err) { console.error('[PayPal] sub error:', err); },
+        onCancel: function() {},
+      }).render('#' + plan.container);
+    });
+    var packs = [
+      { slug: 'pack_200',  container: 'pp-pack-pack_200' },
+      { slug: 'pack_500',  container: 'pp-pack-pack_500' },
+      { slug: 'pack_1200', container: 'pp-pack-pack_1200' },
+    ];
+    packs.forEach(function(pack) {
+      var c = document.getElementById(pack.container);
+      if (!c) return;
+      c.innerHTML = '';
+      paypal.Buttons({
+        style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'paypal', height: 45 },
+        createOrder: function(data, actions) {
+          return fetch('/pago/paypal/api/orden/' + pack.slug + '/', {
+            method: 'POST', credentials: 'same-origin',
+            headers: { 'X-CSRFToken': _csrf() },
+          })
+          .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+          .then(function(d) { if (!d.order_id) throw new Error('no order_id'); return d.order_id; });
+        },
+        onApprove: function(data) { window.location.href = '/pago/paypal/pack/retorno/?token=' + data.orderID + '&slug=' + pack.slug; },
+        onError: function(err) {
+          console.error('[PayPal] pack error', pack.slug, err);
+          c.style.display = 'none';
+          var fb = document.getElementById('pp-pack-fallback-' + pack.slug);
+          if (fb) fb.style.display = 'flex';
+        },
+        onCancel: function() {},
+      }).render('#' + pack.container);
+    });
+  }
+  if (window.paypal) { _initPayPal(); }
+  else {
+    var s = document.createElement('script');
+    s.src = PP_URL;
+    s.onload = _initPayPal;
+    s.onerror = function() { console.error('[PayPal] SDK failed to load'); };
+    document.head.appendChild(s);
+  }
 })();
 </script>
 {% endif %}
 
 {% if mp_public_key %}
-<script src="https://sdk.mercadopago.com/js/v2" onload="__initMPWalletBricks()" onerror="__mpBricksError()"></script>
 <script>
 (function() {
   var MP_KEY = '{{ mp_public_key }}';
-  var PACKS = ['pack_200', 'pack_500', 'pack_1200'];
-  var mpInstance = null;
-
-  function showFallback(slug) {
+  var MP_PACKS = ['pack_200', 'pack_500', 'pack_1200'];
+  function _csrf() { var m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/); return m ? m[1] : ''; }
+  function _showFallback(slug) {
     var w = document.getElementById('mp-wallet-' + slug);
     var f = document.getElementById('mp-fallback-' + slug);
     if (w) w.style.display = 'none';
     if (f) f.style.display = 'flex';
   }
-
-  window.__mpBricksError = function() { PACKS.forEach(showFallback); };
-
-  window.__initMPWalletBricks = function() {
-    try {
-      mpInstance = new MercadoPago(MP_KEY, { locale: 'es-CL' });
-      var builder = mpInstance.bricks();
-      PACKS.forEach(function(slug) { initBrick(builder, slug); });
-    } catch(e) {
-      console.error('MP SDK init error', e);
-      PACKS.forEach(showFallback);
-    }
-  };
-
-  function initBrick(builder, slug) {
+  function _initBrick(builder, slug) {
+    var w = document.getElementById('mp-wallet-' + slug);
+    if (w) w.innerHTML = '';
     fetch('/pago/mp/api/preferencia/' + slug + '/', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'X-CSRFToken': typeof __getCsrf === 'function' ? __getCsrf() : '' },
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'X-CSRFToken': _csrf() },
     })
     .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
     .then(function(data) {
@@ -392,11 +370,30 @@ function __getCsrf() {
         },
         callbacks: {
           onReady: function() {},
-          onError: function(err) { console.error('MP Brick error ' + slug, err); showFallback(slug); },
+          onError: function(err) { console.error('[MP] Brick error', slug, err); _showFallback(slug); },
         },
       });
     })
-    .catch(function(err) { console.error('MP preferencia error ' + slug, err); showFallback(slug); });
+    .catch(function(err) { console.error('[MP] preferencia error', slug, err); _showFallback(slug); });
+  }
+  function _initMP() {
+    console.log('[MP] init');
+    try {
+      var mp = new MercadoPago(MP_KEY, { locale: 'es-CL' });
+      var builder = mp.bricks();
+      MP_PACKS.forEach(function(slug) { _initBrick(builder, slug); });
+    } catch(e) {
+      console.error('[MP] SDK init error', e);
+      MP_PACKS.forEach(_showFallback);
+    }
+  }
+  if (window.MercadoPago) { _initMP(); }
+  else {
+    var s = document.createElement('script');
+    s.src = 'https://sdk.mercadopago.com/js/v2';
+    s.onload = _initMP;
+    s.onerror = function() { MP_PACKS.forEach(_showFallback); };
+    document.head.appendChild(s);
   }
 })();
 </script>
