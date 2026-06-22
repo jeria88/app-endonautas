@@ -257,13 +257,50 @@ Pagos: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MODE`, `PAYPAL_WEBHOO
 
 ---
 
-## Pendientes técnicos (al 2026-06-18)
+## Regla de cambios: un cambio no es solo un cambio
+
+Cuando se modifica cualquier feature (costo, nombre, comportamiento, flujo), hay que revisar y actualizar **todos** los puntos donde esa feature tiene representación:
+
+| Touchpoint | Qué revisar |
+|------------|-------------|
+| `templates/payments/planes.html` | Precios, fractones incluidos, descripción de features por plan |
+| `templates/accounts/perfil.html` | Sección de suscripciones, packs, beneficios |
+| `templates/accounts/dashboard.html` | Shortcuts, misiones visibles |
+| `templates/tokens/balance.html` | Tabla de costos, descripción de cada feature |
+| `data-ft-tip` / `data-tip` en templates | Tooltips deben reflejar el costo real actualizado |
+| `tokens/service.py` → `TOKEN_COSTS` | Costo real en código |
+| `settings.py` → `TOKEN_COSTS` | Costo en settings si está ahí |
+| `templates/terminos.astro` (landing) | Si el cambio afecta condiciones de uso |
+| `templates/professionals/` | Si el cambio afecta a practicantes |
+| Este CLAUDE.md | Actualizar la sección de pendientes y costos |
+
+**Regla práctica:** antes de cerrar cualquier tarea que toque economía, UI o flujo de usuario, preguntar "¿hay algún tooltip, texto de planes, o referencia en otra página que describe esto?" Si la respuesta es sí, actualizar también.
+
+---
+
+## Modelo de costos Espejo — PENDIENTE DE DECIDIR
+
+El modelo económico del Espejo está en discusión. Opciones evaluadas (ninguna aprobada aún):
+
+- **Por mensaje:** problema original — cobra por reflexión, genera ansiedad, mal UX terapéutico
+- **Por sesión nueva:** un solo costo al crear conversación — problema: usuario puede usar una sesión para siempre
+- **Por tiempo:** complejo técnicamente, castiga el silencio y la reflexión
+- **Diferenciado por plan:** free paga por respuesta IA, navegante/practicante ilimitado — propuesta en evaluación
+
+**También pendiente de definir:** mensaje de bienvenida instructivo al abrir el espejo.
+
+No implementar nada de esto hasta que Franco confirme el modelo.
+
+---
+
+## Pendientes técnicos (al 2026-06-22)
 
 ### Alta prioridad
 1. **Fractones en features existentes**
-   - Espejo: `spend(user, 'espejo_exchange')` antes del API call + `credit_mission(user, 'first_espejo')`
+   - Espejo: modelo de cobro pendiente de decisión (ver sección "Modelo de costos Espejo")
    - AI Insights: `spend(user, 'ai_insight')` antes de llamar DeepSeek en test_result
    - Onboarding: `credit_mission(user, 'onboarding')` al completar el flow
+   - Mensaje de bienvenida instructivo en el espejo (pendiente de definir junto al modelo)
 
 2. **Practitioners views** — gestionar perfiles de clientes, asignar tests, ver resultados
 
