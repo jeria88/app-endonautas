@@ -50,6 +50,13 @@ def login_view(request):
 
 
 def register_view(request):
+    # Usuario ya autenticado — redirigir según intención
+    if request.user.is_authenticated:
+        plan = request.GET.get('plan', '')
+        if plan in ('navegante', 'practicante'):
+            return redirect('/planes/')
+        return redirect('dashboard')
+
     if request.method == 'POST':
         from django.contrib.auth import get_user_model
         User = get_user_model()
@@ -82,8 +89,11 @@ def register_view(request):
 
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         next_url = request.GET.get('next', '')
+        plan = request.GET.get('plan', '')
         if next_url and next_url.startswith('/pago/'):
             return redirect(next_url)
+        if plan in ('navegante', 'practicante'):
+            return redirect('/planes/')
         if next_url:
             request.session['post_onboarding_next'] = next_url
         return redirect('onboarding')
