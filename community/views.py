@@ -1,8 +1,28 @@
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from .models import Comment, Post, Reaction
+from .models import Comment, Forum, ForumPost, ForumReply, Post, Reaction
+
+BUG_TYPES = [
+    ('fractones_consumo', 'Consumo incorrecto de fractones'),
+    ('fractones_carga', 'Fractones no acreditados'),
+    ('pago', 'Error en pago o suscripción'),
+    ('modulo', 'Fallo en un módulo'),
+    ('otro', 'Otro'),
+]
+
+MODULES = [
+    ('espejo', 'Espejo de Conflictos'),
+    ('nacimiento', 'Lecturas de Nacimiento'),
+    ('tests', 'Tests Psicométricos'),
+    ('oraculo', 'Oráculo'),
+    ('comunidad', 'Comunidad'),
+    ('perfil', 'Perfil / Cuenta'),
+    ('regulacion', 'Regulación'),
+    ('otro', 'Otro'),
+]
 
 
 @login_required
@@ -68,7 +88,87 @@ def share_create(request):
 
 @login_required
 def foros(request):
-    return render(request, 'community/foros.html')
+    forums = Forum.objects.all()
+    return render(request, 'community/foros.html', {'forums': forums})
+
+
+@login_required
+def forum_detail(request, slug):
+    forum = get_object_or_404(Forum, slug=slug)
+    posts = forum.posts.select_related('author__profile').prefetch_related('replies')
+    return render(request, 'community/forum_detail.html', {
+        'forum': forum,
+        'posts': posts,
+    })
+
+
+@login_required
+def forum_post_create(request, slug):
+    forum = get_object_or_404(Forum, slug=slug)
+
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        content = request.POST.get('content', '').strip()
+
+        if not title:
+            return render(request, 'community/forum_post_create.html', {
+                'forum': forum, 'bug_types': BUG_TYPES, 'modules': MODULES,
+                'error': 'El título es obligatorio.',
+                'prev': request.POST,
+            })
+
+        structured = {}
+        if forum.is_bug_forum:
+            structured = {
+                'bug_type': request.POST.get('bug_type', ''),
+                'module': request.POST.get('module', ''),
+                'steps': request.POST.get('steps', '').strip(),
+                'expected': request.POST.get('expected', '').strip(),
+                'actual': request.POST.get('actual', '').strip(),
+            }
+
+        post = ForumPost.objects.create(
+            forum=forum,
+            author=request.user,
+            title=title,
+            content=content,
+            structured_data=structured,
+        )
+        return redirect('forum_post_detail', slug=slug, pk=post.pk)
+
+    return render(request, 'community/forum_post_create.html', {
+        'forum': forum,
+        'bug_types': BUG_TYPES,
+        'modules': MODULES,
+    })
+
+
+@login_required
+def forum_post_detail(request, slug, pk):
+    forum = get_object_or_404(Forum, slug=slug)
+    post = get_object_or_404(ForumPost, pk=pk, forum=forum)
+
+    if request.method == 'POST':
+        content = request.POST.get('content', '').strip()
+        if content:
+            ForumReply.objects.create(post=post, author=request.user, content=content)
+        return redirect('forum_post_detail', slug=slug, pk=pk)
+
+    replies = post.replies.select_related('author__profile')
+    bug_type_label = ''
+    if post.structured_data.get('bug_type'):
+        bug_type_label = dict(BUG_TYPES).get(post.structured_data['bug_type'], '')
+    module_label = ''
+    if post.structured_data.get('module'):
+        module_label = dict(MODULES).get(post.structured_data['module'], '')
+
+    return render(request, 'community/forum_post_detail.html', {
+        'forum': forum,
+        'post': post,
+        'replies': replies,
+        'bug_type_label': bug_type_label,
+        'module_label': module_label,
+    })
 
 
 @login_required
@@ -79,7 +179,6 @@ def mensajes(request):
 @login_required
 @require_POST
 def post_react(request, pk):
-    from django.http import JsonResponse
     post = get_object_or_404(Post, pk=pk)
     reaction_type = request.POST.get('type', 'resonar')
     reaction, created = Reaction.objects.get_or_create(

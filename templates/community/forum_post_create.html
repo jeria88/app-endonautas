@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Nuevo hilo — {{ forum.title }}{% endblock %}
+{% block content %}
+<style data-page-style>
+.field-wrap { margin-bottom:1.1rem; }
+.field-label { display:block;font-size:.75rem;font-weight:600;color:var(--muted);margin-bottom:6px;font-family:var(--font-display);letter-spacing:.04em;text-transform:uppercase; }
+.field-input, .field-textarea, .field-select { width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:.88rem;font-family:var(--font-ui);outline:none;box-sizing:border-box;transition:border-color .2s; }
+.field-input:focus, .field-textarea:focus, .field-select:focus { border-color:var(--border-active); }
+.field-textarea { resize:vertical;min-height:90px; }
+.field-select option { background:#1a1730; }
+.section-label { font-family:var(--font-display);font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);padding:10px 0 6px;border-top:1px solid var(--border);margin-top:1rem; }
+.instructions-box { background:rgba(126,204,205,.06);border:1px solid rgba(126,204,205,.2);border-radius:12px;padding:14px 16px;margin-bottom:1.4rem; }
+.error-msg { background:rgba(220,60,60,.1);border:1px solid rgba(220,60,60,.3);border-radius:8px;padding:10px 14px;color:#f87171;font-size:.82rem;margin-bottom:1rem; }
+</style>
+
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:1.4rem">
+  <a href="{% url 'forum_detail' forum.slug %}" onclick="spaGo(event,this)" style="color:var(--dim);display:flex;align-items:center">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+  </a>
+  <h1 style="font-family:var(--font-display);font-size:1.2rem;font-weight:700;color:#fff">Nuevo hilo — {{ forum.title }}</h1>
+</div>
+
+{% if forum.instructions %}
+<div class="instructions-box">
+  <p style="font-size:.72rem;font-weight:700;color:var(--calipso);margin-bottom:6px;letter-spacing:.05em;text-transform:uppercase;font-family:var(--font-display)">Antes de publicar</p>
+  <pre style="font-size:.8rem;color:var(--muted);white-space:pre-wrap;font-family:var(--font-ui);margin:0">{{ forum.instructions }}</pre>
+</div>
+{% endif %}
+
+{% if error %}<div class="error-msg">{{ error }}</div>{% endif %}
+
+<form method="post">
+  {% csrf_token %}
+
+  <div class="field-wrap">
+    <label class="field-label" for="id_title">Título del hilo</label>
+    <input class="field-input" id="id_title" name="title" maxlength="300" placeholder="Describe el problema o tema en una línea" value="{{ prev.title|default:'' }}" required>
+  </div>
+
+  {% if forum.is_bug_forum %}
+  <div class="section-label">Detalles del error</div>
+
+  <div class="field-wrap">
+    <label class="field-label" for="id_bug_type">Tipo de error</label>
+    <select class="field-select" id="id_bug_type" name="bug_type">
+      <option value="">— Elegí una categoría —</option>
+      {% for val, label in bug_types %}
+      <option value="{{ val }}" {% if prev.bug_type == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="field-wrap">
+    <label class="field-label" for="id_module">Módulo afectado</label>
+    <select class="field-select" id="id_module" name="module">
+      <option value="">— Seleccioná el módulo —</option>
+      {% for val, label in modules %}
+      <option value="{{ val }}" {% if prev.module == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="field-wrap">
+    <label class="field-label" for="id_steps">¿Qué hiciste antes de que ocurriera?</label>
+    <textarea class="field-textarea" id="id_steps" name="steps" placeholder="Ej: Ingresé al Espejo, escribí un mensaje y presioné enviar...">{{ prev.steps|default:'' }}</textarea>
+  </div>
+
+  <div class="field-wrap">
+    <label class="field-label" for="id_expected">¿Qué esperabas que pasara?</label>
+    <textarea class="field-textarea" id="id_expected" name="expected" style="min-height:60px" placeholder="Ej: Que se descontaran 4 fractones y llegara la respuesta...">{{ prev.expected|default:'' }}</textarea>
+  </div>
+
+  <div class="field-wrap">
+    <label class="field-label" for="id_actual">¿Qué pasó realmente?</label>
+    <textarea class="field-textarea" id="id_actual" name="actual" style="min-height:60px" placeholder="Ej: Se descontaron 40 fractones y no llegó respuesta...">{{ prev.actual|default:'' }}</textarea>
+  </div>
+
+  <div class="section-label">Notas adicionales (opcional)</div>
+  {% endif %}
+
+  <div class="field-wrap">
+    <label class="field-label" for="id_content">{% if forum.is_bug_forum %}Contexto extra, capturas o links{% else %}Contenido{% endif %}</label>
+    <textarea class="field-textarea" id="id_content" name="content" style="min-height:120px" placeholder="{% if forum.is_bug_forum %}Cualquier detalle adicional que pueda ayudar...{% else %}Desarrollá tu idea, pregunta o reflexión...{% endif %}">{{ prev.content|default:'' }}</textarea>
+  </div>
+
+  <div style="display:flex;gap:10px;justify-content:flex-end">
+    <a href="{% url 'forum_detail' forum.slug %}" onclick="spaGo(event,this)" class="btn btn-secondary">Cancelar</a>
+    <button type="submit" class="btn btn-primary">Publicar hilo</button>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }} — {{ forum.title }}{% endblock %}
+{% block content %}
+<style data-page-style>
+.thread-header { background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:1.2rem; }
+.thread-title { font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:10px;line-height:1.3; }
+.thread-meta { font-size:.73rem;color:var(--dim);display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px; }
+.bug-field { margin-bottom:10px; }
+.bug-field-label { font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--calipso);margin-bottom:3px;font-family:var(--font-display); }
+.bug-field-value { font-size:.83rem;color:var(--muted);background:var(--surface2);border-radius:8px;padding:8px 12px;white-space:pre-wrap; }
+.bug-section { border-top:1px solid var(--border);padding-top:14px;margin-top:14px; }
+.reply-row { background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:8px; }
+.reply-author { font-size:.75rem;font-weight:600;color:var(--calipso);margin-bottom:6px; }
+.reply-content { font-size:.85rem;color:var(--text);line-height:1.6;white-space:pre-wrap; }
+.reply-time { font-size:.68rem;color:var(--dim);margin-top:6px; }
+.reply-form textarea { width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:.88rem;font-family:var(--font-ui);outline:none;resize:vertical;min-height:80px;box-sizing:border-box;transition:border-color .2s; }
+.reply-form textarea:focus { border-color:var(--border-active); }
+.badge-type { background:rgba(220,80,60,.12);color:#f87171;border-radius:20px;padding:2px 9px;font-size:.65rem;font-weight:700; }
+</style>
+
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:1.2rem">
+  <a href="{% url 'forum_detail' forum.slug %}" onclick="spaGo(event,this)" style="color:var(--dim);display:flex;align-items:center">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+  </a>
+  <span style="font-size:.78rem;color:var(--dim)">{{ forum.title }}</span>
+</div>
+
+<div class="thread-header">
+  <div class="thread-title">
+    {% if post.structured_data.bug_type %}<span class="badge-type">Bug</span> {% endif %}
+    {{ post.title }}
+  </div>
+  <div class="thread-meta">
+    <span>{{ post.author.profile.display_name|default:post.author.email }}</span>
+    <span>·</span>
+    <span>{{ post.created_at|timesince }} atrás</span>
+  </div>
+
+  {% if post.structured_data %}
+  <div class="bug-section">
+    {% if bug_type_label %}
+    <div class="bug-field">
+      <div class="bug-field-label">Tipo de error</div>
+      <div class="bug-field-value">{{ bug_type_label }}{% if module_label %} — {{ module_label }}{% endif %}</div>
+    </div>
+    {% endif %}
+    {% if post.structured_data.steps %}
+    <div class="bug-field">
+      <div class="bug-field-label">Pasos previos</div>
+      <div class="bug-field-value">{{ post.structured_data.steps }}</div>
+    </div>
+    {% endif %}
+    {% if post.structured_data.expected %}
+    <div class="bug-field">
+      <div class="bug-field-label">Esperaba</div>
+      <div class="bug-field-value">{{ post.structured_data.expected }}</div>
+    </div>
+    {% endif %}
+    {% if post.structured_data.actual %}
+    <div class="bug-field">
+      <div class="bug-field-label">Pasó realmente</div>
+      <div class="bug-field-value">{{ post.structured_data.actual }}</div>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if post.content %}
+  <div style="{% if post.structured_data %}margin-top:14px;padding-top:14px;border-top:1px solid var(--border);{% endif %}font-size:.88rem;color:var(--text);line-height:1.65;white-space:pre-wrap">{{ post.content }}</div>
+  {% endif %}
+</div>
+
+{% if replies %}
+<p style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:.6rem;font-family:var(--font-display)">{{ replies.count }} respuesta{{ replies.count|pluralize }}</p>
+{% for reply in replies %}
+<div class="reply-row">
+  <div class="reply-author">{{ reply.author.profile.display_name|default:reply.author.email }}</div>
+  <div class="reply-content">{{ reply.content }}</div>
+  <div class="reply-time">{{ reply.created_at|timesince }} atrás</div>
+</div>
+{% endfor %}
+{% endif %}
+
+<div class="reply-form" style="margin-top:1.2rem">
+  <p style="font-size:.75rem;font-weight:600;color:var(--muted);margin-bottom:8px">Responder</p>
+  <form method="post">
+    {% csrf_token %}
+    <textarea name="content" placeholder="Escribí tu respuesta..." required></textarea>
+    <div style="display:flex;justify-content:flex-end;margin-top:8px">
+      <button type="submit" class="btn btn-primary" style="font-size:.82rem;padding:8px 18px">Publicar respuesta</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

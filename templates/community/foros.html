@@ -3,18 +3,12 @@
 {% block content %}
 <style data-page-style>
 .foros-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem; }
-.forum-search { display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:1.5rem; }
-.forum-search input { background:none;border:none;outline:none;color:var(--text);font-size:0.9rem;flex:1;font-family:var(--font-ui); }
-.forum-section-label { font-family:var(--font-display);font-size:0.65rem;font-weight:700;letter-spacing:0.15em;color:var(--dim);text-transform:uppercase;padding:14px 0 8px; }
 .forum-row { display:flex;align-items:center;gap:14px;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;cursor:pointer;transition:border-color 0.2s;text-decoration:none;color:inherit; }
 .forum-row:hover { border-color:var(--border-active); }
-.forum-icon { width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0; }
-.forum-info { flex:1; }
+.forum-icon { width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0; }
 .forum-name { font-family:var(--font-display);font-size:0.92rem;font-weight:600;color:#fff;margin-bottom:3px; }
 .forum-desc { font-size:0.78rem;color:var(--muted); }
-.forum-meta { font-size:0.72rem;color:var(--dim);text-align:right;flex-shrink:0; }
-.new-badge { background:var(--calipso-glow);color:var(--calipso);border:1px solid rgba(126,204,205,0.3);border-radius:20px;padding:2px 8px;font-size:0.65rem;font-family:var(--font-display);font-weight:700; }
-.coming-soon { text-align:center;padding:2rem;color:var(--dim);font-size:0.82rem;border:1px dashed var(--border);border-radius:12px; }
+.forum-badge { background:rgba(220,80,60,0.15);color:#f87171;border-radius:20px;padding:2px 9px;font-size:0.65rem;font-family:var(--font-display);font-weight:700;letter-spacing:.05em; }
 </style>
 
 <div class="foros-header">
@@ -22,52 +16,21 @@
     <h1 style="font-family:var(--font-display);font-size:1.6rem;font-weight:700;color:#fff;letter-spacing:-0.02em">Foros</h1>
     <p style="font-size:0.85rem;color:var(--muted);margin-top:4px">Espacios de diálogo por dimensión y arquetipo.</p>
   </div>
-  <button class="btn btn-primary" disabled style="opacity:0.5" title="Próximamente">+ Crear Foro</button>
 </div>
 
-<div class="forum-search">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--muted);flex-shrink:0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-  <input placeholder="Buscar foros, arquetipos, temas...">
-</div>
-
-<div class="forum-section-label">Dimensiones activas</div>
-
-{% for forum in forums_list %}
-<a class="forum-row" href="#">
-  <div class="forum-icon" style="background:{{ forum.color_bg }}">{{ forum.icon }}</div>
-  <div class="forum-info">
-    <div class="forum-name">{{ forum.name }}</div>
-    <div class="forum-desc">{{ forum.desc }}</div>
+{% for forum in forums %}
+<a class="forum-row" href="{% url 'forum_detail' forum.slug %}" onclick="spaGo(event,this)">
+  <div class="forum-icon" style="background:{{ forum.color }}">{{ forum.icon }}</div>
+  <div style="flex:1">
+    <div class="forum-name">
+      {{ forum.title }}
+      {% if forum.is_bug_forum %}<span class="forum-badge" style="margin-left:8px">Soporte</span>{% endif %}
+    </div>
+    <div class="forum-desc">{{ forum.description }}</div>
   </div>
-  <div class="forum-meta">
-    {% if forum.new %}<span class="new-badge">{{ forum.new }} Nuevos</span>{% endif %}
-    <div style="margin-top:4px">{{ forum.members }} miembros</div>
-  </div>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--dim);flex-shrink:0"><path d="m9 18 6-6-6-6"/></svg>
 </a>
 {% empty %}
-<!-- Foros demo -->
-<a class="forum-row" href="#">
-  <div class="forum-icon" style="background:var(--calipso-glow)">💬</div>
-  <div class="forum-info"><div class="forum-name">Espejo de Sombras</div><div class="forum-desc">Patrones inconscientes, arquetipos y trabajo con la sombra</div></div>
-  <div class="forum-meta"><span class="new-badge">3 Nuevos</span><div style="margin-top:4px">128 miembros</div></div>
-</a>
-<a class="forum-row" href="#">
-  <div class="forum-icon" style="background:var(--amber-glow)">🧠</div>
-  <div class="forum-info"><div class="forum-name">Psicometría</div><div class="forum-desc">Interpretación de tests, resultados y lecturas comparadas</div></div>
-  <div class="forum-meta"><div>84 miembros</div></div>
-</a>
-<a class="forum-row" href="#">
-  <div class="forum-icon" style="background:var(--violet-glow)">✦</div>
-  <div class="forum-info"><div class="forum-name">Origen Fractal</div><div class="forum-desc">Carta natal, Human Design, BaZi: mapas del alma</div></div>
-  <div class="forum-meta"><span class="new-badge">1 Nuevo</span><div style="margin-top:4px">212 miembros</div></div>
-</a>
-<a class="forum-row" href="#">
-  <div class="forum-icon" style="background:var(--rose-glow)">🌙</div>
-  <div class="forum-info"><div class="forum-name">Diario de Sueños</div><div class="forum-desc">Sueños lúcidos, símbolos oníricos y patrones del inconsciente</div></div>
-  <div class="forum-meta"><div>56 miembros</div></div>
-</a>
+<p style="color:var(--dim);font-size:.85rem;text-align:center;padding:2rem">No hay foros aún.</p>
 {% endfor %}
-
-<div class="forum-section-label" style="margin-top:1rem">Próximamente</div>
-<div class="coming-soon">Los foros estarán disponibles en la próxima actualización. Mientras tanto, comparte en <a href="/comunidad/" onclick="spaGo(event,this)" style="color:var(--calipso)">el Inicio</a>.</div>
 {% endblock %}

@@ -66,6 +66,10 @@ class Forum(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
     description = models.TextField(blank=True)
+    instructions = models.TextField(blank=True)
+    icon = models.CharField(max_length=10, default='💬')
+    color = models.CharField(max_length=60, default='var(--calipso-glow)')
+    is_bug_forum = models.BooleanField(default=False)
     order = models.IntegerField(default=0)
 
     class Meta:
@@ -80,10 +84,29 @@ class ForumPost(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=300)
     content = models.TextField()
+    structured_data = models.JSONField(default=dict, blank=True)
+    is_pinned = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ['-is_pinned', '-created_at']
 
     def __str__(self):
         return self.title
+
+    def reply_count(self):
+        return self.replies.count()
+
+
+class ForumReply(models.Model):
+    post = models.ForeignKey(ForumPost, on_delete=models.CASCADE, related_name='replies')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f'{self.author.email}: {self.content[:60]}'
