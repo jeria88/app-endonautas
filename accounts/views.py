@@ -80,7 +80,7 @@ def register_view(request):
             from tokens.service import process_referral_signup
             process_referral_signup(ref_code, user)
 
-        login(request, user)
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         return redirect('onboarding')
     return render(request, 'accounts/register.html')
 
