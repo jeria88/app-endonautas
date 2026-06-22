@@ -82,6 +82,8 @@ def register_view(request):
 
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         next_url = request.GET.get('next', '')
+        if next_url and next_url.startswith('/pago/'):
+            return redirect(next_url)
         if next_url:
             request.session['post_onboarding_next'] = next_url
         return redirect('onboarding')

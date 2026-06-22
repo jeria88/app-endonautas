@@ -18,8 +18,13 @@
         <p style="font-size:0.72rem;color:var(--muted);margin-bottom:2rem;opacity:.6">Procesado via {{ gateway }}</p>
       {% endif %}
       <div style="display:flex;flex-direction:column;gap:0.75rem">
+        {% if not request.user.profile.onboarding_complete %}
+        <a href="/onboarding/" onclick="spaGo(event,this)" class="btn btn-primary">Personalizar mi experiencia →</a>
+        <a href="/" onclick="spaGo(event,this)" class="btn btn-ghost" style="font-size:0.82rem">Ir al inicio</a>
+        {% else %}
         <a href="/" onclick="spaGo(event,this)" class="btn btn-primary">Ir al inicio</a>
         <a href="/tokens/balance/" onclick="spaGo(event,this)" class="btn btn-ghost" style="font-size:0.82rem">Ver mis fractones →</a>
+        {% endif %}
       </div>
 
     {% elif pendiente %}
