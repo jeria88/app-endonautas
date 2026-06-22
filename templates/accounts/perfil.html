@@ -122,8 +122,8 @@
       </div>
 
       <div style="display:flex;gap:0.75rem;align-items:center;margin-top:1rem">
-        <button type="submit" class="btn btn-primary">Guardar cambios</button>
-        <a href="/recuperar/" onclick="spaGo(event,this)" style="font-size:0.8rem;color:var(--muted);text-decoration:none">Cambiar contraseña →</a>
+        <button type="submit" class="btn btn-primary" data-tip="Guarda tu nombre, bio, fondo visual y color de partículas">Guardar cambios</button>
+        <a href="/recuperar/" onclick="spaGo(event,this)" style="font-size:0.8rem;color:var(--muted);text-decoration:none" data-tip="Genera un link por email para cambiar tu contraseña">Cambiar contraseña →</a>
       </div>
     </form>
   </div>
@@ -148,12 +148,12 @@
       <div style="margin-bottom:0.75rem">
         <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.4rem">Navegante — ⬡ 800/mes</div>
         <div style="display:flex;gap:0.5rem">
-          <a href="/pago/mp/suscribir/navegante/" class="cpay cpay-mp">
+          <a href="/pago/mp/suscribir/navegante/" class="cpay cpay-mp" data-tip="Suscripción Navegante con Mercado Pago · ⬡ 800 fractones/mes">
             <svg width="16" height="16" viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="4" fill="#009EE3"/><polyline points="3.5,15 3.5,5 10,11 16.5,5 16.5,15" stroke="white" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>
             <span>Mercado Pago</span>
             <span class="cpay-cur">$9.990 CLP/mes</span>
           </a>
-          <a href="/pago/paypal/suscribir/navegante/" class="cpay cpay-pp">
+          <a href="/pago/paypal/suscribir/navegante/" class="cpay cpay-pp" data-tip="Suscripción Navegante con PayPal · ⬡ 800 fractones/mes">
             <svg width="20" height="15" viewBox="0 0 24 18" aria-hidden="true"><path d="M2,17 L2,1 L8,1 Q14,1 14,6 Q14,11 8,11 L4,11 L4,17 Z" fill="#4a7ab5"/><path d="M7,17 L7,1 L13,1 Q19,1 19,6 Q19,11 13,11 L9,11 L9,17 Z" fill="#009CDE"/></svg>
             <span>PayPal</span>
             <span class="cpay-cur">$9.99 USD/mes</span>
@@ -165,12 +165,12 @@
       <div style="margin-bottom:0.75rem">
         <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.4rem">Practicante — ⬡ 5.000/mes</div>
         <div style="display:flex;gap:0.5rem">
-          <a href="/pago/mp/suscribir/practicante/" class="cpay cpay-mp">
+          <a href="/pago/mp/suscribir/practicante/" class="cpay cpay-mp" data-tip="Suscripción Practicante con Mercado Pago · ⬡ 5.000 fractones/mes">
             <svg width="16" height="16" viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="4" fill="#009EE3"/><polyline points="3.5,15 3.5,5 10,11 16.5,5 16.5,15" stroke="white" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>
             <span>Mercado Pago</span>
             <span class="cpay-cur">$39.990 CLP/mes</span>
           </a>
-          <a href="/pago/paypal/suscribir/practicante/" class="cpay cpay-pp">
+          <a href="/pago/paypal/suscribir/practicante/" class="cpay cpay-pp" data-tip="Suscripción Practicante con PayPal · ⬡ 5.000 fractones/mes">
             <svg width="20" height="15" viewBox="0 0 24 18" aria-hidden="true"><path d="M2,17 L2,1 L8,1 Q14,1 14,6 Q14,11 8,11 L4,11 L4,17 Z" fill="#4a7ab5"/><path d="M7,17 L7,1 L13,1 Q19,1 19,6 Q19,11 13,11 L9,11 L9,17 Z" fill="#009CDE"/></svg>
             <span>PayPal</span>
             <span class="cpay-cur">$39.99 USD/mes</span>
@@ -182,7 +182,7 @@
       {% endif %}
 
       {% if profile.plan != 'free' %}
-      <a href="/pago/cancelar/" style="display:block;font-size:0.72rem;color:rgba(255,255,255,0.25);text-decoration:none;text-align:right;margin-bottom:0.75rem">Cancelar suscripción →</a>
+      <a href="/pago/cancelar/" style="display:block;font-size:0.72rem;color:rgba(255,255,255,0.25);text-decoration:none;text-align:right;margin-bottom:0.75rem" data-tip="Cancela tu suscripción activa — puedes reactivarla cuando quieras">Cancelar suscripción →</a>
       {% endif %}
 
       <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.6rem">Recargar Fractones</div>
@@ -193,11 +193,11 @@
           <span style="font-size:0.72rem;color:var(--muted);margin-left:0.4rem">{{ pack.price_clp|stringformat:",.0f" }} CLP · ${{ pack.price_usd }} USD</span>
         </div>
         <div style="display:flex;gap:0.35rem">
-          <a href="/pago/mp/pack/{{ slug }}/" class="cpay-sm cpay-sm-mp">
+          <a href="/pago/mp/pack/{{ slug }}/" class="cpay-sm cpay-sm-mp" data-tip="Comprar ⬡ {{ pack.fractones }} fractones con Mercado Pago (pesos CLP)">
             <svg width="13" height="13" viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="4" fill="#009EE3"/><polyline points="3.5,15 3.5,5 10,11 16.5,5 16.5,15" stroke="white" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>
             CLP
           </a>
-          <a href="/pago/paypal/pack/{{ slug }}/" class="cpay-sm cpay-sm-pp">
+          <a href="/pago/paypal/pack/{{ slug }}/" class="cpay-sm cpay-sm-pp" data-tip="Comprar ⬡ {{ pack.fractones }} fractones con PayPal (dólares USD)">
             <svg width="16" height="12" viewBox="0 0 24 18" aria-hidden="true"><path d="M2,17 L2,1 L8,1 Q14,1 14,6 Q14,11 8,11 L4,11 L4,17 Z" fill="#4a7ab5"/><path d="M7,17 L7,1 L13,1 Q19,1 19,6 Q19,11 13,11 L9,11 L9,17 Z" fill="#009CDE"/></svg>
             USD
           </a>
@@ -208,11 +208,11 @@
 
     <div class="panel" style="padding:1rem 1.25rem">
       <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.75rem">Cuenta y datos</div>
-      <a href="mailto:hola@endonautas.cl?subject=Solicitud%20de%20mis%20datos%20personales&body=Hola%2C%20solicito%20una%20copia%20de%20todos%20mis%20datos%20personales%20almacenados%20en%20Endonautas.%0A%0ACuenta%3A%20{{ user.email }}" style="display:flex;align-items:center;justify-content:space-between;padding:0.55rem 0;border-bottom:1px solid var(--border);text-decoration:none;color:var(--muted);font-size:0.82rem">
+      <a href="mailto:hola@endonautas.cl?subject=Solicitud%20de%20mis%20datos%20personales&body=Hola%2C%20solicito%20una%20copia%20de%20todos%20mis%20datos%20personales%20almacenados%20en%20Endonautas.%0A%0ACuenta%3A%20{{ user.email }}" style="display:flex;align-items:center;justify-content:space-between;padding:0.55rem 0;border-bottom:1px solid var(--border);text-decoration:none;color:var(--muted);font-size:0.82rem" data-tip="Envía un email solicitando una copia de todos tus datos personales (derecho GDPR/LGPD)">
         <span>Solicitar mis datos</span>
         <span style="font-size:0.75rem;opacity:0.5">→</span>
       </a>
-      <button onclick="document.getElementById('modal-delete').style.display='flex'" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:0.55rem 0;background:none;border:none;cursor:pointer;color:rgba(201,123,132,0.7);font-size:0.82rem;font-family:inherit;margin-top:0.1rem">
+      <button onclick="document.getElementById('modal-delete').style.display='flex'" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:0.55rem 0;background:none;border:none;cursor:pointer;color:rgba(201,123,132,0.7);font-size:0.82rem;font-family:inherit;margin-top:0.1rem" data-tip="Elimina permanentemente tu cuenta y todos tus datos — esta acción no se puede deshacer">
         <span>Eliminar mi cuenta</span>
         <span style="font-size:0.75rem;opacity:0.5">→</span>
       </button>

@@ -19,7 +19,7 @@
 </div>
 
 {% for forum in forums %}
-<a class="forum-row" href="{% url 'forum_detail' forum.slug %}" onclick="spaGo(event,this)">
+<a class="forum-row" href="{% url 'forum_detail' forum.slug %}" onclick="spaGo(event,this)" data-tip="{{ forum.description }}">
   <div class="forum-icon" style="background:{{ forum.color }}">{{ forum.icon }}</div>
   <div style="flex:1">
     <div class="forum-name">

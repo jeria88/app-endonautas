@@ -58,17 +58,17 @@
 
 <!-- Global dropdown (singleton, repositioned on open) -->
 <div class="session-dropdown" id="global-dropdown">
-  <button onclick="dropdownAction('rename')">Renombrar</button>
-  <button onclick="dropdownAction('export')">Exportar</button>
+  <button onclick="dropdownAction('rename')" data-tip="Editar el título de esta conversación">Renombrar</button>
+  <button onclick="dropdownAction('export')" data-tip="Descargar esta conversación como archivo de texto">Exportar</button>
   <div class="menu-sep"></div>
-  <button class="menu-danger" onclick="dropdownAction('delete')">Eliminar</button>
+  <button class="menu-danger" onclick="dropdownAction('delete')" data-tip="Eliminar permanentemente esta conversación">Eliminar</button>
 </div>
 
 <div class="espejo-shell">
 
   <div class="sessions-panel">
     <div class="sessions-header">
-      <button class="btn btn-primary btn-sm" style="width:100%;justify-content:center" id="btn-new-chat" onclick="newChat()">
+      <button class="btn btn-primary btn-sm" style="width:100%;justify-content:center" id="btn-new-chat" onclick="newChat()" data-tip="Abre una nueva sesión de diálogo con el Espejo de Conflictos">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Nueva conversación
       </button>
@@ -108,7 +108,7 @@
           <p style="font-size:0.9rem;color:var(--muted)">El espejo está listo</p>
           <p style="font-size:0.75rem;color:var(--dim);margin-top:4px;line-height:1.5">Inicia una conversación o selecciona<br>una anterior desde el historial</p>
         </div>
-        <button class="btn btn-primary btn-sm" onclick="newChat()">Nueva conversación</button>
+        <button class="btn btn-primary btn-sm" onclick="newChat()" data-tip="Abre una nueva sesión de diálogo con el Espejo de Conflictos">Nueva conversación</button>
       </div>
       <div class="typing-row" id="typing-row">
         <div class="dot"></div><div class="dot"></div><div class="dot"></div>

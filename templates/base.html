@@ -1121,10 +1121,10 @@ window.__switchAesthetic = function(name) {
 };
 </script>
 
-<!-- Fractone cost tooltips -->
-<div id="ft-tip" style="position:fixed;z-index:9999;pointer-events:none;opacity:0;transition:opacity .15s;max-width:220px"></div>
+<!-- Tooltips globales: data-ft-tip="costo|desc" para fractones, data-tip="desc" para info -->
+<div id="ft-tip" style="position:fixed;z-index:9999;pointer-events:none;opacity:0;transition:opacity .15s;max-width:230px"></div>
 <style>
-#ft-tip { background:rgba(8,6,18,0.96);border:1px solid rgba(126,204,205,0.35);border-radius:10px;padding:9px 13px;box-shadow:0 4px 24px rgba(0,0,0,0.5); }
+#ft-tip { background:rgba(8,6,18,0.96);border:1px solid rgba(126,204,205,0.25);border-radius:10px;padding:9px 13px;box-shadow:0 4px 24px rgba(0,0,0,0.5); }
 #ft-tip .ft-cost { font-size:.72rem;font-weight:700;color:var(--calipso);font-family:var(--font-display);letter-spacing:.04em;margin-bottom:4px; }
 #ft-tip .ft-desc { font-size:.75rem;color:var(--muted);line-height:1.45; }
 </style>
@@ -1134,12 +1134,17 @@ window.__switchAesthetic = function(name) {
   var cur = null;
 
   function show(el) {
-    var val = el.dataset.ftTip;
-    if (!val) return;
-    var parts = val.split('|');
-    var cost = parts[0];
-    var desc = parts[1] || '';
-    tip.innerHTML = '<div class="ft-cost">⬡ ' + cost + ' fractones</div>' + (desc ? '<div class="ft-desc">' + desc + '</div>' : '');
+    var ftVal = el.dataset.ftTip;
+    var infoVal = el.dataset.tip;
+    if (!ftVal && !infoVal) return;
+    if (ftVal) {
+      var parts = ftVal.split('|');
+      var cost = parts[0];
+      var desc = parts[1] || '';
+      tip.innerHTML = '<div class="ft-cost">⬡ ' + cost + ' fractones</div>' + (desc ? '<div class="ft-desc">' + desc + '</div>' : '');
+    } else {
+      tip.innerHTML = '<div class="ft-desc">' + infoVal + '</div>';
+    }
     tip.style.opacity = '1';
     cur = el;
     position(el);
@@ -1152,8 +1157,8 @@ window.__switchAesthetic = function(name) {
 
   function position(el) {
     var r = el.getBoundingClientRect();
-    var tw = tip.offsetWidth || 220;
-    var th = tip.offsetHeight || 60;
+    var tw = tip.offsetWidth || 230;
+    var th = tip.offsetHeight || 40;
     var left = r.left + r.width / 2 - tw / 2;
     left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
     var top = r.top - th - 8;
@@ -1163,11 +1168,11 @@ window.__switchAesthetic = function(name) {
   }
 
   document.addEventListener('mouseover', function(e) {
-    var el = e.target.closest('[data-ft-tip]');
+    var el = e.target.closest('[data-ft-tip],[data-tip]');
     if (el) show(el); else if (cur) hide();
   });
   document.addEventListener('mouseleave', function(e) {
-    if (e.target.closest('[data-ft-tip]')) hide();
+    if (e.target.closest('[data-ft-tip],[data-tip]')) hide();
   }, true);
   document.addEventListener('click', function() { hide(); });
   window.addEventListener('scroll', function() { if (cur) position(cur); }, {passive:true});

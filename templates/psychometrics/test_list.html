@@ -20,7 +20,7 @@
   <div class="dim-title">{{ dimension }}</div>
   <div class="test-grid">
     {% for t in tests %}
-    <a class="test-card" href="/tests/{{ t.slug }}/responder/" onclick="spaGo(event,this)">
+    <a class="test-card" href="/tests/{{ t.slug }}/responder/" onclick="spaGo(event,this)" data-tip="{{ t.description|default:'Responder este test psicométrico' }}">
       <div class="test-name">{{ t.name }}</div>
       <div class="test-meta">
         {% if t.instrument_type == 'clinical' %}

@@ -193,10 +193,10 @@
   {% endif %}
 
   <div style="display:flex;gap:0.75rem;flex-wrap:wrap;padding-bottom:3rem">
-    <a href="/tests/{{ result.test.slug }}/responder/" onclick="spaGo(event,this)" class="btn btn-secondary">Repetir test</a>
-    <a href="/tests/resultado/{{ result.pk }}/pdf/" class="btn btn-ghost">↓ Descargar PDF</a>
-    <a href="/tests/resultado/{{ result.pk }}/compartir/" onclick="spaGo(event,this)" class="btn btn-ghost">Compartir →</a>
-    <a href="/tests/" onclick="spaGo(event,this)" class="btn btn-ghost">Volver a tests</a>
+    <a href="/tests/{{ result.test.slug }}/responder/" onclick="spaGo(event,this)" class="btn btn-secondary" data-tip="Volver a completar este test para comparar tu evolución">Repetir test</a>
+    <a href="/tests/resultado/{{ result.pk }}/pdf/" class="btn btn-ghost" data-tip="Descargar este resultado como PDF para guardarlo o compartirlo offline">↓ Descargar PDF</a>
+    <a href="/tests/resultado/{{ result.pk }}/compartir/" onclick="spaGo(event,this)" class="btn btn-ghost" data-tip="Compartir tu resultado con otra persona mediante un link">Compartir →</a>
+    <a href="/tests/" onclick="spaGo(event,this)" class="btn btn-ghost" data-tip="Volver al catálogo de tests psicométricos">Volver a tests</a>
   </div>
 </div>
 {% endwith %}

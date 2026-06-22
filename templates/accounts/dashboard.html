@@ -28,7 +28,7 @@
 {% if ultima_sesion %}
 <div style="margin-bottom:1.5rem">
   <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.5rem">Última sesión IA</div>
-  <a class="ultima-sesion" href="/espejo/chat/{{ ultima_sesion.pk }}/" onclick="spaGo(event,this)">
+  <a class="ultima-sesion" href="/espejo/chat/{{ ultima_sesion.pk }}/" onclick="spaGo(event,this)" data-tip="Retomar tu última conversación con el Espejo de Conflictos">
     <div style="width:34px;height:34px;border-radius:8px;background:var(--calipso-glow);border:1px solid rgba(126,204,205,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--calipso)">◈</div>
     <div style="flex:1;min-width:0">
       <div style="font-size:0.87rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ ultima_sesion.title|default:"Espejo de Conflictos" }}</div>
@@ -41,14 +41,14 @@
 
 <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.7rem">Accesos rápidos</div>
 <div class="shortcut-grid" style="margin-bottom:1.5rem">
-  <a class="shortcut" href="/onboarding/" onclick="spaGo(event,this)"><span class="shortcut-icon" style="color:var(--calipso)">◎</span>Onboarding</a>
-  <a class="shortcut" href="/tests/mapa-interior/" onclick="spaGo(event,this)"><span class="shortcut-icon" style="color:var(--violet)">◉</span>Mapa Interior</a>
-  <a class="shortcut" href="/tests/mis-resultados/" onclick="spaGo(event,this)"><span class="shortcut-icon" style="color:var(--amber)">⬡</span>Reportes</a>
-  <a class="shortcut" href="/bitacora/" onclick="spaGo(event,this)"><span class="shortcut-icon">◈</span>Bitácora</a>
-  <a class="shortcut" href="/regulacion/" onclick="spaGo(event,this)"><span class="shortcut-icon" style="color:var(--green)">◈</span>Regulación</a>
-  <a class="shortcut" href="/terapeuta/" onclick="spaGo(event,this)"><span class="shortcut-icon" style="color:var(--calipso)">♥</span>Terapeuta</a>
-  <a class="shortcut" href="/oraculo/" onclick="spaGo(event,this)"><span class="shortcut-icon" style="color:var(--amber)">✦</span>Oráculo</a>
-  <a class="shortcut" href="/nacimiento/" onclick="spaGo(event,this)"><span class="shortcut-icon" style="color:var(--violet)">✦</span>Nacimiento</a>
+  <a class="shortcut" href="/onboarding/" onclick="spaGo(event,this)" data-tip="Establece tu norte interior y revisa tus dimensiones de desarrollo personal"><span class="shortcut-icon" style="color:var(--calipso)">◎</span>Onboarding</a>
+  <a class="shortcut" href="/tests/mapa-interior/" onclick="spaGo(event,this)" data-tip="Visualiza tu perfil psicológico completo a partir de todos tus tests completados"><span class="shortcut-icon" style="color:var(--violet)">◉</span>Mapa Interior</a>
+  <a class="shortcut" href="/tests/mis-resultados/" onclick="spaGo(event,this)" data-tip="Historial completo de todos tus resultados psicométricos con evolución temporal"><span class="shortcut-icon" style="color:var(--amber)">⬡</span>Reportes</a>
+  <a class="shortcut" href="/bitacora/" onclick="spaGo(event,this)" data-tip="Tu diario interior: sueños, sombras, patrones y signos registrados"><span class="shortcut-icon">◈</span>Bitácora</a>
+  <a class="shortcut" href="/regulacion/" onclick="spaGo(event,this)" data-tip="Técnicas somáticas y ejercicios guiados para la regulación emocional"><span class="shortcut-icon" style="color:var(--green)">◈</span>Regulación</a>
+  <a class="shortcut" href="/terapeuta/" onclick="spaGo(event,this)" data-tip="Diagnóstico guiado por frameworks terapéuticos con técnicas somáticas recomendadas"><span class="shortcut-icon" style="color:var(--calipso)">♥</span>Terapeuta</a>
+  <a class="shortcut" href="/oraculo/" onclick="spaGo(event,this)" data-tip="Perspectiva simbólica a través del Tarot Terapéutico, I Ching y Oráculo Fractal"><span class="shortcut-icon" style="color:var(--amber)">✦</span>Oráculo</a>
+  <a class="shortcut" href="/nacimiento/" onclick="spaGo(event,this)" data-tip="Lecturas de tu Carta Astral, Diseño Humano y mapa Saju/BaZi"><span class="shortcut-icon" style="color:var(--violet)">✦</span>Nacimiento</a>
 </div>
 
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
@@ -61,7 +61,7 @@
       <span class="mission-fracton">+{{ m.fracton_reward }}⬡</span>
     </div>
     {% endfor %}
-    <a href="/tokens/balance/" onclick="spaGo(event,this)" style="font-size:0.72rem;color:var(--calipso);text-decoration:none;display:block;margin-top:0.6rem">Ver todas →</a>
+    <a href="/tokens/balance/" onclick="spaGo(event,this)" style="font-size:0.72rem;color:var(--calipso);text-decoration:none;display:block;margin-top:0.6rem" data-tip="Ver todas las misiones disponibles y sus recompensas en fractones">Ver todas →</a>
   </div>
   {% endif %}
 
@@ -74,7 +74,7 @@
       <span style="font-size:0.68rem;color:var(--dim);flex-shrink:0;margin-left:0.4rem">{{ r.completed_at|date:"d M" }}</span>
     </a>
     {% endfor %}
-    <a href="/tests/mis-resultados/" onclick="spaGo(event,this)" style="font-size:0.72rem;color:var(--calipso);text-decoration:none;display:block;margin-top:0.6rem">Ver todos →</a>
+    <a href="/tests/mis-resultados/" onclick="spaGo(event,this)" style="font-size:0.72rem;color:var(--calipso);text-decoration:none;display:block;margin-top:0.6rem" data-tip="Ver el historial completo de tus resultados psicométricos">Ver todos →</a>
   </div>
   {% endif %}
 </div>
@@ -83,7 +83,7 @@
 <div class="panel" style="padding:1rem 1.1rem">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.7rem">
     <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim)">Bitácora reciente</div>
-    <a href="/bitacora/" onclick="spaGo(event,this)" style="font-size:0.72rem;color:var(--calipso);text-decoration:none">Ver todo →</a>
+    <a href="/bitacora/" onclick="spaGo(event,this)" style="font-size:0.72rem;color:var(--calipso);text-decoration:none" data-tip="Ver todas las entradas de tu bitácora interior">Ver todo →</a>
   </div>
   {% for b in ultimas_bitacora %}
   <div class="bita-entry">{{ b.emoji|default:"◈" }} {{ b.content|truncatechars:70 }} <span style="font-size:0.65rem;color:var(--dim)">{{ b.fecha|date:"d M" }}</span></div>

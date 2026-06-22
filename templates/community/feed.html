@@ -16,7 +16,7 @@
 
 <div class="feed-header">
   <h1 class="feed-title">Comunidad</h1>
-  <a href="/comunidad/publicar/" onclick="spaGo(event,this)" class="btn btn-primary" style="font-size:0.85rem">+ Publicar</a>
+  <a href="/comunidad/publicar/" onclick="spaGo(event,this)" class="btn btn-primary" style="font-size:0.85rem" data-tip="Comparte una reflexión, experiencia o pregunta con la comunidad Endonautas">+ Publicar</a>
 </div>
 
 {% for post in posts %}
@@ -30,8 +30,8 @@
   <div class="post-content">{{ post.content|linebreaksbr }}</div>
   {% if post.image %}<img src="{{ post.image.url }}" style="width:100%;border-radius:10px;margin-bottom:0.75rem">{% endif %}
   <div class="post-actions">
-    <button class="react-btn" onclick="react({{ post.pk }}, this)">⬡ {{ post.score }}</button>
-    <a href="/comunidad/post/{{ post.pk }}/" onclick="spaGo(event,this)" style="font-size:0.78rem;color:var(--muted)">{{ post.comments.count }} comentarios</a>
+    <button class="react-btn" onclick="react({{ post.pk }}, this)" data-tip="Resonar con esta publicación — expresar que te tocó o te identifica">⬡ {{ post.score }}</button>
+    <a href="/comunidad/post/{{ post.pk }}/" onclick="spaGo(event,this)" style="font-size:0.78rem;color:var(--muted)" data-tip="Ver el hilo completo y responder a esta publicación">{{ post.comments.count }} comentarios</a>
   </div>
 </div>
 {% empty %}
