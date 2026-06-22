@@ -22,7 +22,7 @@
 .chat-input-area { padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:flex-end; }
 .chat-input-area textarea { flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-size:0.88rem;resize:none;font-family:var(--font-ui);outline:none;min-height:42px;max-height:120px; }
 .chat-input-area textarea:focus { border-color:var(--calipso); }
-@media(max-width:700px){ .inbox-layout { grid-template-columns:1fr; } .contacts-panel { display:none; } }
+@media(max-width:768px){ .inbox-layout { grid-template-columns:1fr;height:calc(100vh - 54px - 2rem); } .contacts-panel { display:none; } }
 </style>
 
 <div class="inbox-layout">

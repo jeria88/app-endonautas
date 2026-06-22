@@ -3,7 +3,11 @@
 {% block content %}
 <style data-page-style>
 .perfil-wrap { max-width:100%; }
-@media(max-width:640px) { .perfil-grid { grid-template-columns:1fr !important; } }
+@media(max-width:640px) {
+  .perfil-grid { grid-template-columns:1fr !important; }
+  .aesthetic-grid { grid-template-columns:repeat(2,1fr); }
+  .palette-grid { grid-template-columns:repeat(3,1fr); }
+}
 .ref-link-box { background:rgba(126,204,205,0.06);border:1px solid rgba(126,204,205,0.18);border-radius:10px;padding:0.6rem 0.8rem;font-family:monospace;font-size:0.78rem;color:var(--calipso);word-break:break-all;line-height:1.4; }
 .ref-share-item { border:1px solid var(--border);border-radius:10px;padding:0.75rem;margin-bottom:0.5rem; }
 .ref-share-text { font-size:0.75rem;color:var(--muted);line-height:1.5;margin-bottom:0.5rem; }
