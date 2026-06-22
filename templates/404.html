@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Página no encontrada — Endonautas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #07060f;
+      color: #e8e6f0;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    .wrap {
+      text-align: center;
+      max-width: 420px;
+    }
+    .code {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(5rem, 20vw, 8rem);
+      font-weight: 700;
+      color: #7ECCCD;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      opacity: 0.25;
+      margin-bottom: 1.5rem;
+    }
+    .title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.75rem;
+    }
+    .sub {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.4);
+      line-height: 1.7;
+      margin-bottom: 2rem;
+    }
+    .btn {
+      display: inline-block;
+      padding: 0.7rem 1.5rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      background: rgba(126,204,205,0.1);
+      border: 1px solid rgba(126,204,205,0.25);
+      color: #7ECCCD;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.7; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="code">404</div>
+    <div class="title">Esta página no existe</div>
+    <p class="sub">El camino que buscas no está en el mapa.<br>Puede que la URL esté mal o la página haya sido movida.</p>
+    <a href="/" class="btn">Volver al inicio →</a>
+  </div>
+</body>
+</html>
