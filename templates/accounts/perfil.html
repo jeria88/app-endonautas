@@ -27,6 +27,17 @@
 .pal-card input { display:none; }
 .pal-dot { width:26px;height:26px;border-radius:50%;margin:0 auto 0.25rem; }
 .pal-name { font-size:0.62rem;color:var(--muted); }
+/* compact pay buttons (sidebar) */
+.cpay { display:flex;flex-direction:column;align-items:center;gap:0.18rem;flex:1;padding:0.45rem 0.3rem;border-radius:8px;font-size:0.7rem;font-weight:600;text-decoration:none;transition:opacity .15s;text-align:center; }
+.cpay:hover { opacity:.75; }
+.cpay-mp { background:rgba(0,158,227,.08);border:1px solid rgba(0,158,227,.28);color:#44c4f0; }
+.cpay-pp { background:rgba(0,48,135,.13);border:1px solid rgba(0,112,186,.3);color:#7ab9e8; }
+.cpay-cur { font-size:0.62rem;font-weight:400;opacity:0.6; }
+/* compact pack buttons */
+.cpay-sm { display:flex;align-items:center;gap:0.25rem;padding:0.28rem 0.5rem;border-radius:7px;font-size:0.65rem;font-weight:600;text-decoration:none;transition:opacity .15s;white-space:nowrap; }
+.cpay-sm:hover { opacity:.75; }
+.cpay-sm-mp { background:rgba(0,158,227,.08);border:1px solid rgba(0,158,227,.28);color:#44c4f0; }
+.cpay-sm-pp { background:rgba(0,48,135,.13);border:1px solid rgba(0,112,186,.3);color:#7ab9e8; }
 </style>
 
 <div class="perfil-wrap">
@@ -137,8 +148,16 @@
       <div style="margin-bottom:0.75rem">
         <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.4rem">Navegante — ⬡ 800/mes</div>
         <div style="display:flex;gap:0.5rem">
-          <a href="/pago/mp/suscribir/navegante/" style="flex:1;text-align:center;padding:0.45rem;border-radius:8px;font-size:0.72rem;font-weight:600;text-decoration:none;background:rgba(0,180,130,.1);border:1px solid rgba(0,180,130,.25);color:#00cc96">MercadoPago<br><span style="font-weight:400;font-size:0.65rem">$9.990 CLP/mes</span></a>
-          <a href="/pago/paypal/suscribir/navegante/" style="flex:1;text-align:center;padding:0.45rem;border-radius:8px;font-size:0.72rem;font-weight:600;text-decoration:none;background:rgba(22,103,173,.1);border:1px solid rgba(22,103,173,.3);color:#6ab3f5">PayPal<br><span style="font-weight:400;font-size:0.65rem">$9.99 USD/mes</span></a>
+          <a href="/pago/mp/suscribir/navegante/" class="cpay cpay-mp">
+            <svg width="16" height="16" viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="4" fill="#009EE3"/><polyline points="3.5,15 3.5,5 10,11 16.5,5 16.5,15" stroke="white" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>
+            <span>Mercado Pago</span>
+            <span class="cpay-cur">$9.990 CLP/mes</span>
+          </a>
+          <a href="/pago/paypal/suscribir/navegante/" class="cpay cpay-pp">
+            <svg width="20" height="15" viewBox="0 0 24 18" aria-hidden="true"><path d="M2,17 L2,1 L8,1 Q14,1 14,6 Q14,11 8,11 L4,11 L4,17 Z" fill="#4a7ab5"/><path d="M7,17 L7,1 L13,1 Q19,1 19,6 Q19,11 13,11 L9,11 L9,17 Z" fill="#009CDE"/></svg>
+            <span>PayPal</span>
+            <span class="cpay-cur">$9.99 USD/mes</span>
+          </a>
         </div>
       </div>
       {% endif %}
@@ -146,8 +165,16 @@
       <div style="margin-bottom:0.75rem">
         <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.4rem">Practicante — ⬡ 5.000/mes</div>
         <div style="display:flex;gap:0.5rem">
-          <a href="/pago/mp/suscribir/practicante/" style="flex:1;text-align:center;padding:0.45rem;border-radius:8px;font-size:0.72rem;font-weight:600;text-decoration:none;background:rgba(0,180,130,.1);border:1px solid rgba(0,180,130,.25);color:#00cc96">MercadoPago<br><span style="font-weight:400;font-size:0.65rem">$39.990 CLP/mes</span></a>
-          <a href="/pago/paypal/suscribir/practicante/" style="flex:1;text-align:center;padding:0.45rem;border-radius:8px;font-size:0.72rem;font-weight:600;text-decoration:none;background:rgba(22,103,173,.1);border:1px solid rgba(22,103,173,.3);color:#6ab3f5">PayPal<br><span style="font-weight:400;font-size:0.65rem">$39.99 USD/mes</span></a>
+          <a href="/pago/mp/suscribir/practicante/" class="cpay cpay-mp">
+            <svg width="16" height="16" viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="4" fill="#009EE3"/><polyline points="3.5,15 3.5,5 10,11 16.5,5 16.5,15" stroke="white" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>
+            <span>Mercado Pago</span>
+            <span class="cpay-cur">$39.990 CLP/mes</span>
+          </a>
+          <a href="/pago/paypal/suscribir/practicante/" class="cpay cpay-pp">
+            <svg width="20" height="15" viewBox="0 0 24 18" aria-hidden="true"><path d="M2,17 L2,1 L8,1 Q14,1 14,6 Q14,11 8,11 L4,11 L4,17 Z" fill="#4a7ab5"/><path d="M7,17 L7,1 L13,1 Q19,1 19,6 Q19,11 13,11 L9,11 L9,17 Z" fill="#009CDE"/></svg>
+            <span>PayPal</span>
+            <span class="cpay-cur">$39.99 USD/mes</span>
+          </a>
         </div>
       </div>
 
@@ -166,8 +193,14 @@
           <span style="font-size:0.72rem;color:var(--muted);margin-left:0.4rem">{{ pack.price_clp|stringformat:",.0f" }} CLP · ${{ pack.price_usd }} USD</span>
         </div>
         <div style="display:flex;gap:0.35rem">
-          <a href="/pago/mp/pack/{{ slug }}/" style="padding:0.3rem 0.55rem;border-radius:7px;font-size:0.65rem;font-weight:600;text-decoration:none;background:rgba(0,180,130,.1);border:1px solid rgba(0,180,130,.25);color:#00cc96;white-space:nowrap">MP</a>
-          <a href="/pago/paypal/pack/{{ slug }}/" style="padding:0.3rem 0.55rem;border-radius:7px;font-size:0.65rem;font-weight:600;text-decoration:none;background:rgba(22,103,173,.1);border:1px solid rgba(22,103,173,.3);color:#6ab3f5;white-space:nowrap">PP</a>
+          <a href="/pago/mp/pack/{{ slug }}/" class="cpay-sm cpay-sm-mp">
+            <svg width="13" height="13" viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="4" fill="#009EE3"/><polyline points="3.5,15 3.5,5 10,11 16.5,5 16.5,15" stroke="white" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>
+            CLP
+          </a>
+          <a href="/pago/paypal/pack/{{ slug }}/" class="cpay-sm cpay-sm-pp">
+            <svg width="16" height="12" viewBox="0 0 24 18" aria-hidden="true"><path d="M2,17 L2,1 L8,1 Q14,1 14,6 Q14,11 8,11 L4,11 L4,17 Z" fill="#4a7ab5"/><path d="M7,17 L7,1 L13,1 Q19,1 19,6 Q19,11 13,11 L9,11 L9,17 Z" fill="#009CDE"/></svg>
+            USD
+          </a>
         </div>
       </div>
       {% endfor %}

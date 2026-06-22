@@ -13,15 +13,47 @@
 .plan-price-usd { font-size:.75rem;color:var(--dim);margin-top:.15rem }
 .plan-tokens { font-size:.82rem;color:var(--calipso);font-weight:600;margin:.25rem 0 }
 .plan-divider { height:1px;background:var(--border) }
-.btn-mp { display:block;padding:.55rem .9rem;border-radius:10px;font-size:.78rem;font-weight:600;text-align:center;text-decoration:none;transition:opacity .15s;background:rgba(0,180,130,.12);border:1px solid rgba(0,180,130,.3);color:#00cc96 }
-.btn-mp:hover { opacity:.8 }
-.btn-pp { display:block;padding:.55rem .9rem;border-radius:10px;font-size:.78rem;font-weight:600;text-align:center;text-decoration:none;transition:opacity .15s;background:rgba(22,103,173,.12);border:1px solid rgba(22,103,173,.35);color:#6ab3f5 }
-.btn-pp:hover { opacity:.8 }
+
+/* ── Botones de pago ── */
+.btn-pay {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: .6rem .9rem;
+  border-radius: 10px;
+  font-size: .8rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity .15s, transform .1s;
+  flex-shrink: 0;
+}
+.btn-pay:hover  { opacity: .82; transform: translateY(-1px); }
+.btn-pay:active { transform: translateY(0); }
+.pay-text { display: flex; flex-direction: column; gap: .05rem; min-width: 0; }
+.pay-name { font-size: .78rem; font-weight: 700; line-height: 1.25; }
+.pay-cur  { font-size: .67rem; font-weight: 400; opacity: .6; }
+
+.btn-mp {
+  background: rgba(0, 158, 227, .08);
+  border: 1px solid rgba(0, 158, 227, .32);
+  color: #44c4f0;
+}
+.btn-pp {
+  background: rgba(0, 48, 135, .14);
+  border: 1px solid rgba(0, 112, 186, .35);
+  color: #7ab9e8;
+}
 .btn-actual { display:block;padding:.55rem .9rem;border-radius:10px;font-size:.78rem;font-weight:600;text-align:center;background:rgba(126,204,205,.06);border:1px solid rgba(126,204,205,.15);color:var(--calipso);cursor:default }
+
+/* ── Packs ── */
 .pack-frac { font-family:var(--font-display,serif);font-size:1.8rem;font-weight:700;color:var(--am,#d4a056);line-height:1 }
 .pack-name { font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim) }
 .pack-note { font-size:.72rem;color:var(--muted);margin:.2rem 0 .5rem }
 </style>
+
+{% comment %}SVG macros{% endcomment %}
+{% with mp_icon='<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" style="flex-shrink:0"><rect width="20" height="20" rx="4" fill="#009EE3"/><polyline points="3.5,15 3.5,5 10,11 16.5,5 16.5,15" stroke="white" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>' %}
+{% with pp_icon='<svg width="24" height="18" viewBox="0 0 24 18" aria-hidden="true" style="flex-shrink:0"><path d="M2,17 L2,1 L8,1 Q14,1 14,6 Q14,11 8,11 L4,11 L4,17 Z" fill="#4a7ab5"/><path d="M7,17 L7,1 L13,1 Q19,1 19,6 Q19,11 13,11 L9,11 L9,17 Z" fill="#009CDE"/></svg>' %}
 
 <div style="max-width:860px;margin:0 auto">
   <h1 style="font-size:1.2rem;font-weight:700;margin-bottom:.35rem">Planes y Fractones</h1>
@@ -61,8 +93,14 @@
       {% if plan_actual == 'navegante' %}
         <div class="btn-actual">Plan actual</div>
       {% elif plan_actual != 'practicante' %}
-        <a href="/pago/mp/suscribir/navegante/" class="btn-mp">MercadoPago · CLP</a>
-        <a href="/pago/paypal/suscribir/navegante/" class="btn-pp">PayPal · USD</a>
+        <a href="/pago/mp/suscribir/navegante/" class="btn-pay btn-mp">
+          <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" style="flex-shrink:0"><rect width="20" height="20" rx="4" fill="#009EE3"/><polyline points="3.5,15 3.5,5 10,11 16.5,5 16.5,15" stroke="white" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>
+          <span class="pay-text"><span class="pay-name">Mercado Pago</span><span class="pay-cur">$9.990 CLP / mes</span></span>
+        </a>
+        <a href="/pago/paypal/suscribir/navegante/" class="btn-pay btn-pp">
+          <svg width="24" height="18" viewBox="0 0 24 18" aria-hidden="true" style="flex-shrink:0"><path d="M2,17 L2,1 L8,1 Q14,1 14,6 Q14,11 8,11 L4,11 L4,17 Z" fill="#4a7ab5"/><path d="M7,17 L7,1 L13,1 Q19,1 19,6 Q19,11 13,11 L9,11 L9,17 Z" fill="#009CDE"/></svg>
+          <span class="pay-text"><span class="pay-name">PayPal</span><span class="pay-cur">$9.99 USD / mes</span></span>
+        </a>
       {% else %}
         <div class="btn-actual" style="opacity:.4">Plan inferior</div>
       {% endif %}
@@ -83,8 +121,14 @@
       {% if plan_actual == 'practicante' %}
         <div class="btn-actual" style="border-color:rgba(155,142,196,.25);color:var(--violet,#9b8ec4)">Plan actual</div>
       {% else %}
-        <a href="/pago/mp/suscribir/practicante/" class="btn-mp">MercadoPago · CLP</a>
-        <a href="/pago/paypal/suscribir/practicante/" class="btn-pp">PayPal · USD</a>
+        <a href="/pago/mp/suscribir/practicante/" class="btn-pay btn-mp">
+          <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" style="flex-shrink:0"><rect width="20" height="20" rx="4" fill="#009EE3"/><polyline points="3.5,15 3.5,5 10,11 16.5,5 16.5,15" stroke="white" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>
+          <span class="pay-text"><span class="pay-name">Mercado Pago</span><span class="pay-cur">$39.990 CLP / mes</span></span>
+        </a>
+        <a href="/pago/paypal/suscribir/practicante/" class="btn-pay btn-pp">
+          <svg width="24" height="18" viewBox="0 0 24 18" aria-hidden="true" style="flex-shrink:0"><path d="M2,17 L2,1 L8,1 Q14,1 14,6 Q14,11 8,11 L4,11 L4,17 Z" fill="#4a7ab5"/><path d="M7,17 L7,1 L13,1 Q19,1 19,6 Q19,11 13,11 L9,11 L9,17 Z" fill="#009CDE"/></svg>
+          <span class="pay-text"><span class="pay-name">PayPal</span><span class="pay-cur">$39.99 USD / mes</span></span>
+        </a>
       {% endif %}
     </div>
 
@@ -102,8 +146,14 @@
         <div class="pack-note">$3.990 CLP &nbsp;·&nbsp; $3.99 USD</div>
       </div>
       <div class="plan-divider"></div>
-      <a href="/pago/mp/pack/pack_200/" class="btn-mp">MercadoPago · CLP</a>
-      <a href="/pago/paypal/pack/pack_200/" class="btn-pp">PayPal · USD</a>
+      <a href="/pago/mp/pack/pack_200/" class="btn-pay btn-mp">
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" style="flex-shrink:0"><rect width="20" height="20" rx="4" fill="#009EE3"/><polyline points="3.5,15 3.5,5 10,11 16.5,5 16.5,15" stroke="white" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>
+        <span class="pay-text"><span class="pay-name">Mercado Pago</span><span class="pay-cur">$3.990 CLP</span></span>
+      </a>
+      <a href="/pago/paypal/pack/pack_200/" class="btn-pay btn-pp">
+        <svg width="24" height="18" viewBox="0 0 24 18" aria-hidden="true" style="flex-shrink:0"><path d="M2,17 L2,1 L8,1 Q14,1 14,6 Q14,11 8,11 L4,11 L4,17 Z" fill="#4a7ab5"/><path d="M7,17 L7,1 L13,1 Q19,1 19,6 Q19,11 13,11 L9,11 L9,17 Z" fill="#009CDE"/></svg>
+        <span class="pay-text"><span class="pay-name">PayPal</span><span class="pay-cur">$3.99 USD</span></span>
+      </a>
     </div>
 
     <div class="panel plan-card" style="padding:1.25rem">
@@ -113,8 +163,14 @@
         <div class="pack-note">$7.990 CLP &nbsp;·&nbsp; $7.99 USD</div>
       </div>
       <div class="plan-divider"></div>
-      <a href="/pago/mp/pack/pack_500/" class="btn-mp">MercadoPago · CLP</a>
-      <a href="/pago/paypal/pack/pack_500/" class="btn-pp">PayPal · USD</a>
+      <a href="/pago/mp/pack/pack_500/" class="btn-pay btn-mp">
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" style="flex-shrink:0"><rect width="20" height="20" rx="4" fill="#009EE3"/><polyline points="3.5,15 3.5,5 10,11 16.5,5 16.5,15" stroke="white" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>
+        <span class="pay-text"><span class="pay-name">Mercado Pago</span><span class="pay-cur">$7.990 CLP</span></span>
+      </a>
+      <a href="/pago/paypal/pack/pack_500/" class="btn-pay btn-pp">
+        <svg width="24" height="18" viewBox="0 0 24 18" aria-hidden="true" style="flex-shrink:0"><path d="M2,17 L2,1 L8,1 Q14,1 14,6 Q14,11 8,11 L4,11 L4,17 Z" fill="#4a7ab5"/><path d="M7,17 L7,1 L13,1 Q19,1 19,6 Q19,11 13,11 L9,11 L9,17 Z" fill="#009CDE"/></svg>
+        <span class="pay-text"><span class="pay-name">PayPal</span><span class="pay-cur">$7.99 USD</span></span>
+      </a>
     </div>
 
     <div class="panel plan-card" style="padding:1.25rem">
@@ -124,8 +180,14 @@
         <div class="pack-note">$14.990 CLP &nbsp;·&nbsp; $14.99 USD</div>
       </div>
       <div class="plan-divider"></div>
-      <a href="/pago/mp/pack/pack_1200/" class="btn-mp">MercadoPago · CLP</a>
-      <a href="/pago/paypal/pack/pack_1200/" class="btn-pp">PayPal · USD</a>
+      <a href="/pago/mp/pack/pack_1200/" class="btn-pay btn-mp">
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" style="flex-shrink:0"><rect width="20" height="20" rx="4" fill="#009EE3"/><polyline points="3.5,15 3.5,5 10,11 16.5,5 16.5,15" stroke="white" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>
+        <span class="pay-text"><span class="pay-name">Mercado Pago</span><span class="pay-cur">$14.990 CLP</span></span>
+      </a>
+      <a href="/pago/paypal/pack/pack_1200/" class="btn-pay btn-pp">
+        <svg width="24" height="18" viewBox="0 0 24 18" aria-hidden="true" style="flex-shrink:0"><path d="M2,17 L2,1 L8,1 Q14,1 14,6 Q14,11 8,11 L4,11 L4,17 Z" fill="#4a7ab5"/><path d="M7,17 L7,1 L13,1 Q19,1 19,6 Q19,11 13,11 L9,11 L9,17 Z" fill="#009CDE"/></svg>
+        <span class="pay-text"><span class="pay-name">PayPal</span><span class="pay-cur">$14.99 USD</span></span>
+      </a>
     </div>
 
   </div>
@@ -134,4 +196,6 @@
     Pagos procesados por MercadoPago (CLP) y PayPal (USD). Podés cancelar tu suscripción en cualquier momento.
   </p>
 </div>
+{% endwith %}
+{% endwith %}
 {% endblock %}
