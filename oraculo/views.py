@@ -43,6 +43,9 @@ def iching_view(request):
 
 @login_required
 def fractal_view(request):
+    from accounts.plan_utils import plan_at_least, upgrade_wall
+    if not plan_at_least(request.user, 'navegante'):
+        return upgrade_wall(request, 'navegante', 'Oráculo Fractal')
     return render(request, "oraculo/fractal.html")
 
 
@@ -51,10 +54,13 @@ def fractal_view(request):
 def tarot_api(request):
     if not request.user.is_authenticated:
         return JsonResponse({"error": "login_required"}, status=401)
+    from accounts.plan_utils import FREE_TAROT_TIRADAS, plan_at_least
     try:
         data = json.loads(request.body)
         pregunta = data.get("pregunta", "").strip()
         tipo_tirada = data.get("tipo_tirada", "tres_cartas")
+        if tipo_tirada not in FREE_TAROT_TIRADAS and not plan_at_least(request.user, 'navegante'):
+            return JsonResponse({"error": "upgrade_required", "required_plan": "navegante"}, status=402)
 
         if not pregunta:
             return JsonResponse({"error": "Escribe una pregunta"}, status=400)

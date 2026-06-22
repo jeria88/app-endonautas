@@ -343,7 +343,7 @@
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
   </button>
   <span style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;color:#fff;letter-spacing:-0.01em;flex:1;text-align:center">Endonautas</span>
-  <a href="/configuracion/" onclick="spaGo(event,this)" style="display:flex;align-items:center;gap:4px;font-size:0.72rem;color:var(--calipso);text-decoration:none;background:var(--calipso-glow);border:1px solid rgba(126,204,205,0.25);border-radius:20px;padding:4px 10px;white-space:nowrap;flex-shrink:0">⬡ {{ token_balance }}</a>
+  <a href="/pagos/planes/" onclick="spaGo(event,this)" style="display:flex;align-items:center;gap:4px;font-size:0.72rem;color:var(--calipso);text-decoration:none;background:var(--calipso-glow);border:1px solid rgba(126,204,205,0.25);border-radius:20px;padding:4px 10px;white-space:nowrap;flex-shrink:0;text-transform:capitalize">{{ user_plan }}</a>
 </div>
 <div class="app-shell">
   <nav class="sidebar">
@@ -440,7 +440,7 @@
         </div>
         <div style="flex:1;min-width:0">
           <div style="font-family:var(--font-display);font-size:0.875rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ user.first_name|default:user.email }}</div>
-          <div style="font-size:0.68rem;color:var(--calipso);font-weight:500" title="Fractones — moneda de la app. Se consumen al usar el Espejo, Oráculos y más.">Mi Cuenta · ⬡ {{ token_balance }}</div>
+          <div style="font-size:0.68rem;color:var(--calipso);font-weight:500;text-transform:capitalize">Mi Cuenta · {{ user_plan }}</div>
         </div>
         <form method="post" action="/logout/" style="margin:0;flex-shrink:0">
           {% csrf_token %}
@@ -1146,11 +1146,10 @@ window.__switchAesthetic = function(name) {
 };
 </script>
 
-<!-- Tooltips globales: data-ft-tip="costo|desc" para fractones, data-tip="desc" para info -->
+<!-- Tooltips globales: data-tip="desc" para info -->
 <div id="ft-tip" style="position:fixed;z-index:9999;pointer-events:none;opacity:0;transition:opacity .15s;max-width:230px"></div>
 <style>
 #ft-tip { background:rgba(8,6,18,0.96);border:1px solid rgba(126,204,205,0.25);border-radius:10px;padding:9px 13px;box-shadow:0 4px 24px rgba(0,0,0,0.5); }
-#ft-tip .ft-cost { font-size:.72rem;font-weight:700;color:var(--calipso);font-family:var(--font-display);letter-spacing:.04em;margin-bottom:4px; }
 #ft-tip .ft-desc { font-size:.75rem;color:var(--muted);line-height:1.45; }
 </style>
 <script>
@@ -1159,17 +1158,9 @@ window.__switchAesthetic = function(name) {
   var cur = null;
 
   function show(el) {
-    var ftVal = el.dataset.ftTip;
     var infoVal = el.dataset.tip;
-    if (!ftVal && !infoVal) return;
-    if (ftVal) {
-      var parts = ftVal.split('|');
-      var cost = parts[0];
-      var desc = parts[1] || '';
-      tip.innerHTML = '<div class="ft-cost">⬡ ' + cost + ' fractones</div>' + (desc ? '<div class="ft-desc">' + desc + '</div>' : '');
-    } else {
-      tip.innerHTML = '<div class="ft-desc">' + infoVal + '</div>';
-    }
+    if (!infoVal) return;
+    tip.innerHTML = '<div class="ft-desc">' + infoVal + '</div>';
     tip.style.opacity = '1';
     cur = el;
     position(el);
@@ -1193,11 +1184,11 @@ window.__switchAesthetic = function(name) {
   }
 
   document.addEventListener('mouseover', function(e) {
-    var el = e.target.closest('[data-ft-tip],[data-tip]');
+    var el = e.target.closest('[data-tip]');
     if (el) show(el); else if (cur) hide();
   });
   document.addEventListener('mouseleave', function(e) {
-    if (e.target.closest('[data-ft-tip],[data-tip]')) hide();
+    if (e.target.closest('[data-tip]')) hide();
   }, true);
   document.addEventListener('click', function() { hide(); });
   window.addEventListener('scroll', function() { if (cur) position(cur); }, {passive:true});

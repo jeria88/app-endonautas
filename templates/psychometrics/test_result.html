@@ -188,7 +188,11 @@
   </div>
   {% else %}
   <div style="margin-bottom:1.5rem">
-    <a href="?ai=1" class="btn btn-ghost" style="font-size:0.85rem" data-ft-tip="20|Análisis personalizado de tus resultados con recomendaciones específicas para este test">✦ Generar insight IA (⬡ 20)</a>
+    {% if user_plan != 'free' %}
+    <a href="?ai=1" class="btn btn-ghost" style="font-size:0.85rem" data-tip="Análisis personalizado de tus resultados con recomendaciones específicas para este test">✦ Generar insight IA</a>
+    {% else %}
+    <a href="/pagos/planes/" onclick="spaGo(event,this)" class="btn btn-ghost" style="font-size:0.85rem;opacity:0.6" data-tip="Disponible en plan Navegante">✦ Insight IA · Navegante →</a>
+    {% endif %}
   </div>
   {% endif %}
 

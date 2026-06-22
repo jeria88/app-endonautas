@@ -44,13 +44,19 @@ def test_list(request):
 
 
 def test_detail(request, slug):
+    from accounts.plan_utils import FREE_TEST_SLUGS, plan_at_least, upgrade_wall
     test = get_object_or_404(Test, slug=slug, active=True)
+    if request.user.is_authenticated and slug not in FREE_TEST_SLUGS and not plan_at_least(request.user, 'navegante'):
+        return upgrade_wall(request, 'navegante', test.name)
     return render(request, 'psychometrics/test_detail.html', {'test': test})
 
 
 @login_required
 def test_take(request, slug):
+    from accounts.plan_utils import FREE_TEST_SLUGS, plan_at_least, upgrade_wall
     test = get_object_or_404(Test, slug=slug, active=True)
+    if slug not in FREE_TEST_SLUGS and not plan_at_least(request.user, 'navegante'):
+        return upgrade_wall(request, 'navegante', test.name)
     questions = test.questions.all()
 
     if request.method == 'POST':
@@ -73,9 +79,6 @@ def test_take(request, slug):
             user=request.user, test=test,
             raw_scores=raw_scores, evaluation=evaluation,
         )
-        from tokens.service import credit_mission
-        credit_mission(request.user, 'test_completed')
-
         from mirror.models import BitacoraEntry
         BitacoraEntry.objects.create(
             user=request.user,
@@ -107,8 +110,8 @@ def test_result(request, pk):
     result = get_object_or_404(TestResult, pk=pk, user=request.user)
 
     if not result.ai_insight and request.GET.get('ai'):
-        from tokens.service import has_balance, spend
-        if has_balance(request.user, 'ai_insight') and spend(request.user, 'ai_insight'):
+        from accounts.plan_utils import plan_at_least
+        if plan_at_least(request.user, 'navegante'):
             result.ai_insight = _generate_insight(result)
             result.save()
 

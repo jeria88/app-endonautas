@@ -8,33 +8,15 @@ from django.views.decorators.http import require_POST
 from .models import BitacoraEntry, CategoriaNecesidad, ChatMessage, ChatSession, DreamEntry, EjercicioRegulacion, MomentoRegulacion
 
 
-def _get_token_balance(user):
-    if user.is_superuser:
-        return '∞'
-    try:
-        from tokens.models import TokenBalance
-        return TokenBalance.objects.get(user=user).balance
-    except Exception:
-        return 0
-
-
 @login_required
 def espejo_home(request):
     sessions = ChatSession.objects.filter(user=request.user).prefetch_related('messages').order_by('-updated_at')[:20]
-    return render(request, 'mirror/home.html', {
-        'sessions': sessions,
-        'token_balance': _get_token_balance(request.user),
-    })
+    return render(request, 'mirror/home.html', {'sessions': sessions})
 
 
 @login_required
 def chat_new(request):
-    from tokens.service import has_balance
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-    if not request.user.is_superuser and not has_balance(request.user, 'espejo_exchange'):
-        if is_ajax:
-            return JsonResponse({'error': 'sin_fractones', 'redirect': '/tokens/'}, status=402)
-        return redirect('tokens_balance')
     session = ChatSession.objects.create(user=request.user)
     if is_ajax:
         return JsonResponse({'pk': session.pk, 'title': session.title or 'Nueva conversación'})
@@ -44,10 +26,7 @@ def chat_new(request):
 @login_required
 def chat_session(request, pk):
     session = get_object_or_404(ChatSession, pk=pk, user=request.user)
-    return render(request, 'mirror/chat.html', {
-        'session': session,
-        'token_balance': _get_token_balance(request.user),
-    })
+    return render(request, 'mirror/chat.html', {'session': session})
 
 
 @login_required
@@ -64,10 +43,6 @@ def chat_session_api(request, pk):
 @require_POST
 def chat_message(request, pk):
     session = get_object_or_404(ChatSession, pk=pk, user=request.user)
-    from tokens.service import spend
-    if not request.user.is_superuser and not spend(request.user, 'espejo_exchange'):
-        return JsonResponse({'error': 'Sin fractones'}, status=402)
-
     content = request.POST.get('content', '').strip()
     if not content:
         return JsonResponse({'error': 'Mensaje vacío'}, status=400)
@@ -80,9 +55,6 @@ def chat_message(request, pk):
         new_title = session.title
     reply = _get_reply(session, content, user=request.user)
     msg = ChatMessage.objects.create(session=session, role='assistant', content=reply)
-
-    from tokens.service import credit_mission
-    credit_mission(request.user, 'first_espejo')
 
     resp = {'reply': reply, 'created_at': msg.created_at.isoformat()}
     if new_title:

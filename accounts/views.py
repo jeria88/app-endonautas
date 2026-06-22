@@ -108,7 +108,6 @@ def register_view(request):
 def dashboard(request):
     from mirror.models import ChatSession, BitacoraEntry
     from psychometrics.models import TestResult
-    from tokens.models import TokenBalance, MissionCompletion, Mission
 
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
     if not profile.onboarding_complete:
@@ -117,27 +116,14 @@ def dashboard(request):
 
     ultima_sesion = ChatSession.objects.filter(user=request.user).order_by('-updated_at').first()
     ultimos_resultados = TestResult.objects.filter(user=request.user).select_related('test').order_by('-completed_at')[:3]
-
-    misiones_completadas = set(
-        MissionCompletion.objects.filter(user=request.user).values_list('mission__slug', flat=True)
-    )
-    misiones_pendientes = Mission.objects.filter(active=True).exclude(slug__in=misiones_completadas)[:4]
-
     ultimas_bitacora = BitacoraEntry.objects.filter(user=request.user).order_by('-created_at')[:3]
-
-    try:
-        balance = TokenBalance.objects.get(user=request.user).balance
-    except TokenBalance.DoesNotExist:
-        balance = 0
 
     return render(request, 'accounts/dashboard.html', {
         'profile': profile,
         'frase': frase,
         'ultima_sesion': ultima_sesion,
         'ultimos_resultados': ultimos_resultados,
-        'misiones_pendientes': misiones_pendientes,
         'ultimas_bitacora': ultimas_bitacora,
-        'balance': balance,
     })
 
 
@@ -252,8 +238,6 @@ def onboarding(request):
         profile.onboarding_entry_point = priorities[0] if priorities else ''
         profile.onboarding_complete    = True
         profile.save(update_fields=['onboarding_priorities', 'onboarding_entry_point', 'onboarding_complete'])
-        from tokens.service import credit_mission
-        credit_mission(request.user, 'onboarding')
         next_url = request.session.pop('post_onboarding_next', '')
         return redirect(next_url if next_url else 'dashboard')
     return render(request, 'accounts/onboarding.html')

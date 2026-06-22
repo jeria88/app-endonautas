@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Actualiza tu plan — Endonautas{% endblock %}
+{% block content %}
+<style data-page-style>
+.upgrade-wrap { min-height:65vh; display:flex; align-items:center; justify-content:center; }
+.upgrade-card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:2.5rem 2rem; max-width:420px; width:100%; text-align:center; }
+.upgrade-icon { width:56px; height:56px; border-radius:50%; background:rgba(126,204,205,0.1); border:1px solid rgba(126,204,205,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 1.25rem; }
+.upgrade-plan-badge { display:inline-flex; align-items:center; gap:0.4rem; background:rgba(126,204,205,0.08); border:1px solid rgba(126,204,205,0.2); border-radius:20px; padding:0.3rem 0.85rem; font-size:0.78rem; font-weight:600; color:var(--calipso); margin-bottom:1.25rem; }
+</style>
+
+<div class="upgrade-wrap">
+  <div class="upgrade-card">
+    <div class="upgrade-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--calipso)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
+    <div class="upgrade-plan-badge">Plan {{ required_plan_name }}</div>
+    <h1 style="font-size:1.15rem;font-weight:700;margin-bottom:0.5rem">{{ feature }} requiere {{ required_plan_name }}</h1>
+    <p style="font-size:0.85rem;color:var(--muted);line-height:1.6;margin-bottom:1.75rem">
+      Esta función está disponible a partir del plan <strong style="color:var(--text)">{{ required_plan_name }}</strong>. Actualiza para desbloquear acceso completo a todos los módulos de la app.
+    </p>
+    <a href="/pagos/planes/" onclick="spaGo(event,this)" class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:0.75rem">Ver planes →</a>
+    <button onclick="history.back()" class="btn btn-secondary" style="width:100%;justify-content:center">Volver</button>
+  </div>
+</div>
+{% endblock %}

@@ -207,6 +207,7 @@
       <div class="form-label">Tirada</div>
       <div class="tirada-grid">
         <button class="tirada-btn" data-tirada="un_arcano" data-tip="Una carta que refleja el estado esencial de la situación"><span class="tb-n">1</span>Carta espejo</button>
+        {% if user_plan != 'free' %}
         <button class="tirada-btn" data-tirada="fuerza_flaqueza" data-tip="Dos cartas: lo que te sostiene y lo que te limita en este momento"><span class="tb-n">2</span>Fuerza y Flaqueza</button>
         <button class="tirada-btn" data-tirada="el_conflicto" data-tip="Dos cartas: las dos fuerzas en tensión dentro del conflicto"><span class="tb-n">2</span>El Conflicto</button>
         <button class="tirada-btn active" data-tirada="tres_cartas" data-tip="Tres cartas: origen profundo, proceso actual y potencial de apertura"><span class="tb-n">3</span>Raíz–Tallo–Flor</button>
@@ -217,15 +218,18 @@
         <button class="tirada-btn" data-tirada="cruz_normal" data-tip="Cruz de cinco posiciones: centro, arriba, abajo, izquierda y derecha"><span class="tb-n">5</span>La Cruz</button>
         <button class="tirada-btn" data-tirada="yo_realizado" data-tip="Diez cartas del árbol de la vida: el mapa completo de tu energía actual"><span class="tb-n">10</span>Yo Realizado</button>
         <button class="tirada-btn full" data-tirada="viaje_heroe" data-tip="Doce cartas del Viaje del Héroe con solo arcanos mayores: el arco completo de transformación"><span class="tb-n">12</span>Viaje del Héroe · solo arcanos mayores</button>
+        {% else %}
+        <a href="/pagos/planes/" onclick="spaGo(event,this)" class="tirada-btn" style="opacity:0.45;cursor:pointer;text-decoration:none;color:inherit" data-tip="Desbloquea todas las tiradas con el plan Navegante"><span class="tb-n">+</span>Más tiradas · Navegante →</a>
+        {% endif %}
       </div>
     </div>
 
-    <button class="btn btn-primary" id="tirarBtn" style="width:100%" data-ft-tip="8|Tirada de Tarot Terapéutico con interpretación IA del arquetipo elegido">Tirar las cartas</button>
+    <button class="btn btn-primary" id="tirarBtn" style="width:100%">Tirar las cartas</button>
   </div>
 
   <div id="resultPanel">
     <div id="emptyState" class="panel" style="text-align:center;padding:3rem;color:var(--muted)">
-      <div style="font-size:2.5rem;opacity:0.1;margin-bottom:0.75rem;font-family:serif">⬡</div>
+      <div style="font-size:2.5rem;opacity:0.1;margin-bottom:0.75rem;font-family:serif">✦</div>
       <p style="font-size:0.85rem">Las cartas esperan tu pregunta.</p>
     </div>
 

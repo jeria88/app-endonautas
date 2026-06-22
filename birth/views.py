@@ -93,11 +93,17 @@ def birth_astral(request):
 
 @login_required
 def birth_hd(request):
+    from accounts.plan_utils import plan_at_least, upgrade_wall
+    if not plan_at_least(request.user, 'navegante'):
+        return upgrade_wall(request, 'navegante', 'Diseño Humano')
     return _birth_report_view(request, 'hd', 'birth/hd.html')
 
 
 @login_required
 def birth_saju(request):
+    from accounts.plan_utils import plan_at_least, upgrade_wall
+    if not plan_at_least(request.user, 'navegante'):
+        return upgrade_wall(request, 'navegante', 'Mapa Saju / BaZi')
     return _birth_report_view(request, 'saju', 'birth/saju.html')
 
 

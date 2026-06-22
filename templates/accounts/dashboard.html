@@ -12,7 +12,6 @@
 .bita-entry:last-child { border-bottom:none; }
 .ultima-sesion { display:flex;align-items:center;gap:0.75rem;padding:0.85rem;background:rgba(126,204,205,0.05);border:1px solid rgba(126,204,205,0.15);border-radius:12px;text-decoration:none;color:inherit;transition:border-color 0.15s; }
 .ultima-sesion:hover { border-color:rgba(126,204,205,0.3); }
-.mission-fracton { font-size:0.7rem;font-weight:700;color:var(--amber);background:var(--amber-glow);border:1px solid rgba(212,160,86,0.2);border-radius:20px;padding:2px 8px;white-space:nowrap; }
 .dash-panel-grid { display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem; }
 @media(max-width:520px){
   .dash-panel-grid { grid-template-columns:1fr; }
@@ -26,7 +25,7 @@
 </div>
 
 <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem">
-  <span style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.3rem 0.75rem;border:1px solid var(--border);border-radius:20px;font-size:0.75rem;color:var(--muted)">⬡ <strong style="color:var(--text)">{{ balance }}</strong> fractones</span>
+  <span style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.3rem 0.75rem;border:1px solid var(--border);border-radius:20px;font-size:0.75rem;color:var(--muted);text-transform:capitalize">Plan <strong style="color:var(--calipso)">{{ user_plan }}</strong></span>
   <span style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.3rem 0.75rem;border:1px solid var(--border);border-radius:20px;font-size:0.75rem;color:var(--muted)">◎ <strong style="color:var(--text)">{{ user.test_results.count }}</strong> tests</span>
 </div>
 
@@ -48,7 +47,7 @@
 <div class="shortcut-grid" style="margin-bottom:1.5rem">
   <a class="shortcut" href="/onboarding/" onclick="spaGo(event,this)" data-tip="Establece tu norte interior y revisa tus dimensiones de desarrollo personal"><span class="shortcut-icon" style="color:var(--calipso)">◎</span>Onboarding</a>
   <a class="shortcut" href="/tests/mapa-interior/" onclick="spaGo(event,this)" data-tip="Visualiza tu perfil psicológico completo a partir de todos tus tests completados"><span class="shortcut-icon" style="color:var(--violet)">◉</span>Mapa Interior</a>
-  <a class="shortcut" href="/tests/mis-resultados/" onclick="spaGo(event,this)" data-tip="Historial completo de todos tus resultados psicométricos con evolución temporal"><span class="shortcut-icon" style="color:var(--amber)">⬡</span>Reportes</a>
+  <a class="shortcut" href="/tests/mis-resultados/" onclick="spaGo(event,this)" data-tip="Historial completo de todos tus resultados psicométricos con evolución temporal"><span class="shortcut-icon" style="color:var(--amber)">◉</span>Reportes</a>
   <a class="shortcut" href="/bitacora/" onclick="spaGo(event,this)" data-tip="Tu diario interior: sueños, sombras, patrones y signos registrados"><span class="shortcut-icon">◈</span>Bitácora</a>
   <a class="shortcut" href="/regulacion/" onclick="spaGo(event,this)" data-tip="Técnicas somáticas y ejercicios guiados para la regulación emocional"><span class="shortcut-icon" style="color:var(--green)">◈</span>Regulación</a>
   <a class="shortcut" href="/terapeuta/" onclick="spaGo(event,this)" data-tip="Diagnóstico guiado por frameworks terapéuticos con técnicas somáticas recomendadas"><span class="shortcut-icon" style="color:var(--calipso)">♥</span>Terapeuta</a>
@@ -57,19 +56,6 @@
 </div>
 
 <div class="dash-panel-grid">
-  {% if misiones_pendientes %}
-  <div class="panel" style="padding:1rem 1.1rem">
-    <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.7rem">Misiones</div>
-    {% for m in misiones_pendientes %}
-    <div style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0;border-bottom:1px solid var(--border)">
-      <div style="flex:1;font-size:0.82rem">{{ m.name }}</div>
-      <span class="mission-fracton">+{{ m.fracton_reward }}⬡</span>
-    </div>
-    {% endfor %}
-    <a href="/tokens/balance/" onclick="spaGo(event,this)" style="font-size:0.72rem;color:var(--calipso);text-decoration:none;display:block;margin-top:0.6rem" data-tip="Ver todas las misiones disponibles y sus recompensas en fractones">Ver todas →</a>
-  </div>
-  {% endif %}
-
   {% if ultimos_resultados %}
   <div class="panel" style="padding:1rem 1.1rem">
     <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.7rem">Resultados recientes</div>

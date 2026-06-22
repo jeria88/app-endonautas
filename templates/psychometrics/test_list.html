@@ -31,7 +31,6 @@
         <span class="badge badge-endonauta" data-tooltip="Herramienta de autoexploración — no es diagnóstico clínico">{{ t.get_instrument_type_display }}</span>
         {% endif %}
         <span>~{{ t.estimated_minutes }} min</span>
-        {% if t.token_cost %}<span title="Consume ⬡ {{ t.token_cost }} fractones al completarlo">⬡ {{ t.token_cost }}</span>{% endif %}
       </div>
     </a>
     {% endfor %}

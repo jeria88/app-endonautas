@@ -98,7 +98,6 @@
         <div id="chat-title" style="font-family:var(--font-display);font-size:0.92rem;font-weight:600;color:#fff">Espejo de Conflictos</div>
         <div id="chat-subtitle" style="font-size:0.7rem;color:var(--muted)">Selecciona una sesión o inicia una nueva</div>
       </div>
-      <span class="token-badge" style="margin-left:auto">⬡ {{ token_balance }}</span>
     </div>
 
     <div class="chat-messages" id="chat-messages">
@@ -122,7 +121,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="17" height="17"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
       </button>
     </div>
-    <div style="padding:4px 20px 12px;font-size:0.68rem;color:var(--dim)">Cada intercambio consume ⬡ 4 fractones</div>
   </div>
 
 </div>
@@ -253,7 +251,7 @@ async function newChat() {
     fd.append('csrfmiddlewaretoken', csrf());
     const r = await fetch('/espejo/chat/', {method:'POST', body:fd, headers:{'X-Requested-With':'XMLHttpRequest'}});
     const data = await r.json();
-    if (r.status === 402) { alert('Sin fractones suficientes.'); return; }
+    if (r.status === 402) { alert('Error al enviar mensaje.'); return; }
     activeSessionPk = data.pk;
     const list = document.getElementById('sessions-list');
     const emptyMsg = document.getElementById('empty-sessions-msg');
@@ -331,7 +329,7 @@ async function sendMessage() {
     fd.append('csrfmiddlewaretoken', csrf());
     const r = await fetch(`/espejo/chat/${activeSessionPk}/mensaje/`, {method:'POST', body:fd});
     const data = await r.json();
-    if (r.status === 402) { alert('Sin fractones suficientes.'); }
+    if (r.status === 402) { alert('Error al enviar mensaje.'); }
     else if (data.reply) {
       const t = new Date(data.created_at).toLocaleTimeString('es-CL', {hour:'2-digit',minute:'2-digit'});
       addBubble('assistant', data.reply, t);

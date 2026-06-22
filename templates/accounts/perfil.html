@@ -140,7 +140,7 @@
           <div style="font-size:0.9rem;font-weight:600">{{ profile.get_plan_display }}</div>
           <div style="font-size:0.72rem;color:var(--muted);margin-top:0.2rem">{{ user.email }}</div>
         </div>
-        <div style="font-size:0.72rem;color:var(--calipso);font-weight:600">⬡ {{ request.user.tokenbalance.balance }} fractones</div>
+        <div style="font-size:0.72rem;color:var(--calipso);font-weight:600;text-transform:capitalize">Plan {{ user_plan }}</div>
       </div>
 
       {% if profile.plan != 'practicante' %}
@@ -150,9 +150,9 @@
 
       {% if profile.plan == 'free' %}
       <div style="margin-bottom:0.75rem">
-        <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.4rem">Navegante — ⬡ 800/mes</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-bottom:0.4rem">Navegante — acceso completo a todos los módulos</div>
         <div style="display:flex;gap:0.5rem">
-          <a href="/pago/mp/suscribir/navegante/" class="cpay cpay-mp" data-tip="Suscripción Navegante con Mercado Pago · ⬡ 800 fractones/mes">
+          <a href="/pago/mp/suscribir/navegante/" class="cpay cpay-mp" data-tip="Suscripción Navegante con Mercado Pago · $9.990 CLP/mes">
             <svg width="16" height="16" viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="4" fill="#009EE3"/><polyline points="3.5,15 3.5,5 10,11 16.5,5 16.5,15" stroke="white" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>
             <span>Mercado Pago</span>
             <span class="cpay-cur">$9.990 CLP/mes</span>

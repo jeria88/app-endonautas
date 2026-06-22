@@ -135,8 +135,18 @@ def recomendar_frameworks_por_keywords(motivo: str) -> list[str]:
 
 # ─── Wizard views ─────────────────────────────────────────────────────────────
 
+def _check_terapeuta_plan(request):
+    from accounts.plan_utils import plan_at_least, upgrade_wall
+    if not plan_at_least(request.user, 'navegante'):
+        return upgrade_wall(request, 'navegante', 'Módulo Terapeuta')
+    return None
+
+
 @login_required
 def wizard_paso0(request: HttpRequest) -> HttpResponse:
+    wall = _check_terapeuta_plan(request)
+    if wall:
+        return wall
     consulta = Consulta.objects.create(modo="autoconsulta", paso_actual=1, usuario=request.user)
     return redirect("terapeuta:paso1", consulta_id=consulta.id)
 
