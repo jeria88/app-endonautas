@@ -244,7 +244,7 @@ credit_mission(user, 'first_espejo')  # idempotente
 
 Start command configurado en Coolify:
 ```
-python manage.py fix_db_state && python manage.py migrate --noinput && python manage.py create_admin && python manage.py seed_tests && gunicorn config.wsgi --workers 2 --threads 2 --timeout 60 --bind 0.0.0.0:8000
+python manage.py fix_db_state && python manage.py migrate --noinput && python manage.py create_admin && python manage.py seed_tests && python manage.py seed_regulacion && python manage.py seed_momentos && gunicorn config.wsgi --workers 2 --threads 2 --timeout 60 --bind 0.0.0.0:8000
 ```
 
 Variables de entorno requeridas: `SECRET_KEY`, `DATABASE_URL`, `DEEPSEEK_API_KEY`  
