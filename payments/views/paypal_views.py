@@ -132,19 +132,38 @@ def retorno_pack(request):
     try:
         capture = paypal_service.capture_order(order_id)
         if capture.get('status') == 'COMPLETED':
+            # Find pre-created record OR create one now (for client-side createOrder flow)
             fp = FractonesPack.objects.filter(
                 user=request.user, gateway='paypal',
-                gateway_payment_id=order_id, status='pending',
+                gateway_payment_id=order_id,
             ).first()
-            if fp:
+
+            if not fp:
+                pack_info = PACKS.get(slug)
+                if not pack_info:
+                    return render(request, 'payments/resultado.html', {
+                        'exito': False, 'mensaje': 'Pack inválido.',
+                    })
+                fp = FractonesPack(
+                    user=request.user, gateway='paypal', pack_slug=slug,
+                    fractones=pack_info['fractones'],
+                    amount_local=pack_info['price_usd'],
+                    currency='USD',
+                    gateway_payment_id=order_id,
+                    status='pending',
+                )
+                fp.save()
+
+            if fp.status != 'paid':
                 fp.status = 'paid'
                 fp.save(update_fields=['status', 'updated_at'])
                 token_service.credit_permanent(request.user, fp.fractones, reason=f'pack:{fp.pack_slug}')
-                return render(request, 'payments/resultado.html', {
-                    'exito': True, 'es_pack': True,
-                    'fractones': fp.fractones, 'gateway': 'PayPal',
-                    'mensaje': f'+{fp.fractones} fractones permanentes acreditados.',
-                })
+
+            return render(request, 'payments/resultado.html', {
+                'exito': True, 'es_pack': True,
+                'fractones': fp.fractones, 'gateway': 'PayPal',
+                'mensaje': f'+{fp.fractones} fractones permanentes acreditados.',
+            })
     except Exception as e:
         logger.error(f'PayPal retorno_pack error: {e}')
 

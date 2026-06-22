@@ -279,7 +279,11 @@
 <script>
 (function() {
   var PP_URL = 'https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&vault=true&currency=USD&components=buttons&disable-funding=credit,card,venmo,paylater';
-  function _csrf() { var m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/); return m ? m[1] : ''; }
+  var _PP_PACK = {
+    'pack_200':  '{{ packs.pack_200.price_usd }}',
+    'pack_500':  '{{ packs.pack_500.price_usd }}',
+    'pack_1200': '{{ packs.pack_1200.price_usd }}',
+  };
   function _initPayPal() {
     console.log('[PayPal] init');
     var plans = {
@@ -296,7 +300,7 @@
         onApprove: function(data) { window.location.href = '/pago/paypal/retorno/?subscription_id=' + data.subscriptionID + '&plan=' + plan.slug; },
         onError: function(err) { console.error('[PayPal] sub error:', err); },
         onCancel: function() {},
-      }).render('#' + plan.container);
+      }).render(c);
     });
     var packs = [
       { slug: 'pack_200',  container: 'pp-pack-pack_200' },
@@ -308,24 +312,18 @@
       if (!c) return;
       c.innerHTML = '';
       paypal.Buttons({
-        style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'paypal', height: 45 },
+        style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'checkout', height: 45 },
         createOrder: function(data, actions) {
-          return fetch('/pago/paypal/api/orden/' + pack.slug + '/', {
-            method: 'POST', credentials: 'same-origin',
-            headers: { 'X-CSRFToken': _csrf() },
-          })
-          .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
-          .then(function(d) { if (!d.order_id) throw new Error('no order_id'); return d.order_id; });
+          return actions.order.create({
+            purchase_units: [{ amount: { value: _PP_PACK[pack.slug], currency_code: 'USD' } }],
+          });
         },
-        onApprove: function(data) { window.location.href = '/pago/paypal/pack/retorno/?token=' + data.orderID + '&slug=' + pack.slug; },
-        onError: function(err) {
-          console.error('[PayPal] pack error', pack.slug, err);
-          c.style.display = 'none';
-          var fb = document.getElementById('pp-pack-fallback-' + pack.slug);
-          if (fb) fb.style.display = 'flex';
+        onApprove: function(data) {
+          window.location.href = '/pago/paypal/pack/retorno/?token=' + data.orderID + '&slug=' + pack.slug;
         },
+        onError: function(err) { console.error('[PayPal] pack error', pack.slug, err); },
         onCancel: function() {},
-      }).render('#' + pack.container);
+      }).render(c);
     });
   }
   if (window.paypal) { _initPayPal(); }
