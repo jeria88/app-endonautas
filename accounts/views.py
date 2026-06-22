@@ -81,6 +81,9 @@ def register_view(request):
             process_referral_signup(ref_code, user)
 
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+        next_url = request.GET.get('next', '')
+        if next_url:
+            request.session['post_onboarding_next'] = next_url
         return redirect('onboarding')
     return render(request, 'accounts/register.html')
 
@@ -188,5 +191,6 @@ def onboarding(request):
         profile.save(update_fields=['onboarding_priorities', 'onboarding_entry_point', 'onboarding_complete'])
         from tokens.service import credit_mission
         credit_mission(request.user, 'onboarding')
-        return redirect('dashboard')
+        next_url = request.session.pop('post_onboarding_next', '')
+        return redirect(next_url if next_url else 'dashboard')
     return render(request, 'accounts/onboarding.html')

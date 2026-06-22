@@ -53,7 +53,7 @@
     </a>
 
     <div class="auth-footer">
-      ¿Sin cuenta? <a href="/registro/">Regístrate gratis</a>
+      ¿Sin cuenta? <a href="/registro/{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}">Regístrate gratis</a>
     </div>
   </div>
 </div>
