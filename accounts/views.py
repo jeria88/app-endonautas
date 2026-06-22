@@ -49,6 +49,10 @@ def login_view(request):
     return render(request, 'accounts/login.html', {'error': error})
 
 
+def logout_done(request):
+    return render(request, 'accounts/logout.html')
+
+
 def register_view(request):
     # Usuario ya autenticado — redirigir según intención
     if request.user.is_authenticated:

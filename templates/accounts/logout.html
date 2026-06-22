@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sesión cerrada — Endonautas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #07060f;
+      color: #e8e6f0;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    .wrap { text-align: center; max-width: 380px; }
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(126,204,205,0.5);
+      margin-bottom: 2.5rem;
+    }
+    .title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.6rem;
+    }
+    .sub {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.35);
+      line-height: 1.7;
+      margin-bottom: 2rem;
+    }
+    .actions { display: flex; flex-direction: column; gap: 0.6rem; }
+    .btn {
+      display: block;
+      padding: 0.7rem 1rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.15s;
+      text-align: center;
+    }
+    .btn-primary {
+      background: rgba(126,204,205,0.1);
+      border: 1px solid rgba(126,204,205,0.25);
+      color: #7ECCCD;
+    }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.4);
+    }
+    .btn:hover { opacity: 0.7; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="logo">endonautas ✦</div>
+    <div class="title">Hasta pronto</div>
+    <p class="sub">Tu sesión ha sido cerrada.<br>El viaje interior continúa cuando quieras volver.</p>
+    <div class="actions">
+      <a href="/login/" class="btn btn-primary">Iniciar sesión →</a>
+      <a href="https://endonautas.cl" class="btn btn-ghost">Ir a endonautas.cl</a>
+    </div>
+  </div>
+</body>
+</html>
