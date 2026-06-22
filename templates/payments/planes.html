@@ -72,28 +72,18 @@
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Botón pack PayPal (gold oficial) ── */
-.btn-pp-pack {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: .55rem;
-  padding: .55rem 1rem;
-  border-radius: 10px;
-  background: #FFC439;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: .8rem;
-  font-weight: 700;
-  color: #003087;
-  text-decoration: none;
-  transition: filter .15s;
-}
-.btn-pp-pack:hover { filter: brightness(.95); }
-
-/* SDK container: deja espacio para que el botón de PayPal renderice */
+/* SDK containers — no padding ni borde para no alterar el box-sizing del SDK */
 .pp-sdk-wrap { min-height: 44px; }
+.pp-pack-wrap { min-height: 48px; }
+
+/* Fallback si el SDK de PayPal no carga */
+.btn-pp-fallback {
+  display: flex; align-items: center; justify-content: center;
+  padding: .55rem 1rem; border-radius: 10px;
+  background: #FFC439; color: #003087;
+  font-size: .78rem; font-weight: 700;
+  text-decoration: none;
+}
 
 .pack-frac { font-family:var(--font-display,serif);font-size:1.8rem;font-weight:700;color:var(--am,#d4a056);line-height:1 }
 .pack-name { font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim) }
@@ -210,10 +200,12 @@
           Mercado Pago &nbsp;<span style="font-weight:400;font-size:.72rem">$3.990 CLP</span>
         </a>
       {% endif %}
-      <a href="/pago/paypal/pack/pack_200/" class="btn-pp-pack">
-        <svg width="20" height="13" viewBox="0 0 24 16" aria-hidden="true"><path d="M3,14 L3,2 L9,2 Q15,2 15,6.5 Q15,11 9,11 L5,11 L5,14 Z" fill="#003087" opacity=".6"/><path d="M7,14 L7,2 L13,2 Q19,2 19,6.5 Q19,11 13,11 L9,11 L9,14 Z" fill="#003087"/></svg>
-        PayPal &nbsp;<span style="font-weight:400;font-size:.72rem">$3.99 USD</span>
-      </a>
+      {% if paypal_client_id %}
+        <div id="pp-pack-pack_200" class="pp-pack-wrap"></div>
+        <a href="/pago/paypal/pack/pack_200/" id="pp-pack-fallback-pack_200" class="btn-pp-fallback" style="display:none">PayPal — $3.99 USD</a>
+      {% else %}
+        <a href="/pago/paypal/pack/pack_200/" class="btn-pp-fallback">PayPal — $3.99 USD</a>
+      {% endif %}
     </div>
 
     <!-- Pack 500 -->
@@ -238,10 +230,12 @@
           Mercado Pago &nbsp;<span style="font-weight:400;font-size:.72rem">$7.990 CLP</span>
         </a>
       {% endif %}
-      <a href="/pago/paypal/pack/pack_500/" class="btn-pp-pack">
-        <svg width="20" height="13" viewBox="0 0 24 16" aria-hidden="true"><path d="M3,14 L3,2 L9,2 Q15,2 15,6.5 Q15,11 9,11 L5,11 L5,14 Z" fill="#003087" opacity=".6"/><path d="M7,14 L7,2 L13,2 Q19,2 19,6.5 Q19,11 13,11 L9,11 L9,14 Z" fill="#003087"/></svg>
-        PayPal &nbsp;<span style="font-weight:400;font-size:.72rem">$7.99 USD</span>
-      </a>
+      {% if paypal_client_id %}
+        <div id="pp-pack-pack_500" class="pp-pack-wrap"></div>
+        <a href="/pago/paypal/pack/pack_500/" id="pp-pack-fallback-pack_500" class="btn-pp-fallback" style="display:none">PayPal — $7.99 USD</a>
+      {% else %}
+        <a href="/pago/paypal/pack/pack_500/" class="btn-pp-fallback">PayPal — $7.99 USD</a>
+      {% endif %}
     </div>
 
     <!-- Pack 1200 -->
@@ -266,10 +260,12 @@
           Mercado Pago &nbsp;<span style="font-weight:400;font-size:.72rem">$14.990 CLP</span>
         </a>
       {% endif %}
-      <a href="/pago/paypal/pack/pack_1200/" class="btn-pp-pack">
-        <svg width="20" height="13" viewBox="0 0 24 16" aria-hidden="true"><path d="M3,14 L3,2 L9,2 Q15,2 15,6.5 Q15,11 9,11 L5,11 L5,14 Z" fill="#003087" opacity=".6"/><path d="M7,14 L7,2 L13,2 Q19,2 19,6.5 Q19,11 13,11 L9,11 L9,14 Z" fill="#003087"/></svg>
-        PayPal &nbsp;<span style="font-weight:400;font-size:.72rem">$14.99 USD</span>
-      </a>
+      {% if paypal_client_id %}
+        <div id="pp-pack-pack_1200" class="pp-pack-wrap"></div>
+        <a href="/pago/paypal/pack/pack_1200/" id="pp-pack-fallback-pack_1200" class="btn-pp-fallback" style="display:none">PayPal — $14.99 USD</a>
+      {% else %}
+        <a href="/pago/paypal/pack/pack_1200/" class="btn-pp-fallback">PayPal — $14.99 USD</a>
+      {% endif %}
     </div>
 
   </div>
@@ -282,37 +278,70 @@
 
 {% block extra_js %}
 {% if paypal_client_id %}
-<script src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&vault=true&intent=subscription&currency=USD&components=buttons&disable-funding=credit,card,venmo,paylater" data-sdk-integration-source="button-factory"></script>
+{# vault=true habilita suscripciones; sin intent=subscription el SDK acepta tanto createSubscription como createOrder en la misma página #}
+<script src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&vault=true&currency=USD&components=buttons&disable-funding=credit,card,venmo,paylater"></script>
 <script>
+function __getCsrf() {
+  var m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+  return m ? m[1] : '';
+}
+
 (function() {
+  /* ── SUSCRIPCIONES ── */
   var plans = {
     navegante:   { id: '{{ paypal_plan_ids.navegante }}',   slug: 'navegante',   container: 'pp-btn-navegante' },
     practicante: { id: '{{ paypal_plan_ids.practicante }}', slug: 'practicante', container: 'pp-btn-practicante' },
   };
-
   Object.values(plans).forEach(function(plan) {
     var el = document.getElementById(plan.container);
     if (!el) return;
-
     paypal.Buttons({
-      style: {
-        layout: 'vertical',
-        color:  'blue',
-        shape:  'rect',
-        label:  'subscribe',
-        height: 42,
-      },
+      style: { layout: 'vertical', color: 'blue', shape: 'rect', label: 'subscribe', height: 42 },
       createSubscription: function(data, actions) {
         return actions.subscription.create({ plan_id: plan.id });
       },
       onApprove: function(data) {
         window.location.href = '/pago/paypal/retorno/?subscription_id=' + data.subscriptionID + '&plan=' + plan.slug;
       },
-      onError: function(err) {
-        console.error('PayPal error:', err);
-      },
+      onError: function(err) { console.error('PayPal sub error:', err); },
       onCancel: function() {},
     }).render('#' + plan.container);
+  });
+
+  /* ── PACKS — pago único con createOrder ── */
+  var packs = [
+    { slug: 'pack_200',  container: 'pp-pack-pack_200' },
+    { slug: 'pack_500',  container: 'pp-pack-pack_500' },
+    { slug: 'pack_1200', container: 'pp-pack-pack_1200' },
+  ];
+  packs.forEach(function(pack) {
+    var el = document.getElementById(pack.container);
+    if (!el) return;
+    paypal.Buttons({
+      style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'paypal', height: 45 },
+      createOrder: function(data, actions) {
+        return fetch('/pago/paypal/api/orden/' + pack.slug + '/', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'X-CSRFToken': __getCsrf() },
+        })
+        .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+        .then(function(d) {
+          if (!d.order_id) throw new Error('no order_id');
+          return d.order_id;
+        });
+      },
+      onApprove: function(data) {
+        window.location.href = '/pago/paypal/pack/retorno/?token=' + data.orderID + '&slug=' + pack.slug;
+      },
+      onError: function(err) {
+        console.error('PayPal pack error ' + pack.slug, err);
+        el.style.display = 'none';
+        var fb = document.getElementById('pp-pack-fallback-' + pack.slug);
+        if (fb) fb.style.display = 'flex';
+      },
+      onCancel: function() {},
+    }).render('#' + pack.container);
   });
 })();
 </script>
@@ -326,11 +355,6 @@
   var PACKS = ['pack_200', 'pack_500', 'pack_1200'];
   var mpInstance = null;
 
-  function getCsrf() {
-    var m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
-    return m ? m[1] : '';
-  }
-
   function showFallback(slug) {
     var w = document.getElementById('mp-wallet-' + slug);
     var f = document.getElementById('mp-fallback-' + slug);
@@ -338,9 +362,7 @@
     if (f) f.style.display = 'flex';
   }
 
-  window.__mpBricksError = function() {
-    PACKS.forEach(showFallback);
-  };
+  window.__mpBricksError = function() { PACKS.forEach(showFallback); };
 
   window.__initMPWalletBricks = function() {
     try {
@@ -357,37 +379,24 @@
     fetch('/pago/mp/api/preferencia/' + slug + '/', {
       method: 'POST',
       credentials: 'same-origin',
-      headers: { 'X-CSRFToken': getCsrf() },
+      headers: { 'X-CSRFToken': typeof __getCsrf === 'function' ? __getCsrf() : '' },
     })
     .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
     .then(function(data) {
       if (!data.preference_id) throw new Error('no preference_id');
       return builder.create('wallet', 'mp-wallet-' + slug, {
-        initialization: {
-          preferenceId: data.preference_id,
-          redirectMode: 'self',
-        },
+        initialization: { preferenceId: data.preference_id, redirectMode: 'self' },
         customization: {
-          visual: {
-            hideValueProp: true,
-            buttonBackground: 'black',
-            borderRadius: '10px',
-          },
+          visual: { hideValueProp: true, buttonBackground: 'black', borderRadius: '10px' },
           texts: { action: 'pay' },
         },
         callbacks: {
           onReady: function() {},
-          onError: function(err) {
-            console.error('MP Brick error ' + slug, err);
-            showFallback(slug);
-          },
+          onError: function(err) { console.error('MP Brick error ' + slug, err); showFallback(slug); },
         },
       });
     })
-    .catch(function(err) {
-      console.error('MP preferencia error ' + slug, err);
-      showFallback(slug);
-    });
+    .catch(function(err) { console.error('MP preferencia error ' + slug, err); showFallback(slug); });
   }
 })();
 </script>

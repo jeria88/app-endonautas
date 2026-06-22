@@ -14,6 +14,8 @@ urlpatterns = [
     # PayPal — packs (retorno ANTES del parámetro variable)
     path('paypal/pack/retorno/', paypal_views.retorno_pack, name='pago_paypal_pack_retorno'),
     path('paypal/pack/<str:slug>/', paypal_views.pack, name='pago_paypal_pack'),
+    # PayPal — AJAX para crear orden (SDK Buttons createOrder)
+    path('paypal/api/orden/<str:slug>/', paypal_views.api_orden_pack, name='pago_paypal_api_orden'),
 
     # MercadoPago — suscripciones
     path('mp/suscribir/<str:plan>/', mp_views.suscribir, name='pago_mp_suscribir'),

@@ -2,7 +2,7 @@ import json
 import logging
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -151,6 +151,38 @@ def retorno_pack(request):
     return render(request, 'payments/resultado.html', {
         'exito': False, 'mensaje': 'No se pudo confirmar el pago. Si ya fue cobrado, escríbenos.',
     })
+
+
+@login_required
+@require_POST
+def api_orden_pack(request, slug):
+    if slug not in _PACK_SLUGS:
+        return JsonResponse({'error': 'Pack inválido'}, status=400)
+
+    return_url = request.build_absolute_uri(reverse('pago_paypal_pack_retorno')) + f'?slug={slug}'
+    cancel_url = request.build_absolute_uri(reverse('tokens_balance'))
+
+    try:
+        order_id, _ = paypal_service.create_order(
+            pack_slug=slug,
+            return_url=return_url,
+            cancel_url=cancel_url,
+        )
+    except Exception as e:
+        logger.error(f'PayPal api_orden_pack error: {e}')
+        return JsonResponse({'error': 'No se pudo crear la orden'}, status=500)
+
+    pack_info = PACKS[slug]
+    FractonesPack.objects.filter(user=request.user, gateway='paypal', pack_slug=slug, status='pending').delete()
+    FractonesPack.objects.create(
+        user=request.user, gateway='paypal', pack_slug=slug,
+        fractones=pack_info['fractones'],
+        amount_local=pack_info['price_usd'],
+        currency='USD',
+        gateway_payment_id=order_id,
+        status='pending',
+    )
+    return JsonResponse({'order_id': order_id})
 
 
 @csrf_exempt
