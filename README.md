@@ -96,15 +96,18 @@ SMTP configurado con Brevo SMTP relay:
 - Login SMTP: `aaccf1001@smtp-brevo.com`
 - From: `hola@endonautas.cl`
 
-| Lista | ID | Descripción |
-|-------|----|-------------|
-| Endonautas — Usuarios App | 1 | Registrados en app.endonautas.cl |
-| Endonautas — Interesados | 2 | Leads de la landing page |
-| Endonautas — Newsletter | 3 | Suscriptores al blog/contenido |
+| Lista | ID | UUID | Descripción |
+|-------|----|------|-------------|
+| Usuarios App | 4 | — | Registrados en app.endonautas.cl |
+| Practicantes | 5 | `574f7450-0663-4848-95e5-8ebe4765a33a` | Leads de /profesionales/ (captura landing B2B) |
+| Leads App | 7 | — | Usuarios free → upgrade Navegante |
+| Lanzamiento | 8 | `431ebe70-b897-416b-9016-daea6acc030c` | Leads de la landing principal |
 
-**API programática:** usuario `api_claude` tipo `api` — autenticación con token en campo `password` (plain text en basic auth: `api_claude:<token>`).
+**Campañas email:** 9 drafts creados en Listmonk — 3 × Lanzamiento, 3 × Leads App, 3 × Practicantes. Activar desde el panel admin.
 
-**Templates TX disponibles:** ID 3 (Sample transactional) — usar para emails automáticos vía `/api/tx`.
+**API programática:** usuario `api_claude` tipo `api` — token `lm_api_2b99334cb53a67a428a364049b45b986533908952a897102`.
+
+**Templates TX:** ID 7 "Endonautas Base" — usar para emails automáticos vía `/api/tx`.
 
 ### SerpBear — configurado
 

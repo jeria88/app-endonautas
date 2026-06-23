@@ -5,7 +5,7 @@
 ## Comando siempre: `python3 manage.py` (nunca `python`)
 
 ## Stack
-- Django 6.0.4, SQLite (dev) / PostgreSQL Railway (prod)
+- Django 6.0.4, SQLite (dev) / PostgreSQL Oracle Cloud (prod)
 - Gunicorn 2 workers × 2 threads
 - WhiteNoise para static files
 - DeepSeek API (key en `.env`) para IA
@@ -290,6 +290,23 @@ Cuando se modifica cualquier feature (costo, nombre, comportamiento, flujo), hay
 **Sistema prompt:** `mirror/prompts/espejo_system.txt` — cargado en cada request vía `_load_system_prompt()`. Actualmente optimizado para presencia/sostén, NO para revelación de patrones. Pendiente: enriquecer con contexto psicométrico del usuario.
 
 **Contexto inyectado actualmente:** solo `onboarding_priorities` del usuario (vía `user_intent_context()`). Los campos `conflict_summary` y `return_question` del modelo ChatSession existen pero **no se inyectan al prompt** — pendiente.
+
+---
+
+## Email marketing (Listmonk — al 2026-06-23)
+
+Listas activas:
+| Lista | ID | UUID |
+|-------|----|------|
+| Usuarios App | 4 | — |
+| Practicantes | 5 | `574f7450-0663-4848-95e5-8ebe4765a33a` |
+| Leads App | 7 | — |
+| Lanzamiento | 8 | `431ebe70-b897-416b-9016-daea6acc030c` |
+
+9 campañas email en draft en Listmonk — activar desde `https://mail.endonautas.cl`.
+Secuencias: 3 emails × Lanzamiento (leads sin cuenta), 3 × Leads App (free → Navegante), 3 × Practicantes (terapeutas).
+
+SMTP Brevo: `smtp-relay.brevo.com:587` · login `aaccf1001@smtp-brevo.com` · verificado con smtplib.
 
 ---
 
