@@ -287,6 +287,8 @@ Análisis estático al 2026-06-20 — `codegraph init`:
 1. Crea `UserProfile`
 2. Crea `TokenBalance` y acredita `PLAN_MONTHLY_TOKENS['free']` fractones con reason `'signup'`
 3. Crea `ReferralCode`
+4. Suscribe al email en listas Listmonk según el plan inicial (free → listas Usuarios App + Leads App)
+5. Envía email de bienvenida con template TX ID 7 vía `accounts/listmonk.py`
 
 ---
 
@@ -438,7 +440,7 @@ Modo terapeuta para sesiones de orientación integrativa.
 
 - **RAG** sobre base de conocimiento (`KnowledgeChunk` con embeddings en JSONField)
 - **ChatSession** / **ChatMessage** — historial de conversación por usuario
-- `conflict_summary` y `return_question` — campos de memoria versionada (guardados, pendiente inyectarlos al prompt)
+- `conflict_summary` y `return_question` — campos de memoria versionada; se inyectan al prompt vía `user_history_context()` en `config/ai_client.py`
 - **DreamEntry** — diario de sueños con tags, fecha, is_lucid, reality_check
 - **Regulación** — técnicas somáticas (view independiente)
 - IA: DeepSeek vía `settings.DEEPSEEK_API_KEY`
@@ -450,7 +452,7 @@ Modo terapeuta para sesiones de orientación integrativa.
 | Navegante+ | Ilimitadas | Sin límite |
 
 ### System prompt
-`mirror/prompts/espejo_system.txt` — actualmente optimizado para sostén/presencia. Pendiente: modo revelación de patrones con contexto psicométrico del usuario.
+`mirror/prompts/espejo_system.txt` — optimizado para sostén/presencia. Contexto psicométrico del usuario se inyecta automáticamente vía `user_history_context()` antes del system prompt. Pendiente futuro: modo revelación de patrones explícito.
 
 ---
 

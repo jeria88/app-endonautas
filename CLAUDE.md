@@ -289,7 +289,7 @@ Cuando se modifica cualquier feature (costo, nombre, comportamiento, flujo), hay
 
 **Sistema prompt:** `mirror/prompts/espejo_system.txt` — cargado en cada request vía `_load_system_prompt()`. Actualmente optimizado para presencia/sostén, NO para revelación de patrones. Pendiente: enriquecer con contexto psicométrico del usuario.
 
-**Contexto inyectado actualmente:** solo `onboarding_priorities` del usuario (vía `user_intent_context()`). Los campos `conflict_summary` y `return_question` del modelo ChatSession existen pero **no se inyectan al prompt** — pendiente.
+**Contexto inyectado actualmente:** `user_intent_context()` (onboarding_priorities) + `user_history_context()` (resultados psicométricos, sesión Espejo anterior con `conflict_summary`/`return_question`, entradas de bitácora, lectura de nacimiento). Implementado en `config/ai_client.py` — inyectado en `_get_reply()` de `mirror/views.py`. `max_tokens` subió de 500 a 700.
 
 ---
 
@@ -308,21 +308,36 @@ Secuencias: 3 emails × Lanzamiento (leads sin cuenta), 3 × Leads App (free →
 
 SMTP Brevo: `smtp-relay.brevo.com:587` · login `aaccf1001@smtp-brevo.com` · verificado con smtplib.
 
+### Módulo programático: `accounts/listmonk.py`
+
+Integración API Basic Auth. Todas las funciones fallan silenciosamente.
+
+```python
+subscribe_user(email, plan='free', name='')
+    # Suscribe a las listas del plan. Mapeo:
+    # free        → [4 Usuarios App, 7 Leads App]
+    # navegante   → [4 Usuarios App]
+    # practicante → [4 Usuarios App, 5 Practicantes]
+    # empresa     → [4 Usuarios App, 5 Practicantes]
+
+update_subscriber_lists(email, plan)
+    # Busca al suscriptor y agrega las listas del nuevo plan (para upgrades)
+
+send_welcome_email(email, name='')
+    # Envía email de bienvenida vía TX endpoint con WELCOME_TEMPLATE_ID = 7
+```
+
+**Activación automática:** `accounts/signals.py` llama a `subscribe_user` + `send_welcome_email` en el `post_save` de User cuando `created=True`. Cubre registro por email y Google OAuth.
+
 ---
 
 ## Pendientes técnicos (al 2026-06-23)
 
 ### Alta prioridad
-1. **Espejo IA — enriquecimiento de contexto** (próxima tarea grande)
-   - Inyectar resultados psicométricos del usuario en el system prompt del Espejo
-   - Inyectar `conflict_summary` y `return_question` de la sesión anterior
-   - Reescribir `espejo_system.txt`: agregar modo "revelación de patrones" además de modo "sostén"
-   - Integrar consultas al módulo terapeuta como contexto
-   - Integrar lecturas de oráculo (verificar si se guardan — `SesionOraculo.guardada`)
-   - Integrar reportes de nacimiento (`BirthReport.ai_reading`)
-   - Integrar entradas de bitácora (`BitacoraEntry`)
-   - Recomendar ejercicios de regulación basados en el contexto acumulado
-   - Subir `max_tokens` de 500 a 700-800 en llamadas al Espejo
+1. ~~**Espejo IA — enriquecimiento de contexto**~~ ✅ RESUELTO 2026-06-23
+   - `config/ai_client.py` → `user_history_context(user)`: inyecta tests psicométricos recientes, sesión Espejo anterior (`conflict_summary` + `return_question`), bitácora reciente, lectura de nacimiento
+   - `mirror/views.py` → `_get_reply()`: usa `user_history_context` + `max_tokens` subido de 500 a 700
+   - Pendiente de siguiente iteración: modo "revelación de patrones" en `espejo_system.txt`, lecturas de oráculo como contexto
 
 2. **Practitioners views** — gestionar perfiles de clientes, asignar tests, ver resultados
 
@@ -353,6 +368,7 @@ SMTP Brevo: `smtp-relay.brevo.com:587` · login `aaccf1001@smtp-brevo.com` · ve
 | `accounts/models.py` | User (email-based), UserProfile |
 | `accounts/views.py` | Auth, perfil, onboarding |
 | `accounts/plan_utils.py` | `plan_at_least()`, `upgrade_wall()`, `FREE_TEST_SLUGS` |
+| `accounts/listmonk.py` | `subscribe_user()`, `update_subscriber_lists()`, `send_welcome_email()` — Listmonk API |
 | `mirror/views.py` | Espejo IA — `_get_reply()`, `_load_system_prompt()`, `chat_new()`, `chat_message()` |
 | `mirror/prompts/espejo_system.txt` | System prompt del Espejo — editar aquí para cambiar comportamiento |
 | `config/ai_client.py` | `call_ai()` + `user_intent_context()` — wrapper IA compartido por toda la app |
