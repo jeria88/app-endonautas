@@ -285,14 +285,15 @@ def _load_system_prompt():
 
 
 def _get_reply(session, user_content, user=None):
-    from config.ai_client import call_ai, user_intent_context
+    from config.ai_client import call_ai, user_intent_context, user_history_context
     intent = user_intent_context(user) if user else ''
-    system = intent + _load_system_prompt()
+    history_ctx = user_history_context(user) if user else ''
+    system = intent + history_ctx + _load_system_prompt()
     history = list(session.messages.values('role', 'content'))
     messages = [{'role': 'system', 'content': system}]
     messages += [{'role': m['role'] if m['role'] == 'user' else 'assistant', 'content': m['content']} for m in history[-10:]]
     messages.append({'role': 'user', 'content': user_content})
-    return call_ai(messages, max_tokens=500) or 'No pude conectar con el espejo en este momento.'
+    return call_ai(messages, max_tokens=700) or 'No pude conectar con el espejo en este momento.'
 
 
 @login_required

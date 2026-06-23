@@ -46,6 +46,93 @@ def user_intent_context(user):
         return ''
 
 
+def user_history_context(user):
+    """
+    Recopila historial del usuario (tests, sesión anterior del Espejo, bitácora,
+    lecturas de nacimiento) para inyectar como contexto acumulado al Espejo.
+    Cada sección falla silenciosamente si el modelo no está disponible.
+    """
+    sections = []
+
+    # Tests psicométricos recientes con insight IA
+    try:
+        from psychometrics.models import TestResult
+        results = (
+            TestResult.objects
+            .filter(user=user)
+            .exclude(ai_insight='')
+            .select_related('test')
+            .order_by('-completed_at')[:5]
+        )
+        if results:
+            items = [f'- {r.test.name}: {r.ai_insight[:200]}' for r in results]
+            sections.append('Resultados psicométricos recientes:\n' + '\n'.join(items))
+    except Exception:
+        pass
+
+    # Sesión Espejo anterior (conflict_summary + return_question)
+    try:
+        from mirror.models import ChatSession
+        prev = (
+            ChatSession.objects
+            .filter(user=user)
+            .exclude(conflict_summary='')
+            .order_by('-updated_at')
+            .first()
+        )
+        if prev:
+            parts = []
+            if prev.conflict_summary:
+                parts.append(f'Conflicto trabajado: {prev.conflict_summary[:300]}')
+            if prev.return_question:
+                parts.append(f'Pregunta que quedó abierta: {prev.return_question}')
+            if parts:
+                sections.append('Sesión anterior del Espejo:\n' + '\n'.join(parts))
+    except Exception:
+        pass
+
+    # Bitácora manual reciente
+    try:
+        from mirror.models import BitacoraEntry
+        entries = (
+            BitacoraEntry.objects
+            .filter(user=user, entry_type__in=['sueno', 'sombra', 'patron', 'signo', 'manual'])
+            .order_by('-created_at')[:5]
+        )
+        if entries:
+            items = [f'- [{e.entry_type}] {e.content[:120]}' for e in entries]
+            sections.append('Bitácora reciente:\n' + '\n'.join(items))
+    except Exception:
+        pass
+
+    # Lectura de nacimiento (la primera disponible como referencia de carácter)
+    try:
+        from birth.models import BirthReport
+        report = (
+            BirthReport.objects
+            .filter(birth_data__user=user, status='done')
+            .exclude(ai_reading='')
+            .order_by('report_type')
+            .first()
+        )
+        if report:
+            sections.append(
+                f'Mapa de nacimiento ({report.report_type}):\n{report.ai_reading[:300]}'
+            )
+    except Exception:
+        pass
+
+    if not sections:
+        return ''
+
+    return (
+        'Contexto acumulado del usuario (úsalo para acompañar con mayor profundidad; '
+        'no lo menciones directamente a menos que el usuario lo traiga):\n\n'
+        + '\n\n'.join(sections)
+        + '\n\n'
+    )
+
+
 def call_ai(messages, max_tokens=500, timeout=25):
     """
     Llama al proveedor de IA configurado.
