@@ -191,7 +191,11 @@
     {% if user_plan != 'free' %}
     <a href="?ai=1" class="btn btn-ghost" style="font-size:0.85rem" data-tip="Análisis personalizado de tus resultados con recomendaciones específicas para este test">✦ Generar insight IA</a>
     {% else %}
-    <a href="/pagos/planes/" onclick="spaGo(event,this)" class="btn btn-ghost" style="font-size:0.85rem;opacity:0.6" data-tip="Disponible en plan Navegante">✦ Insight IA · Navegante →</a>
+    <div style="background:rgba(126,204,205,0.05);border:1px solid rgba(126,204,205,0.15);border-radius:12px;padding:1.25rem 1.5rem">
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--calipso);margin-bottom:0.6rem">✦ Insight IA</div>
+      <p style="font-size:0.86rem;color:rgba(255,255,255,0.6);line-height:1.6;margin-bottom:1rem">¿Qué significa este resultado para ti específicamente? El insight IA analiza tus respuestas y genera un reflejo personalizado — qué patrones emergen y qué observar esta semana.</p>
+      <a href="/pagos/planes/" onclick="spaGo(event,this)" style="display:inline-flex;align-items:center;gap:0.4rem;background:rgba(126,204,205,0.12);border:1px solid rgba(126,204,205,0.3);border-radius:8px;padding:0.5rem 1rem;font-size:0.8rem;font-weight:600;color:var(--calipso);text-decoration:none">Activar Navegante · desde $10 USD/mes →</a>
+    </div>
     {% endif %}
   </div>
   {% endif %}
