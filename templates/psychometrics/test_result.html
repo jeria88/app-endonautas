@@ -200,6 +200,12 @@
   </div>
   {% endif %}
 
+  {% if result.test.slug == 'big-five-inventario-de-personalidad' or result.test.slug == 'heridas-de-la-infancia-lise-bourbeau' or result.test.slug == 'dirty-dozen-triada-oscura' %}
+  <div style="background:rgba(126,204,205,0.05);border:1px solid rgba(126,204,205,0.12);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+    <p style="font-size:0.82rem;color:var(--muted);margin:0">Este test es parte del <strong style="color:rgba(255,255,255,0.7)">Mapa de Patrones</strong></p>
+    <a href="/tests/mapa-patrones/" onclick="spaGo(event,this)" style="font-size:0.8rem;font-weight:600;color:var(--calipso);text-decoration:none;white-space:nowrap">Ver mi progreso →</a>
+  </div>
+  {% endif %}
   <div style="display:flex;gap:0.75rem;flex-wrap:wrap;padding-bottom:3rem">
     <a href="/tests/{{ result.test.slug }}/responder/" onclick="spaGo(event,this)" class="btn btn-secondary" data-tip="Volver a completar este test para comparar tu evolución">Repetir test</a>
     <a href="/tests/resultado/{{ result.pk }}/pdf/" class="btn btn-ghost" data-tip="Descargar este resultado como PDF para guardarlo o compartirlo offline">↓ Descargar PDF</a>

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Mapa de Patrones — Endonautas{% endblock %}
+{% block content %}
+<style data-page-style>
+.mapa-wrap { max-width:560px; padding:2rem 0 4rem; }
+.mapa-super { font-size:0.7rem;text-transform:uppercase;letter-spacing:0.14em;color:var(--calipso);margin-bottom:1rem }
+.mapa-title { font-size:1.4rem;font-weight:700;margin-bottom:0.5rem }
+.mapa-sub { font-size:0.88rem;color:var(--muted);line-height:1.7;margin-bottom:2.5rem;max-width:460px }
+.mapa-progress { display:flex;align-items:center;gap:0.5rem;margin-bottom:2.5rem;font-size:0.78rem;color:var(--muted) }
+.mapa-prog-bar { height:3px;flex:1;background:var(--border);border-radius:2px;overflow:hidden }
+.mapa-prog-fill { height:100%;background:var(--calipso);border-radius:2px;transition:width .4s }
+.test-card { display:flex;gap:1.25rem;align-items:flex-start;padding:1.25rem 1.5rem;border:1px solid var(--border);border-radius:14px;background:var(--surface);margin-bottom:0.75rem;transition:border-color .2s }
+.test-card.done { border-color:rgba(126,204,205,0.25) }
+.test-n { font-family:'Syne',sans-serif;font-size:0.7rem;font-weight:700;color:var(--dim);min-width:28px;margin-top:0.15rem }
+.test-info { flex:1 }
+.test-label { font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--dim);margin-bottom:0.2rem }
+.test-name { font-size:0.92rem;font-weight:600;color:#fff;margin-bottom:0.2rem }
+.test-desc { font-size:0.8rem;color:var(--muted);line-height:1.5 }
+.test-status { flex-shrink:0;display:flex;align-items:center }
+.test-check { width:24px;height:24px;border-radius:50%;border:1px solid rgba(126,204,205,0.5);background:rgba(126,204,205,0.1);display:flex;align-items:center;justify-content:center;font-size:0.75rem;color:var(--calipso) }
+.test-pending { width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:transparent }
+.mapa-cta { margin-top:2rem;display:flex;flex-direction:column;gap:0.75rem;align-items:flex-start }
+</style>
+
+<div class="mapa-wrap">
+  <p class="mapa-super">✦ Mapa de Patrones Personales</p>
+  <h1 class="mapa-title">Hay 3 patrones que se repiten en tu vida.</h1>
+  <p class="mapa-sub">Tres instrumentos psicométricos gratuitos — uno de personalidad, uno de origen, uno de sombra. En conjunto revelan el patrón que no ves solo mirando uno.</p>
+
+  <div class="mapa-progress">
+    <span>{{ done_count }}/3 completados</span>
+    <div class="mapa-prog-bar"><div class="mapa-prog-fill" style="width:{% widthratio done_count 3 100 %}%"></div></div>
+  </div>
+
+  {% for t in tests_info %}
+  <div class="test-card {% if t.done %}done{% endif %}">
+    <span class="test-n">{{ t.n }}</span>
+    <div class="test-info">
+      <div class="test-label">{{ t.label }}</div>
+      <div class="test-name">{{ t.name }}</div>
+      <div class="test-desc">{{ t.desc }}</div>
+    </div>
+    <div class="test-status">
+      {% if t.done %}
+        <div class="test-check">✓</div>
+      {% else %}
+        <div class="test-pending"></div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="mapa-cta">
+    {% if all_done %}
+      <a href="/tests/mapa-patrones/resultado/?generar=1" onclick="spaGo(event,this)" class="btn btn-primary">Ver mi Mapa de Patrones →</a>
+    {% else %}
+      <a href="/tests/{{ next_slug }}/responder/" onclick="spaGo(event,this)" class="btn btn-primary">
+        {% if done_count == 0 %}Comenzar el primer test →{% else %}Continuar con el siguiente test →{% endif %}
+      </a>
+      <p style="font-size:0.78rem;color:var(--muted)">Cada test toma entre 5 y 10 minutos. Gratuitos.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

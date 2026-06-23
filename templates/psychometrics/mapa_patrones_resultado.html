@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Tu Mapa de Patrones — Endonautas{% endblock %}
+{% block content %}
+<style data-page-style>
+.mapa-res-wrap { max-width:640px;padding:2rem 0 4rem }
+.mapa-res-super { font-size:0.7rem;text-transform:uppercase;letter-spacing:0.14em;color:var(--calipso);margin-bottom:1rem }
+.mapa-res-title { font-size:1.4rem;font-weight:700;margin-bottom:0.4rem }
+.mapa-res-sub { font-size:0.86rem;color:var(--muted);line-height:1.65;margin-bottom:2.5rem }
+.patron-card { border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1rem;background:var(--surface) }
+.patron-n { font-size:0.65rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--calipso);margin-bottom:0.5rem }
+.patron-titulo { font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:0.6rem }
+.patron-desc { font-size:0.88rem;color:rgba(255,255,255,0.6);line-height:1.7 }
+.divider { height:1px;background:var(--border);margin:2rem 0 }
+.integrador { border:1px solid rgba(126,204,205,0.15);border-radius:14px;padding:1.5rem;background:rgba(126,204,205,0.03);margin-bottom:1.5rem }
+.integrador-label { font-size:0.65rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--calipso);margin-bottom:0.75rem }
+.integrador-text { font-size:0.9rem;color:rgba(255,255,255,0.65);line-height:1.75 }
+.lock-card { border:1px solid rgba(126,204,205,0.15);border-radius:14px;padding:1.5rem;background:rgba(126,204,205,0.04);margin-bottom:1.5rem }
+.lock-label { font-size:0.65rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--calipso);margin-bottom:0.6rem }
+.lock-desc { font-size:0.86rem;color:rgba(255,255,255,0.5);line-height:1.65;margin-bottom:1.25rem }
+.espejo-cta { display:flex;flex-direction:column;gap:0.6rem }
+.generating { display:flex;align-items:center;gap:0.75rem;padding:2rem 0;color:var(--muted);font-size:0.88rem }
+.gen-dot { width:8px;height:8px;border-radius:50%;background:var(--calipso);animation:genPulse 1.2s ease-in-out infinite }
+.gen-dot:nth-child(2){animation-delay:.2s}.gen-dot:nth-child(3){animation-delay:.4s}
+@keyframes genPulse{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+</style>
+
+<div class="mapa-res-wrap">
+  <p class="mapa-res-super">✦ Mapa de Patrones Personales</p>
+  <h1 class="mapa-res-title">Tres patrones que emergen en conjunto.</h1>
+  <p class="mapa-res-sub">Basado en tus resultados del Big Five, Heridas de la Infancia y Tríada Oscura.</p>
+
+  {% if not insight %}
+    <div style="border:1px solid var(--border);border-radius:14px;padding:2rem;background:var(--surface);text-align:center">
+      <p style="font-size:0.9rem;color:var(--muted);margin-bottom:1.25rem">La IA lee los 3 resultados en conjunto y genera tu mapa — toma menos de 30 segundos.</p>
+      <a href="?generar=1" onclick="spaGo(event,this)" class="btn btn-primary">✦ Generar mi Mapa de Patrones</a>
+    </div>
+  {% else %}
+    <div class="patron-card">
+      <div class="patron-n">Patrón 01</div>
+      <div class="patron-titulo">{{ insight.patron1.titulo }}</div>
+      <p class="patron-desc">{{ insight.patron1.descripcion }}</p>
+    </div>
+
+    <div class="patron-card">
+      <div class="patron-n">Patrón 02</div>
+      <div class="patron-titulo">{{ insight.patron2.titulo }}</div>
+      <p class="patron-desc">{{ insight.patron2.descripcion }}</p>
+    </div>
+
+    <div class="patron-card">
+      <div class="patron-n">Patrón 03</div>
+      <div class="patron-titulo">{{ insight.patron3.titulo }}</div>
+      <p class="patron-desc">{{ insight.patron3.descripcion }}</p>
+    </div>
+
+    <div class="divider"></div>
+
+    {% if is_paid %}
+      <div class="integrador">
+        <div class="integrador-label">✦ Reflejo integrador</div>
+        <p class="integrador-text">{{ insight.reflejo_integrador }}</p>
+      </div>
+      <div style="border:1px solid rgba(126,204,205,0.15);border-radius:14px;padding:1.5rem;background:rgba(126,204,205,0.04);margin-bottom:1.5rem">
+        <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--calipso);margin-bottom:0.75rem">Siguiente paso</div>
+        <p style="font-size:0.86rem;color:rgba(255,255,255,0.6);line-height:1.65;margin-bottom:1rem">Llevá estos tres patrones al Espejo IA. Preguntale: <em>"¿Cómo se relacionan estos patrones con lo que sucedió la semana pasada?"</em></p>
+        <a href="/espejo/" onclick="spaGo(event,this)" class="btn btn-ghost" style="font-size:0.82rem">Abrir el Espejo IA →</a>
+      </div>
+    {% else %}
+      <div class="lock-card">
+        <div class="lock-label">✦ Reflejo integrador + siguiente paso</div>
+        <p class="lock-desc">El párrafo que conecta los tres patrones en un solo hilo — y cómo trabajarlos con el Espejo IA esta semana.</p>
+        <div class="espejo-cta">
+          <a href="/pagos/planes/" onclick="spaGo(event,this)" style="display:inline-flex;align-items:center;gap:0.4rem;background:rgba(126,204,205,0.12);border:1px solid rgba(126,204,205,0.3);border-radius:8px;padding:0.55rem 1rem;font-size:0.82rem;font-weight:600;color:var(--calipso);text-decoration:none">Activar Navegante · desde $10 USD/mes →</a>
+          <span style="font-size:0.76rem;color:var(--muted)">Sin tarjeta hasta confirmar · Cancelas cuando quieras</span>
+        </div>
+      </div>
+    {% endif %}
+
+  {% endif %}
+
+  <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:1rem">
+    <a href="/tests/mapa-patrones/" onclick="spaGo(event,this)" class="btn btn-ghost" style="font-size:0.82rem">← Ver tests del mapa</a>
+    <a href="/tests/" onclick="spaGo(event,this)" class="btn btn-ghost" style="font-size:0.82rem">Todos los tests</a>
+  </div>
+</div>
+{% endblock %}

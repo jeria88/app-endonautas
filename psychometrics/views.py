@@ -217,6 +217,106 @@ def test_result_share(request, pk):
     return render(request, 'psychometrics/share_result.html', {'result': result})
 
 
+MAPA_SLUGS = [
+    'big-five-inventario-de-personalidad',
+    'heridas-de-la-infancia-lise-bourbeau',
+    'dirty-dozen-triada-oscura',
+]
+
+_MAPA_META = [
+    {'slug': 'big-five-inventario-de-personalidad', 'n': '01', 'label': 'Personalidad', 'desc': 'Los 5 rasgos base que estructuran tu forma de ser'},
+    {'slug': 'heridas-de-la-infancia-lise-bourbeau', 'n': '02', 'label': 'Origen', 'desc': 'De dónde vienen tus patrones más arraigados'},
+    {'slug': 'dirty-dozen-triada-oscura', 'n': '03', 'label': 'Sombra', 'desc': 'Lo que operas de forma automática sin verlo'},
+]
+
+
+@login_required
+def mapa_patrones(request):
+    completed = {}
+    for slug in MAPA_SLUGS:
+        r = TestResult.objects.filter(
+            user=request.user, test__slug=slug
+        ).order_by('-completed_at').first()
+        if r:
+            completed[slug] = r
+
+    tests_info = [{**m, 'result': completed.get(m['slug']), 'done': m['slug'] in completed}
+                  for m in _MAPA_META]
+    all_done = len(completed) == len(MAPA_SLUGS)
+    next_slug = next((m['slug'] for m in _MAPA_META if m['slug'] not in completed), None)
+
+    return render(request, 'psychometrics/mapa_patrones.html', {
+        'tests_info': tests_info,
+        'all_done': all_done,
+        'next_slug': next_slug,
+        'done_count': len(completed),
+    })
+
+
+@login_required
+def mapa_patrones_resultado(request):
+    from accounts.plan_utils import plan_at_least
+
+    results = []
+    for slug in MAPA_SLUGS:
+        r = TestResult.objects.filter(
+            user=request.user, test__slug=slug
+        ).order_by('-completed_at').first()
+        if r:
+            results.append(r)
+
+    if len(results) < len(MAPA_SLUGS):
+        return redirect('mapa_patrones')
+
+    cache_key = f"mapa_insight_{request.user.pk}_{'-'.join(str(r.pk) for r in results)}"
+    insight = cache.get(cache_key)
+
+    if not insight and request.GET.get('generar'):
+        insight = _generate_mapa_insight(results)
+        if insight:
+            cache.set(cache_key, insight, 60 * 60 * 24)
+
+    is_paid = plan_at_least(request.user, 'navegante')
+
+    return render(request, 'psychometrics/mapa_patrones_resultado.html', {
+        'results': {r.test.slug: r for r in results},
+        'insight': insight,
+        'is_paid': is_paid,
+    })
+
+
+def _generate_mapa_insight(results):
+    import json as json_lib, re as re_lib
+    from config.ai_client import call_ai
+
+    tests_summary = [{'test': r.test.name, 'evaluacion': r.evaluation} for r in results]
+
+    prompt = (
+        'A partir de estos 3 resultados de tests psicométricos de la misma persona, '
+        'identificá 3 patrones que emergen en conjunto. '
+        'Respondé SOLO con JSON válido, sin texto extra. Formato exacto:\n'
+        '{"patron1":{"titulo":"...","descripcion":"...(2-3 oraciones)"},'
+        '"patron2":{"titulo":"...","descripcion":"..."},'
+        '"patron3":{"titulo":"...","descripcion":"..."},'
+        '"reflejo_integrador":"...(1 párrafo breve que conecta los 3)"}\n\n'
+        f'Resultados: {json_lib.dumps(tests_summary, ensure_ascii=False)}\n\n'
+        'Son observaciones para la reflexión, no diagnósticos. Tutear. Tono directo, no condescendiente.'
+    )
+
+    raw = call_ai([{'role': 'user', 'content': prompt}], max_tokens=700, timeout=30)
+    if not raw:
+        return None
+
+    match = re_lib.search(r'\{.*\}', raw, re_lib.DOTALL)
+    if not match:
+        return None
+
+    try:
+        return json_lib.loads(match.group())
+    except Exception:
+        return None
+
+
 @login_required
 def my_results(request):
     results = TestResult.objects.filter(user=request.user).select_related('test').order_by('-completed_at')
