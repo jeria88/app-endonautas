@@ -202,14 +202,18 @@ def _call_deepseek(messages, max_tokens, timeout):
 
 
 def get_embedding(text, timeout=15):
-    """Genera embedding via DeepSeek. Retorna lista de floats o None si falla."""
-    key = getattr(settings, 'DEEPSEEK_API_KEY', '')
+    """
+    Genera embedding semántico. Usa OpenRouter (text-embedding-3-small) con la
+    OPENROUTER_API_KEY ya configurada. Retorna lista de floats o None si falla.
+    DeepSeek no tiene embeddings API — siempre usar OpenRouter para esto.
+    """
+    key = getattr(settings, 'OPENROUTER_API_KEY', '')
     if not key:
         return None
     try:
         r = requests.post(
-            'https://api.deepseek.com/embeddings',
-            json={'model': 'deepseek-embedding', 'input': text[:2000]},
+            'https://openrouter.ai/api/v1/embeddings',
+            json={'model': 'openai/text-embedding-3-small', 'input': text[:2000]},
             headers={'Authorization': f'Bearer {key}'},
             timeout=timeout,
         )
