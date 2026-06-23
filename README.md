@@ -147,6 +147,7 @@ python manage.py seed_foros && \
 python manage.py seed_fractal && \
 python manage.py seed_terapeuta && \
 python manage.py seed_missions && \
+python manage.py seed_knowledge && \
 gunicorn config.wsgi --workers 2 --threads 2 --timeout 60 --bind 0.0.0.0:8000
 ```
 
@@ -439,11 +440,11 @@ Modo terapeuta para sesiones de orientación integrativa.
 ## Módulo: mirror (Espejo de Conflictos)
 
 - **RAG** sobre base de conocimiento (`KnowledgeChunk` con embeddings en JSONField)
-- **ChatSession** / **ChatMessage** — historial de conversación por usuario
+- **ChatSession** / **ChatMessage** — historial de conversación + adjuntos multimedia (imagen/pdf/doc)
 - `conflict_summary` y `return_question` — campos de memoria versionada; se inyectan al prompt vía `user_history_context()` en `config/ai_client.py`
 - **DreamEntry** — diario de sueños con tags, fecha, is_lucid, reality_check
 - **Regulación** — técnicas somáticas (view independiente)
-- IA: DeepSeek vía `settings.DEEPSEEK_API_KEY`
+- IA: DeepSeek / OpenRouter vía `config/ai_client.py`
 
 ### Restricciones por plan
 | Plan | Sesiones | Duración |
@@ -452,7 +453,16 @@ Modo terapeuta para sesiones de orientación integrativa.
 | Navegante+ | Ilimitadas | Sin límite |
 
 ### System prompt
-`mirror/prompts/espejo_system.txt` — rol de espejo de autoconocimiento (no terapeuta, no diagnóstico), tono cercano, protocolos de crisis (ideación suicida 3 niveles, voces psicóticas, pánico agudo, disociación, violencia doméstica, fantasías de daño con recursos chilenos). Contexto psicométrico del usuario inyectado antes del prompt vía `user_history_context()`. Pendiente: modo "revelación de patrones" explícito.
+`mirror/prompts/espejo_system.txt` — rol de espejo de autoconocimiento (no terapeuta, no diagnóstico), tono cercano, protocolos de crisis (ideación suicida 3 niveles, voces psicóticas, pánico agudo, disociación, violencia doméstica, fantasías de daño con recursos chilenos), y sección "Del sostén a la revelación de patrones" (fase 1: acompañar → fase 2: nombrar el patrón repetitivo con referencia al contexto psicométrico del usuario).
+
+### RAG — KnowledgeChunk (139 chunks en producción)
+- **101 marcos teóricos**: Jung, Freud, Castaneda, Grinberg, Hawkins, Bourbeau, Ruiz, Campbell, Naranjo, Gendlin, Perls, Tolle, Wilber, Lao Tse, + más. Seeder: `seed_knowledge` (en startCommand).
+- **38 chunks del libro Endonautica**: un chunk por sección `##`, primeros 3000 chars (head approach). Seeder: `seed_endonautica_md --path /tmp/endonautica.md` (manual).
+- **Embeddings**: OpenRouter `openai/text-embedding-3-small` via `get_embedding()` en `config/ai_client.py`. DeepSeek NO tiene API de embeddings.
+- **Retrieval**: similitud coseno si hay embeddings, keyword fallback si no.
+
+### Multimedia
+`ChatMessage.attachment` (FileField) + `attachment_type` (image/pdf/doc). Imágenes → base64 → visión multimodal OpenRouter; PDFs/docs → texto extraído → contexto. Web Speech API para transcripción de voz en el browser (sin backend).
 
 ---
 

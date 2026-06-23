@@ -245,7 +245,13 @@ Start command configurado en Coolify:
 ```
 python manage.py fix_db_state && python manage.py migrate --noinput && python manage.py create_admin && python manage.py seed_tests && python manage.py seed_regulacion && python manage.py seed_momentos && python manage.py seed_foros && python manage.py seed_fractal && python manage.py seed_terapeuta && python manage.py seed_missions && python manage.py seed_knowledge && gunicorn config.wsgi --workers 2 --threads 2 --timeout 60 --bind 0.0.0.0:8000
 ```
-**Nota:** `seed_endonautica_pdf` y `index_knowledge` se ejecutan manualmente en local, no en Coolify (el PDF no está en el servidor y los embeddings requieren DEEPSEEK_API_KEY con cuota disponible).
+**Nota:** `seed_endonautica_md` y `index_knowledge` se ejecutan manualmente, no en Coolify. Para re-seedear el libro:
+```bash
+scp -i 'ssh-key.pem' endonautica.md ubuntu@146.181.39.4:/tmp/
+sudo docker cp /tmp/endonautica.md <container>:/tmp/endonautica.md
+sudo docker exec <container> python manage.py seed_endonautica_md --path /tmp/endonautica.md
+sudo docker exec <container> python manage.py index_knowledge
+```
 
 Variables de entorno requeridas: `SECRET_KEY`, `DATABASE_URL`, `DEEPSEEK_API_KEY`  
 Variables opcionales: `DEBUG`, `ALLOWED_HOSTS`, `OPENROUTER_API_KEY`, `AI_MODEL`  
@@ -292,7 +298,11 @@ Cuando se modifica cualquier feature (costo, nombre, comportamiento, flujo), hay
 
 **Contexto inyectado:** `user_intent_context()` (onboarding_priorities) + `user_history_context()` (tests psicométricos, sesión Espejo anterior, bitácora, lectura de nacimiento) + `_retrieve_context()` (RAG: top-5 chunks de KnowledgeChunk por similitud coseno o keyword). Implementado en `config/ai_client.py` y `mirror/views.py::_get_reply()`. `max_tokens` = 700.
 
-**RAG — KnowledgeChunk:** 42 marcos teóricos (Jung, Freud, Castaneda, Grinberg, Hawkins, Bourbeau, Ruiz, Campbell, Naranjo, Gendlin, Perls, Tolle, Wilber, Lao Tse...) + chunks del PDF Endonautica. Retrieval: semántico con `get_embedding()` (DeepSeek Embeddings API) o keyword fallback. Comandos: `seed_knowledge`, `seed_endonautica_pdf`, `index_knowledge`.
+**RAG — KnowledgeChunk:** 139 chunks en producción: 101 marcos teóricos (Jung, Freud, Castaneda, Grinberg, Hawkins, Bourbeau, Ruiz, Campbell, Naranjo, Gendlin, Perls, Tolle, Wilber, Lao Tse...) + 38 chunks conceptuales del libro Endonautica (secciones `##`, primeros 3000 chars c/u — "head approach"). Retrieval: semántico con `get_embedding()` (OpenRouter `openai/text-embedding-3-small`) o keyword fallback. Comandos: `seed_knowledge` (marcos teóricos, en startCommand), `seed_endonautica_md` (libro, manual), `index_knowledge` (embeddings, manual con `OPENROUTER_API_KEY`).
+
+**Nota embeddings:** DeepSeek NO tiene API de embeddings. Siempre usar OpenRouter para `get_embedding()`.
+
+**Multimedia:** `ChatMessage.attachment` (FileField) + `attachment_type` (image/pdf/doc). Vista `chat_message()` procesa adjuntos: imágenes → base64 → visión multimodal, PDFs/docs → extracción de texto → contexto. Requiere PyPDF2, python-docx.
 
 **Multimedia:** `ChatMessage.attachment` (FileField) + `attachment_type` (image/pdf/doc). Vista `chat_message()` procesa adjuntos: imágenes → base64 → visión multimodal, PDFs/docs → extracción de texto → contexto. Requiere PyPDF2, python-docx.
 
