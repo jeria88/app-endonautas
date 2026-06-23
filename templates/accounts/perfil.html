@@ -37,11 +37,6 @@
 .cpay-mp { background:rgba(0,158,227,.08);border:1px solid rgba(0,158,227,.28);color:#44c4f0; }
 .cpay-pp { background:rgba(0,48,135,.13);border:1px solid rgba(0,112,186,.3);color:#7ab9e8; }
 .cpay-cur { font-size:0.62rem;font-weight:400;opacity:0.6; }
-/* compact pack buttons */
-.cpay-sm { display:flex;align-items:center;gap:0.25rem;padding:0.28rem 0.5rem;border-radius:7px;font-size:0.65rem;font-weight:600;text-decoration:none;transition:opacity .15s;white-space:nowrap; }
-.cpay-sm:hover { opacity:.75; }
-.cpay-sm-mp { background:rgba(0,158,227,.08);border:1px solid rgba(0,158,227,.28);color:#44c4f0; }
-.cpay-sm-pp { background:rgba(0,48,135,.13);border:1px solid rgba(0,112,186,.3);color:#7ab9e8; }
 </style>
 
 <div class="perfil-wrap">
@@ -189,25 +184,6 @@
       <a href="/pago/cancelar/" style="display:block;font-size:0.72rem;color:rgba(255,255,255,0.25);text-decoration:none;text-align:right;margin-bottom:0.75rem" data-tip="Cancela tu suscripción activa — puedes reactivarla cuando quieras">Cancelar suscripción →</a>
       {% endif %}
 
-      <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.6rem">Recargar Fractones</div>
-      {% for slug, pack in packs.items %}
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem">
-        <div>
-          <span style="font-size:0.85rem;font-weight:700;color:#d4a056">⬡ {{ pack.fractones }}</span>
-          <span style="font-size:0.72rem;color:var(--muted);margin-left:0.4rem">{{ pack.price_clp|stringformat:",.0f" }} CLP · ${{ pack.price_usd }} USD</span>
-        </div>
-        <div style="display:flex;gap:0.35rem">
-          <a href="/pago/mp/pack/{{ slug }}/" class="cpay-sm cpay-sm-mp" data-tip="Comprar ⬡ {{ pack.fractones }} fractones con Mercado Pago (pesos CLP)">
-            <svg width="13" height="13" viewBox="0 0 20 20" aria-hidden="true"><rect width="20" height="20" rx="4" fill="#009EE3"/><polyline points="3.5,15 3.5,5 10,11 16.5,5 16.5,15" stroke="white" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>
-            CLP
-          </a>
-          <a href="/pago/paypal/pack/{{ slug }}/" class="cpay-sm cpay-sm-pp" data-tip="Comprar ⬡ {{ pack.fractones }} fractones con PayPal (dólares USD)">
-            <svg width="16" height="12" viewBox="0 0 24 18" aria-hidden="true"><path d="M2,17 L2,1 L8,1 Q14,1 14,6 Q14,11 8,11 L4,11 L4,17 Z" fill="#4a7ab5"/><path d="M7,17 L7,1 L13,1 Q19,1 19,6 Q19,11 13,11 L9,11 L9,17 Z" fill="#009CDE"/></svg>
-            USD
-          </a>
-        </div>
-      </div>
-      {% endfor %}
     </div>
 
     <div class="panel" style="padding:1rem 1.25rem">

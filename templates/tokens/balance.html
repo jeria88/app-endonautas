@@ -1,19 +1,8 @@
 {% extends "base.html" %}
-{% block title %}Fractones — Endonautas{% endblock %}
+{% block title %}Mis créditos — Endonautas{% endblock %}
 {% block content %}
-<div style="max-width:560px">
-  <h1 style="font-size:1.3rem;font-weight:700;margin-bottom:1.5rem">Mis Fractones</h1>
-  <div class="panel" style="margin-bottom:1rem">
-    {% if tb %}
-    <div style="display:flex;gap:2rem;flex-wrap:wrap">
-      <div><div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.3rem">Total</div><div style="font-size:2rem;font-weight:700;color:var(--accent)">{{ tb.balance }}</div></div>
-      <div><div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.3rem">Permanentes</div><div style="font-size:1.5rem;font-weight:600">{{ tb.permanent }}</div></div>
-      <div><div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.3rem">Mensuales</div><div style="font-size:1.5rem;font-weight:600">{{ tb.monthly }}</div></div>
-    </div>
-    {% else %}
-    <div style="color:var(--muted)">Sin balance registrado.</div>
-    {% endif %}
-  </div>
-  <a href="/tokens/historial/" onclick="spaGo(event,this)" class="btn btn-ghost" style="font-size:0.82rem">Ver historial →</a>
+<div style="max-width:560px;text-align:center;padding:4rem 0">
+  <p style="color:var(--muted);font-size:0.9rem;margin-bottom:1.5rem">Esta sección no está disponible en este momento.</p>
+  <a href="/perfil/" onclick="spaGo(event,this)" class="btn btn-ghost">Volver al perfil</a>
 </div>
 {% endblock %}
