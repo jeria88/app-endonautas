@@ -48,12 +48,29 @@
 .send-btn { width:44px;height:44px;background:var(--calipso);border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#000;flex-shrink:0;transition:opacity 0.15s; }
 .send-btn:hover { opacity:0.85; }
 .send-btn:disabled { opacity:0.4;cursor:not-allowed; }
+.mic-btn { width:38px;height:38px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);flex-shrink:0;transition:background 0.15s,color 0.15s; }
+.mic-btn:hover { background:rgba(255,255,255,0.1);color:var(--text); }
+.mic-btn.recording { background:rgba(201,123,132,0.18);border-color:rgba(201,123,132,0.5);color:var(--rose);animation:mic-pulse 1s ease infinite; }
+@keyframes mic-pulse { 0%,100%{opacity:1} 50%{opacity:0.55} }
 .typing-row { display:none;align-items:center;gap:5px;color:var(--muted);font-size:0.8rem;padding:4px 0;align-self:flex-start; }
 .typing-row.show { display:flex; }
 .dot { width:5px;height:5px;background:var(--muted);border-radius:50%;animation:bounce 1.4s infinite both; }
 .dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
 @keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
 @media(max-width:768px){ .espejo-shell{grid-template-columns:1fr;height:calc(100vh - 54px - 2rem)}.sessions-panel{display:none} }
+.chat-input-area { padding:14px 20px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:0;flex-shrink:0; }
+.input-row { display:flex;gap:10px;align-items:flex-end; }
+.att-preview-wrap { display:none;align-items:center;gap:8px;padding:8px 12px;background:rgba(126,204,205,0.07);border:1px solid rgba(126,204,205,0.2);border-radius:8px;margin-bottom:10px; }
+.att-preview-wrap.has-file { display:flex; }
+.att-thumb { width:36px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0; }
+.att-name { flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.78rem;color:var(--muted); }
+.att-remove { background:none;border:none;color:var(--dim);cursor:pointer;font-size:1rem;padding:2px 6px;border-radius:4px;flex-shrink:0; }
+.att-remove:hover { color:var(--rose); }
+.clip-btn { width:38px;height:38px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);flex-shrink:0;transition:background 0.15s,color 0.15s; }
+.clip-btn:hover { background:rgba(255,255,255,0.1);color:var(--text); }
+.clip-btn.has-file { border-color:rgba(126,204,205,0.4);color:var(--calipso); }
+.msg-img { max-width:200px;max-height:160px;border-radius:8px;display:block;margin-top:6px; }
+.msg-doc { display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:6px;font-size:0.75rem;color:var(--muted);margin-top:6px; }
 </style>
 
 <!-- Global dropdown (singleton, repositioned on open) -->
@@ -116,10 +133,20 @@
     </div>
 
     <div class="chat-input-area">
-      <textarea id="chat-input" placeholder="Escribe tu mensaje..." rows="1"></textarea>
-      <button class="send-btn" id="send-btn" onclick="sendMessage()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="17" height="17"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-      </button>
+      <div id="att-preview-wrap" class="att-preview-wrap"></div>
+      <div class="input-row">
+        <textarea id="chat-input" placeholder="Escribe tu mensaje..." rows="1"></textarea>
+        <input type="file" id="file-input" accept="image/*,.pdf,.doc,.docx" hidden>
+        <button class="clip-btn" id="clip-btn" type="button" title="Adjuntar imagen o documento" onclick="document.getElementById('file-input').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+        </button>
+        <button class="mic-btn" id="mic-btn" title="Hablar" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+        <button class="send-btn" id="send-btn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="17" height="17"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -129,6 +156,8 @@
 <script>
 let activeSessionPk = null;
 let menuTargetPk = null;
+let sessionLimitReached = false;
+let pendingFile = null;
 const csrf = () => document.getElementById('csrf-holder').querySelector('[name=csrfmiddlewaretoken]').value;
 
 // ── Dropdown menu ──────────────────────────────────────────────
@@ -228,13 +257,55 @@ function scrollBottom() {
   m.scrollTop = m.scrollHeight;
 }
 
-function addBubble(role, content, time) {
+function addBubble(role, content, time, file) {
   const empty = document.getElementById('chat-empty');
   if (empty) empty.remove();
   const typing = document.getElementById('typing-row');
   const div = document.createElement('div');
   div.className = `msg msg-${role}`;
-  div.innerHTML = `<div class="msg-bubble">${content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div><div class="msg-time">${time}</div>`;
+  const safeContent = (content || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>');
+  const bubbleEl = document.createElement('div');
+  bubbleEl.className = 'msg-bubble';
+  bubbleEl.innerHTML = safeContent;
+  if (file) {
+    if (file.type && file.type.startsWith('image/')) {
+      const img = document.createElement('img');
+      img.className = 'msg-img';
+      img.src = URL.createObjectURL(file);
+      img.alt = 'adjunto';
+      bubbleEl.appendChild(img);
+    } else {
+      const badge = document.createElement('div');
+      badge.className = 'msg-doc';
+      badge.textContent = '📎 ' + (file.name || 'adjunto');
+      bubbleEl.appendChild(badge);
+    }
+  }
+  div.appendChild(bubbleEl);
+  const timeEl = document.createElement('div');
+  timeEl.className = 'msg-time';
+  timeEl.textContent = time;
+  div.appendChild(timeEl);
+  document.getElementById('chat-messages').insertBefore(div, typing);
+  scrollBottom();
+}
+
+function clearAttachment() {
+  pendingFile = null;
+  document.getElementById('file-input').value = '';
+  const wrap = document.getElementById('att-preview-wrap');
+  wrap.innerHTML = '';
+  wrap.classList.remove('has-file');
+  document.getElementById('clip-btn').classList.remove('has-file');
+}
+
+function addUpgradeBubble(text, linkHref, linkLabel) {
+  const empty = document.getElementById('chat-empty');
+  if (empty) empty.remove();
+  const typing = document.getElementById('typing-row');
+  const div = document.createElement('div');
+  div.className = 'msg msg-assistant';
+  div.innerHTML = `<div class="msg-bubble" style="border-color:rgba(212,160,86,0.3)">${text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}<br><br>→ <a href="${linkHref}" style="color:var(--calipso)">${linkLabel}</a></div><div class="msg-time">—</div>`;
   document.getElementById('chat-messages').insertBefore(div, typing);
   scrollBottom();
 }
@@ -244,6 +315,7 @@ function buildSessionRowHTML(pk, title) {
 }
 
 async function newChat() {
+  sessionLimitReached = false;
   const btn = document.getElementById('btn-new-chat');
   btn.disabled = true;
   try {
@@ -274,6 +346,7 @@ async function newChat() {
 
 async function loadSession(pk, el) {
   if (el.querySelector && el.querySelector('input.session-rename-input')) return;
+  sessionLimitReached = false;
   document.querySelectorAll('.session-row').forEach(r => r.classList.remove('active'));
   el.classList.add('active');
   activeSessionPk = pk;
@@ -308,9 +381,30 @@ inputEl.addEventListener('input', () => {
   inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
 });
 
+// ── Adjuntos ───────────────────────────────────────────────────
+document.getElementById('file-input').addEventListener('change', function() {
+  const file = this.files[0];
+  if (!file) return;
+  pendingFile = file;
+  const wrap = document.getElementById('att-preview-wrap');
+  wrap.classList.add('has-file');
+  document.getElementById('clip-btn').classList.add('has-file');
+  const safeName = file.name.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  if (file.type && file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      wrap.innerHTML = `<img class="att-thumb" src="${e.target.result}" alt="preview"><span class="att-name">${safeName}</span><button class="att-remove" onclick="clearAttachment()" title="Quitar adjunto">✕</button>`;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    wrap.innerHTML = `<span style="font-size:1.1rem">📄</span><span class="att-name">${safeName}</span><button class="att-remove" onclick="clearAttachment()" title="Quitar adjunto">✕</button>`;
+  }
+});
+
 async function sendMessage() {
   const content = inputEl.value.trim();
-  if (!content) return;
+  const file = pendingFile;
+  if (!content && !file) return;
   if (!activeSessionPk) {
     try { await newChat(); } catch(e) { console.error('newChat error:', e); return; }
     if (!activeSessionPk) return;
@@ -319,18 +413,20 @@ async function sendMessage() {
   btn.disabled = true; inputEl.disabled = true;
   inputEl.value = ''; inputEl.style.height = 'auto';
   const now = new Date().toLocaleTimeString('es-CL', {hour:'2-digit',minute:'2-digit'});
-  addBubble('user', content, now);
+  addBubble('user', content, now, file);
+  if (file) clearAttachment();
   document.getElementById('typing-row').classList.add('show');
   scrollBottom();
   try {
     const fd = new FormData();
-    fd.append('content', content);
+    if (content) fd.append('content', content);
     fd.append('csrfmiddlewaretoken', csrf());
+    if (file) fd.append('attachment', file);
     const r = await fetch(`/espejo/chat/${activeSessionPk}/mensaje/`, {method:'POST', body:fd});
     const data = await r.json();
     if (r.status === 403 && data.upgrade_required) {
-      enableChat(false);
-      addBubble('assistant', data.error + '\n\n→ <a href="/pagos/planes/" style="color:var(--calipso)">Ver plan Navegante</a>', '—');
+      sessionLimitReached = true;
+      addUpgradeBubble(data.error, '/pagos/planes/', 'Ver plan Navegante');
     } else if (data.reply) {
       const t = new Date(data.created_at).toLocaleTimeString('es-CL', {hour:'2-digit',minute:'2-digit'});
       addBubble('assistant', data.reply, t);
@@ -346,9 +442,55 @@ async function sendMessage() {
   } catch(e) { console.error('sendMessage error:', e); addBubble('assistant', 'Error de conexión.', '—'); }
   finally {
     document.getElementById('typing-row').classList.remove('show');
-    btn.disabled = false; inputEl.disabled = false; inputEl.focus();
+    if (!sessionLimitReached) {
+      btn.disabled = false; inputEl.disabled = false; inputEl.focus();
+    }
     scrollBottom();
   }
 }
+
+// ── Micrófono (Web Speech API) ─────────────────────────────────
+(function() {
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const micBtn = document.getElementById('mic-btn');
+  if (!SpeechRec) { micBtn.style.display = 'none'; return; }
+
+  const rec = new SpeechRec();
+  rec.lang = 'es-CL';
+  rec.interimResults = false;
+  rec.maxAlternatives = 1;
+  let recording = false;
+
+  micBtn.addEventListener('click', () => {
+    if (recording) { rec.stop(); return; }
+    try { rec.start(); } catch(e) { console.warn('mic start error', e); }
+  });
+
+  rec.onstart = () => {
+    recording = true;
+    micBtn.classList.add('recording');
+    micBtn.title = 'Detener';
+  };
+
+  rec.onend = () => {
+    recording = false;
+    micBtn.classList.remove('recording');
+    micBtn.title = 'Hablar';
+  };
+
+  rec.onresult = (e) => {
+    const text = e.results[0][0].transcript;
+    const input = document.getElementById('chat-input');
+    input.value = (input.value ? input.value + ' ' : '') + text;
+    input.dispatchEvent(new Event('input'));
+    input.focus();
+  };
+
+  rec.onerror = (e) => {
+    console.warn('mic error', e.error);
+    recording = false;
+    micBtn.classList.remove('recording');
+  };
+})();
 </script>
 {% endblock %}

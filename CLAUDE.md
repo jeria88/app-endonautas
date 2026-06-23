@@ -243,8 +243,9 @@ upgrade_wall(request, 'navegante', 'Nombre del feature')  # devuelve HttpRespons
 
 Start command configurado en Coolify:
 ```
-python manage.py fix_db_state && python manage.py migrate --noinput && python manage.py create_admin && python manage.py seed_tests && python manage.py seed_regulacion && python manage.py seed_momentos && python manage.py seed_foros && python manage.py seed_fractal && python manage.py seed_terapeuta && python manage.py seed_missions && gunicorn config.wsgi --workers 2 --threads 2 --timeout 60 --bind 0.0.0.0:8000
+python manage.py fix_db_state && python manage.py migrate --noinput && python manage.py create_admin && python manage.py seed_tests && python manage.py seed_regulacion && python manage.py seed_momentos && python manage.py seed_foros && python manage.py seed_fractal && python manage.py seed_terapeuta && python manage.py seed_missions && python manage.py seed_knowledge && gunicorn config.wsgi --workers 2 --threads 2 --timeout 60 --bind 0.0.0.0:8000
 ```
+**Nota:** `seed_endonautica_pdf` y `index_knowledge` se ejecutan manualmente en local, no en Coolify (el PDF no está en el servidor y los embeddings requieren DEEPSEEK_API_KEY con cuota disponible).
 
 Variables de entorno requeridas: `SECRET_KEY`, `DATABASE_URL`, `DEEPSEEK_API_KEY`  
 Variables opcionales: `DEBUG`, `ALLOWED_HOSTS`, `OPENROUTER_API_KEY`, `AI_MODEL`  
@@ -287,9 +288,13 @@ Cuando se modifica cualquier feature (costo, nombre, comportamiento, flujo), hay
 
 **Implementación:** `mirror/views.py` → `chat_new` controla creación, `chat_message` controla tiempo con `datetime.timedelta(minutes=45)`.
 
-**Sistema prompt:** `mirror/prompts/espejo_system.txt` — cargado en cada request vía `_load_system_prompt()`. Contiene: rol de espejo (no terapeuta, no diagnóstico), tono y estilo de respuesta, protocolos de escalada de crisis (ideación suicida 3 niveles, voces psicóticas, pánico agudo, disociación, violencia doméstica, fantasías de daño). Contexto psicométrico del usuario inyectado antes del prompt vía `user_history_context()`. Pendiente: modo "revelación de patrones" explícito.
+**Sistema prompt:** `mirror/prompts/espejo_system.txt` — cargado en cada request vía `_load_system_prompt()`. Contiene: rol de espejo (no terapeuta, no diagnóstico), tono y estilo, protocolos de crisis (ideación suicida 3 niveles, voces psicóticas, pánico agudo, disociación, violencia doméstica, fantasías de daño), y modo "revelación de patrones" (fase 1 sostén → fase 2 nombrar el patrón con referencia al contexto psicométrico).
 
-**Contexto inyectado actualmente:** `user_intent_context()` (onboarding_priorities) + `user_history_context()` (resultados psicométricos, sesión Espejo anterior con `conflict_summary`/`return_question`, entradas de bitácora, lectura de nacimiento). Implementado en `config/ai_client.py` — inyectado en `_get_reply()` de `mirror/views.py`. `max_tokens` subió de 500 a 700.
+**Contexto inyectado:** `user_intent_context()` (onboarding_priorities) + `user_history_context()` (tests psicométricos, sesión Espejo anterior, bitácora, lectura de nacimiento) + `_retrieve_context()` (RAG: top-5 chunks de KnowledgeChunk por similitud coseno o keyword). Implementado en `config/ai_client.py` y `mirror/views.py::_get_reply()`. `max_tokens` = 700.
+
+**RAG — KnowledgeChunk:** 42 marcos teóricos (Jung, Freud, Castaneda, Grinberg, Hawkins, Bourbeau, Ruiz, Campbell, Naranjo, Gendlin, Perls, Tolle, Wilber, Lao Tse...) + chunks del PDF Endonautica. Retrieval: semántico con `get_embedding()` (DeepSeek Embeddings API) o keyword fallback. Comandos: `seed_knowledge`, `seed_endonautica_pdf`, `index_knowledge`.
+
+**Multimedia:** `ChatMessage.attachment` (FileField) + `attachment_type` (image/pdf/doc). Vista `chat_message()` procesa adjuntos: imágenes → base64 → visión multimodal, PDFs/docs → extracción de texto → contexto. Requiere PyPDF2, python-docx.
 
 ---
 
@@ -335,16 +340,16 @@ send_welcome_email(email, name='')
 
 ### Alta prioridad
 1. ~~**Espejo IA — enriquecimiento de contexto**~~ ✅ RESUELTO 2026-06-23
-   - `config/ai_client.py` → `user_history_context(user)`: inyecta tests psicométricos recientes, sesión Espejo anterior (`conflict_summary` + `return_question`), bitácora reciente, lectura de nacimiento
-   - `mirror/views.py` → `_get_reply()`: usa `user_history_context` + `max_tokens` subido de 500 a 700
-   - Pendiente de siguiente iteración: modo "revelación de patrones" en `espejo_system.txt`, lecturas de oráculo como contexto
+2. ~~**Espejo — prompt revelación de patrones**~~ ✅ RESUELTO 2026-06-23 (`espejo_system.txt`)
+3. ~~**Espejo — RAG con marcos teóricos**~~ ✅ RESUELTO 2026-06-23 (`seed_knowledge`, `_retrieve_context`, `get_embedding`)
+4. ~~**Espejo — multimedia (foto/doc/voz)**~~ ✅ RESUELTO 2026-06-23 (ChatMessage.attachment, Web Speech API)
 
-2. **Practitioners views** — gestionar perfiles de clientes, asignar tests, ver resultados
+5. **Practitioners views** — gestionar perfiles de clientes, asignar tests, ver resultados
 
-3. **Reportes** (`reports` app vacía) — dashboard agregado con evolución temporal
+6. **Reportes** (`reports` app vacía) — dashboard agregado con evolución temporal
 
 ### Media prioridad
-4. **Tests psicométricos a auditar** (implementación incompleta):
+7. **Tests psicométricos a auditar** (implementación incompleta):
    - ECR: necesita ECR-R (36 ítems) o ECR-12 en likert7
    - SOC-29: actualmente 7 ítems, versión validada tiene 29 en bipolar likert7
    - MAIA: actualmente 21 ítems, MAIA-2 tiene 37 en escala 0-5

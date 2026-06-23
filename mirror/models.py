@@ -31,11 +31,14 @@ class ChatSession(models.Model):
 
 class ChatMessage(models.Model):
     ROLE_CHOICES = [('user', 'Usuario'), ('assistant', 'Espejo')]
+    ATTACHMENT_TYPES = [('image', 'Imagen'), ('pdf', 'PDF'), ('doc', 'Documento')]
 
     session = models.ForeignKey(ChatSession, on_delete=models.CASCADE, related_name='messages')
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     content = models.TextField()
     sources = models.JSONField(default=list, blank=True)
+    attachment = models.FileField(upload_to='espejo/attachments/%Y/%m/', blank=True, null=True)
+    attachment_type = models.CharField(max_length=10, choices=ATTACHMENT_TYPES, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

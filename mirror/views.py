@@ -1,4 +1,5 @@
 import datetime
+import math
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
@@ -62,21 +63,46 @@ def chat_message(request, pk):
                 'upgrade_required': True,
             }, status=403)
     content = request.POST.get('content', '').strip()
-    if not content:
+    file = request.FILES.get('attachment')
+    if not content and not file:
         return JsonResponse({'error': 'Mensaje vacío'}, status=400)
 
-    ChatMessage.objects.create(session=session, role='user', content=content)
+    # Determinar tipo de adjunto
+    att_type = ''
+    if file:
+        ext = file.name.rsplit('.', 1)[-1].lower() if '.' in file.name else ''
+        if ext in ('jpg', 'jpeg', 'png', 'webp'):
+            att_type = 'image'
+        elif ext == 'pdf':
+            att_type = 'pdf'
+        elif ext in ('doc', 'docx'):
+            att_type = 'doc'
+
+    user_msg = ChatMessage(session=session, role='user', content=content or '')
+    if file and att_type:
+        user_msg.attachment = file
+        user_msg.attachment_type = att_type
+    user_msg.save()
+
     new_title = None
-    if not session.title:
-        session.title = content[:60].strip()
+    title_src = content or (file.name if file else '')
+    if not session.title and title_src:
+        session.title = title_src[:60].strip()
         session.save(update_fields=['title'])
         new_title = session.title
-    reply = _get_reply(session, content, user=request.user)
+
+    # Pasar adjunto abierto a _get_reply si es necesario
+    att_file = user_msg.attachment if att_type else None
+    reply = _get_reply(session, content, user=request.user, attachment=att_file, attachment_type=att_type)
     msg = ChatMessage.objects.create(session=session, role='assistant', content=reply)
 
     resp = {'reply': reply, 'created_at': msg.created_at.isoformat()}
     if new_title:
         resp['title'] = new_title
+    if att_type:
+        resp['attachment_url'] = user_msg.attachment.url if user_msg.attachment else ''
+        resp['attachment_type'] = att_type
+        resp['attachment_name'] = file.name if file else ''
     return JsonResponse(resp)
 
 
@@ -284,15 +310,104 @@ def _load_system_prompt():
         return 'Eres el Espejo de Conflictos, un acompañante de autoconocimiento.'
 
 
-def _get_reply(session, user_content, user=None):
+def _cosine(a, b):
+    n = math.sqrt(sum(x * x for x in a)) * math.sqrt(sum(x * x for x in b))
+    return sum(x * y for x, y in zip(a, b)) / n if n else 0.0
+
+
+def _retrieve_context(query, k=5):
+    from mirror.models import KnowledgeChunk
+    chunks = KnowledgeChunk.objects.all()
+    if not chunks.exists():
+        return []
+    # Retrieval semántico si hay embeddings disponibles
+    with_emb = chunks.exclude(embedding=[])
+    if with_emb.exists():
+        try:
+            from config.ai_client import get_embedding
+            q_vec = get_embedding(query)
+            if q_vec:
+                scored = sorted(
+                    [(c, _cosine(q_vec, c.embedding)) for c in with_emb],
+                    key=lambda x: x[1], reverse=True,
+                )
+                return [c.content for c, _ in scored[:k]]
+        except Exception:
+            pass
+    # Fallback: búsqueda por palabras clave
+    words = [w for w in query.lower().split() if len(w) > 3]
+    if not words:
+        return []
+    from django.db.models import Q
+    q = Q()
+    for w in words[:5]:
+        q |= Q(content__icontains=w)
+    return list(chunks.filter(q).values_list('content', flat=True)[:k])
+
+
+def _extract_attachment_text(file_field, attachment_type):
+    """Extrae texto de un adjunto PDF o doc. Retorna (texto, mime_base64) según tipo."""
+    if not file_field:
+        return None, None, None
+    try:
+        if attachment_type == 'image':
+            import base64
+            file_field.seek(0)
+            data = file_field.read()
+            b64 = base64.b64encode(data).decode()
+            ext = file_field.name.rsplit('.', 1)[-1].lower()
+            mime = {'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png', 'webp': 'image/webp'}.get(ext, 'image/jpeg')
+            return None, b64, mime
+        elif attachment_type == 'pdf':
+            import PyPDF2
+            file_field.seek(0)
+            reader = PyPDF2.PdfReader(file_field)
+            text = '\n\n'.join(p.extract_text() or '' for p in reader.pages)
+            return text[:4000], None, None
+        elif attachment_type == 'doc':
+            import docx
+            import io
+            file_field.seek(0)
+            doc = docx.Document(io.BytesIO(file_field.read()))
+            text = '\n'.join(p.text for p in doc.paragraphs if p.text.strip())
+            return text[:4000], None, None
+    except Exception:
+        pass
+    return None, None, None
+
+
+def _get_reply(session, user_content, user=None, attachment=None, attachment_type=None):
     from config.ai_client import call_ai, user_intent_context, user_history_context
     intent = user_intent_context(user) if user else ''
     history_ctx = user_history_context(user) if user else ''
-    system = intent + history_ctx + _load_system_prompt()
+    query = user_content or ''
+    kb_chunks = _retrieve_context(query, k=5) if query else []
+    kb_text = ''
+    if kb_chunks:
+        kb_text = (
+            'Marco teórico de referencia (úsalo si es pertinente; no lo cites textualmente):\n'
+            + '\n\n---\n\n'.join(kb_chunks)
+            + '\n\n'
+        )
+    system = intent + history_ctx + kb_text + _load_system_prompt()
     history = list(session.messages.values('role', 'content'))
     messages = [{'role': 'system', 'content': system}]
     messages += [{'role': m['role'] if m['role'] == 'user' else 'assistant', 'content': m['content']} for m in history[-10:]]
-    messages.append({'role': 'user', 'content': user_content})
+
+    # Construir mensaje del usuario según tipo de adjunto
+    extra_text, img_b64, img_mime = _extract_attachment_text(attachment, attachment_type)
+    if img_b64:
+        user_part = {'role': 'user', 'content': [
+            {'type': 'text', 'text': user_content or 'Observa esta imagen y comparte lo que ves.'},
+            {'type': 'image_url', 'image_url': {'url': f'data:{img_mime};base64,{img_b64}'}},
+        ]}
+    elif extra_text:
+        combined = f'{user_content}\n\n[Documento adjunto]:\n{extra_text}' if user_content else f'[Documento adjunto]:\n{extra_text}'
+        user_part = {'role': 'user', 'content': combined}
+    else:
+        user_part = {'role': 'user', 'content': user_content}
+
+    messages.append(user_part)
     return call_ai(messages, max_tokens=700) or 'No pude conectar con el espejo en este momento.'
 
 

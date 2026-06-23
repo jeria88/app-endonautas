@@ -199,3 +199,20 @@ def _call_deepseek(messages, max_tokens, timeout):
         return r.json()['choices'][0]['message']['content']
     except Exception:
         return ''
+
+
+def get_embedding(text, timeout=15):
+    """Genera embedding via DeepSeek. Retorna lista de floats o None si falla."""
+    key = getattr(settings, 'DEEPSEEK_API_KEY', '')
+    if not key:
+        return None
+    try:
+        r = requests.post(
+            'https://api.deepseek.com/embeddings',
+            json={'model': 'deepseek-embedding', 'input': text[:2000]},
+            headers={'Authorization': f'Bearer {key}'},
+            timeout=timeout,
+        )
+        return r.json()['data'][0]['embedding']
+    except Exception:
+        return None
