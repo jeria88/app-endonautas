@@ -89,22 +89,33 @@ Script de tracking (ya integrado en ambos frontends):
 5. Serpbear SEO — `https://seo.endonautas.cl`
 6. Coolify Panel — `http://146.181.39.4:8000`
 
-### Listmonk — listas creadas
+### Listmonk — configurado
 
-| Lista | Descripción |
-|-------|-------------|
-| Endonautas — Usuarios App | Registrados en app.endonautas.cl |
-| Endonautas — Interesados | Leads de la landing page |
-| Endonautas — Newsletter | Suscriptores al blog/contenido |
+SMTP configurado con Brevo SMTP relay:
+- Host: `smtp-relay.brevo.com` · Puerto: `587` · Auth: STARTTLS / login
+- Login SMTP: `aaccf1001@smtp-brevo.com`
+- From: `hola@endonautas.cl`
 
-**Pendiente:** configurar proveedor SMTP en Settings > SMTP.
+| Lista | ID | Descripción |
+|-------|----|-------------|
+| Endonautas — Usuarios App | 1 | Registrados en app.endonautas.cl |
+| Endonautas — Interesados | 2 | Leads de la landing page |
+| Endonautas — Newsletter | 3 | Suscriptores al blog/contenido |
 
-### Serpbear — pendiente manual
+**API programática:** usuario `api_claude` tipo `api` — autenticación con token en campo `password` (plain text en basic auth: `api_claude:<token>`).
 
-Serpbear requiere configuración inicial vía UI en `https://seo.endonautas.cl`:
-1. Agregar dominio `endonautas.cl`
-2. Añadir keywords objetivo
-3. Configurar API key de Google Search Console (opcional)
+**Templates TX disponibles:** ID 3 (Sample transactional) — usar para emails automáticos vía `/api/tx`.
+
+### SerpBear — configurado
+
+Dominio `endonautas.cl` agregado vía SQLite directo (la UI requiere JWT con env var `SECRET` que no coincide con `SECRETKEY` en el contenedor — workaround confirmado).
+
+Keywords configuradas basadas en estrategia SEO de 3 capas:
+- Capa 1 (autoconocimiento): términos base
+- Capa 2 (viaje interior): términos de proceso
+- Capa 3 (nivel de conciencia): términos de profundidad
+
+Para agregar keywords nuevas: `docker exec -it <serpbear_container> sh`, modificar SQLite en `/app/data/database.sqlite`.
 
 ---
 
@@ -127,6 +138,12 @@ python manage.py fix_db_state && \
 python manage.py migrate --noinput && \
 python manage.py create_admin && \
 python manage.py seed_tests && \
+python manage.py seed_regulacion && \
+python manage.py seed_momentos && \
+python manage.py seed_foros && \
+python manage.py seed_fractal && \
+python manage.py seed_terapeuta && \
+python manage.py seed_missions && \
 gunicorn config.wsgi --workers 2 --threads 2 --timeout 60 --bind 0.0.0.0:8000
 ```
 
@@ -208,7 +225,8 @@ practitioners/    — directorio de practicantes, perfiles temporales
 /comunidad/         — feed social (posts, reacciones, comentarios)
 /foros/             — foros por tema
 /mensajes/          — mensajes directos
-/tokens/            — balance y misiones de Fractones
+/tests/mapa-patrones/          — lead magnet: Mapa de Patrones Personales
+/tests/mapa-patrones/resultado/ — resultado del mapa con análisis IA cruzado
 /practicantes/      — directorio de practicantes
 /admin/             — panel de administración Django
 ```
@@ -417,38 +435,53 @@ Modo terapeuta para sesiones de orientación integrativa.
 
 - **RAG** sobre base de conocimiento (`KnowledgeChunk` con embeddings en JSONField)
 - **ChatSession** / **ChatMessage** — historial de conversación por usuario
-- `conflict_summary` y `return_question` — memoria versionada de la sesión
+- `conflict_summary` y `return_question` — campos de memoria versionada (guardados, pendiente inyectarlos al prompt)
 - **DreamEntry** — diario de sueños con tags, fecha, is_lucid, reality_check
 - **Regulación** — técnicas somáticas (view independiente)
 - IA: DeepSeek vía `settings.DEEPSEEK_API_KEY`
+
+### Restricciones por plan
+| Plan | Sesiones | Duración |
+|------|----------|----------|
+| Free | 1/día (reutiliza sesión existente) | 45 min máx |
+| Navegante+ | Ilimitadas | Sin límite |
+
+### System prompt
+`mirror/prompts/espejo_system.txt` — actualmente optimizado para sostén/presencia. Pendiente: modo revelación de patrones con contexto psicométrico del usuario.
 
 ---
 
 ## Módulo: psychometrics (Tests)
 
-- **Test** — nombre, dimensión (12 dimensiones del mapa), tipo de instrumento, costo en tokens
+- **Test** — nombre, dimensión (12 dimensiones del mapa), tipo de instrumento
 - **Question** + **Choice** — preguntas con opciones y pesos
 - **TestResult** — respuestas JSON + score + insight generado por IA
 - Seeds vía `python manage.py seed_tests` (comando de management)
 
 Dimensiones: identidad, emociones, cuerpo, vínculos, sombra, espiritualidad, sueños, propósito, comunidad, abundancia, creatividad, mente
 
+### Mapa de Patrones Personales (lead magnet)
+
+Feature de conversión principal. Tres tests gratuitos secuenciados que la IA cruza para identificar patrones.
+
+| Test | Slug | Dimensión |
+|------|------|-----------|
+| Big Five | `big-five-inventario-de-personalidad` | Personalidad |
+| Heridas de la Infancia | `heridas-de-la-infancia-lise-bourbeau` | Origen |
+| Dirty Dozen | `dirty-dozen-triada-oscura` | Sombra |
+
+- `/tests/mapa-patrones/` — intro con progreso
+- `/tests/mapa-patrones/resultado/` — 3 patrones IA + upgrade trigger
+- Free: ve patrones, locked el reflejo integrador y siguiente paso con Espejo
+- Navegante+: acceso completo
+
+Tests gratuitos (sin plan requerido): definidos en `accounts/plan_utils.py → FREE_TEST_SLUGS`
+
 ---
 
-## Módulo: tokens (Fractones)
+## Módulo: tokens (legacy — desactivado)
 
-- **TokenBalance** (OneToOne a User): `permanent` + `monthly` (se renuevan)
-- `spend()` consume mensual primero, luego permanente
-- **TokenTransaction** — log de cada movimiento con razón
-- Misiones: acciones que otorgan tokens
-
-### Economía
-
-| Plan | Fractones/mes |
-|------|--------------|
-| free | 100 |
-| navegante | 600 |
-| practicante | 3.000 |
+Sistema de Fractones desactivado. Las tablas (`TokenBalance`, `TokenTransaction`, `Mission`) siguen en la BD pero no se usan. `tokens/views.py` redirige a `/pagos/planes/`. No agregar lógica de tokens en features nuevas.
 
 ---
 

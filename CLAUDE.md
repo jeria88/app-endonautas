@@ -31,7 +31,7 @@ python3 manage.py seed_fractal_cards # pobla cartas fractales
 | `birth` | ✅ activa | Lecturas de nacimiento: astral, Human Design, Saju/BaZi |
 | `oraculo` | ✅ activa | Tarot Terapéutico (Jodorowsky), I Ching, Oráculo Fractal |
 | `psychometrics` | ✅ activa | 35 tests psicométricos con insights IA |
-| `tokens` | ✅ activa | Fractones: balance, transacciones, misiones, Hotmart |
+| `tokens` | 🔴 legacy | Fractones desactivados — tablas en BD sin uso activo, views redirigen a /pagos/planes/ |
 | `mirror` | ✅ activa | Espejo de Conflictos (RAG + DeepSeek), sueños, regulación |
 | `community` | ✅ activa | Feed social, foros, mensajes directos |
 | `terapeuta` | ✅ activa | Modo terapeuta: diagnóstico por framework, técnicas somáticas |
@@ -53,15 +53,6 @@ bio           TextField
 onboarding_complete  BooleanField
 hotmart_subscriber_code  CharField
 tokens_last_renewed  DateField
-```
-
-### `tokens.TokenBalance`
-```python
-permanent     int   # ganados + comprados, no expiran
-monthly       int   # recarga del plan, se reemplaza cada ciclo
-# .spend(amount, reason) — descuenta monthly primero, luego permanent
-# .credit_permanent / .credit_monthly
-# balance = permanent + monthly (property)
 ```
 
 ### `oraculo.CartaFractal`
@@ -168,13 +159,16 @@ Clase `.panel`: glassmorphism oscuro con `backdrop-filter:blur(14px)`.
 
 ---
 
-## Sistema de Planes (sin fractones)
+## Sistema de Planes
 
 ### Acceso por feature
 | Feature | Free | Navegante ($10/mes) | Practicante ($39/mes) |
 |---------|------|--------------------|-----------------------|
-| Comunidad, Bitácora, Espejo, Regulación | ✓ | ✓ | ✓ |
+| Comunidad, Bitácora, Regulación | ✓ | ✓ | ✓ |
+| Espejo IA (1 sesión/día · máx 45 min) | ✓ | — | — |
+| Espejo IA ilimitado | — | ✓ | ✓ |
 | Carta Astral | ✓ | ✓ | ✓ |
+| Mapa de Patrones (3 tests gratuitos + IA) | ✓ — patrones visibles | ✓ — completo | ✓ — completo |
 | Tests: Big Five, Heridas Infancia, Dirty Dozen | ✓ | ✓ | ✓ |
 | I Ching, Tarot 1 carta | ✓ | ✓ | ✓ |
 | Todos los tests (35+) | — | ✓ | ✓ |
@@ -192,10 +186,10 @@ plan_at_least(user, 'navegante')   # True si plan >= navegante
 upgrade_wall(request, 'navegante', 'Nombre del feature')  # devuelve HttpResponse con muro
 ```
 
-### Estado de tokens (deshabilitado)
-- `tokens/signals.py`: vaciado — ya no genera fractones automáticamente
+### Sistema de tokens (desactivado)
+- `tokens/signals.py`: vaciado — no genera fractones
 - `tokens/views.py`: redirige a /pagos/planes/
-- Las tablas TokenBalance, Mission, etc. siguen en DB pero sin uso activo
+- Tablas en BD (TokenBalance, Mission, TokenTransaction) sin uso activo — no tocar
 
 ---
 
@@ -283,20 +277,35 @@ Cuando se modifica cualquier feature (costo, nombre, comportamiento, flujo), hay
 
 ---
 
-## Modelo Espejo — IMPLEMENTADO
+## Modelo Espejo — restricciones por plan
 
-Espejo es **gratis e ilimitado** para todos los planes. No hay cobro por mensaje ni por sesión. La diferencia entre planes se da en otras features, no en el espejo.
+| Plan | Sesiones | Duración |
+|------|----------|----------|
+| Free | 1 por día (reutiliza la existente si ya hay una de hoy) | 45 min máx por sesión |
+| Navegante | Ilimitadas | Sin límite |
+| Practicante | Ilimitadas | Sin límite |
+
+**Implementación:** `mirror/views.py` → `chat_new` controla creación, `chat_message` controla tiempo con `datetime.timedelta(minutes=45)`.
+
+**Sistema prompt:** `mirror/prompts/espejo_system.txt` — cargado en cada request vía `_load_system_prompt()`. Actualmente optimizado para presencia/sostén, NO para revelación de patrones. Pendiente: enriquecer con contexto psicométrico del usuario.
+
+**Contexto inyectado actualmente:** solo `onboarding_priorities` del usuario (vía `user_intent_context()`). Los campos `conflict_summary` y `return_question` del modelo ChatSession existen pero **no se inyectan al prompt** — pendiente.
 
 ---
 
-## Pendientes técnicos (al 2026-06-22)
+## Pendientes técnicos (al 2026-06-23)
 
 ### Alta prioridad
-1. **Fractones en features existentes**
-   - Espejo: modelo de cobro pendiente de decisión (ver sección "Modelo de costos Espejo")
-   - AI Insights: `spend(user, 'ai_insight')` antes de llamar DeepSeek en test_result
-   - Onboarding: `credit_mission(user, 'onboarding')` al completar el flow
-   - Mensaje de bienvenida instructivo en el espejo (pendiente de definir junto al modelo)
+1. **Espejo IA — enriquecimiento de contexto** (próxima tarea grande)
+   - Inyectar resultados psicométricos del usuario en el system prompt del Espejo
+   - Inyectar `conflict_summary` y `return_question` de la sesión anterior
+   - Reescribir `espejo_system.txt`: agregar modo "revelación de patrones" además de modo "sostén"
+   - Integrar consultas al módulo terapeuta como contexto
+   - Integrar lecturas de oráculo (verificar si se guardan — `SesionOraculo.guardada`)
+   - Integrar reportes de nacimiento (`BirthReport.ai_reading`)
+   - Integrar entradas de bitácora (`BitacoraEntry`)
+   - Recomendar ejercicios de regulación basados en el contexto acumulado
+   - Subir `max_tokens` de 500 a 700-800 en llamadas al Espejo
 
 2. **Practitioners views** — gestionar perfiles de clientes, asignar tests, ver resultados
 
@@ -310,18 +319,11 @@ Espejo es **gratis e ilimitado** para todos los planes. No hay cobro por mensaje
    - DERS-16: actualmente 8 ítems, versión validada tiene 16 en likert5
    - PSQI: suma simple, scoring real tiene 7 componentes ponderados
 
-5. **Hotmart packs** — crear 3 productos, agregar offer codes a env, testear webhook
-   ```python
-   HOTMART_PACK_200   = offer_code...
-   HOTMART_PACK_600   = offer_code...
-   HOTMART_PACK_2000  = offer_code...
-   ```
-
-6. **Fondos árbol y archipiélago** — en AESTHETIC_CHOICES pero sin implementación visual
+5. **Fondos árbol y archipiélago** — en AESTHETIC_CHOICES pero sin implementación visual
 
 ### Baja prioridad
-7. Eliminar theme switcher temporal de `base.html` (hardcodear paleta definitiva)
-8. OAuth Google (panel admin)
+6. Eliminar theme switcher temporal de `base.html` (hardcodear paleta definitiva)
+7. OAuth Google (panel admin)
 
 ---
 
@@ -332,15 +334,19 @@ Espejo es **gratis e ilimitado** para todos los planes. No hay cobro por mensaje
 | `templates/base.html` | CSS global, SPA nav, Three.js cosmos, túnel mandala, `__switchAesthetic` |
 | `accounts/context_processors.py` | Inyecta `map_aesthetic` y `color_palette` en todos los templates |
 | `accounts/models.py` | User (email-based), UserProfile |
-| `accounts/views.py` | Auth, perfil (guarda avatar + aesthetic + palette), onboarding |
+| `accounts/views.py` | Auth, perfil, onboarding |
+| `accounts/plan_utils.py` | `plan_at_least()`, `upgrade_wall()`, `FREE_TEST_SLUGS` |
+| `mirror/views.py` | Espejo IA — `_get_reply()`, `_load_system_prompt()`, `chat_new()`, `chat_message()` |
+| `mirror/prompts/espejo_system.txt` | System prompt del Espejo — editar aquí para cambiar comportamiento |
+| `config/ai_client.py` | `call_ai()` + `user_intent_context()` — wrapper IA compartido por toda la app |
 | `birth/calculators.py` | Lógica completa de cálculo astral/HD/saju |
 | `birth/meanings.py` | Diccionarios de significados en español (grande) |
 | `oraculo/interpretations.py` | Llamadas IA para tarot/iching/fractal |
-| `tokens/service.py` | API pública spend/credit/missions |
-| `tokens/signals.py` | Earn automático al completar tests |
-| `tokens/hotmart.py` | Webhook: suscripciones + packs |
+| `psychometrics/views.py` | Tests + `mapa_patrones()` + `mapa_patrones_resultado()` + `_generate_mapa_insight()` |
 | `psychometrics/evaluator.py` | Lógica de evaluación por test, dispatcher, polaridad |
 | `psychometrics/management/commands/seed_tests.py` | Seed 35 tests |
+| `templates/psychometrics/mapa_patrones.html` | Intro lead magnet — 3 tests en secuencia |
+| `templates/psychometrics/mapa_patrones_resultado.html` | Resultado del Mapa + upgrade trigger |
 | `templates/oraculo/tarot.html` | Tirada + animaciones revelación |
 | `templates/oraculo/iching.html` | Tirada + divs animados hex lines |
 | `templates/oraculo/fractal.html` | Flip carta + interpPanel diferido |
