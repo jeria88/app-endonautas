@@ -287,7 +287,7 @@ Cuando se modifica cualquier feature (costo, nombre, comportamiento, flujo), hay
 
 **Implementación:** `mirror/views.py` → `chat_new` controla creación, `chat_message` controla tiempo con `datetime.timedelta(minutes=45)`.
 
-**Sistema prompt:** `mirror/prompts/espejo_system.txt` — cargado en cada request vía `_load_system_prompt()`. Actualmente optimizado para presencia/sostén, NO para revelación de patrones. Pendiente: enriquecer con contexto psicométrico del usuario.
+**Sistema prompt:** `mirror/prompts/espejo_system.txt` — cargado en cada request vía `_load_system_prompt()`. Contiene: rol de espejo (no terapeuta, no diagnóstico), tono y estilo de respuesta, protocolos de escalada de crisis (ideación suicida 3 niveles, voces psicóticas, pánico agudo, disociación, violencia doméstica, fantasías de daño). Contexto psicométrico del usuario inyectado antes del prompt vía `user_history_context()`. Pendiente: modo "revelación de patrones" explícito.
 
 **Contexto inyectado actualmente:** `user_intent_context()` (onboarding_priorities) + `user_history_context()` (resultados psicométricos, sesión Espejo anterior con `conflict_summary`/`return_question`, entradas de bitácora, lectura de nacimiento). Implementado en `config/ai_client.py` — inyectado en `_get_reply()` de `mirror/views.py`. `max_tokens` subió de 500 a 700.
 

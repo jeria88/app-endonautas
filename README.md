@@ -452,7 +452,7 @@ Modo terapeuta para sesiones de orientación integrativa.
 | Navegante+ | Ilimitadas | Sin límite |
 
 ### System prompt
-`mirror/prompts/espejo_system.txt` — optimizado para sostén/presencia. Contexto psicométrico del usuario se inyecta automáticamente vía `user_history_context()` antes del system prompt. Pendiente futuro: modo revelación de patrones explícito.
+`mirror/prompts/espejo_system.txt` — rol de espejo de autoconocimiento (no terapeuta, no diagnóstico), tono cercano, protocolos de crisis (ideación suicida 3 niveles, voces psicóticas, pánico agudo, disociación, violencia doméstica, fantasías de daño con recursos chilenos). Contexto psicométrico del usuario inyectado antes del prompt vía `user_history_context()`. Pendiente: modo "revelación de patrones" explícito.
 
 ---
 
