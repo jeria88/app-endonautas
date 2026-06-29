@@ -60,6 +60,7 @@ def render(kpis: dict, escenario: str, alertas: list, decision: str, week_start:
         f"- Seguidores TikTok: **{kpis.get('tiktok_seguidores', 0)}**",
         f"- Seguidores YouTube: **{kpis.get('youtube_seguidores', 0)}**",
         f"- Seguidores Facebook: **{kpis.get('facebook_seguidores', 0)}**",
+        f"- Seguidores LinkedIn: **{kpis.get('linkedin_seguidores', 0)}**",
         f"- Alcance Instagram: **{kpis.get('instagram_alcance', 0)}**",
     ]
 

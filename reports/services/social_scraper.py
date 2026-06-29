@@ -27,6 +27,10 @@ _YT_USERNAME = os.getenv('YOUTUBE_USERNAME', 'endonautas')
 _YT_API_KEY = os.getenv('YOUTUBE_API_KEY', '')
 
 _META_PAGE_ID = os.getenv('META_PAGE_ID', '112522961877445')
+_LI_COMPANY = os.getenv('LINKEDIN_COMPANY', 'endonautas')
+
+_PW_ARGS = ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
+_DESKTOP_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 
 _EMPTY = {
     'instagram_seguidores': 0,
@@ -34,6 +38,7 @@ _EMPTY = {
     'tiktok_seguidores': 0,
     'youtube_seguidores': 0,
     'facebook_seguidores': 0,
+    'linkedin_seguidores': 0,
 }
 
 
@@ -43,6 +48,7 @@ def fetch_all() -> dict:
     result.update(_tiktok())
     result.update(_youtube())
     result.update(_facebook())
+    result.update(_linkedin())
     return result
 
 
@@ -110,20 +116,35 @@ def _instagram_instagrapi() -> dict:
 
 def _tiktok() -> dict:
     try:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
-            'Referer': 'https://www.tiktok.com/',
-        }
-        r = requests.get(
-            'https://www.tiktok.com/api/user/detail/',
-            params={'uniqueId': _TT_USERNAME, 'aid': '1988', 'app_language': 'es'},
-            headers=headers,
-            timeout=10,
-        )
-        data = r.json()
-        stats = data.get('userInfo', {}).get('stats', {})
-        followers = stats.get('followerCount', 0)
-        return {'tiktok_seguidores': followers}
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True, args=_PW_ARGS)
+            page = browser.new_page(user_agent=_DESKTOP_UA)
+            page.goto(f'https://www.tiktok.com/@{_TT_USERNAME}', timeout=30000, wait_until='networkidle')
+            content = page.content()
+            browser.close()
+        m = re.search(r'"followerCount":(\d+)', content)
+        if m:
+            return {'tiktok_seguidores': int(m.group(1))}
+        return {}
+    except Exception:
+        return {}
+
+
+def _linkedin() -> dict:
+    try:
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True, args=_PW_ARGS)
+            page = browser.new_page(user_agent=_DESKTOP_UA)
+            page.goto(f'https://www.linkedin.com/company/{_LI_COMPANY}/', timeout=20000, wait_until='domcontentloaded')
+            content = page.content()
+            browser.close()
+        m = re.search(r'([\d,\.]+)\s*(?:followers|seguidores)', content, re.IGNORECASE)
+        if m:
+            count = int(m.group(1).replace(',', '').replace('.', ''))
+            return {'linkedin_seguidores': count}
+        return {}
     except Exception:
         return {}
 
