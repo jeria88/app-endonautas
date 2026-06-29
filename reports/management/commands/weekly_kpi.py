@@ -82,7 +82,7 @@ class Command(BaseCommand):
         _write_md_file(md, year, week_number)
 
         # 9. Enviar email TX a Franco
-        _send_email(md, escenario, week_number)
+        _send_email(all_kpis, escenario, week_number, decision)
 
         self.stdout.write(self.style.SUCCESS(f"Weekly KPI completado — {escenario.upper()}"))
 
@@ -119,7 +119,7 @@ def _write_md_file(md, year, week_number):
         pass
 
 
-def _send_email(md, escenario, week_number):
+def _send_email(kpis, escenario, week_number, decision):
     try:
         import requests, base64, os
 
@@ -132,9 +132,11 @@ def _send_email(md, escenario, week_number):
         template_id = int(os.getenv('LISTMONK_TX_KPI_TEMPLATE_ID', '0'))
         franco_email = os.getenv('FRANCO_EMAIL', 'fjeriacastro@gmail.com')
         if not template_id:
-            return  # template aún no creado en Listmonk
+            return
 
-        html_body = render_email_html(md, escenario)
+        color = {'verde': '#2d6a4f', 'amarillo': '#b5770d', 'rojo': '#9b2226'}.get(escenario, '#333')
+        label = {'verde': '🟢 VERDE', 'amarillo': '🟡 AMARILLO', 'rojo': '🔴 ROJO'}.get(escenario, escenario)
+
         requests.post(
             f'{base}/api/tx',
             json={
@@ -142,8 +144,20 @@ def _send_email(md, escenario, week_number):
                 'template_id': template_id,
                 'data': {
                     'week_number': week_number,
-                    'escenario': escenario,
-                    'html_body': html_body,
+                    'escenario_label': label,
+                    'color': color,
+                    'registros_nuevos': kpis.get('registros_nuevos', 0),
+                    'activacion_pct': kpis.get('activacion_pct', 0),
+                    'retencion_d7_pct': kpis.get('retencion_d7_pct', 0),
+                    'retencion_d30_pct': kpis.get('retencion_d30_pct', 0),
+                    'sesiones_espejo_avg': kpis.get('sesiones_espejo_avg', 0),
+                    'navegantes_total': kpis.get('navegantes_total', 0),
+                    'mrr_estimado_usd': kpis.get('mrr_estimado_usd', 0),
+                    'email_open_rate_pct': kpis.get('email_open_rate_pct', 0),
+                    'email_ctr_pct': kpis.get('email_ctr_pct', 0),
+                    'suscriptores_total': kpis.get('suscriptores_total', 0),
+                    'visitas_landing': kpis.get('visitas_landing', 0),
+                    'decision': decision,
                 },
             },
             headers=headers,
