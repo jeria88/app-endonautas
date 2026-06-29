@@ -57,6 +57,7 @@ def render(kpis: dict, escenario: str, alertas: list, decision: str, week_start:
         f"- Tráfico desde LinkedIn: **{kpis.get('trafico_linkedin', 0)}** visitas",
         f"- Posts publicados esta semana: **{kpis.get('posts_publicados_semana', 0)}**",
         f"- Seguidores Instagram: **{kpis.get('instagram_seguidores', 0)}**",
+        f"- Seguidores TikTok: **{kpis.get('tiktok_seguidores', 0)}**",
         f"- Alcance Instagram: **{kpis.get('instagram_alcance', 0)}**",
     ]
 

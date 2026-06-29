@@ -36,10 +36,11 @@ class KPISnapshot(models.Model):
     trafico_tiktok = models.IntegerField(default=0)
     trafico_linkedin = models.IntegerField(default=0)
 
-    # RRSS — manual o Meta API futuro
+    # RRSS — manual o scraping automático
     posts_publicados_semana = models.IntegerField(default=0)
     instagram_seguidores = models.IntegerField(default=0)
     instagram_alcance = models.IntegerField(default=0)
+    tiktok_seguidores = models.IntegerField(default=0)
 
     # Clasificación escenario
     escenario = models.CharField(

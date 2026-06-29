@@ -9,7 +9,7 @@ from datetime import date, timedelta
 
 from django.core.management.base import BaseCommand, CommandError
 
-from reports.services import kpi_calculator, listmonk_metrics, umami_metrics, serpbear_metrics
+from reports.services import kpi_calculator, listmonk_metrics, umami_metrics, serpbear_metrics, social_scraper
 from reports.services.markdown_renderer import render, render_email_html
 from reports.services.scenario_classifier import classify
 
@@ -54,20 +54,25 @@ class Command(BaseCommand):
         serp_kpis = serpbear_metrics.fetch_stats()
         self.stdout.write(f"  SerpBear: {serp_kpis}")
 
-        # 5. Merge + campos manuales RRSS
-        all_kpis = {**django_kpis, **lm_kpis, **umami_kpis, **serp_kpis}
-        if options['posts'] is not None:
+        # 5. Scraping RRSS (Instagram + TikTok)
+        rrss_kpis = social_scraper.fetch_all()
+        self.stdout.write(f"  RRSS scraping: {rrss_kpis}")
+
+        # 6. Merge — scraping tiene prioridad sobre flags manuales
+        all_kpis = {**django_kpis, **lm_kpis, **umami_kpis, **serp_kpis, **rrss_kpis}
+        # Flags manuales solo sobreescriben si el scraping devolvió 0
+        if options['posts'] is not None and not all_kpis.get('posts_publicados_semana'):
             all_kpis['posts_publicados_semana'] = options['posts']
-        if options['instagram_seg'] is not None:
+        if options['instagram_seg'] is not None and not all_kpis.get('instagram_seguidores'):
             all_kpis['instagram_seguidores'] = options['instagram_seg']
         if options['instagram_alcance'] is not None:
             all_kpis['instagram_alcance'] = options['instagram_alcance']
 
-        # 6. Clasificar
+        # 7. Clasificar
         escenario, alertas, decision = classify(all_kpis, month=week_start.month)
         self.stdout.write(f"  Escenario: {escenario} | Alertas: {alertas}")
 
-        # 7. MD
+        # 8. MD
         md = render(all_kpis, escenario, alertas, decision, week_start, week_number)
 
         if dry_run:
