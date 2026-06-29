@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'oraculo',
     'terapeuta',
     'payments',
+    'reports',
 ]
 
 SITE_ID = 1
@@ -234,6 +235,13 @@ PAYPAL_WEBHOOK_ID = os.getenv('PAYPAL_WEBHOOK_ID', '')
 # Pagos — MercadoPago
 MERCADOPAGO_ACCESS_TOKEN = os.getenv('MERCADOPAGO_ACCESS_TOKEN', '')
 MERCADOPAGO_WEBHOOK_SECRET = os.getenv('MERCADOPAGO_WEBHOOK_SECRET', '')
+
+# Reports — KPI automático semanal
+KPI_API_TOKEN = os.getenv('KPI_API_TOKEN', '')
+UMAMI_API_KEY = os.getenv('UMAMI_API_KEY', '')
+UMAMI_WEBSITE_ID = os.getenv('UMAMI_WEBSITE_ID', 'e03fa69e-9931-411c-9838-7f6ffea90426')
+LISTMONK_TX_KPI_TEMPLATE_ID = os.getenv('LISTMONK_TX_KPI_TEMPLATE_ID', '0')
+FRANCO_EMAIL = os.getenv('FRANCO_EMAIL', 'fjeriacastro@gmail.com')
 
 REFERRAL_REWARDS = {
     'signup_referrer': 60,

@@ -34,6 +34,7 @@ urlpatterns = [
     path('planes/', planes_views.planes, name='planes'),
     path('pago/', include('payments.urls')),
     path('terminos/', TemplateView.as_view(template_name='legal/terminos.html'), name='terminos'),
+    path('api/reports/', include('reports.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

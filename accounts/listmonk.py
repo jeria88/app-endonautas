@@ -22,6 +22,7 @@ _PLAN_LISTS = {
 }
 
 WELCOME_TEMPLATE_ID = 7
+KPI_REPORT_TEMPLATE_ID = int(__import__('os').getenv('LISTMONK_TX_KPI_TEMPLATE_ID', '0'))
 
 
 def _headers():
@@ -74,6 +75,26 @@ def update_subscriber_lists(email, plan):
             },
             headers=_headers(),
             timeout=5,
+        )
+    except Exception:
+        pass
+
+
+def send_weekly_kpi_email(html_body, escenario, week_number, franco_email=None):
+    """Envía reporte KPI semanal vía Listmonk TX."""
+    if not KPI_REPORT_TEMPLATE_ID:
+        return
+    email = franco_email or __import__('os').getenv('FRANCO_EMAIL', 'fjeriacastro@gmail.com')
+    try:
+        requests.post(
+            f'{_BASE}/api/tx',
+            json={
+                'subscriber_email': email,
+                'template_id': KPI_REPORT_TEMPLATE_ID,
+                'data': {'week_number': week_number, 'escenario': escenario, 'html_body': html_body},
+            },
+            headers=_headers(),
+            timeout=8,
         )
     except Exception:
         pass
