@@ -64,6 +64,30 @@ def render(kpis: dict, escenario: str, alertas: list, decision: str, week_start:
         f"- Alcance Instagram: **{kpis.get('instagram_alcance', 0)}**",
     ]
 
+    # Top contenido — solo muestra si hay datos
+    top_content = kpis.get('top_content', {})
+    if top_content:
+        lines += ["", "## Contenido — Top esta semana"]
+        if 'youtube' in top_content:
+            yt = top_content['youtube']
+            lines.append(f"**YouTube** 🏆 [{yt['title']}]({yt['url']})")
+            lines.append(f"- {yt['views']} views · {yt['likes']} likes · {yt['comments']} comentarios · publicado {yt['published_at']}")
+        if 'instagram' in top_content:
+            ig = top_content['instagram']
+            parts = [f"{ig['likes']} likes", f"{ig['comments']} comentarios"]
+            if ig.get('reach'):
+                parts.insert(0, f"reach: {ig['reach']}")
+            if ig.get('saved'):
+                parts.append(f"{ig['saved']} guardados")
+            lines.append(f"**Instagram** 🏆 Post del {ig['published_at']}")
+            lines.append("- " + " · ".join(parts))
+        if 'facebook' in top_content:
+            fb = top_content['facebook']
+            lines.append(f"**Facebook** 🏆 Post del {fb['created_at']}")
+            lines.append(f"- reach: {fb['reach']} · {fb['reactions']} reactions")
+            if fb.get('message'):
+                lines.append(f"  \"{fb['message']}\"")
+
     lines += [
         "",
         "## Alertas activas",

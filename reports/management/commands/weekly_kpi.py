@@ -9,7 +9,7 @@ from datetime import date, timedelta
 
 from django.core.management.base import BaseCommand, CommandError
 
-from reports.services import kpi_calculator, listmonk_metrics, umami_metrics, serpbear_metrics, social_scraper
+from reports.services import kpi_calculator, listmonk_metrics, umami_metrics, serpbear_metrics, social_scraper, content_metrics
 from reports.services.markdown_renderer import render, render_email_html
 from reports.services.scenario_classifier import classify
 
@@ -54,12 +54,16 @@ class Command(BaseCommand):
         serp_kpis = serpbear_metrics.fetch_stats()
         self.stdout.write(f"  SerpBear: {serp_kpis}")
 
-        # 5. Scraping RRSS (Instagram + TikTok)
+        # 5. Scraping RRSS (Instagram + TikTok + YouTube + Facebook + LinkedIn)
         rrss_kpis = social_scraper.fetch_all()
         self.stdout.write(f"  RRSS scraping: {rrss_kpis}")
 
-        # 6. Merge — scraping tiene prioridad sobre flags manuales
-        all_kpis = {**django_kpis, **lm_kpis, **umami_kpis, **serp_kpis, **rrss_kpis}
+        # 6. Top contenido por plataforma
+        content_kpis = content_metrics.fetch_all()
+        self.stdout.write(f"  Content top: {content_kpis.get('top_content', {})}")
+
+        # 7. Merge — scraping tiene prioridad sobre flags manuales
+        all_kpis = {**django_kpis, **lm_kpis, **umami_kpis, **serp_kpis, **rrss_kpis, **content_kpis}
         # Flags manuales solo sobreescriben si el scraping devolvió 0
         if options['posts'] is not None and not all_kpis.get('posts_publicados_semana'):
             all_kpis['posts_publicados_semana'] = options['posts']
@@ -68,11 +72,11 @@ class Command(BaseCommand):
         if options['instagram_alcance'] is not None:
             all_kpis['instagram_alcance'] = options['instagram_alcance']
 
-        # 7. Clasificar
+        # 8. Clasificar
         escenario, alertas, decision = classify(all_kpis, month=week_start.month)
         self.stdout.write(f"  Escenario: {escenario} | Alertas: {alertas}")
 
-        # 8. MD
+        # 9. MD
         md = render(all_kpis, escenario, alertas, decision, week_start, week_number)
 
         if dry_run:
