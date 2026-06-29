@@ -39,6 +39,27 @@ def render(kpis: dict, escenario: str, alertas: list, decision: str, week_start:
     if fuentes:
         lines.append("- Top fuentes: " + ", ".join(f"{k} {v}%" for k, v in fuentes.items()))
 
+    # SEO
+    serp_top = kpis.get('serpbear_keywords_top3', {})
+    lines += ["", "## SEO (SerpBear)"]
+    if serp_top:
+        lines.append(f"- Posición promedio: **{kpis.get('serpbear_posicion_avg', 0):.1f}** | Keywords subiendo: **{kpis.get('serpbear_subiendo', 0)}**")
+        for kw, pos in serp_top.items():
+            lines.append(f"- `{kw}`: posición **{pos}**")
+    else:
+        lines.append("- Sin datos (configura SERPBEAR_API_KEY o agrega keywords en SerpBear)")
+
+    # RRSS
+    lines += ["", "## RRSS"]
+    lines += [
+        f"- Tráfico desde Instagram: **{kpis.get('trafico_instagram', 0)}** visitas",
+        f"- Tráfico desde TikTok: **{kpis.get('trafico_tiktok', 0)}** visitas",
+        f"- Tráfico desde LinkedIn: **{kpis.get('trafico_linkedin', 0)}** visitas",
+        f"- Posts publicados esta semana: **{kpis.get('posts_publicados_semana', 0)}**",
+        f"- Seguidores Instagram: **{kpis.get('instagram_seguidores', 0)}**",
+        f"- Alcance Instagram: **{kpis.get('instagram_alcance', 0)}**",
+    ]
+
     lines += [
         "",
         "## Alertas activas",

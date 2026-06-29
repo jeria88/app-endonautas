@@ -26,6 +26,21 @@ class KPISnapshot(models.Model):
     visitas_unicas = models.IntegerField(default=0)
     fuentes_top = models.JSONField(default=dict)
 
+    # SEO — SerpBear
+    serpbear_keywords_top3 = models.JSONField(default=dict)
+    serpbear_posicion_avg = models.FloatField(default=0)
+    serpbear_subiendo = models.IntegerField(default=0)
+
+    # RRSS — tráfico desde Umami por red
+    trafico_instagram = models.IntegerField(default=0)
+    trafico_tiktok = models.IntegerField(default=0)
+    trafico_linkedin = models.IntegerField(default=0)
+
+    # RRSS — manual o Meta API futuro
+    posts_publicados_semana = models.IntegerField(default=0)
+    instagram_seguidores = models.IntegerField(default=0)
+    instagram_alcance = models.IntegerField(default=0)
+
     # Clasificación escenario
     escenario = models.CharField(
         max_length=10,

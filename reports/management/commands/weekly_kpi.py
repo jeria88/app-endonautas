@@ -2,13 +2,14 @@
 python manage.py weekly_kpi
 python manage.py weekly_kpi --week 2026-W27
 python manage.py weekly_kpi --week 2026-W27 --dry-run
+python manage.py weekly_kpi --posts 3 --instagram-seg 1240 --instagram-alcance 4500
 """
 import os
 from datetime import date, timedelta
 
 from django.core.management.base import BaseCommand, CommandError
 
-from reports.services import kpi_calculator, listmonk_metrics, umami_metrics
+from reports.services import kpi_calculator, listmonk_metrics, umami_metrics, serpbear_metrics
 from reports.services.markdown_renderer import render, render_email_html
 from reports.services.scenario_classifier import classify
 
@@ -27,6 +28,9 @@ class Command(BaseCommand):
             action='store_true',
             help='Muestra resultados sin guardar en BD ni enviar email.',
         )
+        parser.add_argument('--posts', type=int, default=None, help='Posts publicados esta semana en RRSS')
+        parser.add_argument('--instagram-seg', type=int, default=None, dest='instagram_seg', help='Total seguidores Instagram')
+        parser.add_argument('--instagram-alcance', type=int, default=None, dest='instagram_alcance', help='Alcance Instagram esta semana')
 
     def handle(self, *args, **options):
         week_start, week_number, year = _parse_week(options['week'])
@@ -42,18 +46,28 @@ class Command(BaseCommand):
         lm_kpis = listmonk_metrics.fetch_week_stats(week_start)
         self.stdout.write(f"  Listmonk: {lm_kpis}")
 
-        # 3. Umami
+        # 3. Umami (incluye tráfico RRSS por red)
         umami_kpis = umami_metrics.fetch_week_stats(week_start)
         self.stdout.write(f"  Umami: {umami_kpis}")
 
-        # 4. Merge
-        all_kpis = {**django_kpis, **lm_kpis, **umami_kpis}
+        # 4. SerpBear
+        serp_kpis = serpbear_metrics.fetch_stats()
+        self.stdout.write(f"  SerpBear: {serp_kpis}")
 
-        # 5. Clasificar
+        # 5. Merge + campos manuales RRSS
+        all_kpis = {**django_kpis, **lm_kpis, **umami_kpis, **serp_kpis}
+        if options['posts'] is not None:
+            all_kpis['posts_publicados_semana'] = options['posts']
+        if options['instagram_seg'] is not None:
+            all_kpis['instagram_seguidores'] = options['instagram_seg']
+        if options['instagram_alcance'] is not None:
+            all_kpis['instagram_alcance'] = options['instagram_alcance']
+
+        # 6. Clasificar
         escenario, alertas, decision = classify(all_kpis, month=week_start.month)
         self.stdout.write(f"  Escenario: {escenario} | Alertas: {alertas}")
 
-        # 6. MD
+        # 7. MD
         md = render(all_kpis, escenario, alertas, decision, week_start, week_number)
 
         if dry_run:
@@ -157,6 +171,13 @@ def _send_email(kpis, escenario, week_number, decision):
                     'email_ctr_pct': kpis.get('email_ctr_pct', 0),
                     'suscriptores_total': kpis.get('suscriptores_total', 0),
                     'visitas_landing': kpis.get('visitas_landing', 0),
+                    'serpbear_posicion_avg': kpis.get('serpbear_posicion_avg', 0),
+                    'serpbear_subiendo': kpis.get('serpbear_subiendo', 0),
+                    'posts_publicados_semana': kpis.get('posts_publicados_semana', 0),
+                    'instagram_seguidores': kpis.get('instagram_seguidores', 0),
+                    'instagram_alcance': kpis.get('instagram_alcance', 0),
+                    'trafico_instagram': kpis.get('trafico_instagram', 0),
+                    'trafico_tiktok': kpis.get('trafico_tiktok', 0),
                     'decision': decision,
                 },
             },
