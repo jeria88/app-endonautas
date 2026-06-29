@@ -26,11 +26,14 @@ _TT_USERNAME = os.getenv('TIKTOK_USERNAME', 'endonautas')
 _YT_USERNAME = os.getenv('YOUTUBE_USERNAME', 'endonautas')
 _YT_API_KEY = os.getenv('YOUTUBE_API_KEY', '')
 
+_META_PAGE_ID = os.getenv('META_PAGE_ID', '112522961877445')
+
 _EMPTY = {
     'instagram_seguidores': 0,
     'posts_publicados_semana': 0,
     'tiktok_seguidores': 0,
     'youtube_seguidores': 0,
+    'facebook_seguidores': 0,
 }
 
 
@@ -39,6 +42,7 @@ def fetch_all() -> dict:
     result.update(_instagram())
     result.update(_tiktok())
     result.update(_youtube())
+    result.update(_facebook())
     return result
 
 
@@ -151,6 +155,23 @@ def _youtube() -> dict:
             if m:
                 return {'youtube_seguidores': _parse_yt_count(m.group(1))}
         return {}
+    except Exception:
+        return {}
+
+
+def _facebook() -> dict:
+    if not _META_PAGE_TOKEN:
+        return {}
+    try:
+        r = requests.get(
+            f'https://graph.facebook.com/v21.0/{_META_PAGE_ID}',
+            params={'fields': 'fan_count', 'access_token': _META_PAGE_TOKEN},
+            timeout=10,
+        )
+        data = r.json()
+        if 'error' in data:
+            return {}
+        return {'facebook_seguidores': data.get('fan_count', 0)}
     except Exception:
         return {}
 
