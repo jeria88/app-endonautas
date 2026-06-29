@@ -2,24 +2,29 @@
 Scraping automático de métricas RRSS.
 Corre dentro del management command weekly_kpi antes de enviar el email.
 
-Instagram: instagrapi (API mobile unofficial, sin browser)
+Instagram: Meta Graph API (Page Access Token permanente)
 TikTok: endpoint público JSON unofficial
 YouTube: ytInitialData HTML scraping (o API key si YOUTUBE_API_KEY está seteada)
 """
-import json
 import os
 import re
 from datetime import datetime, timedelta, timezone
 
 import requests
 
+# Meta Graph API — Page Access Token (no expira)
+_META_PAGE_TOKEN = os.getenv('META_PAGE_TOKEN', '')
+_META_IG_ID = os.getenv('META_IG_ID', '17841408150037364')
+
+# Fallback instagrapi (solo si no hay META_PAGE_TOKEN)
 _IG_USERNAME = os.getenv('IG_USERNAME', '')
 _IG_PASSWORD = os.getenv('IG_PASSWORD', '')
 _IG_TARGET = os.getenv('IG_TARGET_USERNAME', 'endonautas')
+_SESSION_PATH = '/tmp/ig_session.json'
+
 _TT_USERNAME = os.getenv('TIKTOK_USERNAME', 'endonautas')
 _YT_USERNAME = os.getenv('YOUTUBE_USERNAME', 'endonautas')
 _YT_API_KEY = os.getenv('YOUTUBE_API_KEY', '')
-_SESSION_PATH = '/tmp/ig_session.json'
 
 _EMPTY = {
     'instagram_seguidores': 0,
@@ -38,44 +43,65 @@ def fetch_all() -> dict:
 
 
 def _instagram() -> dict:
+    if _META_PAGE_TOKEN:
+        return _instagram_meta_api()
+    return _instagram_instagrapi()
+
+
+def _instagram_meta_api() -> dict:
+    try:
+        r = requests.get(
+            f'https://graph.facebook.com/v21.0/{_META_IG_ID}',
+            params={'fields': 'followers_count,media_count', 'access_token': _META_PAGE_TOKEN},
+            timeout=10,
+        )
+        data = r.json()
+        if 'error' in data:
+            return {}
+        followers = data.get('followers_count', 0)
+
+        # Posts últimos 7 días via /media endpoint
+        cutoff = datetime.now(tz=timezone.utc) - timedelta(days=7)
+        media_r = requests.get(
+            f'https://graph.facebook.com/v21.0/{_META_IG_ID}/media',
+            params={'fields': 'timestamp', 'limit': 30, 'access_token': _META_PAGE_TOKEN},
+            timeout=10,
+        )
+        media_data = media_r.json().get('data', [])
+        posts_semana = sum(
+            1 for m in media_data
+            if m.get('timestamp') and datetime.fromisoformat(m['timestamp'].replace('Z', '+00:00')) > cutoff
+        )
+        return {'instagram_seguidores': followers, 'posts_publicados_semana': posts_semana}
+    except Exception:
+        return {}
+
+
+def _instagram_instagrapi() -> dict:
     if not _IG_USERNAME or not _IG_PASSWORD:
         return {}
     try:
         from instagrapi import Client
-
         cl = Client()
         cl.delay_range = [1, 3]
-
-        # Reusar sesión si existe y es reciente (< 6 días)
         if os.path.exists(_SESSION_PATH):
             age = datetime.now().timestamp() - os.path.getmtime(_SESSION_PATH)
             if age < 6 * 86400:
                 cl.load_settings(_SESSION_PATH)
                 cl.login(_IG_USERNAME, _IG_PASSWORD)
             else:
-                _do_login(cl)
+                cl.login(_IG_USERNAME, _IG_PASSWORD)
+                cl.dump_settings(_SESSION_PATH)
         else:
-            _do_login(cl)
-
+            cl.login(_IG_USERNAME, _IG_PASSWORD)
+            cl.dump_settings(_SESSION_PATH)
         user = cl.user_info_by_username(_IG_TARGET)
-        followers = user.follower_count
-
-        # Posts publicados en últimos 7 días
         cutoff = datetime.now(tz=timezone.utc) - timedelta(days=7)
         medias = cl.user_medias(user.pk, amount=20)
         posts_semana = sum(1 for m in medias if m.taken_at and m.taken_at > cutoff)
-
-        return {
-            'instagram_seguidores': followers,
-            'posts_publicados_semana': posts_semana,
-        }
+        return {'instagram_seguidores': user.follower_count, 'posts_publicados_semana': posts_semana}
     except Exception:
         return {}
-
-
-def _do_login(cl):
-    cl.login(_IG_USERNAME, _IG_PASSWORD)
-    cl.dump_settings(_SESSION_PATH)
 
 
 def _tiktok() -> dict:
