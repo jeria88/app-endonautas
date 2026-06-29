@@ -2,6 +2,18 @@
 
 > Archivo de contexto técnico para Claude. Leer completo antes de tocar código.
 
+## ⚠️ URLs de herramientas del servidor — ACTUALIZADAS (jun 2026)
+
+Las herramientas de monitoreo/analytics/mail ya NO están en subdominios de `endonautas.cl`.
+Fueron migradas a URLs genéricas para uso compartido de todo el servidor Oracle:
+
+| Herramienta | URL anterior (rota) | URL actual |
+|---|---|---|
+| Umami (analytics) | `analytics.endonautas.cl` | `https://analytics.146.181.39.4.sslip.io` |
+| Listmonk (email) | `mail.endonautas.cl` | `https://mail.146.181.39.4.sslip.io` |
+| Uptime Kuma (status) | `status.endonautas.cl` | `https://status.146.181.39.4.sslip.io` |
+| SerpBear (SEO) | `serpbear.endonautas.cl` | `https://serpbear.146.181.39.4.sslip.io` |
+
 ## Comando siempre: `python3 manage.py` (nunca `python`)
 
 ## Stack
@@ -356,7 +368,7 @@ send_welcome_email(email, name='')
 
 5. **Practitioners views** — gestionar perfiles de clientes, asignar tests, ver resultados
 
-6. **Reportes** (`reports` app vacía) — dashboard agregado con evolución temporal
+6. ~~**Reportes** (`reports` app vacía)~~ ✅ RESUELTO 2026-06-29 — KPI semanal automático, ver sección abajo
 
 ### Media prioridad
 7. **Tests psicométricos a auditar** (implementación incompleta):
@@ -371,6 +383,74 @@ send_welcome_email(email, name='')
 ### Baja prioridad
 6. Eliminar theme switcher temporal de `base.html` (hardcodear paleta definitiva)
 7. OAuth Google (panel admin)
+
+---
+
+---
+
+## App `reports` — KPI semanal automático (2026-06-29)
+
+### Qué hace
+Cada lunes 9:07am (cron Oracle) corre `python manage.py weekly_kpi`:
+1. Calcula KPIs de Django ORM (registros, retención, MRR)
+2. Fetch métricas Listmonk, Umami, SerpBear
+3. Scraping RRSS → seguidores por plataforma
+4. Top contenido por plataforma (qué video/post tuvo más engagement)
+5. Clasifica escenario (verde/amarillo/rojo), guarda `KPISnapshot`, envía email a `fjeriacastro@gmail.com`
+
+### Archivos del módulo
+
+| Archivo | Función |
+|---|---|
+| `reports/management/commands/weekly_kpi.py` | Comando principal — orquesta todo |
+| `reports/services/social_scraper.py` | Seguidores por red: IG (Meta API), TikTok/LinkedIn (Playwright), YouTube (API v3), Facebook (Meta API) |
+| `reports/services/content_metrics.py` | Top post/video por plataforma — YouTube (views), IG (likes+reach), Facebook (reach) |
+| `reports/services/kpi_calculator.py` | KPIs Django ORM: registros, activación, retención, MRR |
+| `reports/services/markdown_renderer.py` | Renderiza el MD del reporte (y HTML para email) |
+| `reports/services/scenario_classifier.py` | Clasifica escenario verde/amarillo/rojo |
+| `reports/models.py` | `KPISnapshot` — snapshot semanal completo |
+| `reports/migrations/` | 0001→0007 — incluye campos RRSS y `top_content` JSONField |
+
+### Integraciones activas y sus credenciales (en Coolify DB)
+
+| Variable | Valor | Para qué |
+|---|---|---|
+| `META_PAGE_TOKEN` | token largo (no expira) | Instagram + Facebook Graph API |
+| `META_IG_ID` | `17841408150037364` | Instagram Business Account ID |
+| `META_PAGE_ID` | `112522961877445` | Facebook Page ID (Endonautas) |
+| `YOUTUBE_API_KEY` | `AIzaSyB...` | YouTube Data API v3 |
+| `YOUTUBE_CHANNEL_ID` | `UC9hqN2eNx1X-U-2ev9GUsCg` | Canal YouTube Endonautas |
+| `YOUTUBE_USERNAME` | `endonautas` | Handle YouTube |
+| `TIKTOK_USERNAME` | `endonautas` | Handle TikTok (scraping Playwright) |
+| `LINKEDIN_COMPANY` | `endonautas` | Slug empresa LinkedIn (scraping Playwright) |
+
+### Meta App
+- App ID: `1553716769663324` · Secret: en `/home/nikka/Proyectos/endonautas/tokn-meta.txt`
+- Permisos activos: `instagram_basic`, `pages_show_list`, `pages_read_engagement`, `read_insights`
+- **Pendiente:** agregar `instagram_manage_insights` → regenerar token en Graph Explorer para activar reach/guardados por post
+
+### Playwright en producción
+- Chromium instalado manualmente en el contenedor (`playwright install chromium --with-deps`)
+- **⚠️ Se pierde en cada redeploy.** Para que persista: agregar `playwright install chromium --with-deps &&` al inicio del Start Command en Coolify UI
+
+### Métricas actuales (2026-06-29)
+| Red | Seguidores |
+|---|---|
+| Instagram | 959 |
+| TikTok | 689 |
+| Facebook | 148 |
+| YouTube | 25 |
+| LinkedIn | 3 |
+
+### Top contenido
+- Sección `## Contenido — Top esta semana` aparece en el email solo cuando hay posts con datos
+- YouTube ya muestra el video más visto del canal (20 videos, 3.4k views totales)
+- Instagram y Facebook aparecerán automáticamente cuando se publique contenido
+
+### Dry-run de prueba
+```bash
+docker exec <container> python manage.py weekly_kpi --week 2026-W27 --dry-run
+```
 
 ---
 
