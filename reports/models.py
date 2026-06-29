@@ -41,6 +41,7 @@ class KPISnapshot(models.Model):
     instagram_seguidores = models.IntegerField(default=0)
     instagram_alcance = models.IntegerField(default=0)
     tiktok_seguidores = models.IntegerField(default=0)
+    youtube_seguidores = models.IntegerField(default=0)
 
     # Clasificación escenario
     escenario = models.CharField(
