@@ -8,13 +8,6 @@
   .aesthetic-grid { grid-template-columns:repeat(2,1fr); }
   .palette-grid { grid-template-columns:repeat(3,1fr); }
 }
-.ref-link-box { background:rgba(126,204,205,0.06);border:1px solid rgba(126,204,205,0.18);border-radius:10px;padding:0.6rem 0.8rem;font-family:monospace;font-size:0.78rem;color:var(--calipso);word-break:break-all;line-height:1.4; }
-.ref-share-item { border:1px solid var(--border);border-radius:10px;padding:0.75rem;margin-bottom:0.5rem; }
-.ref-share-text { font-size:0.75rem;color:var(--muted);line-height:1.5;margin-bottom:0.5rem; }
-.ref-stat { display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid var(--border); }
-.ref-stat:last-child { border-bottom:none; }
-.ref-stat-label { font-size:0.72rem;color:var(--muted); }
-.ref-stat-val { font-size:0.85rem;font-weight:600;color:var(--calipso); }
 .avatar-wrap { position:relative;width:70px;height:70px; }
 .avatar-img { width:70px;height:70px;border-radius:50%;object-fit:cover;border:2px solid var(--border); }
 .avatar-placeholder { width:70px;height:70px;border-radius:50%;background:var(--calipso-glow);border:2px solid rgba(126,204,205,0.2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--calipso); }
@@ -198,48 +191,6 @@
       </button>
     </div>
 
-    <div class="panel" style="padding:1rem 1.25rem">
-      <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.75rem">Invita y gana Fractones</div>
-
-      <p style="font-size:0.75rem;color:var(--muted);margin-bottom:0.75rem;line-height:1.5">
-        Cuando alguien se registra con tu link ganan <strong style="color:var(--calipso)">+40 Fractones</strong> y tú recibes <strong style="color:var(--calipso)">+60</strong>. Si además pasa a un plan pago, recibes <strong style="color:var(--calipso)">+250 más</strong>.
-      </p>
-
-      <div style="margin-bottom:0.75rem">
-        <div style="font-size:0.68rem;color:var(--dim);margin-bottom:0.3rem">Tu link único</div>
-        <div class="ref-link-box" id="ref-link-text">{{ request.scheme }}://{{ request.get_host }}/r/{{ referral_code.code }}/</div>
-        <button onclick="copyRefLink()" class="btn btn-primary" style="width:100%;margin-top:0.5rem;font-size:0.8rem;padding:0.45rem">Copiar link</button>
-      </div>
-
-      <div style="margin-bottom:1rem">
-        <div style="font-size:0.68rem;color:var(--dim);margin-bottom:0.5rem">Estadísticas</div>
-        <div class="ref-stat"><span class="ref-stat-label">Clicks al link</span><span class="ref-stat-val">{{ referral_code.click_count }}</span></div>
-        <div class="ref-stat"><span class="ref-stat-label">Personas registradas</span><span class="ref-stat-val">{{ referrals_count }}</span></div>
-        <div class="ref-stat"><span class="ref-stat-label">Conversiones a plan pago</span><span class="ref-stat-val">{{ conversions_count }}</span></div>
-      </div>
-
-      <div>
-        <div style="font-size:0.68rem;color:var(--dim);margin-bottom:0.5rem">Mensajes para compartir</div>
-
-        <div class="ref-share-item">
-          <div style="font-size:0.65rem;font-weight:600;color:var(--calipso);margin-bottom:0.3rem">Mapa de Nacimiento</div>
-          <div class="ref-share-text" id="share-birth">Calculé mi carta astral en Endonautas y descubrí más de mí misma que en años de terapia. Si quieres explorar el tuyo: {{ request.scheme }}://{{ request.get_host }}/r/{{ referral_code.code }}/</div>
-          <button onclick="copyText('share-birth')" class="btn" style="font-size:0.72rem;padding:0.3rem 0.7rem;border:1px solid var(--border)">Copiar</button>
-        </div>
-
-        <div class="ref-share-item">
-          <div style="font-size:0.65rem;font-weight:600;color:var(--calipso);margin-bottom:0.3rem">Espejo de Conflictos</div>
-          <div class="ref-share-text" id="share-espejo">Hay una IA que no te da respuestas, te devuelve preguntas. Se llama Espejo de Conflictos y está en Endonautas. Llevo semanas usándola y algo está cambiando: {{ request.scheme }}://{{ request.get_host }}/r/{{ referral_code.code }}/</div>
-          <button onclick="copyText('share-espejo')" class="btn" style="font-size:0.72rem;padding:0.3rem 0.7rem;border:1px solid var(--border)">Copiar</button>
-        </div>
-
-        <div class="ref-share-item">
-          <div style="font-size:0.65rem;font-weight:600;color:var(--calipso);margin-bottom:0.3rem">Tests psicométricos</div>
-          <div class="ref-share-text" id="share-tests">Hice un test de apego, uno de regulación emocional y uno de patrones de pensamiento. En 20 minutos entendí cosas que no había podido nombrar. Están en Endonautas: {{ request.scheme }}://{{ request.get_host }}/r/{{ referral_code.code }}/</div>
-          <button onclick="copyText('share-tests')" class="btn" style="font-size:0.72rem;padding:0.3rem 0.7rem;border:1px solid var(--border)">Copiar</button>
-        </div>
-      </div>
-    </div>
   </div>
 
   </div>
@@ -270,24 +221,3 @@
     </form>
   </div>
 </div>
-
-{% block extra_js %}
-<script>
-function copyRefLink() {
-  const text = document.getElementById('ref-link-text').textContent.trim();
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = event.target;
-    btn.textContent = '¡Copiado!';
-    setTimeout(() => btn.textContent = 'Copiar link', 1800);
-  });
-}
-function copyText(id) {
-  const text = document.getElementById(id).textContent.trim();
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = event.target;
-    btn.textContent = '¡Copiado!';
-    setTimeout(() => btn.textContent = 'Copiar', 1800);
-  });
-}
-</script>
-{% endblock %}

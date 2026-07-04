@@ -129,8 +129,6 @@ def dashboard(request):
 
 @login_required
 def perfil(request):
-    from tokens.service import get_or_create_referral_code
-    from tokens.models import Referral
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
         profile.map_aesthetic = request.POST.get('map_aesthetic', profile.map_aesthetic)
@@ -143,15 +141,9 @@ def perfil(request):
             request.user.first_name = request.POST['first_name']
             request.user.save(update_fields=['first_name'])
         return redirect('perfil')
-    referral_code = get_or_create_referral_code(request.user)
-    referrals_made = Referral.objects.filter(referrer=request.user)
-    conversions = referrals_made.filter(conversion_rewarded=True).count()
     from payments.constants import PACKS
     return render(request, 'accounts/perfil.html', {
         'profile': profile,
-        'referral_code': referral_code,
-        'referrals_count': referrals_made.count(),
-        'conversions_count': conversions,
         'packs': PACKS,
     })
 
@@ -167,17 +159,9 @@ def eliminar_cuenta(request):
         email_confirm = request.POST.get('email_confirm', '').strip().lower()
         if email_confirm != request.user.email.lower():
             from payments.constants import PACKS
-            from tokens.service import get_or_create_referral_code
-            from tokens.models import Referral
             profile, _ = UserProfile.objects.get_or_create(user=request.user)
-            referral_code = get_or_create_referral_code(request.user)
-            referrals_made = Referral.objects.filter(referrer=request.user)
-            conversions = referrals_made.filter(conversion_rewarded=True).count()
             return render(request, 'accounts/perfil.html', {
                 'profile': profile,
-                'referral_code': referral_code,
-                'referrals_count': referrals_made.count(),
-                'conversions_count': conversions,
                 'packs': PACKS,
                 'delete_error': 'El email no coincide. Escribe exactamente tu email para confirmar.',
                 'show_delete_modal': True,
