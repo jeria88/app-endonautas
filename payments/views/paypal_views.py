@@ -12,6 +12,7 @@ from django.views.decorators.http import require_POST
 from ..constants import PACKS
 from ..models import FractonesPack, Subscription
 from ..services import paypal as paypal_service
+from accounts.listmonk import update_subscriber_lists
 from tokens import service as token_service
 
 logger = logging.getLogger(__name__)
@@ -73,6 +74,7 @@ def retorno_suscripcion(request):
             profile = request.user.profile
             profile.plan = sub.plan
             profile.save(update_fields=['plan'])
+            update_subscriber_lists(request.user.email, sub.plan)
             token_service.renew_monthly(request.user)
             token_service.process_referral_conversion(request.user)
 
@@ -241,6 +243,7 @@ def _activated(resource):
         if profile.plan != sub.plan:
             profile.plan = sub.plan
             profile.save(update_fields=['plan'])
+        update_subscriber_lists(sub.user.email, sub.plan)
         token_service.renew_monthly(sub.user)
 
 
