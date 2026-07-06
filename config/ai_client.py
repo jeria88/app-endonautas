@@ -137,6 +137,18 @@ def user_history_context(user):
     )
 
 
+# Regla de estilo global: se inyecta en TODA llamada a IA (Espejo, oráculo,
+# tests, nacimiento, terapeuta). Los modelos derivan a voseo rioplatense solos;
+# esto lo corta en el único punto por el que pasa todo el texto generado.
+_STYLE_RULE = (
+    'REGLA DE IDIOMA OBLIGATORIA: escribe siempre en español neutro, tuteando '
+    'con conjugación estándar ("tú puedes", "recuerdas", "sientes"). '
+    'PROHIBIDO el voseo y todo argentinismo: podés, tenés, querés, sabés, '
+    'sentís, recordás, sos, andá, acordate, fijate, etc. Revisa cada '
+    'conjugación antes de responder.'
+)
+
+
 def call_ai(messages, max_tokens=500, timeout=25):
     """
     Llama al proveedor de IA configurado.
@@ -149,6 +161,12 @@ def call_ai(messages, max_tokens=500, timeout=25):
     Returns:
         str — texto de la respuesta, o '' si falla
     """
+    messages = list(messages)
+    if messages and messages[0].get('role') == 'system':
+        messages[0] = {**messages[0], 'content': messages[0]['content'] + '\n\n' + _STYLE_RULE}
+    else:
+        messages = [{'role': 'system', 'content': _STYLE_RULE}] + messages
+
     provider = _resolve_provider()
     if provider == 'openrouter':
         return _call_openrouter(messages, max_tokens, timeout)
