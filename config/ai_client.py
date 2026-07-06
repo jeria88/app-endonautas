@@ -11,11 +11,34 @@ Orden de prioridad:
   3. AI_PROVIDER='auto'        → OpenRouter si hay OPENROUTER_API_KEY, si no DeepSeek
 """
 import logging
+import re
 
 import requests
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
+
+# Filtro determinístico anti-voseo: la instrucción en el prompt reduce pero no
+# garantiza — esto corrige lo que se escape, antes de llegar al usuario.
+_VOSEO = {
+    'podés': 'puedes', 'tenés': 'tienes', 'querés': 'quieres', 'sabés': 'sabes',
+    'sentís': 'sientes', 'recordás': 'recuerdas', 'decís': 'dices', 'hacés': 'haces',
+    'pensás': 'piensas', 'mirás': 'miras', 'necesitás': 'necesitas',
+    'entendés': 'entiendes', 'creés': 'crees', 'vivís': 'vives', 'sos': 'eres',
+    'vos': 'tú', 'acordate': 'acuérdate', 'fijate': 'fíjate', 'contame': 'cuéntame',
+    'decime': 'dime', 'mostrame': 'muéstrame', 'escuchá': 'escucha', 'probá': 'prueba',
+}
+_VOSEO_RE = re.compile(r'\b(' + '|'.join(_VOSEO) + r')\b', re.IGNORECASE)
+
+
+def _neutralize(text):
+    def rep(m):
+        w = m.group(0)
+        if w.isupper() and len(w) > 1:  # "SOS" de emergencia, siglas — no tocar
+            return w
+        out = _VOSEO[w.lower()]
+        return out[0].upper() + out[1:] if w[0].isupper() else out
+    return _VOSEO_RE.sub(rep, text)
 
 
 _PRIORITY_LABELS = {
@@ -169,9 +192,9 @@ def call_ai(messages, max_tokens=500, timeout=25):
 
     provider = _resolve_provider()
     if provider == 'openrouter':
-        return _call_openrouter(messages, max_tokens, timeout)
+        return _neutralize(_call_openrouter(messages, max_tokens, timeout))
     if provider == 'deepseek':
-        return _call_deepseek(messages, max_tokens, timeout)
+        return _neutralize(_call_deepseek(messages, max_tokens, timeout))
     return ''
 
 
