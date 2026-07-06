@@ -35,7 +35,7 @@
 </div>
 
 <script>
-const DAYS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+var DAYS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
 function addSlot() {
   const opts = DAYS.map((d,i) => `<option value="${i}">${d}</option>`).join('');
   const row = document.createElement('div');

@@ -52,7 +52,7 @@
 
 <script>
 // Geocoder
-let debounce;
+var debounce;
 document.getElementById('city-input').addEventListener('input', function() {
   clearTimeout(debounce);
   const q = this.value.trim();

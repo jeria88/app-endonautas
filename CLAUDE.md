@@ -198,6 +198,13 @@ plan_at_least(user, 'navegante')   # True si plan >= navegante
 upgrade_wall(request, 'navegante', 'Nombre del feature')  # devuelve HttpResponse con muro
 ```
 
+### Página /planes/ — pública desde 2026-07-06
+- Sin `login_required`: anónimos ven precios con CTA "Crear cuenta y comenzar" → `/registro/?plan=X` (el flujo post-registro con `?plan=` ya existía en `accounts/views.py`)
+- Forms de pago MP y SDK PayPal se renderizan solo autenticados
+- El cuerpo real vive en `templates/payments/_planes_body.html`, incluido en los blocks `content` (app) y `public_content` (anónimo) de `planes.html`
+- Al activar un plan (MP/PayPal, retorno y webhook) se llama `update_subscriber_lists()` de Listmonk — segmentación de email se actualiza sola
+- ⚠️ Discrepancia pendiente: la tabla comparativa dice "Espejo IA ilimitado" en Free, pero el gating real es 1 sesión/día 45 min — decidir cuál es la verdad y alinear
+
 ### Sistema de tokens (desactivado)
 - `tokens/signals.py`: vaciado — no genera fractones
 - `tokens/views.py`: redirige a /pagos/planes/

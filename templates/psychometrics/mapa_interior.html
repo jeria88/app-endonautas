@@ -56,7 +56,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-const radarData = {{ radar_json|safe }};
+var radarData = {{ radar_json|safe }};
 if (radarData.length > 0 && document.getElementById('radarChart')) {
   const labels = radarData.map(d => d.label);
   const values = radarData.map(d => d.value);

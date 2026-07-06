@@ -171,7 +171,7 @@
 
 <script>
 // ── Datos ────────────────────────────────────────────────────────────────────
-const HEADERS = {
+var HEADERS = {
   propio:   'Tu mapa para el viaje más profundo — el que va hacia adentro.',
   familia:  'Tu mapa para las relaciones que más importan.',
   negocio:  'Tu mapa para liderar desde un lugar más consciente.',
@@ -179,7 +179,7 @@ const HEADERS = {
   colectiva:'Tu mapa para transformar primero lo que estás llamado a transmitir.',
 };
 
-const MODULES = {
+var MODULES = {
   propio: [
     { icon:'◎', nombre:'Espejo de Conflictos',   desc:'Comprende los patrones que se repiten en ti — sin juicio, con precisión.' },
     { icon:'◈', nombre:'Tests Psicométricos',     desc:'Mapea tu mundo emocional interno con rigor clínico.' },
@@ -251,7 +251,7 @@ function getOrder() {
 }
 
 // ── Drag & drop (desktop + móvil) ────────────────────────────────────────────
-let dragSrc = null;
+var dragSrc = null;
 
 function initDrag() {
   const list = document.getElementById('priorityList');

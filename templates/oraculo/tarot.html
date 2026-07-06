@@ -219,7 +219,7 @@
         <button class="tirada-btn" data-tirada="yo_realizado" data-tip="Diez cartas del árbol de la vida: el mapa completo de tu energía actual"><span class="tb-n">10</span>Yo Realizado</button>
         <button class="tirada-btn full" data-tirada="viaje_heroe" data-tip="Doce cartas del Viaje del Héroe con solo arcanos mayores: el arco completo de transformación"><span class="tb-n">12</span>Viaje del Héroe · solo arcanos mayores</button>
         {% else %}
-        <a href="/pagos/planes/" onclick="spaGo(event,this)" class="tirada-btn" style="opacity:0.45;cursor:pointer;text-decoration:none;color:inherit" data-tip="Desbloquea todas las tiradas con el plan Navegante"><span class="tb-n">+</span>Más tiradas · Navegante →</a>
+        <a href="/planes/" onclick="spaGo(event,this)" class="tirada-btn" style="opacity:0.45;cursor:pointer;text-decoration:none;color:inherit" data-tip="Desbloquea todas las tiradas con el plan Navegante"><span class="tb-n">+</span>Más tiradas · Navegante →</a>
         {% endif %}
       </div>
     </div>
@@ -257,9 +257,9 @@
 </div>
 
 <script>
-const BASE_STATIC = "{% static '' %}";
+var BASE_STATIC = "{% static '' %}";
 
-const NOMBRES_POS = {
+var NOMBRES_POS = {
   unica:            'Carta espejo',
   // Fuerza y Flaqueza
   fuerza:           'Tu recurso',
@@ -325,7 +325,7 @@ const NOMBRES_POS = {
   resurreccion:     'Resurrección',
   elixir:           'El elixir',
 };
-const NOMBRES_TIRADA = {
+var NOMBRES_TIRADA = {
   un_arcano:       '1 carta · Carta espejo',
   fuerza_flaqueza: '2 cartas · Fuerza y Flaqueza',
   el_conflicto:    '2 cartas · El Conflicto',
@@ -342,7 +342,7 @@ const NOMBRES_TIRADA = {
 /* Grid positions por tirada.
    crossing:true → carta horizontal sobre la celda central (rotate 90°)
    pair → posición gemela: se revelan juntas al hacer clic en cualquiera */
-const GRID_LAYOUTS = {
+var GRID_LAYOUTS = {
   // Fuerza y Flaqueza: lado a lado
   fuerza_flaqueza: {
     fuerza:   { row:1, col:1 },
@@ -427,14 +427,14 @@ const GRID_LAYOUTS = {
   },
 };
 
-const LOADER_PHASES = [
+var LOADER_PHASES = [
   "Barajando el mazo…",
   "Seleccionando las cartas…",
   "Consultando el patrón arquetípico…",
   "El oráculo interpreta las imágenes…",
   "Leyendo el diálogo entre cartas…",
 ];
-let _loaderTimer = null;
+var _loaderTimer = null;
 function startLoader() {
   let idx = 0;
   document.getElementById('loaderMsg').textContent = LOADER_PHASES[0];
@@ -447,7 +447,7 @@ function stopLoader() {
   if (_loaderTimer) { clearInterval(_loaderTimer); _loaderTimer = null; }
 }
 
-let tiradaActual = 'tres_cartas';
+var tiradaActual = 'tres_cartas';
 document.querySelectorAll('.tirada-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tirada-btn').forEach(b => b.classList.remove('active'));
@@ -491,13 +491,13 @@ document.getElementById('tirarBtn').addEventListener('click', async () => {
   }
 });
 
-let porCarta = {};
-let textoGlobal = '';
-let fuenteLabel = '';
-let totalCartas = 0;
-let cartasReveladas = new Set();
-let outerByPos = {};   // posicion → outer element
-let activePosicion = null;
+var porCarta = {};
+var textoGlobal = '';
+var fuenteLabel = '';
+var totalCartas = 0;
+var cartasReveladas = new Set();
+var outerByPos = {};   // posicion → outer element
+var activePosicion = null;
 
 function showInterp(posicion, fromClick) {
   activePosicion = posicion;

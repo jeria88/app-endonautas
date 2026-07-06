@@ -255,16 +255,16 @@
 </div>
 
 <script>
-const MOMENTOS   = {{ momentos_json|safe }};
-const CATEGORIAS = {{ categorias_json|safe }};
+var MOMENTOS   = {{ momentos_json|safe }};
+var CATEGORIAS = {{ categorias_json|safe }};
 
-const CAT_TIPO_ICONS = { cotidiano:'◌', crisis:'◈' };
-const CAT_COLORS = { cotidiano:'var(--calipso)', crisis:'var(--rose)' };
+var CAT_TIPO_ICONS = { cotidiano:'◌', crisis:'◈' };
+var CAT_COLORS = { cotidiano:'var(--calipso)', crisis:'var(--rose)' };
 
-let catActual      = '';
-let momentoActual  = null;
-let ejercicioIdx   = 0;
-let ejercActual    = null;  // ejercicio activo dentro del momento
+var catActual      = '';
+var momentoActual  = null;
+var ejercicioIdx   = 0;
+var ejercActual    = null;  // ejercicio activo dentro del momento
 
 // ── Sidebar dinámico ──────────────────────────────────────────────────────────
 function buildSidebar() {
@@ -454,10 +454,10 @@ function renderPlayer(e) {
 }
 
 // ── Respiración ──────────────────────────────────────────────────────────────
-let breathTimer = null, breathPhaseIdx = 0, breathCountdown = 0, breathCycles = 0, breathRunning = false;
+var breathTimer = null, breathPhaseIdx = 0, breathCountdown = 0, breathCycles = 0, breathRunning = false;
 
 // Phase colors matching the canvas animation
-const SQ_PHASE_COLORS = ['hsl(186,90%,72%)','hsl(215,75%,82%)','hsl(265,72%,72%)','hsl(195,55%,62%)'];
+var SQ_PHASE_COLORS = ['hsl(186,90%,72%)','hsl(215,75%,82%)','hsl(265,72%,72%)','hsl(195,55%,62%)'];
 
 function renderBreath(e) {
   // Todos los ejercicios con animación canvas custom: overlay neon (sin SVG ring)
@@ -585,7 +585,7 @@ function tickBreath() {
 }
 
 // ── Pasos ────────────────────────────────────────────────────────────────────
-let currentStep = 0;
+var currentStep = 0;
 
 function renderPasos(e) {
   const n = (e.steps||[]).length;
@@ -653,7 +653,7 @@ function moveStep(dir) {
 }
 
 // ── Vocal ────────────────────────────────────────────────────────────────────
-let currentVocalStep = 0;
+var currentVocalStep = 0;
 
 function renderVocal(e) {
   const n = (e.steps||[]).length;
@@ -731,7 +731,7 @@ function renderReflex(e) {
 function marcarCompletado() { avanzarDesdeEjercicio(); }
 
 // ── Exercise diagrams (inline SVG, CC0-based) ─────────────────────────────────
-const EXERCISE_DIAGRAMS = {
+var EXERCISE_DIAGRAMS = {
 
 'Botones del Cerebro': `<div class="exercise-diagram">
 <svg viewBox="0 0 200 220" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -939,7 +939,7 @@ const EXERCISE_DIAGRAMS = {
 function getDiagram(e){ return EXERCISE_DIAGRAMS[e.title] || ''; }
 
 // ── Animation type map ────────────────────────────────────────────────────────
-const ANIM_TYPE_MAP = {
+var ANIM_TYPE_MAP = {
   'Respiración Cuadrada':      'square',
   'Nadi Shodhana':             'bilateral',
   'Respiración de Fuego':      'pulse_radial',
@@ -971,7 +971,7 @@ const ANIM_TYPE_MAP = {
 function getAnimType(e){ return ANIM_TYPE_MAP[e.title] || e.ui_mode; }
 
 // ── Animation Engine ──────────────────────────────────────────────────────────
-const animEngine = {
+var animEngine = {
   raf:null, t:0, mode:null, clr:'#7ECCCD',
   blobCur:0.35, blobTgt:0.35,
   animType:null, sq:{},
@@ -1847,7 +1847,7 @@ const animEngine = {
 };
 
 // ── Audio Engine ──────────────────────────────────────────────────────────────
-const audioEngine = {
+var audioEngine = {
   Ctx:null, osc:null, gain:null, active:false,
   FREQS:{aliento:128,integracion:174,resonancia:285,espectro:396,campo:432,presencia:528},
 

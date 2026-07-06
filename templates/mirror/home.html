@@ -154,14 +154,14 @@
 <form id="csrf-holder" hidden>{% csrf_token %}</form>
 
 <script>
-let activeSessionPk = null;
-let menuTargetPk = null;
-let sessionLimitReached = false;
-let pendingFile = null;
-const csrf = () => document.getElementById('csrf-holder').querySelector('[name=csrfmiddlewaretoken]').value;
+var activeSessionPk = null;
+var menuTargetPk = null;
+var sessionLimitReached = false;
+var pendingFile = null;
+var csrf = () => document.getElementById('csrf-holder').querySelector('[name=csrfmiddlewaretoken]').value;
 
 // ── Dropdown menu ──────────────────────────────────────────────
-const dropdown = document.getElementById('global-dropdown');
+var dropdown = document.getElementById('global-dropdown');
 
 function openMenu(e, pk) {
   e.stopPropagation();
@@ -372,7 +372,7 @@ document.querySelectorAll('.session-row').forEach(row => {
   row.removeAttribute('onclick');
 });
 
-const inputEl = document.getElementById('chat-input');
+var inputEl = document.getElementById('chat-input');
 inputEl.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 });
@@ -426,7 +426,7 @@ async function sendMessage() {
     const data = await r.json();
     if (r.status === 403 && data.upgrade_required) {
       sessionLimitReached = true;
-      addUpgradeBubble(data.error, '/pagos/planes/', 'Ver plan Navegante');
+      addUpgradeBubble(data.error, '/planes/', 'Ver plan Navegante');
     } else if (data.reply) {
       const t = new Date(data.created_at).toLocaleTimeString('es-CL', {hour:'2-digit',minute:'2-digit'});
       addBubble('assistant', data.reply, t);
