@@ -15,6 +15,37 @@ def espejo_home(request):
     return render(request, 'mirror/home.html', {'sessions': sessions})
 
 
+def _summarize_previous_session(user):
+    """Cierra la última sesión sin resumen: genera conflict_summary + return_question
+    para que user_history_context() tenga memoria real entre sesiones."""
+    prev = (
+        ChatSession.objects
+        .filter(user=user, conflict_summary='')
+        .order_by('-updated_at')
+        .first()
+    )
+    if not prev or prev.messages.count() < 4:
+        return
+    from config.ai_client import call_ai
+    transcript = '\n'.join(
+        f"{'Usuario' if m.role == 'user' else 'Espejo'}: {m.content[:400]}"
+        for m in prev.messages.all()[:30]
+    )
+    out = call_ai([
+        {'role': 'system', 'content': (
+            'Resumes sesiones de acompañamiento emocional. Responde EXACTAMENTE en este formato, sin nada más:\n'
+            'RESUMEN: <el conflicto central que la persona trabajó, en 2-3 frases>\n'
+            'PREGUNTA: <una pregunta abierta que quedó pendiente y sirva para retomar el trabajo>'
+        )},
+        {'role': 'user', 'content': transcript},
+    ], max_tokens=250)
+    if 'RESUMEN:' in out and 'PREGUNTA:' in out:
+        resumen, pregunta = out.split('PREGUNTA:', 1)
+        prev.conflict_summary = resumen.replace('RESUMEN:', '').strip()[:1000]
+        prev.return_question = pregunta.strip()[:500]
+        prev.save(update_fields=['conflict_summary', 'return_question'])
+
+
 @login_required
 def chat_new(request):
     from accounts.plan_utils import plan_at_least
@@ -27,6 +58,10 @@ def chat_new(request):
             if is_ajax:
                 return JsonResponse({'pk': existing.pk, 'title': existing.title or 'Tu sesión de hoy', 'reused': True})
             return redirect('espejo_chat', pk=existing.pk)
+    try:
+        _summarize_previous_session(request.user)
+    except Exception:
+        pass
     session = ChatSession.objects.create(user=request.user)
     if is_ajax:
         return JsonResponse({'pk': session.pk, 'title': session.title or 'Nueva conversación'})
@@ -382,14 +417,13 @@ def _get_reply(session, user_content, user=None, attachment=None, attachment_typ
     history_ctx = user_history_context(user) if user else ''
     query = user_content or ''
     kb_chunks = _retrieve_context(query, k=5) if query else []
-    kb_text = ''
+    # Identidad primero; contexto después en bloques delimitados que el prompt referencia por nombre
+    system = _load_system_prompt()
+    user_ctx = (intent + history_ctx).strip()
+    if user_ctx:
+        system += f'\n\n<contexto_usuario>\n{user_ctx}\n</contexto_usuario>'
     if kb_chunks:
-        kb_text = (
-            'Marco teórico de referencia (úsalo si es pertinente; no lo cites textualmente):\n'
-            + '\n\n---\n\n'.join(kb_chunks)
-            + '\n\n'
-        )
-    system = intent + history_ctx + kb_text + _load_system_prompt()
+        system += '\n\n<marco_teorico>\n' + '\n\n---\n\n'.join(kb_chunks) + '\n</marco_teorico>'
     history = list(session.messages.values('role', 'content'))
     messages = [{'role': 'system', 'content': system}]
     messages += [{'role': m['role'] if m['role'] == 'user' else 'assistant', 'content': m['content']} for m in history[-10:]]
@@ -408,7 +442,7 @@ def _get_reply(session, user_content, user=None, attachment=None, attachment_typ
         user_part = {'role': 'user', 'content': user_content}
 
     messages.append(user_part)
-    return call_ai(messages, max_tokens=700) or 'No pude conectar con el espejo en este momento.'
+    return call_ai(messages, max_tokens=1000) or 'No pude conectar con el espejo en este momento.'
 
 
 @login_required
