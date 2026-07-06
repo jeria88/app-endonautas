@@ -10,8 +10,12 @@ Orden de prioridad:
   2. AI_PROVIDER='deepseek'    → DeepSeek siempre
   3. AI_PROVIDER='auto'        → OpenRouter si hay OPENROUTER_API_KEY, si no DeepSeek
 """
+import logging
+
 import requests
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 
 _PRIORITY_LABELS = {
@@ -168,6 +172,7 @@ def _resolve_provider():
 
 
 def _call_openrouter(messages, max_tokens, timeout):
+    r = None
     try:
         r = requests.post(
             'https://openrouter.ai/api/v1/chat/completions',
@@ -180,11 +185,14 @@ def _call_openrouter(messages, max_tokens, timeout):
             timeout=timeout,
         )
         return r.json()['choices'][0]['message']['content']
-    except Exception:
+    except Exception as e:
+        body = r.text[:300] if r is not None else ''
+        logger.error(f'OpenRouter fallo: {e} — {body}')
         return ''
 
 
 def _call_deepseek(messages, max_tokens, timeout):
+    r = None
     try:
         r = requests.post(
             'https://api.deepseek.com/chat/completions',
@@ -197,7 +205,9 @@ def _call_deepseek(messages, max_tokens, timeout):
             timeout=timeout,
         )
         return r.json()['choices'][0]['message']['content']
-    except Exception:
+    except Exception as e:
+        body = r.text[:300] if r is not None else ''
+        logger.error(f'DeepSeek fallo: {e} — {body}')
         return ''
 
 
