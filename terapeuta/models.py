@@ -57,6 +57,11 @@ class Consulta(models.Model):
     senales_alarma = models.BooleanField(default=False)
     prioridad_sintoma = models.TextField(blank=True)
     marcos_recomendados = models.JSONField(default=list, blank=True)
+    # Rediseño anamnesis por signos + motor de ejes (Fase 1)
+    sistemas_afectados = models.JSONField(default=list, blank=True)   # ["piel", ...] del triaje
+    signos = models.JSONField(default=dict, blank=True)               # {"G01": "friolento", "P03": ["calor"], ...}
+    ejes_resultado = models.JSONField(default=dict, blank=True)       # ejes acumulados (debug/persistencia)
+    formula_mtc = models.JSONField(default=dict, blank=True)          # fórmula compositiva sintetizada
     diagnostico_final = models.TextField(blank=True)
     propuesta_terapeutica = models.TextField(blank=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
@@ -105,6 +110,10 @@ class DiagnosticoPropuesto(models.Model):
     integracion = models.TextField(blank=True)
     fue_confirmado_por_usuario = models.BooleanField(default=False)
     diagnostico_id = models.CharField(max_length=10, blank=True)
+    # Motor de diferenciación (Fase 1): puntaje y evidencia estructurada
+    puntaje = models.FloatField(null=True, blank=True)
+    confianza = models.FloatField(null=True, blank=True)
+    evidencia = models.JSONField(default=dict, blank=True)  # {"a_favor": [...], "en_contra": [...], "justificacion_ia": ""}
     orden = models.PositiveIntegerField(default=0)
 
     class Meta:

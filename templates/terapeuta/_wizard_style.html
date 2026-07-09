@@ -1,0 +1,44 @@
+<style data-page-style>
+.wz-top { display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem; }
+.wz-top a { color:var(--muted);text-decoration:none;font-size:0.82rem; }
+.wz-step { font-size:0.72rem;color:var(--dim); }
+.progress-bar { height:3px;background:var(--border);border-radius:2px;margin-bottom:1.4rem; }
+.progress-fill { height:100%;background:var(--calipso);border-radius:2px;transition:width .3s; }
+.wz-h1 { font-size:1.2rem;font-weight:700;margin-bottom:0.25rem; }
+.wz-sub { font-size:0.82rem;color:var(--muted);margin-bottom:1.3rem;line-height:1.6; }
+.wz-section-title { font-size:0.9rem;font-weight:700;color:var(--calipso);margin:1.6rem 0 0.7rem; letter-spacing:.02em; }
+
+/* Bloque de pregunta */
+.q-block { background:var(--surface);backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.15rem;margin-bottom:0.7rem;transition:border-color .2s; }
+.q-block.answered { border-color:var(--border-active); }
+.q-text { font-size:0.9rem;font-weight:600;line-height:1.5;margin-bottom:0.7rem;display:flex;align-items:flex-start;gap:.35rem; }
+
+/* Tooltip educativo */
+.edu-tip { position:relative;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--calipso-glow);color:var(--calipso);font-size:.62rem;font-weight:700;cursor:help;flex-shrink:0;border:1px solid rgba(126,204,205,.3);outline:none; }
+.edu-bubble { position:absolute;bottom:130%;left:50%;transform:translateX(-50%) translateY(4px);width:min(260px,72vw);background:var(--surface2);border:1px solid var(--border-active);border-radius:10px;padding:.55rem .7rem;font-size:.74rem;font-weight:400;line-height:1.5;color:var(--text);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.4); }
+.edu-tip:hover .edu-bubble,.edu-tip:focus .edu-bubble { opacity:1;transform:translateX(-50%) translateY(0); }
+
+/* Opciones */
+.opts { display:flex;flex-direction:column;gap:.35rem; }
+.opt { display:flex;align-items:center;gap:.55rem;padding:.5rem .7rem;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:0.85rem;color:var(--muted);transition:all .15s; }
+.opt:has(input:checked) { border-color:var(--calipso);color:var(--text);background:var(--calipso-glow); }
+.opt input { accent-color:var(--calipso);flex-shrink:0; }
+.opts-img { display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.5rem; }
+.opt-img { flex-direction:column;text-align:center;gap:.35rem;padding:.6rem .5rem; }
+.opt-thumb { width:100%;max-width:88px;aspect-ratio:1;object-fit:cover;border-radius:8px;background:rgba(255,255,255,.03); }
+.opt-img .opt-label { font-size:.76rem; }
+
+/* Tarjetas de sistema (triaje) */
+.sys-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.6rem;margin:.4rem 0 .6rem; }
+.sys-card { position:relative;border:1.5px solid var(--border);border-radius:12px;padding:.9rem .7rem;text-align:center;cursor:pointer;transition:all .15s;background:var(--surface); }
+.sys-card:has(input:checked) { border-color:var(--calipso);background:var(--calipso-glow); }
+.sys-card input { position:absolute;opacity:0;pointer-events:none; }
+.sys-ico { font-size:1.5rem;display:block;margin-bottom:.3rem; }
+.sys-name { font-size:0.8rem;font-weight:600;color:var(--text); }
+
+.wz-actions { display:flex;gap:.75rem;margin-top:1.5rem; }
+.alarma-banner { background:rgba(201,123,132,.12);border:1px solid rgba(201,123,132,.4);border-radius:12px;padding:.85rem 1rem;margin-bottom:1rem;font-size:.82rem;color:var(--text);line-height:1.55; }
+</style>
+<script>
+function markQ(id){ document.getElementById('qb-'+id)?.classList.add('answered'); }
+</script>

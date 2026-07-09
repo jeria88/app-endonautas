@@ -2,7 +2,6 @@ import json as _json
 import logging
 import re as _re
 
-import requests as _requests
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -10,15 +9,24 @@ from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .constants import (
-    AI_SYSTEM_PROMPT,
-    DIAGNOSIS_CATALOG,
+from config.ai_client import call_ai
+
+from .data import (
     FRAMEWORKS_AND_TECHNIQUES,
-    KEYWORD_TO_FRAMEWORKS,
-    QUESTIONS_BANK,
+    MARCO_MTC,
+    SYSTEM_DIFERENCIACION,
+    SYSTEM_PROPUESTA,
     get_all_tecnicas,
-    get_tecnica_to_framework_map,
 )
+from .data.anamnesis import (
+    MODULO_EMOCIONAL,
+    MODULO_GENERAL,
+    OBSERVACION,
+    PREGUNTAS_BY_ID,
+    ROGA_PARIKSHA,
+    SISTEMAS,
+)
+from .data.terapeutica import FASES_14_DIAS, PRINCIPIOS, RED_FLAGS_DERIVACION
 from .forms import Paso1Form, Paso5ResultadoForm
 from .models import (
     Consulta,
@@ -29,111 +37,92 @@ from .models import (
     SintomaConfirmado,
     TecnicaEvaluacion,
 )
+from .scoring import (
+    modulos_especificos_para,
+    score_diagnosticos,
+    sistemas_desde_motivo,
+)
 
 logger = logging.getLogger(__name__)
 
-_OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
+# ─── IA helper (delega en el cliente centralizado) ────────────────────────────
 
-# ─── OpenRouter helper ────────────────────────────────────────────────────────
-
-def _call_ai_json(prompt: str, system: str = "", max_tokens: int = 2000, temperature: float = 0.1, max_retries: int = 2, model: str | None = None) -> dict:
-    api_key = getattr(settings, "OPENROUTER_API_KEY", "")
-    if not api_key:
+def _call_ai_json(prompt: str, system: str, max_tokens: int = 1500, temperature: float = 0.2) -> dict:
+    """
+    Llama a call_ai con el modelo clínico y extrae JSON. Devuelve {} si no hay
+    API key o si falla — el motor determinista es la base, esto solo refina.
+    """
+    raw = call_ai(
+        [{"role": "system", "content": system}, {"role": "user", "content": prompt}],
+        max_tokens=max_tokens,
+        timeout=60,
+        model=getattr(settings, "AI_MODEL_CLINICO", None),
+        temperature=temperature,
+        json_mode=True,
+    )
+    if not raw:
         return {}
-    _model = model or getattr(settings, "OPENROUTER_MODEL", "meta-llama/llama-3.1-8b-instruct:free")
-    sys_msg = system or AI_SYSTEM_PROMPT
-
-    for attempt in range(max_retries):
+    raw = raw.strip()
+    for extractor in (
+        lambda s: _json.loads(s),
+        lambda s: _json.loads(_re.search(r'```(?:json)?\s*(\{.*?\})\s*```', s, _re.DOTALL).group(1)),
+        lambda s: _json.loads(_re.search(r'(\{.*\})', s, _re.DOTALL).group(1)),
+    ):
         try:
-            payload: dict = {
-                "model": _model,
-                "messages": [
-                    {"role": "system", "content": sys_msg},
-                    {"role": "user", "content": prompt},
-                ],
-                "max_tokens": max_tokens,
-                "temperature": temperature,
-            }
-            # json_object mode solo para modelos que lo soportan
-            if _model in ("openrouter/auto",) or any(x in _model for x in ("gpt-4", "claude", "gemini")):
-                payload["response_format"] = {"type": "json_object"}
-            resp = _requests.post(
-                _OPENROUTER_URL,
-                headers={
-                    "Authorization": f"Bearer {api_key}",
-                    "Content-Type": "application/json; charset=utf-8",
-                    "HTTP-Referer": "https://endonautas.cl",
-                    "X-Title": "Endonautas",
-                },
-                data=_json.dumps(payload, ensure_ascii=False).encode("utf-8"),
-                timeout=60,
-            )
-            resp.raise_for_status()
-            raw = resp.json()["choices"][0]["message"]["content"].strip()
-            try:
-                return _json.loads(raw)
-            except _json.JSONDecodeError:
-                pass
-            m = _re.search(r'```(?:json)?\s*(\{.*?\})\s*```', raw, _re.DOTALL)
-            if m:
-                return _json.loads(m.group(1))
-            m = _re.search(r'(\{.*\})', raw, _re.DOTALL)
-            if m:
-                return _json.loads(m.group(1))
-            logger.warning(f"No JSON found in AI response (attempt {attempt + 1}): {raw[:200]}")
-        except (_json.JSONDecodeError, KeyError, IndexError) as e:
-            logger.warning(f"AI JSON parse error (attempt {attempt + 1}): {e}")
-        except Exception as e:
-            logger.error(f"AI call failed: {e}")
-            break
+            return extractor(raw)
+        except Exception:
+            continue
+    logger.warning("Terapeuta: sin JSON en respuesta IA: %s", raw[:200])
     return {}
 
 
-# ─── Validation helpers ───────────────────────────────────────────────────────
+# ─── Anamnesis: parseo y persistencia de signos ───────────────────────────────
 
-def _validate_ai_recomendacion_tecnicas(data: dict) -> list[dict]:
-    results = []
-    items = data.get("tecnicas_recomendadas", [])
-    if not isinstance(items, list):
-        return results
-    valid_tecnicas = get_all_tecnicas()
-    valid_frameworks = set(FRAMEWORKS_AND_TECHNIQUES.keys())
-    tecnica_map = get_tecnica_to_framework_map()
-    for item in items:
-        marco = item.get("marco", "")
-        tecnica = item.get("tecnica", "")
-        if marco in valid_frameworks and tecnica in valid_tecnicas and tecnica_map.get(tecnica) == marco:
-            results.append({"marco": marco, "tecnica": tecnica})
-    return results
-
-
-def _validate_ai_preguntas(data: dict) -> list[str]:
-    valid_ids = {q["id"] for q in QUESTIONS_BANK}
-    items = data.get("preguntas_seleccionadas", [])
-    return [qid for qid in (items if isinstance(items, list) else []) if qid in valid_ids]
+def _parse_signos(request: HttpRequest, preguntas: list) -> dict:
+    out = {}
+    for q in preguntas:
+        key = f"signo_{q['id']}"
+        if q["tipo"] == "checkbox":
+            vals = request.POST.getlist(key)
+            if vals:
+                out[q["id"]] = vals
+        else:
+            v = request.POST.get(key, "").strip()
+            if v:
+                out[q["id"]] = v
+    return out
 
 
-def _validate_ai_diagnosticos(data: dict) -> list[str]:
-    valid_ids = {d["id"] for d in DIAGNOSIS_CATALOG}
-    items = data.get("diagnosticos_seleccionados", [])
-    return [did for did in (items if isinstance(items, list) else []) if did in valid_ids]
+def _merge_signos(consulta: Consulta, nuevos: dict):
+    s = dict(consulta.signos or {})
+    s.update(nuevos)
+    consulta.signos = s
 
 
-# ─── Keyword-based recommendation ─────────────────────────────────────────────
+def _etiquetas_signo(qid: str, val) -> str:
+    q = PREGUNTAS_BY_ID.get(qid)
+    if not q:
+        return str(val)
+    vals = val if isinstance(val, list) else [val]
+    labels = []
+    for v in vals:
+        opt = next((o for o in q["opciones"] if o["valor"] == v), None)
+        labels.append(opt["etiqueta"] if opt else v)
+    return ", ".join(labels)
 
-def recomendar_frameworks_por_keywords(motivo: str) -> list[str]:
-    motivo_lower = motivo.lower()
-    frameworks_recomendados = set()
-    for keyword, frameworks in KEYWORD_TO_FRAMEWORKS.items():
-        if keyword in motivo_lower:
-            frameworks_recomendados.update(frameworks)
-    if not frameworks_recomendados:
-        return list(FRAMEWORKS_AND_TECHNIQUES.keys())
-    return list(frameworks_recomendados)
+
+def _preguntas_mostradas(consulta: Consulta) -> list:
+    ids = [q["id"] for q in ROGA_PARIKSHA]
+    ids += [q["id"] for q in MODULO_GENERAL]
+    ids += [q["id"] for q in OBSERVACION]
+    ids += [q["id"] for q in MODULO_EMOCIONAL]
+    for _sid, _nombre, preguntas in modulos_especificos_para(consulta.sistemas_afectados or []):
+        ids += [q["id"] for q in preguntas]
+    return ids
 
 
-# ─── Wizard views ─────────────────────────────────────────────────────────────
+# ─── Wizard ───────────────────────────────────────────────────────────────────
 
 def _check_terapeuta_plan(request):
     from accounts.plan_utils import plan_at_least, upgrade_wall
@@ -153,6 +142,7 @@ def wizard_paso0(request: HttpRequest) -> HttpResponse:
 
 @login_required
 def wizard_paso1(request: HttpRequest, consulta_id: int) -> HttpResponse:
+    """Motivo + triaje de sistemas + Roga Pariksha (nidana, upashaya) + red flags."""
     consulta = get_object_or_404(Consulta, id=consulta_id)
     if request.method == "POST":
         form = Paso1Form(request.POST)
@@ -165,8 +155,16 @@ def wizard_paso1(request: HttpRequest, consulta_id: int) -> HttpResponse:
             consulta.intensidad = cd.get("intensidad")
             consulta.duracion = cd.get("duracion", "")
             consulta.medicamentos_actuales = cd.get("medicamentos_actuales", "")
-            alarmas = cd.get("senales_alarma", [])
-            consulta.senales_alarma = bool(alarmas)
+            consulta.senales_alarma = bool(cd.get("senales_alarma", []))
+
+            # triaje: sistemas elegidos ∪ derivados de keywords del motivo
+            elegidos = [s for s in request.POST.getlist("sistemas") if s in {x["id"] for x in SISTEMAS}]
+            derivados = sistemas_desde_motivo(consulta.motivo)
+            consulta.sistemas_afectados = list(dict.fromkeys(elegidos + derivados)) or ["otro"]
+
+            # Roga Pariksha
+            _merge_signos(consulta, _parse_signos(request, ROGA_PARIKSHA))
+
             consulta.paso_actual = 2
             if consulta.modo == "autoconsulta" and not consulta.nombre_paciente:
                 from django.utils import timezone
@@ -186,145 +184,170 @@ def wizard_paso1(request: HttpRequest, consulta_id: int) -> HttpResponse:
         })
     return render(request, "terapeuta/paso1.html", {
         "form": form, "consulta": consulta, "paso": 1, "total_pasos": 5,
+        "sistemas": SISTEMAS, "sistemas_activos": consulta.sistemas_afectados or [],
+        "roga": ROGA_PARIKSHA, "signos": consulta.signos or {},
         "cliente": consulta.perfil_cliente,
     })
 
 
 @login_required
 def wizard_paso2(request: HttpRequest, consulta_id: int) -> HttpResponse:
+    """Interrogatorio general (Shi Wen)."""
     consulta = get_object_or_404(Consulta, id=consulta_id)
-    texto_completo = consulta.motivo + (" " + consulta.medicamentos_actuales if consulta.medicamentos_actuales else "")
-    marcos_recomendados = recomendar_frameworks_por_keywords(texto_completo)
-    consulta.marcos_recomendados = marcos_recomendados
-    consulta.save(update_fields=["marcos_recomendados"])
-
-    marcos_data = []
-    for marco_name, marco_info in FRAMEWORKS_AND_TECHNIQUES.items():
-        es_recomendado = marco_name in marcos_recomendados
-        tecnicas_list = [
-            {"codigo": tec_code, "nombre": tec_info["nombre"], "descripcion": tec_info["descripcion"], "preseleccionada": es_recomendado}
-            for tec_code, tec_info in marco_info["tecnicas"].items()
-        ]
-        marcos_data.append({
-            "nombre": marco_name, "descripcion": marco_info["descripcion"],
-            "framework_code": marco_info["framework_code"],
-            "es_recomendado": es_recomendado, "tecnicas": tecnicas_list,
-        })
-
     if request.method == "POST":
-        tecnicas_seleccionadas = request.POST.getlist("tecnicas")
-        if not tecnicas_seleccionadas:
-            messages.error(request, "Debes seleccionar al menos una técnica.")
-        else:
-            all_tecnicas = get_all_tecnicas()
-            valid_codes = set(all_tecnicas.keys())
-            tecnicas_seleccionadas = [t for t in tecnicas_seleccionadas if t in valid_codes]
-            with transaction.atomic():
-                SeleccionTecnica.objects.filter(consulta=consulta).delete()
-                for tec_code in tecnicas_seleccionadas:
-                    tecnica_obj = TecnicaEvaluacion.objects.get(codigo_interno=tec_code)
-                    fue_recomendado = tec_code in [
-                        t["codigo"] for m in marcos_data if m["es_recomendado"] for t in m["tecnicas"]
-                    ]
-                    SeleccionTecnica.objects.create(consulta=consulta, tecnica=tecnica_obj, fue_recomendada_por_sistema=fue_recomendado)
-                consulta.paso_actual = 3
-                consulta.save(update_fields=["paso_actual"])
-            return redirect("terapeuta:paso3", consulta_id=consulta.id)
-
-    return render(request, "terapeuta/paso2.html", {"consulta": consulta, "marcos_data": marcos_data, "paso": 2, "total_pasos": 5})
+        _merge_signos(consulta, _parse_signos(request, MODULO_GENERAL))
+        consulta.paso_actual = 3
+        consulta.save(update_fields=["signos", "paso_actual"])
+        return redirect("terapeuta:paso3", consulta_id=consulta.id)
+    return render(request, "terapeuta/paso2.html", {
+        "consulta": consulta, "preguntas": MODULO_GENERAL, "signos": consulta.signos or {},
+        "paso": 2, "total_pasos": 5,
+    })
 
 
 @login_required
 def wizard_paso3(request: HttpRequest, consulta_id: int) -> HttpResponse:
+    """Auto-observación (lengua, cara, pulso) + módulo específico + contexto emocional."""
     consulta = get_object_or_404(Consulta, id=consulta_id)
-    selecciones = SeleccionTecnica.objects.filter(consulta=consulta).select_related("tecnica")
-    tecnicas_codigos = [s.tecnica.codigo_interno for s in selecciones]
-    if not tecnicas_codigos:
-        messages.warning(request, "No hay técnicas seleccionadas. Volviendo al paso 2.")
-        return redirect("terapeuta:paso2", consulta_id=consulta.id)
-
+    especificos = modulos_especificos_para(consulta.sistemas_afectados or [])
     if request.method == "POST":
-        with transaction.atomic():
-            PreguntaRespuesta.objects.filter(consulta=consulta).delete()
-            for key, value in request.POST.items():
-                if not key.startswith("respuesta_"):
-                    continue
-                suffix = key[len("respuesta_"):]
-                if suffix.startswith("radio_") or suffix.startswith("cb_") or suffix.startswith("otro_"):
-                    continue
-                pregunta_id = suffix
-                pregunta_texto = request.POST.get(f"pregunta_texto_{pregunta_id}", "")
-                tecnica_codigo = request.POST.get(f"pregunta_tecnica_{pregunta_id}", "")
-                respuesta = value.strip()
-                if not respuesta:
-                    continue
-                tecnica_obj = None
-                if tecnica_codigo:
-                    try:
-                        tecnica_obj = TecnicaEvaluacion.objects.get(codigo_interno=tecnica_codigo)
-                    except TecnicaEvaluacion.DoesNotExist:
-                        pass
-                try:
-                    orden = int(pregunta_id.replace("Q", "").replace("q", ""))
-                except ValueError:
-                    orden = 0
-                PreguntaRespuesta.objects.create(
-                    consulta=consulta, pregunta=pregunta_texto, respuesta=respuesta,
-                    tecnica_asociada=tecnica_obj, pregunta_id=pregunta_id, orden=orden,
-                )
-            consulta.paso_actual = 4
-            consulta.save(update_fields=["paso_actual"])
+        todas = list(OBSERVACION) + list(MODULO_EMOCIONAL)
+        for _sid, _nombre, preguntas in especificos:
+            todas += preguntas
+        _merge_signos(consulta, _parse_signos(request, todas))
+        # limpiar diagnósticos previos: se recalculan en paso4 con signos completos
+        DiagnosticoPropuesto.objects.filter(consulta=consulta).delete()
+        consulta.paso_actual = 4
+        consulta.save(update_fields=["signos", "paso_actual"])
         return redirect("terapeuta:paso4", consulta_id=consulta.id)
-
-    preguntas = _seleccionar_preguntas_ia(consulta, tecnicas_codigos)
-    return render(request, "terapeuta/paso3.html", {"consulta": consulta, "preguntas": preguntas, "tecnicas_seleccionadas": tecnicas_codigos, "paso": 3, "total_pasos": 5})
-
-
-def _seleccionar_preguntas_ia(consulta: Consulta, tecnicas_codigos: list) -> list:
-    banco_json = _json.dumps(QUESTIONS_BANK, ensure_ascii=False)
-    contexto_extra = ""
-    if consulta.intensidad:
-        contexto_extra += f"\nIntensidad: {consulta.intensidad}/10"
-    if consulta.duracion:
-        contexto_extra += f"\nDuración: {consulta.duracion}"
-    if consulta.medicamentos_actuales:
-        contexto_extra += f"\nMedicamentos: {consulta.medicamentos_actuales}"
-
-    prompt = f"""Motivo de consulta: {consulta.motivo}{contexto_extra}
-
-Técnicas seleccionadas: {_json.dumps(tecnicas_codigos, ensure_ascii=False)}
-
-Banco de preguntas:
-{banco_json}
-
-Selecciona 8-12 preguntas relevantes. Devuelve JSON: {{"preguntas_seleccionadas": ["Q01", "Q03", ...]}}"""
-
-    ai_response = _call_ai_json(prompt)
-    pregunta_ids = _validate_ai_preguntas(ai_response)
-    if not pregunta_ids:
-        pregunta_ids = _seleccion_determinista_preguntas(tecnicas_codigos)
-    return [q for q in QUESTIONS_BANK if q["id"] in pregunta_ids]
+    return render(request, "terapeuta/paso3.html", {
+        "consulta": consulta, "observacion": OBSERVACION, "especificos": especificos,
+        "emocional": MODULO_EMOCIONAL, "signos": consulta.signos or {},
+        "paso": 3, "total_pasos": 5,
+    })
 
 
-def _seleccion_determinista_preguntas(tecnicas_codigos: list) -> list:
-    selected = []
-    for q in QUESTIONS_BANK:
-        if len(set(q["tecnicas_asociadas"]) & set(tecnicas_codigos)) >= 2:
-            selected.append(q["id"])
-    for q in QUESTIONS_BANK:
-        if q["id"] not in selected and set(q["tecnicas_asociadas"]) & set(tecnicas_codigos):
-            selected.append(q["id"])
-    return selected[:12]
+def _escribir_preguntas_respuestas(consulta: Consulta):
+    """Dual-write: reconstruye PreguntaRespuesta (texto humano) desde signos."""
+    PreguntaRespuesta.objects.filter(consulta=consulta).delete()
+    orden = 0
+    for qid, val in (consulta.signos or {}).items():
+        q = PREGUNTAS_BY_ID.get(qid)
+        if not q:
+            continue
+        PreguntaRespuesta.objects.create(
+            consulta=consulta, pregunta=q["pregunta"],
+            respuesta=_etiquetas_signo(qid, val), pregunta_id=qid, orden=orden,
+        )
+        orden += 1
+
+
+def _refinar_diagnosticos_ia(formula: dict, candidatos: list) -> dict:
+    """
+    La IA elige 2-4 de los candidatos y justifica cada uno. Devuelve
+    {id: justificacion}. Fallback: top-3 con justificación = evidencia a favor.
+    """
+    fallback = {
+        c["id"]: "; ".join(c["a_favor"][:4]) or "Coincide con el patrón de la anamnesis."
+        for c in candidatos[:3]
+    }
+    if not candidatos:
+        return {}
+    resumen = [
+        {"id": c["id"], "titulo": c["titulo"], "marco": c["marco"],
+         "confianza": c["confianza"], "a_favor": c["a_favor"], "en_contra": c["en_contra"],
+         "patron_diagnostico": (c.get("patron") or {}).get("patron_diagnostico", "")[:400]}
+        for c in candidatos
+    ]
+    prompt = (
+        f"Fórmula diagnóstica (MTC): {formula.get('texto', '')}\n"
+        + (f"Nota: {formula['contradiccion']}\n" if formula.get("contradiccion") else "")
+        + "\nPatrones candidatos (lista cerrada, elige solo de aquí):\n"
+        + _json.dumps(resumen, ensure_ascii=False)
+        + '\n\nDevuelve JSON: {"seleccionados": [{"id": "M28", "justificacion": "..."}]} '
+          "con 2-4 patrones coherentes con la evidencia. La justificación cita signos concretos."
+    )
+    data = _call_ai_json(prompt, SYSTEM_DIFERENCIACION, max_tokens=1200)
+    ids_validos = {c["id"] for c in candidatos}
+    elegidos = {}
+    for item in (data.get("seleccionados") or []):
+        if isinstance(item, dict) and item.get("id") in ids_validos:
+            elegidos[item["id"]] = (item.get("justificacion") or "").strip()
+    return elegidos or fallback
+
+
+def _generar_diagnosticos(consulta: Consulta) -> list:
+    """Corre el motor, persiste fórmula/ejes, refina con IA y crea los snapshots."""
+    resultado = score_diagnosticos(
+        consulta.signos or {}, consulta.sistemas_afectados or [],
+        _preguntas_mostradas(consulta),
+    )
+    consulta.ejes_resultado = resultado["ejes"]
+    consulta.formula_mtc = resultado["formula"]
+    consulta.save(update_fields=["ejes_resultado", "formula_mtc"])
+
+    candidatos = resultado["candidatos"]
+    if not candidatos:
+        return []
+    elegidos = _refinar_diagnosticos_ia(resultado["formula"], candidatos)
+
+    all_tecnicas = {t.codigo_interno: t for t in TecnicaEvaluacion.objects.all()}
+    all_marcos = {m.nombre: m for m in MarcoEvaluacion.objects.all()}
+    _escribir_preguntas_respuestas(consulta)
+
+    diagnosticos = []
+    with transaction.atomic():
+        DiagnosticoPropuesto.objects.filter(consulta=consulta).delete()
+        # ordenar: los elegidos por IA primero, luego el resto por confianza
+        candidatos_ordenados = (
+            [c for c in candidatos if c["id"] in elegidos]
+            + [c for c in candidatos if c["id"] not in elegidos]
+        )
+        for idx, c in enumerate(candidatos_ordenados[:4]):
+            patron = c.get("patron") or {}
+            marco_nombre = c["marco"]
+            tecnica_codigo = c["tecnica"]
+            diag = DiagnosticoPropuesto.objects.create(
+                consulta=consulta,
+                titulo=c["titulo"],
+                descripcion=patron.get("descripcion", ""),
+                etiologia=patron.get("etiologia", ""),
+                mecanismo=patron.get("mecanismo", ""),
+                patron_diagnostico=patron.get("patron_diagnostico", ""),
+                protocolo_indicado=patron.get("protocolo_indicado", ""),
+                contraindicaciones=patron.get("contraindicaciones", ""),
+                integracion=patron.get("integracion", ""),
+                marco_asociado=all_marcos.get(marco_nombre),
+                tecnica_asociada=all_tecnicas.get(tecnica_codigo),
+                diagnostico_id=c["id"],
+                puntaje=c["score"],
+                confianza=c["confianza"],
+                evidencia={
+                    "a_favor": c["a_favor"], "en_contra": c["en_contra"],
+                    "justificacion_ia": elegidos.get(c["id"], ""),
+                },
+                orden=idx,
+            )
+            for sintoma_texto in patron.get("sintomas", []):
+                SintomaConfirmado.objects.create(diagnostico=diag, sintoma_texto=sintoma_texto, presente=True)
+            diagnosticos.append(diag)
+
+        # Técnicas se derivan de los diagnósticos (decisión de diseño: el usuario
+        # de autoconsulta no elige técnicas manualmente).
+        SeleccionTecnica.objects.filter(consulta=consulta).delete()
+        for diag in diagnosticos:
+            if diag.tecnica_asociada:
+                SeleccionTecnica.objects.get_or_create(
+                    consulta=consulta, tecnica=diag.tecnica_asociada,
+                    defaults={"fue_recomendada_por_sistema": True},
+                )
+    return diagnosticos
 
 
 @login_required
 def wizard_paso4(request: HttpRequest, consulta_id: int) -> HttpResponse:
+    """Síntesis (fórmula) + diagnóstico diferencial con evidencia."""
     consulta = get_object_or_404(Consulta, id=consulta_id)
-    selecciones = SeleccionTecnica.objects.filter(consulta=consulta).select_related("tecnica")
-    tecnicas_codigos = [s.tecnica.codigo_interno for s in selecciones]
-    if not tecnicas_codigos:
-        return redirect("terapeuta:paso2", consulta_id=consulta.id)
-    respuestas = PreguntaRespuesta.objects.filter(consulta=consulta).order_by("orden")
 
     if request.method == "POST":
         diagnosticos_ids = request.POST.getlist("diagnosticos_confirmados")
@@ -336,76 +359,124 @@ def wizard_paso4(request: HttpRequest, consulta_id: int) -> HttpResponse:
             consulta.save(update_fields=["paso_actual"])
         return redirect("terapeuta:paso5", consulta_id=consulta.id)
 
-    # Solo generar si no existen aún — evita borrar confirmaciones al volver desde paso5
     diagnosticos = list(
         DiagnosticoPropuesto.objects.filter(consulta=consulta)
-        .select_related("marco_asociado", "tecnica_asociada")
-        .order_by("orden")
+        .select_related("marco_asociado", "tecnica_asociada").order_by("orden")
     )
     if not diagnosticos:
-        diagnosticos = _seleccionar_diagnosticos_ia(consulta, tecnicas_codigos, respuestas)
+        diagnosticos = _generar_diagnosticos(consulta)
 
+    respuestas = PreguntaRespuesta.objects.filter(consulta=consulta).order_by("orden")
     return render(request, "terapeuta/paso4.html", {
         "consulta": consulta, "diagnosticos": diagnosticos,
-        "respuestas": respuestas, "paso": 4, "total_pasos": 5,
+        "formula": consulta.formula_mtc or {}, "respuestas": respuestas,
+        "paso": 4, "total_pasos": 5,
     })
 
 
-def _seleccionar_diagnosticos_ia(consulta: Consulta, tecnicas_codigos: list, respuestas) -> list:
-    respuestas_texto = "\n".join(f"- {pr.pregunta}: {pr.respuesta}" for pr in respuestas)
-    prompt = f"""Motivo: {consulta.motivo}
-Técnicas: {_json.dumps(tecnicas_codigos, ensure_ascii=False)}
-
-Respuestas del paciente:
-{respuestas_texto}
-
-Catálogo: {_json.dumps(DIAGNOSIS_CATALOG, ensure_ascii=False)}
-
-Selecciona 2-4 diagnósticos. Devuelve JSON: {{"diagnosticos_seleccionados": ["D01", ...]}}"""
-
-    ai_response = _call_ai_json(prompt, max_tokens=1500)
-    diagnostico_ids = _validate_ai_diagnosticos(ai_response)
-    if not diagnostico_ids:
-        diagnostico_ids = _seleccion_determinista_diagnosticos(tecnicas_codigos)
-
-    all_tecnicas = {t.codigo_interno: t for t in TecnicaEvaluacion.objects.all()}
-    all_marcos = {m.nombre: m for m in MarcoEvaluacion.objects.all()}
-    diagnosticos = []
-    with transaction.atomic():
-        DiagnosticoPropuesto.objects.filter(consulta=consulta).delete()
-        for idx, diag_id in enumerate(diagnostico_ids[:4]):
-            entry = next((d for d in DIAGNOSIS_CATALOG if d["id"] == diag_id), None)
-            if not entry:
-                continue
-            diag = DiagnosticoPropuesto.objects.create(
-                consulta=consulta, titulo=entry["titulo"], descripcion=entry["descripcion"],
-                etiologia=entry.get("etiologia", ""), mecanismo=entry.get("mecanismo", ""),
-                patron_diagnostico=entry.get("patron_diagnostico", ""),
-                protocolo_indicado=entry.get("protocolo_indicado", ""),
-                contraindicaciones=entry.get("contraindicaciones", ""),
-                integracion=entry.get("integracion", ""),
-                marco_asociado=all_marcos.get(entry["marco_asociado"]),
-                tecnica_asociada=all_tecnicas.get(entry["tecnica_asociada"]),
-                diagnostico_id=diag_id, orden=idx,
-            )
-            for sintoma_texto in entry.get("sintomas", []):
-                SintomaConfirmado.objects.create(diagnostico=diag, sintoma_texto=sintoma_texto, presente=True)
-            diagnosticos.append(diag)
-    return diagnosticos
+def _principios_desde_formula(formula: dict, ejes: dict) -> list:
+    """Deriva los principios de tratamiento (bloques de terapeutica) desde la fórmula."""
+    claves = []
+    termico = formula.get("termico")
+    plenitud = formula.get("plenitud")
+    if termico == "Calor":
+        claves.append("enfriar")
+    elif termico == "Frío":
+        claves.append("calentar")
+    factores = formula.get("factores", [])
+    for f in factores:
+        if f.startswith("Humedad") or f.startswith("Mucosidad"):
+            claves.append("drenar_humedad")
+        if f.startswith("Viento"):
+            claves.append("dispersar_viento")
+        if f.startswith("Estasis"):
+            claves.append("mover_sangre")
+        if f.startswith("Estancamiento de Qi"):
+            claves.append("mover_qi")
+    for s in formula.get("sustancias", []):
+        if "Qi" in s:
+            claves.append("tonificar_qi")
+        if "Sangre" in s:
+            claves.append("nutrir_sangre")
+        if "Yin" in s:
+            claves.append("nutrir_yin")
+        if "Yang" in s:
+            claves.append("calentar")
+    # dedup preservando orden
+    vistos, out = set(), []
+    for k in claves:
+        if k in PRINCIPIOS and k not in vistos:
+            vistos.add(k)
+            out.append({"clave": k, **PRINCIPIOS[k]})
+    return out[:4]
 
 
-def _seleccion_determinista_diagnosticos(tecnicas_codigos: list) -> list:
-    selected = [d["id"] for d in DIAGNOSIS_CATALOG if d["tecnica_asociada"] in tecnicas_codigos]
-    tecnicas_cubiertas, diversificados = set(), []
-    for did in selected:
-        entry = next((d for d in DIAGNOSIS_CATALOG if d["id"] == did), None)
-        if entry and entry["tecnica_asociada"] not in tecnicas_cubiertas:
-            diversificados.append(did)
-            tecnicas_cubiertas.add(entry["tecnica_asociada"])
-    for did in selected:
-        if did not in diversificados and len(diversificados) < 4:
-            diversificados.append(did)
-    return diversificados[:4]
+def _generar_propuesta_fallback(consulta: Consulta, diagnosticos: list, principios: list) -> dict:
+    plan = []
+    for pr in principios:
+        plan.append({
+            "titulo": pr["titulo"], "icono": "🌿",
+            "pasos": [
+                {"instruccion": pr["dieta"], "fundamento": pr["cuando"]},
+                {"instruccion": pr["acupresion"], "fundamento": "Acupresión con los dedos, sin agujas."},
+                {"instruccion": pr["estilo_vida"], "fundamento": ""},
+            ],
+        })
+    titulos = " y ".join(d.titulo for d in diagnosticos[:2]) or "el patrón identificado"
+    precauciones = next((d.contraindicaciones for d in diagnosticos if d.contraindicaciones), "")
+    return {
+        "sintesis": f"La lectura de tus signos apunta a {titulos}. El plan aplica el principio de "
+                    f"tratamiento correspondiente mediante autoaplicación durante 14 días.",
+        "formula": (consulta.formula_mtc or {}).get("texto", ""),
+        "plan": plan,
+        "fases": FASES_14_DIAS,
+        "precauciones": (precauciones[:400] + " " + RED_FLAGS_DERIVACION).strip(),
+    }
+
+
+def _generar_propuesta_terapeutica(consulta: Consulta, diagnosticos: list) -> dict | None:
+    if not diagnosticos:
+        return None
+    principios = _principios_desde_formula(consulta.formula_mtc or {}, consulta.ejes_resultado or {})
+    if not principios:
+        # sin principios claros (p.ej. dominan diagnósticos de otros paradigmas)
+        principios = [{"clave": "tonificar_qi", **PRINCIPIOS["tonificar_qi"]}]
+
+    bloques = "\n".join(
+        f"- {p['titulo']}: dieta={p['dieta']} | acupresión={p['acupresion']} | estilo de vida={p['estilo_vida']}"
+        for p in principios
+    )
+    dx_txt = "\n".join(f"- {d.titulo} (confianza {d.confianza}): {d.patron_diagnostico[:200]}" for d in diagnosticos)
+    contexto = f"Motivo: {consulta.motivo}"
+    if consulta.intensidad:
+        contexto += f" · Intensidad {consulta.intensidad}/10"
+    if consulta.duracion:
+        contexto += f" · {consulta.get_duracion_display()}"
+
+    prompt = (
+        f"{contexto}\n"
+        f"Fórmula MTC: {(consulta.formula_mtc or {}).get('texto', '')}\n\n"
+        f"Patrones confirmados:\n{dx_txt}\n\n"
+        f"Bloques de terapéutica seleccionados por principio (usa SOLO estos):\n{bloques}\n\n"
+        "Redacta un plan de autoaplicación de 14 días. Devuelve ÚNICAMENTE JSON:\n"
+        '{\n'
+        '  "sintesis": "2-3 frases claras de qué está pasando y hacia dónde apunta el tratamiento",\n'
+        '  "plan": [\n'
+        '    {"titulo": "nombre del bloque", "icono": "emoji",\n'
+        '     "pasos": [{"instruccion": "qué hacer, concreto y con frecuencia", "fundamento": "por qué esta técnica para este patrón"}]}\n'
+        '  ],\n'
+        '  "precauciones": "contraindicaciones y señales de derivación"\n'
+        '}\n'
+        "Máximo 3 pasos por bloque. Español neutro."
+    )
+    data = _call_ai_json(prompt, SYSTEM_PROPUESTA, max_tokens=2500, temperature=0.3)
+    if data.get("sintesis") and data.get("plan"):
+        data.setdefault("fases", FASES_14_DIAS)
+        data.setdefault("formula", (consulta.formula_mtc or {}).get("texto", ""))
+        data["precauciones"] = (data.get("precauciones", "") + " " + RED_FLAGS_DERIVACION).strip()
+        return data
+    logger.warning("Terapeuta: propuesta IA incompleta — usando fallback de bloques")
+    return _generar_propuesta_fallback(consulta, diagnosticos, principios)
 
 
 @login_required
@@ -454,177 +525,10 @@ def wizard_paso5(request: HttpRequest, consulta_id: int) -> HttpResponse:
     return render(request, "terapeuta/paso5.html", {
         "consulta": consulta, "form": form,
         "diagnosticos_confirmados": diagnosticos_confirmados,
+        "formula": consulta.formula_mtc or {},
         "selecciones": selecciones, "propuesta": propuesta,
         "propuesta_error": propuesta_error, "paso": 5, "total_pasos": 5,
     })
-
-
-_SYSTEM_PROPUESTA = (
-    "Eres un terapeuta en salud integrativa con dominio profundo de Medicina Tradicional China (MTC) y Ayurveda.\n\n"
-
-    "## AYURVEDA — Lógica diagnóstica\n"
-    "Los doshas se expresan en sub-doshas que gobiernan regiones corporales específicas:\n"
-    "— Apana Vata: pelvis, eliminación, intestino grueso → chakras Muladhara + Svadhisthana\n"
-    "— Samana Vata: digestión central, ombligo → chakra Manipura\n"
-    "— Prana Vata: pecho, mente, SNC → chakras Anahata + Ajna\n"
-    "— Udana Vata: garganta, voz, tiroides → chakra Vishuddha\n"
-    "— Vyana Vata: circulación sistémica → chakra Anahata\n"
-    "— Pachaka Pitta: fuego digestivo, intestino delgado → chakra Manipura (raíz Pitta)\n"
-    "— Sadhaka Pitta: procesamiento emocional, corazón → chakra Anahata\n"
-    "— Alochaka Pitta: visión, percepción → chakra Ajna\n"
-    "— Ranjaka Pitta: hígado, sangre, metabolismo → chakra Manipura\n"
-    "— Kledaka Kapha: moco gástrico, líquidos digestivos → chakra Svadhisthana (raíz Kapha)\n"
-    "— Avalambaka Kapha: pulmones, corazón, estructura → chakra Anahata\n"
-    "— Tarpaka Kapha: fluido cerebroespinal, mente → chakras Ajna + Sahasrara\n"
-    "— Bodhaka Kapha: saliva, gusto → chakra Vishuddha\n"
-    "— Shleshaka Kapha: lubricación articular → chakra Svadhisthana\n"
-    "REGLA Ayurveda: identifica el sub-dosha más relevante por la región corporal del motivo. "
-    "Deriva el chakra desde ese sub-dosha. Chakras primarios por defecto: Vata→Muladhara, Pitta→Manipura, Kapha→Svadhisthana.\n\n"
-
-    "## MTC — Lógica diagnóstica\n"
-    "Los cinco elementos siguen dos ciclos:\n"
-    "— Ciclo Sheng (generación): Madera→Fuego→Tierra→Metal→Agua→Madera\n"
-    "— Ciclo Ke (control): Madera→Tierra, Tierra→Agua, Agua→Fuego, Fuego→Metal, Metal→Madera\n"
-    "— Zang-elemento: Hígado/VB=Madera, Corazón/ID=Fuego, Bazo/Estómago=Tierra, Pulmón/IG=Metal, Riñón/Vejiga=Agua\n"
-    "REGLA MTC: al identificar el elemento afectado nombra también:\n"
-    "  · organo_principal: el órgano Zang (Hígado|Corazón|Bazo|Pulmón|Riñón)\n"
-    "  · elemento_nutridor: su 'madre' en Sheng (quien lo nutre)\n"
-    "  · elemento_controlado: el elemento que sobre-controla en Ke\n"
-    "Ej: Madera afectada → organo=Hígado, nutridor=Agua, controlado=Tierra.\n\n"
-
-    "NO inventas protocolos. Respondes siempre con JSON válido."
-)
-
-def _generar_propuesta_fallback(diagnosticos: list) -> dict:
-    plan = []
-    for d in diagnosticos:
-        marco = d.marco_asociado.nombre if d.marco_asociado else "Sin marco"
-        tecnica = d.tecnica_asociada.nombre if d.tecnica_asociada else "Sin técnica"
-        pasos_raw = []
-        if d.descripcion:
-            pasos_raw.append(d.descripcion)
-        if d.protocolo_indicado:
-            clean = _re.sub(r'\(ref\.[^)]*\)', '', d.protocolo_indicado).strip()
-            clean = _re.sub(r'\s+', ' ', clean)
-            after = clean.split(':', 1)[1].strip() if ':' in clean else clean
-            m = _re.search(r'^(.{40,250}?)(?:\.\s+[A-ZÁÉÍÓÚ]|\.$)', after, _re.DOTALL)
-            if m:
-                pasos_raw.append(m.group(1).strip() + '.')
-            else:
-                pasos_raw.append(after[:220] + '…')
-        pasos_raw = [p for p in pasos_raw if p][:2]
-        if not pasos_raw:
-            pasos_raw = [f"Consultar con profesional certificado en {tecnica}."]
-        pasos = [{"instruccion": p, "fundamento": ""} for p in pasos_raw]
-        precauciones_d = (d.contraindicaciones or "").split('.')[0].strip()
-        plan.append({
-            "marco": marco, "tecnica": tecnica, "diagnostico": d.titulo,
-            "icono": "🌿", "pasos": pasos,
-            "duracion": "4-6 semanas", "frecuencia": "2-3 sesiones/semana",
-            "como_empezar": f"Agendar evaluación con profesional en {tecnica}." + (f" Precaución: {precauciones_d}." if precauciones_d else ""),
-        })
-    titulos = " y ".join(d.titulo for d in diagnosticos[:2])
-    precauciones = next((d.contraindicaciones for d in diagnosticos if d.contraindicaciones), "Consultar con médico si los síntomas empeoran.")
-    return {
-        "sintesis": f"El análisis identifica patrones de {titulos}. El plan integra las técnicas evaluadas para abordar el caso de forma holística y progresiva.",
-        "plan": plan,
-        "fases": [
-            {"nombre": "Exploración inicial", "duracion": "Semanas 1-2", "objetivo": "Evaluación y primeras intervenciones"},
-            {"nombre": "Tratamiento activo", "duracion": "Semanas 3-8", "objetivo": "Implementar el protocolo completo"},
-            {"nombre": "Consolidación", "duracion": "Semanas 9-12", "objetivo": "Integrar cambios y prevenir recaídas"},
-        ],
-        "indicadores": ["Mejora subjetiva del bienestar general", "Reducción de la intensidad del síntoma principal", "Mayor claridad mental y energía sostenida"],
-        "precauciones": precauciones[:400],
-    }
-
-
-def _generar_propuesta_terapeutica(consulta: Consulta, diagnosticos: list) -> dict | None:
-    if not diagnosticos:
-        return None
-    bloques = []
-    for d in diagnosticos:
-        marco = d.marco_asociado.nombre if d.marco_asociado else "Sin marco"
-        tecnica = d.tecnica_asociada.nombre if d.tecnica_asociada else "Sin técnica"
-        bloques.append(f"""Diagnóstico: {d.titulo}
-Marco: {marco} — Técnica: {tecnica}
-Descripción: {d.descripcion}
-Protocolo indicado: {d.protocolo_indicado or '(no especificado)'}
-Integración con otros marcos: {d.integracion or '(no especificado)'}
-Contraindicaciones: {d.contraindicaciones or 'ninguna registrada'}""")
-
-    contexto = f"Motivo de consulta: {consulta.motivo}"
-    if consulta.intensidad:
-        contexto += f"\nIntensidad: {consulta.intensidad}/10"
-    if consulta.duracion:
-        mapa = {"agudo": "agudo (<2 sem)", "subagudo": "subagudo (2-6 sem)", "cronico": "crónico (>6 sem)"}
-        contexto += f"\nDuración: {mapa.get(consulta.duracion, consulta.duracion)}"
-    if consulta.medicamentos_actuales:
-        contexto += f"\nMedicamentos/terapias actuales: {consulta.medicamentos_actuales}"
-
-    prompt = f"""{contexto}
-
-DIAGNÓSTICOS CONFIRMADOS:
-
-{chr(10).join('---' + chr(10) + b for b in bloques)}
-
-INSTRUCCIÓN CRÍTICA:
-El campo "Protocolo indicado" ya contiene el tratamiento clínico específico. Tu trabajo es:
-1. Leer el "Protocolo indicado" de cada diagnóstico.
-2. Seleccionar los 2-3 pasos más relevantes para ESTE caso.
-3. Reformular cada paso en lenguaje directo, conservando nombres específicos (hierbas, puntos, ejercicios, dosis).
-4. Para cada paso, añadir un "fundamento" que explique al usuario el mecanismo terapéutico detrás de esa decisión — en lenguaje pedagógico accesible, no académico.
-
-Instrucciones por tipo de técnica en el campo "instruccion":
-— ACUPUNTURA: nombre completo del punto + ubicación anatómica corporal (NO códigos). Añade instrucción de auto-estimulación en casa. Ej: "Punto Tai Chong (Hígado): dorso del pie, entre el 1° y 2° metatarsiano. En consulta: agujas en sedación. En casa: presiona con el pulgar en círculos, firmeza media, 60 segundos, 3 veces/día."
-— EJERCICIO/FISIOTERAPIA: nombre + posición inicial → movimiento → respiración → repeticiones. Ej: "Bird-Dog: en cuadrupedia, espalda neutral. Exhala y extiende brazo derecho + pierna izquierda, mantén 3 seg. 3 series × 8 reps cada lado, días alternos."
-— FITOTERAPIA: nombre de la hierba, dosis exacta y preparación. Ej: "Ashwagandha KSM-66: 600mg en cápsula con leche tibia, 1 vez al acostarse."
-— DIETA: alimentos específicos, cuándo y en qué cantidad.
-
-El campo "fundamento" de cada paso debe responder: ¿por qué se elige esta técnica/punto/hierba para ESTE síntoma concreto? Explica el mecanismo —energético, fisiológico o bioquímico— en 1-2 oraciones claras. Ej: "El Tai Chong es el punto Yuan del Hígado: dispersa el Qi estancado del meridiano y reduce la tensión cefálica asociada al exceso de Yang ascendente." o "El Bird-Dog activa simultáneamente el multífidus y el transverso del abdomen, estabilizando la columna lumbar sin cargar la zona afectada."
-
-Devuelve ÚNICAMENTE JSON válido con esta estructura:
-{{
-  "sintesis": "2-3 oraciones en lenguaje claro que expliquen qué está pasando",
-  "plan": [
-    {{
-      "marco": "nombre del marco",
-      "tecnica": "nombre de la técnica",
-      "diagnostico": "título del diagnóstico",
-      "icono": "emoji representativo",
-      "patron_sindrome": "nombre del síndrome o patrón energético (ej: Estancamiento de Qi de Hígado, Vata en exceso)",
-      "elemento_afectado": "solo para MTC: Madera|Fuego|Tierra|Metal|Agua — omitir para otros marcos",
-      "organo_principal": "solo para MTC: órgano Zang (Hígado|Corazón|Bazo|Pulmón|Riñón) — omitir para otros marcos",
-      "elemento_nutridor": "solo para MTC: elemento que nutre al afectado en ciclo Sheng — omitir para otros marcos",
-      "elemento_controlado": "solo para MTC: elemento sobre-controlado por el afectado en ciclo Ke — omitir para otros marcos",
-      "dosha_afectado": "solo para Ayurveda: Vata|Pitta|Kapha — omitir para otros marcos",
-      "sub_dosha": "solo para Ayurveda: sub-dosha específico (Apana Vata|Prana Vata|Udana Vata|Samana Vata|Vyana Vata|Pachaka Pitta|Sadhaka Pitta|Alochaka Pitta|Ranjaka Pitta|Kledaka Kapha|Avalambaka Kapha|Tarpaka Kapha|Bodhaka Kapha|Shleshaka Kapha) — omitir para otros marcos",
-      "chakra_relacionado": "solo para Ayurveda — OBLIGATORIO si es Ayurveda: chakra principal (Muladhara|Svadhisthana|Manipura|Anahata|Vishuddha|Ajna|Sahasrara) — omitir para MTC y otros marcos",
-      "pasos": [
-        {{
-          "instruccion": "descripción detallada del paso a seguir",
-          "fundamento": "mecanismo terapéutico que justifica esta decisión en lenguaje pedagógico"
-        }}
-      ],
-      "duracion": "tiempo total estimado",
-      "frecuencia": "frecuencia específica",
-      "como_empezar": "qué hacer exactamente en los primeros 3 días"
-    }}
-  ],
-  "fases": [{{"nombre": "fase", "duracion": "Semanas X-Y", "objetivo": "objetivo medible"}}],
-  "indicadores": ["señal concreta observable sin instrumentos"],
-  "precauciones": "precauciones concretas de los diagnósticos"
-}}
-
-Máximo 3 pasos por disciplina. Responde en español."""
-
-    model_propuesta = getattr(settings, "OPENROUTER_MODEL_PROPUESTA",
-                              getattr(settings, "OPENROUTER_MODEL", "openrouter/auto"))
-    data = _call_ai_json(prompt, system=_SYSTEM_PROPUESTA, max_tokens=4000, temperature=0.2,
-                         model=model_propuesta)
-    if data.get("sintesis") and data.get("plan"):
-        return data
-    logger.warning("Propuesta IA incompleta — usando fallback de catálogo")
-    return _generar_propuesta_fallback(diagnosticos)
 
 
 @login_required
@@ -665,7 +569,7 @@ def consulta_detalle(request: HttpRequest, consulta_id: int) -> HttpResponse:
 
     return render(request, "terapeuta/detalle.html", {
         "consulta": consulta, "selecciones": selecciones, "preguntas": preguntas,
-        "diagnosticos": diagnosticos,
+        "diagnosticos": diagnosticos, "formula": consulta.formula_mtc or {},
         "diagnosticos_confirmados": [d for d in diagnosticos if d.fue_confirmado_por_usuario],
         "propuesta": propuesta,
         "perfil_cliente": consulta.perfil_cliente,

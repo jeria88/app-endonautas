@@ -1,119 +1,109 @@
 {% extends "base.html" %}
-{% block title %}Confirmación Diagnóstica — Terapeuta Integral{% endblock %}
+{% load terapeuta_extras %}
+{% block title %}Consulta Integral — Tu lectura{% endblock %}
 {% block content %}
+{% include "terapeuta/_wizard_style.html" %}
 <style data-page-style>
-.progress-bar { height:3px;background:var(--border);border-radius:2px;margin-bottom:1.5rem; }
-.progress-fill { height:100%;background:var(--calipso);border-radius:2px;width:80%; }
-.diag-card { background:var(--surface);backdrop-filter:blur(14px);border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:0.75rem;overflow:hidden;transition:border-color 0.2s; }
-.diag-card.selected { border-color:rgba(126,204,205,0.45); }
-.diag-header { padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:0.75rem;cursor:pointer; }
-.diag-check { width:20px;height:20px;border:1.5px solid var(--border);border-radius:5px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all 0.15s; }
-.diag-card.selected .diag-check { background:var(--calipso);border-color:var(--calipso); }
-.diag-title { font-weight:600;font-size:0.9rem;flex:1; }
-.diag-meta { font-size:0.7rem;color:var(--muted);margin-top:2px; }
-.diag-body { display:none;padding:0 1.25rem 1.25rem;border-top:1px solid var(--border); }
-.diag-body.open { display:block; }
-.diag-section { margin-top:0.85rem; }
-.diag-section-label { font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.3rem; }
-.diag-section-text { font-size:0.82rem;color:var(--muted);line-height:1.55; }
-.chevron { color:var(--muted);font-size:0.75rem;transition:transform 0.2s;margin-left:auto;flex-shrink:0; }
+.formula-card { background:var(--surface2);border:1px solid var(--border-active);border-radius:var(--radius);padding:1.1rem 1.25rem;margin-bottom:1.2rem; }
+.formula-label { font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:.35rem; }
+.formula-text { font-size:1.05rem;font-weight:700;color:var(--calipso);line-height:1.4; }
+.formula-warn { margin-top:.6rem;font-size:.78rem;color:var(--amber);line-height:1.5; }
+.dx-card { background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.2rem;margin-bottom:.8rem;transition:border-color .15s; }
+.dx-card:has(input:checked) { border-color:var(--calipso);background:var(--calipso-glow); }
+.dx-head { display:flex;align-items:flex-start;gap:.6rem;margin-bottom:.6rem; }
+.dx-title { font-size:.98rem;font-weight:700;line-height:1.35; }
+.dx-marco { font-size:.72rem;color:var(--dim);margin-top:.15rem; }
+.conf-wrap { margin:.5rem 0 .7rem; }
+.conf-bar { height:6px;background:var(--border);border-radius:3px;overflow:hidden; }
+.conf-fill { height:100%;background:linear-gradient(90deg,var(--calipso),#9be5c9);border-radius:3px; }
+.conf-num { font-size:.72rem;color:var(--muted);margin-top:.25rem; }
+.evi { display:flex;flex-wrap:wrap;gap:.3rem;margin:.4rem 0; }
+.evi-chip { font-size:.68rem;padding:2px 8px;border-radius:20px; }
+.evi-pro { background:rgba(126,204,205,.14);color:var(--calipso);border:1px solid rgba(126,204,205,.3); }
+.evi-con { background:rgba(201,123,132,.12);color:var(--rose);border:1px solid rgba(201,123,132,.3); }
+.dx-just { font-size:.82rem;color:var(--text);line-height:1.55;margin-top:.4rem; }
+.dx-detail { font-size:.78rem;color:var(--muted);line-height:1.55;margin-top:.5rem;border-top:1px solid var(--border);padding-top:.5rem; }
+.dx-detail summary { cursor:pointer;color:var(--calipso);font-weight:600;font-size:.78rem; }
+.resumen-toggle { font-size:.78rem;color:var(--calipso);cursor:pointer;font-weight:600; }
 </style>
 
-<div class="progress-bar"><div class="progress-fill"></div></div>
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
-  <a href="/terapeuta/{{ consulta.id }}/paso3/" onclick="spaGo(event,this)" style="color:var(--muted);text-decoration:none;font-size:0.82rem">← Paso 3</a>
-  <span style="font-size:0.72rem;color:var(--dim)">Paso 4 de 5</span>
+<div class="wz-top">
+  <a href="/terapeuta/{{ consulta.id }}/paso3/" onclick="spaGo(event,this)">← Paso 3</a>
+  <span class="wz-step">Paso 4 de 5</span>
 </div>
+<div class="progress-bar"><div class="progress-fill" style="width:80%"></div></div>
 
-<h1 style="font-size:1.2rem;font-weight:700;margin-bottom:0.25rem">Confirmación diagnóstica</h1>
-<p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.6">Selecciona los diagnósticos que corresponden a este caso. Puedes expandir cada uno para ver el detalle clínico.</p>
+<h1 class="wz-h1">Tu lectura energética</h1>
+<p class="wz-sub">A partir de tus signos, el sistema compone una <strong>fórmula diagnóstica</strong> y propone los patrones más coherentes. Marca los que más resuenen contigo: eso guiará tu plan.</p>
 
-<form method="post" id="paso4form">
-  {% csrf_token %}
-
-  {% for diag in diagnosticos %}
-  <div class="diag-card" id="dcard-{{ diag.id }}">
-    <div class="diag-header" onclick="handleDiagClick(event,{{ diag.id }})">
-      <div class="diag-check" id="dcheck-{{ diag.id }}">
-        <svg id="dcheck-icon-{{ diag.id }}" width="11" height="11" viewBox="0 0 12 12" fill="none" style="display:none"><polyline points="2,6 5,9 10,3" stroke="#000" stroke-width="1.8"/></svg>
-      </div>
-      <input type="checkbox" name="diagnosticos_confirmados" value="{{ diag.id }}" id="dinput-{{ diag.id }}" style="display:none">
-      <div style="flex:1">
-        <div class="diag-title">{{ diag.titulo }}</div>
-        <div class="diag-meta">
-          {% if diag.marco_asociado %}{{ diag.marco_asociado.nombre }}{% endif %}{% if diag.tecnica_asociada %} · {{ diag.tecnica_asociada.nombre }}{% endif %}
-        </div>
-      </div>
-      <span class="chevron" id="dchev-{{ diag.id }}">▼</span>
-    </div>
-    <div class="diag-body" id="dbody-{{ diag.id }}">
-      <div class="diag-section">
-        <div class="diag-section-label">Descripción</div>
-        <div class="diag-section-text">{{ diag.descripcion }}</div>
-      </div>
-      {% if diag.etiologia %}
-      <div class="diag-section">
-        <div class="diag-section-label">Etiología</div>
-        <div class="diag-section-text">{{ diag.etiologia }}</div>
-      </div>
-      {% endif %}
-      {% if diag.patron_diagnostico %}
-      <div class="diag-section">
-        <div class="diag-section-label">Patrón diagnóstico</div>
-        <div class="diag-section-text">{{ diag.patron_diagnostico }}</div>
-      </div>
-      {% endif %}
-      {% if diag.protocolo_indicado %}
-      <div class="diag-section">
-        <div class="diag-section-label">Protocolo indicado</div>
-        <div class="diag-section-text">{{ diag.protocolo_indicado }}</div>
-      </div>
-      {% endif %}
-    </div>
+{% if formula.texto %}
+<div class="formula-card">
+  <div class="formula-label">Fórmula (Medicina China)
+    <span class="edu-tip" tabindex="0" aria-label="qué es una fórmula">ⓘ<span class="edu-bubble">En medicina china el diagnóstico no es una etiqueta sino una fórmula: combina la profundidad (Exterior/Interior), la naturaleza (Exceso/Deficiencia, Frío/Calor), el factor patógeno (Viento, Humedad…) y el órgano afectado (Manual 5.5).</span></span>
   </div>
+  <div class="formula-text">{{ formula.texto }}</div>
+  {% if formula.contradiccion %}<div class="formula-warn">⚠ {{ formula.contradiccion }}</div>{% endif %}
+</div>
+{% endif %}
+
+{% if respuestas %}
+<details style="margin-bottom:1rem">
+  <summary class="resumen-toggle">Ver los signos que registraste ({{ respuestas|length }})</summary>
+  <div style="margin-top:.5rem">
+    {% for r in respuestas %}
+    <div style="font-size:.78rem;color:var(--muted);padding:.3rem 0;border-bottom:1px solid var(--border)">
+      <span style="color:var(--dim)">{{ r.pregunta }}</span><br><span style="color:var(--text)">{{ r.respuesta }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</details>
+{% endif %}
+
+<form method="post">
+  {% csrf_token %}
+  <div class="wz-section-title">Patrones posibles</div>
+
+  {% if not diagnosticos %}
+  <div class="alarma-banner">No hay suficientes signos para diferenciar un patrón. Vuelve al paso anterior y responde algunas preguntas más.</div>
+  {% endif %}
+
+  {% for d in diagnosticos %}
+  <label class="dx-card">
+    <div class="dx-head">
+      <input type="checkbox" name="diagnosticos_confirmados" value="{{ d.id }}" {% if forloop.first %}checked{% endif %} style="margin-top:.2rem;accent-color:var(--calipso)">
+      <div style="flex:1">
+        <div class="dx-title">{{ d.titulo }}</div>
+        <div class="dx-marco">{{ d.marco_asociado.nombre }}{% if d.tecnica_asociada %} · {{ d.tecnica_asociada.nombre }}{% endif %}</div>
+      </div>
+    </div>
+
+    <div class="conf-wrap">
+      <div class="conf-bar"><div class="conf-fill" style="width:{{ d.confianza|pct }}%"></div></div>
+      <div class="conf-num">Coincidencia con tus signos: {{ d.confianza|pct }}%</div>
+    </div>
+
+    {% if d.evidencia.a_favor %}
+    <div class="evi">{% for e in d.evidencia.a_favor %}<span class="evi-chip evi-pro">✓ {{ e }}</span>{% endfor %}</div>
+    {% endif %}
+    {% if d.evidencia.en_contra %}
+    <div class="evi">{% for e in d.evidencia.en_contra %}<span class="evi-chip evi-con">✕ {{ e }}</span>{% endfor %}</div>
+    {% endif %}
+
+    {% if d.evidencia.justificacion_ia %}<p class="dx-just">{{ d.evidencia.justificacion_ia }}</p>{% endif %}
+
+    {% if d.patron_diagnostico %}
+    <details class="dx-detail">
+      <summary>Cómo se reconoce este patrón</summary>
+      <p style="margin-top:.4rem">{{ d.patron_diagnostico }}</p>
+      {% if d.descripcion %}<p style="margin-top:.4rem">{{ d.descripcion }}</p>{% endif %}
+    </details>
+    {% endif %}
+  </label>
   {% endfor %}
 
-  <div style="display:flex;gap:0.75rem;margin-top:1.5rem">
+  <div class="wz-actions">
     <a href="/terapeuta/{{ consulta.id }}/paso3/" onclick="spaGo(event,this)" class="btn btn-secondary">Atrás</a>
-    <button type="submit" class="btn btn-primary" style="flex:1">Continuar →</button>
+    <button type="submit" class="btn btn-primary" style="flex:1">Ver mi plan →</button>
   </div>
 </form>
-
-<script>
-function handleDiagClick(e, id) {
-  if (e.target.closest('.diag-check') || e.target.closest('.chevron')) {
-    if (e.target.closest('.diag-check')) {
-      const card = document.getElementById('dcard-' + id);
-      const input = document.getElementById('dinput-' + id);
-      const checkEl = document.getElementById('dcheck-' + id);
-      const icon = document.getElementById('dcheck-icon-' + id);
-      card.classList.toggle('selected');
-      input.checked = card.classList.contains('selected');
-      checkEl.style.background = input.checked ? 'var(--calipso)' : '';
-      checkEl.style.borderColor = input.checked ? 'var(--calipso)' : '';
-      icon.style.display = input.checked ? '' : 'none';
-    }
-    if (e.target.closest('.chevron')) {
-      const body = document.getElementById('dbody-' + id);
-      const chev = document.getElementById('dchev-' + id);
-      body.classList.toggle('open');
-      chev.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
-    }
-    return;
-  }
-  const card = document.getElementById('dcard-' + id);
-  const input = document.getElementById('dinput-' + id);
-  const checkEl = document.getElementById('dcheck-' + id);
-  const icon = document.getElementById('dcheck-icon-' + id);
-  const body = document.getElementById('dbody-' + id);
-  const chev = document.getElementById('dchev-' + id);
-  card.classList.toggle('selected');
-  input.checked = card.classList.contains('selected');
-  checkEl.style.background = input.checked ? 'var(--calipso)' : '';
-  checkEl.style.borderColor = input.checked ? 'var(--calipso)' : '';
-  icon.style.display = input.checked ? '' : 'none';
-  body.classList.toggle('open');
-  chev.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
-}
-</script>
 {% endblock %}

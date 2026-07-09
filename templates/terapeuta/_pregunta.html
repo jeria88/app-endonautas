@@ -1,0 +1,22 @@
+{% load terapeuta_extras %}
+{% with cur=signos|dict_get:q.id %}
+<div class="q-block{% if cur %} answered{% endif %}" id="qb-{{ q.id }}">
+  <p class="q-text">
+    {{ q.pregunta }}
+    {% if q.ayuda %}<span class="edu-tip" tabindex="0" aria-label="{{ q.ayuda }}">ⓘ<span class="edu-bubble">{{ q.ayuda }}</span></span>{% endif %}
+  </p>
+  <div class="opts{% if q.imagenes %} opts-img{% endif %}">
+    {% for opt in q.opciones %}
+    <label class="opt{% if q.imagenes %} opt-img{% endif %}">
+      <input type="{% if q.tipo == 'checkbox' %}checkbox{% else %}radio{% endif %}"
+             name="signo_{{ q.id }}" value="{{ opt.valor }}"
+             {% if opt.valor|is_selected:cur %}checked{% endif %}
+             onchange="markQ('{{ q.id }}')">
+      {% if opt.img %}<img class="opt-thumb" src="/static/img/terapeuta/lengua/{{ opt.img }}.webp" alt="" loading="lazy"
+                          onerror="this.style.display='none'">{% endif %}
+      <span class="opt-label">{{ opt.etiqueta }}</span>
+    </label>
+    {% endfor %}
+  </div>
+</div>
+{% endwith %}

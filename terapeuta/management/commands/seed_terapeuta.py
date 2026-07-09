@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from terapeuta.models import MarcoEvaluacion, TecnicaEvaluacion
-from terapeuta.constants import FRAMEWORKS_AND_TECHNIQUES
+from terapeuta.data import FRAMEWORKS_AND_TECHNIQUES
 
 
 class Command(BaseCommand):

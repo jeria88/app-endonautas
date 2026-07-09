@@ -1,123 +1,80 @@
 {% extends "base.html" %}
-{% block title %}Datos del Paciente — Terapeuta Integral{% endblock %}
+{% block title %}Consulta Integral — Motivo y sistemas{% endblock %}
 {% block content %}
-<style data-page-style>
-.progress-bar { height:3px;background:var(--border);border-radius:2px;margin-bottom:1.5rem; }
-.progress-fill { height:100%;background:var(--calipso);border-radius:2px;width:20%; }
-.alarma-grid { display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;margin-top:0.5rem; }
-.alarma-item { display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.6rem;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:7px;font-size:0.78rem;color:var(--muted);cursor:pointer;transition:border-color 0.15s; }
-.alarma-item:hover { border-color:var(--border-active); }
-.alarma-item input { display:none; }
-.alarma-item.checked { border-color:var(--rose);background:var(--rose-glow);color:var(--rose); }
-.duracion-row { display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem; }
-.duracion-btn { padding:0.45rem 0.9rem;border:1.5px solid var(--border);border-radius:7px;font-size:0.82rem;color:var(--muted);cursor:pointer;background:transparent;transition:all 0.15s; }
-.duracion-btn input { display:none; }
-.duracion-btn.selected { border-color:var(--calipso);color:var(--calipso); }
-@media(max-width:540px){ .alarma-grid { grid-template-columns:1fr; } }
-</style>
+{% include "terapeuta/_wizard_style.html" %}
 
-<div class="progress-bar"><div class="progress-fill"></div></div>
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
-  {% if cliente %}
-  <a href="/practicantes/cliente/{{ cliente.pk }}/" onclick="spaGo(event,this)" style="color:var(--calipso);text-decoration:none;font-size:0.82rem">← {{ cliente.alias }}</a>
-  {% else %}
-  <a href="/terapeuta/" onclick="spaGo(event,this)" style="color:var(--muted);text-decoration:none;font-size:0.82rem">← Consultas</a>
-  {% endif %}
-  <span style="font-size:0.72rem;color:var(--dim)">Paso 1 de 5</span>
+<div class="wz-top">
+  <a href="/terapeuta/" onclick="spaGo(event,this)">← Mis consultas</a>
+  <span class="wz-step">Paso 1 de 5</span>
 </div>
-{% if cliente %}
-<div style="background:rgba(126,204,205,0.06);border:1px solid rgba(126,204,205,0.2);border-radius:10px;padding:0.65rem 1rem;margin-bottom:1.25rem;font-size:0.82rem;color:var(--calipso)">
-  Creando ficha clínica para <strong>{{ cliente.alias }}</strong>
-</div>
-{% endif %}
+<div class="progress-bar"><div class="progress-fill" style="width:20%"></div></div>
 
-<div style="max-width:620px">
-  <h1 style="font-size:1.2rem;font-weight:700;margin-bottom:0.25rem">Datos del {% if consulta.modo == 'terapeuta' %}paciente{% else %}consultante{% endif %}</h1>
-  <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.6">El motivo de consulta es lo más importante. Los demás campos son opcionales.</p>
+<h1 class="wz-h1">¿Qué te trae?</h1>
+<p class="wz-sub">Cuéntanos tu molestia en pocas palabras y marca la zona o sistema que sientes afectado. Con eso ajustamos las preguntas para llegar a un diagnóstico más certero.</p>
 
-  {% if messages %}
-  {% for msg in messages %}
-  <div class="alert {% if msg.tags == 'error' %}alert-error{% else %}alert-success{% endif %}" style="margin-bottom:1rem">{{ msg }}</div>
-  {% endfor %}
-  {% endif %}
+<form method="post">
+  {% csrf_token %}
 
-  {% if consulta.senales_alarma %}
-  <div class="alert" style="background:rgba(201,123,132,0.1);border:1px solid rgba(201,123,132,0.3);color:var(--rose);margin-bottom:1rem;font-size:0.85rem">
-    ⚠ Se reportaron señales de alarma — considera derivación médica.
+  <label class="wz-section-title" style="display:block">Motivo de consulta</label>
+  <textarea name="motivo" class="form-input" rows="3" required
+            placeholder="Ej: dermatitis en los pliegues de los codos, con picor que empeora de noche…">{{ form.motivo.value|default:'' }}</textarea>
+
+  <div class="wz-section-title">¿Qué zona o sistema sientes afectado?
+    <span class="edu-tip" tabindex="0" aria-label="Cada sistema activa un cuestionario específico.">ⓘ<span class="edu-bubble">Cada sistema activa preguntas específicas. En medicina china cada zona se relaciona con órganos distintos — la piel, por ejemplo, se vincula al Pulmón y al Intestino Grueso.</span></span>
   </div>
-  {% endif %}
+  <div class="sys-grid">
+    {% for s in sistemas %}
+    <label class="sys-card">
+      <input type="checkbox" name="sistemas" value="{{ s.id }}" {% if s.id in sistemas_activos %}checked{% endif %}>
+      <span class="sys-ico">{{ s.icono }}</span>
+      <span class="sys-name">{{ s.nombre }}</span>
+    </label>
+    {% endfor %}
+  </div>
 
-<div class="panel">
-  <form method="post" action="/terapeuta/{{ consulta.id }}/paso1/">
-    {% csrf_token %}
+  <div class="wz-section-title">Contexto de la molestia</div>
+  {% for q in roga %}
+    {% include "terapeuta/_pregunta.html" %}
+  {% endfor %}
 
-    {% if consulta.modo == 'terapeuta' %}
-    <div style="display:grid;grid-template-columns:1fr 100px 1fr;gap:0.75rem;margin-bottom:1rem">
-      <div>
-        <label class="form-label">Nombre del paciente</label>
-        <input type="text" name="nombre_paciente" class="form-input" value="{{ form.nombre_paciente.value|default:'' }}" placeholder="Nombre (opcional)">
-      </div>
-      <div>
-        <label class="form-label">Edad</label>
-        <input type="number" name="edad" class="form-input" value="{{ form.edad.value|default:'' }}" placeholder="—" min="1" max="150">
-      </div>
-      <div>
-        <label class="form-label">Ocupación</label>
-        <input type="text" name="ocupacion" class="form-input" value="{{ form.ocupacion.value|default:'' }}" placeholder="Opcional">
-      </div>
+  <div class="wz-section-title">Intensidad y tiempo</div>
+  <div class="q-block">
+    <p class="q-text">¿Qué tan intensa es? (1 leve – 10 muy intensa)</p>
+    <input type="range" name="intensidad" min="1" max="10" step="1"
+           value="{{ form.intensidad.value|default:5 }}" style="width:100%;accent-color:var(--calipso)"
+           oninput="document.getElementById('intv').textContent=this.value">
+    <div style="text-align:center;font-size:.85rem;color:var(--calipso);font-weight:700;margin-top:.3rem"><span id="intv">{{ form.intensidad.value|default:5 }}</span>/10</div>
+  </div>
+  <div class="q-block">
+    <p class="q-text">¿Desde cuándo?
+      <span class="edu-tip" tabindex="0" aria-label="agudo vs crónico">ⓘ<span class="edu-bubble">Lo agudo y reciente suele ser un patrón Exterior (en la superficie); lo crónico, un patrón Interior más profundo (Manual MTC, Ocho Patrones).</span></span>
+    </p>
+    <div class="opts">
+      {% for val,label in form.duracion.field.choices %}{% if val %}
+      <label class="opt"><input type="radio" name="duracion" value="{{ val }}" {% if form.duracion.value == val %}checked{% endif %}> {{ label }}</label>
+      {% endif %}{% endfor %}
     </div>
-    {% endif %}
+  </div>
 
-    <div style="margin-bottom:1rem">
-      <label class="form-label" for="id_motivo">Motivo de consulta *</label>
-      <textarea name="motivo" id="id_motivo" class="form-input" rows="5" required placeholder="Describe el síntoma o situación con el mayor detalle posible. Cuándo empezó, cómo se manifiesta, qué lo mejora o empeora...">{{ form.motivo.value|default:'' }}</textarea>
-      {% if form.motivo.errors %}<div style="font-size:0.75rem;color:var(--rose);margin-top:0.3rem">{{ form.motivo.errors.0 }}</div>{% endif %}
-    </div>
+  <div class="wz-section-title">Datos opcionales</div>
+  <div class="q-block">
+    <input type="text" name="nombre_paciente" class="form-input" placeholder="Nombre (opcional)" value="{{ form.nombre_paciente.value|default:'' }}" style="margin-bottom:.5rem">
+    <input type="number" name="edad" class="form-input" placeholder="Edad" value="{{ form.edad.value|default:'' }}" min="1" max="150" style="margin-bottom:.5rem">
+    <textarea name="medicamentos_actuales" class="form-input" rows="2" placeholder="Medicamentos, suplementos u otras terapias actuales (opcional)">{{ form.medicamentos_actuales.value|default:'' }}</textarea>
+  </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
-      <div>
-        <label class="form-label">Intensidad del síntoma</label>
-        <div style="display:flex;align-items:center;gap:0.75rem;margin-top:0.5rem">
-          <input type="range" name="intensidad" id="id_intensidad" min="1" max="10" step="1" value="{{ form.intensidad.value|default:'5' }}" style="flex:1;accent-color:var(--calipso)" oninput="document.getElementById('int-val').textContent=this.value">
-          <span id="int-val" style="font-size:0.95rem;font-weight:700;color:var(--calipso);min-width:20px">{{ form.intensidad.value|default:'5' }}</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:0.65rem;color:var(--dim);margin-top:2px"><span>Leve</span><span>Severo</span></div>
-      </div>
-      <div>
-        <label class="form-label">Duración</label>
-        <div class="duracion-row">
-          {% for val, lbl in form.duracion.field.choices %}{% if val %}
-          <label class="duracion-btn {% if form.duracion.value == val %}selected{% endif %}">
-            <input type="radio" name="duracion" value="{{ val }}" {% if form.duracion.value == val %}checked{% endif %} onchange="document.querySelectorAll('.duracion-btn').forEach(b=>b.classList.remove('selected'));this.closest('.duracion-btn').classList.add('selected')">
-            {{ lbl }}
-          </label>
-          {% endif %}{% endfor %}
-        </div>
-      </div>
+  <div class="wz-section-title" style="color:var(--rose)">Señales de alarma</div>
+  <p class="wz-sub" style="margin-bottom:.6rem">Marca si tienes alguna. Estos signos requieren evaluación médica, no autoaplicación.</p>
+  <div class="q-block">
+    <div class="opts">
+      {% for val,label in form.senales_alarma.field.choices %}
+      <label class="opt"><input type="checkbox" name="senales_alarma" value="{{ val }}"> {{ label }}</label>
+      {% endfor %}
     </div>
+  </div>
 
-    <div style="margin-bottom:1rem">
-      <label class="form-label">Medicamentos, suplementos u otras terapias actuales</label>
-      <textarea name="medicamentos_actuales" class="form-input" rows="2" placeholder="Opcional — listado de lo que está tomando o haciendo actualmente">{{ form.medicamentos_actuales.value|default:'' }}</textarea>
-    </div>
-
-    <div style="margin-bottom:1.5rem">
-      <label class="form-label">Señales de alarma (marca si están presentes)</label>
-      <div class="alarma-grid">
-        {% for val, lbl in form.senales_alarma.field.choices %}
-        <label class="alarma-item" onclick="this.classList.toggle('checked')">
-          <input type="checkbox" name="senales_alarma" value="{{ val }}">
-          {{ lbl }}
-        </label>
-        {% endfor %}
-      </div>
-    </div>
-
-    <div style="display:flex;gap:0.75rem">
-      <a href="/terapeuta/{{ consulta.id }}/paso1/" onclick="spaGo(event,this)" class="btn btn-secondary">Atrás</a>
-      <button type="submit" class="btn btn-primary" style="flex:1">Continuar →</button>
-    </div>
-  </form>
-</div>
-</div>
+  <div class="wz-actions">
+    <button type="submit" class="btn btn-primary" style="flex:1">Continuar →</button>
+  </div>
+</form>
 {% endblock %}

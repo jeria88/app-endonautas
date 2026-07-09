@@ -1,267 +1,81 @@
 {% extends "base.html" %}
-{% block title %}Propuesta Terapéutica — Terapeuta Integral{% endblock %}
+{% load terapeuta_extras %}
+{% block title %}Consulta Integral — Tu plan{% endblock %}
 {% block content %}
+{% include "terapeuta/_wizard_style.html" %}
 <style data-page-style>
-.progress-bar { height:3px;background:var(--border);border-radius:2px;margin-bottom:1.5rem; }
-.progress-fill { height:100%;background:var(--calipso);border-radius:2px;width:100%; }
-.plan-card { background:var(--surface);backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;margin-bottom:0.75rem; }
-.plan-header { display:flex;align-items:center;gap:0.6rem;margin-bottom:0.75rem; }
-.plan-icon { font-size:1.2rem;flex-shrink:0; }
-.plan-title { font-weight:700;font-size:0.9rem; }
-.plan-sub { font-size:0.72rem;color:var(--muted);margin-top:1px; }
-.plan-steps { list-style:none;margin:0;padding:0; }
-.plan-step { padding:0.55rem 0;border-bottom:1px solid rgba(255,255,255,0.04); }
-.plan-step:last-child { border-bottom:none; }
-.plan-instruccion { font-size:0.82rem;color:var(--text);line-height:1.5; }
-.plan-instruccion::before { content:"→ ";color:var(--calipso);font-weight:700; }
-.plan-fundamento {
-  margin-top:0.35rem;margin-left:1.1rem;
-  font-size:0.74rem;color:var(--muted);line-height:1.55;
-  padding:0.35rem 0.65rem;
-  background:rgba(126,204,205,0.04);
-  border-left:2px solid rgba(126,204,205,0.25);
-  border-radius:0 6px 6px 0;
-  font-style:italic;
-}
-.plan-meta { display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.75rem; }
-.plan-meta-item { font-size:0.7rem;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:5px;padding:2px 8px;color:var(--dim); }
-.fase-row { display:flex;gap:0.75rem;align-items:flex-start;padding:0.7rem 0;border-bottom:1px solid rgba(255,255,255,0.04); }
-.fase-row:last-child { border-bottom:none; }
-.fase-num { font-size:0.68rem;font-weight:700;color:var(--calipso);background:var(--calipso-glow);border:1px solid rgba(126,204,205,0.2);border-radius:4px;padding:2px 6px;flex-shrink:0;margin-top:2px; }
-.fase-info { flex:1; }
-.fase-name { font-weight:600;font-size:0.85rem;margin-bottom:2px; }
-.fase-dur { font-size:0.7rem;color:var(--muted); }
-.fase-obj { font-size:0.78rem;color:var(--muted);margin-top:0.3rem;line-height:1.4; }
-.sintesis-block { background:rgba(126,204,205,0.06);border:1px solid rgba(126,204,205,0.2);border-radius:14px;padding:1rem 1.25rem;margin-bottom:1.25rem; }
-.indicador-item { font-size:0.82rem;color:var(--muted);line-height:1.5;padding:0.25rem 0; }
-.indicador-item::before { content:"✓ ";color:var(--calipso); }
-.patron-tag { display:inline-block;font-size:0.68rem;background:rgba(126,204,205,0.1);border:1px solid rgba(126,204,205,0.2);border-radius:20px;padding:0.15rem 0.6rem;color:var(--calipso);margin-bottom:0.6rem; }
-.mv-block { display:none;margin:0.4rem 0 0.6rem;border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.15);padding:0.25rem 0; }
+.prop-sintesis { background:var(--surface2);border:1px solid var(--border-active);border-radius:var(--radius);padding:1.1rem 1.25rem;margin-bottom:1.1rem;font-size:.9rem;line-height:1.6;color:var(--text); }
+.bloque { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.2rem;margin-bottom:.8rem; }
+.bloque-title { font-size:.95rem;font-weight:700;margin-bottom:.7rem;display:flex;align-items:center;gap:.5rem; }
+.paso { border-left:2px solid var(--calipso);padding:.15rem 0 .15rem .8rem;margin-bottom:.7rem; }
+.paso-inst { font-size:.86rem;line-height:1.55;color:var(--text); }
+.paso-fund { font-size:.76rem;line-height:1.5;color:var(--muted);margin-top:.25rem;font-style:italic; }
+.fase { display:flex;gap:.6rem;padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.82rem; }
+.fase-nombre { font-weight:600;color:var(--calipso);flex-shrink:0; }
+.prec { background:rgba(201,123,132,.1);border:1px solid rgba(201,123,132,.3);border-radius:12px;padding:.85rem 1rem;font-size:.8rem;line-height:1.55;color:var(--text);margin-top:1rem; }
 </style>
 
-<div class="progress-bar"><div class="progress-fill"></div></div>
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
-  <a href="/terapeuta/{{ consulta.id }}/paso4/" onclick="spaGo(event,this)" style="color:var(--muted);text-decoration:none;font-size:0.82rem">← Paso 4</a>
-  <span style="font-size:0.72rem;color:var(--dim)">Paso 5 de 5</span>
+<div class="wz-top">
+  <a href="/terapeuta/{{ consulta.id }}/paso4/" onclick="spaGo(event,this)">← Paso 4</a>
+  <span class="wz-step">Paso 5 de 5</span>
 </div>
+<div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
 
-<h1 style="font-size:1.2rem;font-weight:700;margin-bottom:0.25rem">Propuesta terapéutica</h1>
-<p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.6">Plan integrativo basado en los diagnósticos confirmados y las técnicas seleccionadas.</p>
+<h1 class="wz-h1">Tu plan de autoaplicación</h1>
+<p class="wz-sub">Un plan de 14 días que puedes aplicar en casa, sin agujas ni instrumentos: dieta, acupresión con tus dedos, respiración y hábitos. Al terminar, vuelve a mirarte la lengua y repite la lectura.</p>
 
-{% if propuesta_error %}
-<div class="panel" style="text-align:center;padding:2rem;color:var(--muted);margin-bottom:1.25rem">
-  <p style="font-size:0.85rem;margin-bottom:1rem">No se pudo generar la propuesta. Intenta de nuevo.</p>
-  <form method="post" style="display:inline">
-    {% csrf_token %}
-    <input type="hidden" name="accion" value="regenerar">
-    <button type="submit" class="btn btn-primary btn-sm">Reintentar</button>
-  </form>
+{% if formula.texto %}
+<div class="prop-sintesis" style="border-color:var(--border)">
+  <span style="font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--dim)">Tu fórmula</span><br>
+  <strong style="color:var(--calipso)">{{ formula.texto }}</strong>
 </div>
-
-{% elif propuesta %}
-
-<div class="sintesis-block">
-  <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--calipso);margin-bottom:0.5rem">Síntesis clínica</div>
-  <p style="font-size:0.87rem;line-height:1.6;color:var(--text)">{{ propuesta.sintesis }}</p>
-</div>
-
-{% if propuesta.plan %}
-<div class="eyebrow" style="margin-bottom:0.75rem">Plan por disciplina</div>
-{% for item in propuesta.plan %}
-<div class="plan-card" data-marco="{{ item.marco }}" data-elemento="{{ item.elemento_afectado|default:'' }}" data-nutridor="{{ item.elemento_nutridor|default:'' }}" data-controlado="{{ item.elemento_controlado|default:'' }}" data-dosha="{{ item.dosha_afectado|default:'' }}" data-subdosha="{{ item.sub_dosha|default:'' }}" data-chakra="{{ item.chakra_relacionado|default:'' }}">
-  <div class="plan-header">
-    {% if item.icono %}<span class="plan-icon">{{ item.icono }}</span>{% endif %}
-    <div>
-      <div class="plan-title">{{ item.tecnica }}</div>
-      <div class="plan-sub">{{ item.marco }}{% if item.diagnostico %} · {{ item.diagnostico }}{% endif %}</div>
-    </div>
-  </div>
-  {% if item.patron_sindrome %}<div class="patron-tag">{{ item.patron_sindrome }}</div>{% endif %}
-  <div class="mv-block"></div>
-  {% if item.pasos %}
-  <ul class="plan-steps">
-    {% for paso in item.pasos %}
-    <li class="plan-step">
-      {% if paso.instruccion %}
-        <div class="plan-instruccion">{{ paso.instruccion }}</div>
-        {% if paso.fundamento %}
-        <div class="plan-fundamento">{{ paso.fundamento }}</div>
-        {% endif %}
-      {% else %}
-        <div class="plan-instruccion">{{ paso }}</div>
-      {% endif %}
-    </li>
-    {% endfor %}
-  </ul>
-  {% endif %}
-  {% if item.como_empezar %}
-  <div style="margin-top:0.75rem;padding:0.6rem 0.8rem;background:rgba(126,204,205,0.05);border-radius:8px;font-size:0.78rem;color:var(--calipso)">
-    <strong>Hoy:</strong> {{ item.como_empezar }}
-  </div>
-  {% endif %}
-  <div class="plan-meta">
-    {% if item.duracion %}<span class="plan-meta-item">{{ item.duracion }}</span>{% endif %}
-    {% if item.frecuencia %}<span class="plan-meta-item">{{ item.frecuencia }}</span>{% endif %}
-  </div>
-</div>
-{% endfor %}
 {% endif %}
 
-{% if propuesta.fases %}
-<div class="panel" style="padding:1rem 1.25rem;margin-bottom:1.25rem">
-  <div class="eyebrow" style="margin-bottom:0.75rem">Fases del tratamiento</div>
-  {% for fase in propuesta.fases %}
-  <div class="fase-row">
-    <span class="fase-num">{{ forloop.counter }}</span>
-    <div class="fase-info">
-      <div class="fase-name">{{ fase.nombre }}</div>
-      {% if fase.duracion %}<div class="fase-dur">{{ fase.duracion }}</div>{% endif %}
-      {% if fase.objetivo %}<div class="fase-obj">{{ fase.objetivo }}</div>{% endif %}
-    </div>
+{% if propuesta_error %}
+<div class="alarma-banner">No se pudo generar la propuesta. Confirma al menos un patrón en el paso anterior.</div>
+{% elif propuesta %}
+
+<div class="prop-sintesis">{{ propuesta.sintesis }}</div>
+
+{% for bloque in propuesta.plan %}
+<div class="bloque">
+  <div class="bloque-title">{{ bloque.icono|default:"🌿" }} {{ bloque.titulo }}</div>
+  {% for paso in bloque.pasos %}
+  <div class="paso">
+    <div class="paso-inst">{{ paso.instruccion }}</div>
+    {% if paso.fundamento %}<div class="paso-fund">{{ paso.fundamento }}</div>{% endif %}
   </div>
   {% endfor %}
 </div>
-{% endif %}
+{% endfor %}
 
-{% if propuesta.indicadores %}
-<div class="panel" style="padding:1rem 1.25rem;margin-bottom:1.25rem">
-  <div class="eyebrow" style="margin-bottom:0.6rem">Indicadores de avance</div>
-  {% for ind in propuesta.indicadores %}
-  <div class="indicador-item">{{ ind }}</div>
+{% if propuesta.fases %}
+<div class="wz-section-title">Tu ruta de 14 días</div>
+<div class="bloque">
+  {% for f in propuesta.fases %}
+  <div class="fase"><span class="fase-nombre">{{ f.nombre }}</span><span style="color:var(--muted)">{{ f.objetivo }}</span></div>
   {% endfor %}
 </div>
 {% endif %}
 
 {% if propuesta.precauciones %}
-<div class="panel" style="padding:0.85rem 1.25rem;margin-bottom:1.25rem;border-color:rgba(201,123,132,0.2)">
-  <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--rose);margin-bottom:0.4rem">Precauciones</div>
-  <p style="font-size:0.82rem;color:var(--muted);line-height:1.5;margin:0">{{ propuesta.precauciones }}</p>
-</div>
+<div class="prec"><strong>⚠ Precauciones:</strong> {{ propuesta.precauciones }}</div>
 {% endif %}
 
-<form method="post" style="display:inline;margin-bottom:0.5rem">
+<form method="post" style="margin-top:.8rem">
   {% csrf_token %}
-  <input type="hidden" name="accion" value="regenerar">
-  <button type="submit" class="btn btn-secondary btn-sm">↺ Regenerar propuesta</button>
+  <button type="submit" name="accion" value="regenerar" class="btn btn-secondary" style="font-size:.82rem">↻ Regenerar plan</button>
 </form>
 
 {% endif %}
 
-<form method="post" id="paso5form" style="margin-top:1.25rem">
+<form method="post" style="margin-top:1.4rem">
   {% csrf_token %}
-  <div class="panel" style="padding:1rem 1.25rem">
-    <label class="form-label" style="color:var(--violet)">Diagnóstico integral final (notas del terapeuta)</label>
-    <textarea name="diagnostico_final" class="form-input" rows="4" placeholder="Síntesis personal — tu lectura integrativa del caso...">{{ form.diagnostico_final.value|default:'' }}</textarea>
-  </div>
-
-  <div style="display:flex;gap:0.75rem;margin-top:1.25rem">
+  <div class="wz-section-title">Tus notas (opcional)</div>
+  <textarea name="diagnostico_final" class="form-input" rows="4" placeholder="Anota tu propia lectura, lo que resonó, o lo que quieres recordar…">{{ form.diagnostico_final.value|default:'' }}</textarea>
+  <div class="wz-actions">
     <a href="/terapeuta/{{ consulta.id }}/paso4/" onclick="spaGo(event,this)" class="btn btn-secondary">Atrás</a>
-    <button type="submit" class="btn btn-primary" style="flex:1">Guardar consulta →</button>
+    <button type="submit" class="btn btn-primary" style="flex:1">Guardar consulta</button>
   </div>
 </form>
-
-<script>
-(function(){
-  var COLORS={Madera:'#4ecdc4',Fuego:'#e84393',Tierra:'#ffbf00',Metal:'#b8c0cc',Agua:'#6096ba'};
-  var GEN=[['Madera','Fuego'],['Fuego','Tierra'],['Tierra','Metal'],['Metal','Agua'],['Agua','Madera']];
-  var CTRL=[['Madera','Tierra'],['Tierra','Agua'],['Agua','Fuego'],['Fuego','Metal'],['Metal','Madera']];
-  var GEN_INV={Fuego:'Madera',Tierra:'Fuego',Metal:'Tierra',Agua:'Metal',Madera:'Agua'};
-  var CTRL_MAP={Madera:'Tierra',Tierra:'Agua',Agua:'Fuego',Fuego:'Metal',Metal:'Madera'};
-
-  var CHAKRA_MAP={'muladhara':0,'raiz':0,'raíz':0,'svadhisthana':1,'sacro':1,'sacral':1,'svadhishthana':1,
-    'manipura':2,'plexo solar':2,'anahata':3,'corazon':3,'corazón':3,'vishuddha':4,'garganta':4,
-    'vishudha':4,'ajna':5,'tercer ojo':5,'sahasrara':6,'corona':6};
-  var SUB_DOSHA_CHAKRA={
-    'apana vata':[0,1],'samana vata':[2],'prana vata':[3,5],'udana vata':[4],'vyana vata':[3],
-    'pachaka pitta':[2],'sadhaka pitta':[3],'alochaka pitta':[5],'ranjaka pitta':[2],
-    'kledaka kapha':[1],'avalambaka kapha':[3],'tarpaka kapha':[5,6],'bodhaka kapha':[4],'shleshaka kapha':[1]
-  };
-  var CHAKRAS=[
-    {n:'Raíz',c:'#e53e3e'},{n:'Sacro',c:'#dd6b20'},{n:'Plexo',c:'#d69e2e'},
-    {n:'Corazón',c:'#38a169'},{n:'Garganta',c:'#3182ce'},{n:'3er Ojo',c:'#553c9a'},{n:'Corona',c:'#9f7aea'}
-  ];
-
-  function mtcSvg(elem, nutridor, controlado) {
-    var CX=110,CY=110,R=82;
-    var names=['Fuego','Tierra','Metal','Agua','Madera'];
-    var angs=[-90,-18,54,126,198].map(function(a){return a*Math.PI/180;});
-    var pos={};
-    names.forEach(function(e,i){pos[e]=[CX+R*Math.cos(angs[i]),CY+R*Math.sin(angs[i])];});
-    if(!nutridor&&elem)nutridor=GEN_INV[elem];
-    if(!controlado&&elem)controlado=CTRL_MAP[elem];
-    var s='<svg viewBox="0 0 220 220" width="220" height="220" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0.5rem auto">';
-    GEN.forEach(function(ab){
-      var p=pos[ab[0]],q=pos[ab[1]];
-      var nutLine=(ab[0]===nutridor&&ab[1]===elem);
-      s+='<line x1="'+p[0].toFixed(1)+'" y1="'+p[1].toFixed(1)+'" x2="'+q[0].toFixed(1)+'" y2="'+q[1].toFixed(1)+'" stroke="'+(nutLine?'#ffbf00':'#4ecdc4')+'" stroke-width="'+(nutLine?2.5:1.5)+'" opacity="'+(nutLine?0.75:0.28)+'"/>';
-    });
-    CTRL.forEach(function(ab){
-      var p=pos[ab[0]],q=pos[ab[1]];
-      var ctrlLine=(ab[0]===elem&&ab[1]===controlado);
-      s+='<line x1="'+p[0].toFixed(1)+'" y1="'+p[1].toFixed(1)+'" x2="'+q[0].toFixed(1)+'" y2="'+q[1].toFixed(1)+'" stroke="'+(ctrlLine?'#e07060':'#ffbf00')+'" stroke-width="'+(ctrlLine?2.2:1)+'" stroke-dasharray="4,4" opacity="'+(ctrlLine?0.65:0.18)+'"/>';
-    });
-    names.forEach(function(e){
-      var x=pos[e][0],y=pos[e][1];
-      var isAct=e===elem,isNut=e===nutridor,isCtrl=e===controlado;
-      var color=COLORS[e];
-      var r=isAct?18:(isNut?15:12),op=isAct?1:(isNut?0.80:(isCtrl?0.45:0.38));
-      var fillOp=isAct?0.28:(isNut?0.22:(isCtrl?0.08:0.11)),sw=isAct?2.5:(isNut?2:1.2);
-      if(isAct){
-        s+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="26" fill="none" stroke="'+color+'" stroke-width="1.5" opacity="0.2">'
-          +'<animate attributeName="r" values="18;28;18" dur="2s" repeatCount="indefinite"/>'
-          +'<animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite"/></circle>';
-      } else if(isNut){
-        s+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="22" fill="none" stroke="#ffbf00" stroke-width="1.2" opacity="0.22"/>';
-      }
-      s+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+r+'" fill="'+color+'" fill-opacity="'+fillOp+'" stroke="'+color+'" stroke-width="'+sw+'" opacity="'+op+'"/>';
-      s+='<text x="'+x.toFixed(1)+'" y="'+(y+(y>CY?32:-20)).toFixed(1)+'" text-anchor="middle" font-size="9.5" fill="'+color+'" opacity="'+op+'" font-family="sans-serif" font-weight="600">'+e+'</text>';
-    });
-    return s+'</svg>';
-  }
-
-  function chakraIndices(chakra, dosha, subdosha) {
-    var idx=CHAKRA_MAP[(chakra||'').toLowerCase().trim()];
-    if(idx!==undefined)return[idx];
-    var sd=(subdosha||'').toLowerCase().trim();
-    if(sd&&SUB_DOSHA_CHAKRA[sd])return SUB_DOSHA_CHAKRA[sd];
-    var d=(dosha||'').toLowerCase();
-    var ids=[];
-    if(d.indexOf('vata')>=0)ids.push(0);
-    if(d.indexOf('pitta')>=0)ids.push(2);
-    if(d.indexOf('kapha')>=0)ids.push(1);
-    return ids.length?ids:[-1];
-  }
-  function chakraSvg(chakra, dosha, subdosha) {
-    var activos=chakraIndices(chakra,dosha,subdosha);
-    var W=300,H=76,sp=W/7,cy=32;
-    var s='<svg viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0.5rem auto">';
-    s+='<line x1="'+(sp*0.5).toFixed(1)+'" y1="'+cy+'" x2="'+(sp*6.5).toFixed(1)+'" y2="'+cy+'" stroke="rgba(255,255,255,0.10)" stroke-width="1.5"/>';
-    CHAKRAS.forEach(function(c,i){
-      var cx=sp*(i+0.5),active=activos.indexOf(i)>=0,r=active?16:11,op=active?1:0.35;
-      if(active){
-        s+='<circle cx="'+cx.toFixed(1)+'" cy="'+cy+'" r="24" fill="none" stroke="'+c.c+'" stroke-width="1.5" opacity="0.2">'
-          +'<animate attributeName="r" values="18;26;18" dur="1.8s" repeatCount="indefinite"/>'
-          +'<animate attributeName="opacity" values="0.3;0;0.3" dur="1.8s" repeatCount="indefinite"/></circle>';
-      }
-      s+='<circle cx="'+cx.toFixed(1)+'" cy="'+cy+'" r="'+r+'" fill="'+c.c+'" fill-opacity="'+(active?0.30:0.11)+'" stroke="'+c.c+'" stroke-width="'+(active?2.2:1.2)+'" opacity="'+op+'"/>';
-      s+='<text x="'+cx.toFixed(1)+'" y="'+(cy+r+16)+'" text-anchor="middle" font-size="7.5" fill="'+c.c+'" opacity="'+op+'" font-family="sans-serif">'+c.n+'</text>';
-    });
-    return s+'</svg>';
-  }
-
-  document.querySelectorAll('[data-marco]').forEach(function(card){
-    var block=card.querySelector('.mv-block');
-    if(!block)return;
-    var marco=card.dataset.marco||'';
-    if(marco.indexOf('Medicina Tradicional China')>=0||marco.indexOf('MTC')>=0){
-      block.innerHTML=mtcSvg(card.dataset.elemento||'',card.dataset.nutridor||'',card.dataset.controlado||'');
-      block.style.display='block';
-    } else if(marco.indexOf('Ayurveda')>=0){
-      block.innerHTML=chakraSvg(card.dataset.chakra||'',card.dataset.dosha||'',card.dataset.subdosha||'');
-      block.style.display='block';
-    }
-  });
-})();
-</script>
-
 {% endblock %}

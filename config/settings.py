@@ -189,6 +189,9 @@ DEEPSEEK_MODEL     = os.getenv('DEEPSEEK_MODEL', 'deepseek-chat')
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '')
 # Modelo free por defecto; cambiar a cualquier modelo de openrouter.ai/models
 OPENROUTER_MODEL   = os.getenv('OPENROUTER_MODEL', 'google/gemma-4-31b-it:free')
+# Modelo para razonamiento clínico del módulo terapeuta (diferenciación y propuesta).
+# DeepSeek es confiable en JSON y español; el scoring determinista es la base, la IA solo refina.
+AI_MODEL_CLINICO   = os.getenv('AI_MODEL_CLINICO', 'deepseek-chat')
 
 # Email
 EMAIL_BACKEND = 'post_office.EmailBackend'

@@ -172,7 +172,7 @@ _STYLE_RULE = (
 )
 
 
-def call_ai(messages, max_tokens=500, timeout=25):
+def call_ai(messages, max_tokens=500, timeout=25, model=None, temperature=None, json_mode=False):
     """
     Llama al proveedor de IA configurado.
 
@@ -180,6 +180,9 @@ def call_ai(messages, max_tokens=500, timeout=25):
         messages: lista de dicts {role, content} — formato OpenAI estándar
         max_tokens: límite de tokens en la respuesta
         timeout: segundos antes de abortar
+        model: fuerza un modelo específico (default: el del provider)
+        temperature: temperatura de muestreo (default: la del provider)
+        json_mode: pide response_format json_object cuando el modelo lo soporta
 
     Returns:
         str — texto de la respuesta, o '' si falla
@@ -192,9 +195,9 @@ def call_ai(messages, max_tokens=500, timeout=25):
 
     provider = _resolve_provider()
     if provider == 'openrouter':
-        return _neutralize(_call_openrouter(messages, max_tokens, timeout))
+        return _neutralize(_call_openrouter(messages, max_tokens, timeout, model, temperature, json_mode))
     if provider == 'deepseek':
-        return _neutralize(_call_deepseek(messages, max_tokens, timeout))
+        return _neutralize(_call_deepseek(messages, max_tokens, timeout, model, temperature, json_mode))
     return ''
 
 
@@ -212,16 +215,21 @@ def _resolve_provider():
     return ''
 
 
-def _call_openrouter(messages, max_tokens, timeout):
+def _call_openrouter(messages, max_tokens, timeout, model=None, temperature=None, json_mode=False):
     r = None
     try:
+        payload = {
+            'model': model or getattr(settings, 'OPENROUTER_MODEL', 'google/gemma-4-31b-it:free'),
+            'messages': messages,
+            'max_tokens': max_tokens,
+        }
+        if temperature is not None:
+            payload['temperature'] = temperature
+        if json_mode:
+            payload['response_format'] = {'type': 'json_object'}
         r = requests.post(
             'https://openrouter.ai/api/v1/chat/completions',
-            json={
-                'model': getattr(settings, 'OPENROUTER_MODEL', 'google/gemma-4-31b-it:free'),
-                'messages': messages,
-                'max_tokens': max_tokens,
-            },
+            json=payload,
             headers={'Authorization': f'Bearer {settings.OPENROUTER_API_KEY}'},
             timeout=timeout,
         )
@@ -232,16 +240,21 @@ def _call_openrouter(messages, max_tokens, timeout):
         return ''
 
 
-def _call_deepseek(messages, max_tokens, timeout):
+def _call_deepseek(messages, max_tokens, timeout, model=None, temperature=None, json_mode=False):
     r = None
     try:
+        payload = {
+            'model': model or getattr(settings, 'DEEPSEEK_MODEL', 'deepseek-chat'),
+            'messages': messages,
+            'max_tokens': max_tokens,
+        }
+        if temperature is not None:
+            payload['temperature'] = temperature
+        if json_mode:
+            payload['response_format'] = {'type': 'json_object'}
         r = requests.post(
             'https://api.deepseek.com/chat/completions',
-            json={
-                'model': getattr(settings, 'DEEPSEEK_MODEL', 'deepseek-chat'),
-                'messages': messages,
-                'max_tokens': max_tokens,
-            },
+            json=payload,
             headers={'Authorization': f'Bearer {settings.DEEPSEEK_API_KEY}'},
             timeout=timeout,
         )

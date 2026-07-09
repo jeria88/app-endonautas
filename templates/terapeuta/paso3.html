@@ -1,145 +1,42 @@
 {% extends "base.html" %}
-{% block title %}Profundización Clínica — Terapeuta Integral{% endblock %}
+{% block title %}Consulta Integral — Observación{% endblock %}
 {% block content %}
-<style data-page-style>
-.progress-bar { height:3px;background:var(--border);border-radius:2px;margin-bottom:1.5rem; }
-.progress-fill { height:100%;background:var(--calipso);border-radius:2px;width:60%; }
-.pregunta-block { background:var(--surface);backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;margin-bottom:0.75rem;transition:border-color 0.2s; }
-.pregunta-block.answered { border-color:rgba(126,204,205,0.3); }
-.pregunta-num { display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--calipso-glow);border:1px solid rgba(126,204,205,0.3);font-size:0.72rem;font-weight:700;color:var(--calipso);margin-right:0.5rem;flex-shrink:0; }
-.pregunta-texto { font-size:0.9rem;font-weight:600;line-height:1.5; }
-.radio-option,.checkbox-option {
-  display:flex;align-items:center;gap:0.5rem;padding:0.45rem 0.7rem;
-  border:1.5px solid var(--border);border-radius:7px;cursor:pointer;font-size:0.85rem;color:var(--muted);
-  margin-bottom:0.35rem;transition:all 0.15s;
-}
-.radio-option:has(input:checked),.checkbox-option:has(input:checked) { border-color:var(--calipso);color:var(--text);background:var(--calipso-glow); }
-.radio-option input,.checkbox-option input { accent-color:var(--calipso);flex-shrink:0; }
-.tec-tags { display:flex;flex-wrap:wrap;gap:0.3rem;margin-top:0.6rem; }
-.tec-tag { font-size:0.65rem;padding:1px 6px;border-radius:3px;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--dim); }
-</style>
+{% include "terapeuta/_wizard_style.html" %}
 
-<div class="progress-bar"><div class="progress-fill"></div></div>
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
-  <a href="/terapeuta/{{ consulta.id }}/paso2/" onclick="spaGo(event,this)" style="color:var(--muted);text-decoration:none;font-size:0.82rem">← Paso 2</a>
-  <span style="font-size:0.72rem;color:var(--dim)">Paso 3 de 5</span>
+<div class="wz-top">
+  <a href="/terapeuta/{{ consulta.id }}/paso2/" onclick="spaGo(event,this)">← Paso 2</a>
+  <span class="wz-step">Paso 3 de 5</span>
 </div>
+<div class="progress-bar"><div class="progress-fill" style="width:60%"></div></div>
 
-<h1 style="font-size:1.2rem;font-weight:700;margin-bottom:0.25rem">Profundización clínica</h1>
-<p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.6">Preguntas seleccionadas según las técnicas elegidas. Responde con la mayor honestidad posible.</p>
+<h1 class="wz-h1">Mírate un momento</h1>
+<p class="wz-sub">La <strong>observación</strong> (Wang-zhen) es el examen central de la medicina china. La lengua es el espejo del interior: su color y su capa muestran el estado de tus órganos. Obsérvate al espejo con luz natural, sin haber comido ni bebido nada de color.</p>
 
-<form method="post" id="paso3form">
+<form method="post">
   {% csrf_token %}
 
-  {% for pregunta in preguntas %}
-  <div class="pregunta-block" id="block-{{ pregunta.id }}">
-    <div style="display:flex;align-items:flex-start;gap:0.4rem;margin-bottom:0.85rem">
-      <span class="pregunta-num">{{ forloop.counter }}</span>
-      <p class="pregunta-texto">{{ pregunta.pregunta }}</p>
-    </div>
-    <input type="hidden" name="pregunta_texto_{{ pregunta.id }}" value="{{ pregunta.pregunta }}">
-    <input type="hidden" name="pregunta_tecnica_{{ pregunta.id }}" value="{{ pregunta.tecnicas_asociadas.0 }}">
-
-    {% if pregunta.tipo_respuesta == "radio" %}
-      {% for opcion in pregunta.opciones %}
-      <label class="radio-option">
-        <input type="radio" name="respuesta_{{ pregunta.id }}" value="{{ opcion }}" onchange="markAnswered('{{ pregunta.id }}')">
-        {{ opcion }}
-      </label>
-      {% endfor %}
-
-    {% elif pregunta.tipo_respuesta == "radio_text" %}
-      {% for opcion in pregunta.opciones %}
-      <label class="radio-option">
-        <input type="radio" name="respuesta_radio_{{ pregunta.id }}" value="{{ opcion }}" onchange="syncRadioText('{{ pregunta.id }}')">
-        {{ opcion }}
-      </label>
-      {% endfor %}
-      <input type="text" name="respuesta_otro_{{ pregunta.id }}" class="form-input" style="margin-top:0.5rem" placeholder="Detalla o especifica…" oninput="syncRadioText('{{ pregunta.id }}')">
-      <input type="hidden" name="respuesta_{{ pregunta.id }}" id="respuesta_hidden_{{ pregunta.id }}">
-
-    {% elif pregunta.tipo_respuesta == "checkboxes_text" %}
-      {% for opcion in pregunta.opciones %}
-      <label class="checkbox-option">
-        <input type="checkbox" name="respuesta_cb_{{ pregunta.id }}" value="{{ opcion }}" onchange="syncCheckboxText('{{ pregunta.id }}')">
-        {{ opcion }}
-      </label>
-      {% endfor %}
-      <input type="text" name="respuesta_otro_{{ pregunta.id }}" class="form-input" style="margin-top:0.5rem" placeholder="Otros o detalla…" oninput="syncCheckboxText('{{ pregunta.id }}')">
-      <input type="hidden" name="respuesta_{{ pregunta.id }}" id="respuesta_hidden_{{ pregunta.id }}">
-
-    {% elif pregunta.tipo_respuesta == "checkboxes_comment" %}
-      {% for opcion in pregunta.opciones %}
-      <div style="margin-bottom:0.35rem">
-        <label class="checkbox-option" style="margin-bottom:0">
-          <input type="checkbox" name="respuesta_cb_{{ pregunta.id }}" value="{{ opcion }}"
-                 data-idx="{{ forloop.counter0 }}" onchange="toggleCmt(this)">
-          {{ opcion }}
-        </label>
-        <div id="cmt_{{ pregunta.id }}_{{ forloop.counter0 }}" style="display:none;padding-left:1.5rem;margin-top:0.25rem">
-          <input type="text" name="respuesta_cmt_{{ pregunta.id }}_{{ forloop.counter0 }}" class="form-input"
-                 style="font-size:0.8rem;padding:0.3rem 0.65rem" placeholder="¿Cómo te afecta?"
-                 oninput="syncCmt('{{ pregunta.id }}')">
-        </div>
-      </div>
-      {% endfor %}
-      <input type="hidden" name="respuesta_{{ pregunta.id }}" id="respuesta_hidden_{{ pregunta.id }}">
-
-    {% else %}
-      <textarea name="respuesta_{{ pregunta.id }}" class="form-input" rows="2" placeholder="Tu respuesta…" oninput="markAnswered('{{ pregunta.id }}')"></textarea>
-    {% endif %}
-
-    <div class="tec-tags">
-      {% for tec in pregunta.tecnicas_asociadas %}<span class="tec-tag">{{ tec }}</span>{% endfor %}
-    </div>
-  </div>
+  <div class="wz-section-title">Tu lengua y tu aspecto</div>
+  {% for q in observacion %}
+    {% include "terapeuta/_pregunta.html" %}
   {% endfor %}
 
-  <div style="display:flex;gap:0.75rem;margin-top:1.5rem">
+  {% for sid, nombre, preguntas in especificos %}
+  <div class="wz-section-title">Sobre tu {{ nombre|lower }}</div>
+  {% for q in preguntas %}
+    {% include "terapeuta/_pregunta.html" %}
+  {% endfor %}
+  {% endfor %}
+
+  <div class="wz-section-title">Contexto emocional
+    <span class="edu-tip" tabindex="0" aria-label="emoción y cuerpo">ⓘ<span class="edu-bubble">Las emociones sostenidas afectan órganos concretos (Manual MTC 1.4B): la ira al Hígado, la preocupación al Bazo, la tristeza al Pulmón, el miedo al Riñón. También abren la lectura desde otros paradigmas.</span></span>
+  </div>
+  {% for q in emocional %}
+    {% include "terapeuta/_pregunta.html" %}
+  {% endfor %}
+
+  <div class="wz-actions">
     <a href="/terapeuta/{{ consulta.id }}/paso2/" onclick="spaGo(event,this)" class="btn btn-secondary">Atrás</a>
-    <button type="submit" class="btn btn-primary" style="flex:1">Continuar →</button>
+    <button type="submit" class="btn btn-primary" style="flex:1">Ver mi lectura →</button>
   </div>
 </form>
-
-<script>
-function markAnswered(id) {
-  document.getElementById('block-' + id)?.classList.add('answered');
-}
-function syncRadioText(id) {
-  const radioVal = document.querySelector(`input[name="respuesta_radio_${id}"]:checked`)?.value || '';
-  const textVal = document.querySelector(`input[name="respuesta_otro_${id}"]`)?.value.trim() || '';
-  const combined = radioVal + (textVal ? ' — ' + textVal : '');
-  const hidden = document.getElementById('respuesta_hidden_' + id);
-  if (hidden) { hidden.value = combined; markAnswered(id); }
-}
-function syncCheckboxText(id) {
-  const checked = [...document.querySelectorAll(`input[name="respuesta_cb_${id}"]:checked`)].map(i => i.value);
-  const textVal = document.querySelector(`input[name="respuesta_otro_${id}"]`)?.value.trim() || '';
-  const combined = [...checked, ...(textVal ? [textVal] : [])].join(', ');
-  const hidden = document.getElementById('respuesta_hidden_' + id);
-  if (hidden) { hidden.value = combined; markAnswered(id); }
-}
-function toggleCmt(cb) {
-  const qid = cb.name.replace('respuesta_cb_', '');
-  const idx = cb.dataset.idx;
-  const cmt = document.getElementById('cmt_' + qid + '_' + idx);
-  if (cmt) cmt.style.display = cb.checked ? '' : 'none';
-  if (!cb.checked) {
-    const inp = cmt?.querySelector('input[type="text"]');
-    if (inp) inp.value = '';
-  }
-  syncCmt(qid);
-}
-function syncCmt(qid) {
-  const parts = [];
-  document.querySelectorAll(`input[name="respuesta_cb_${qid}"]:checked`).forEach(cb => {
-    const idx = cb.dataset.idx;
-    const inp = document.querySelector(`input[name="respuesta_cmt_${qid}_${idx}"]`);
-    const c = inp?.value.trim() || '';
-    parts.push(c ? `${cb.value} (${c})` : cb.value);
-  });
-  const hidden = document.getElementById('respuesta_hidden_' + qid);
-  if (hidden) { hidden.value = parts.join(', '); markAnswered(qid); }
-}
-</script>
 {% endblock %}
