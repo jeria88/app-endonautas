@@ -43,7 +43,7 @@ python3 manage.py seed_fractal_cards # pobla cartas fractales
 | `birth` | ✅ activa | Lecturas de nacimiento: astral, Human Design, Saju/BaZi |
 | `oraculo` | ✅ activa | Tarot Terapéutico (Jodorowsky), I Ching, Oráculo Fractal |
 | `psychometrics` | ✅ activa | 35 tests psicométricos con insights IA |
-| `tokens` | 🔴 legacy | Fractones desactivados — tablas en BD sin uso activo, views redirigen a /pagos/planes/ |
+| `tokens` | 🔴 legacy | Fractones desactivados. OJO: la app SIGUE cableada a propósito — `accounts/signals.py` crea TokenBalance en cada alta, `payments/views/*` usan `reverse('tokens_balance')` como cancel_url, y las rutas `/tokens/` quedan montadas (sus views redirigen a /pagos/planes/). No desinstalar sin refactorizar payments+signals. |
 | `mirror` | ✅ activa | Espejo de Conflictos (RAG + DeepSeek), sueños, regulación |
 | `community` | ✅ activa | Feed social, foros, mensajes directos |
 | `terapeuta` | ✅ activa | Modo terapeuta: diagnóstico por framework, técnicas somáticas |

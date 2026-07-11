@@ -191,7 +191,8 @@ def eliminar_cuenta(request):
         user = request.user
         logout(request)
         user.delete()
-        return redirect('https://endonautas.cl')
+        from django.conf import settings as dj_settings
+        return redirect(dj_settings.PUBLIC_SITE_URL)
 
     return redirect('perfil')
 

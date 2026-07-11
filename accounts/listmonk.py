@@ -3,10 +3,12 @@ Cliente Listmonk para integración programática desde la app.
 Todas las funciones fallan silenciosamente — nunca bloquean el flujo principal.
 """
 import base64
+import os
 
 import requests
 
-_BASE = 'https://mail.endonautas.cl'
+# URL compartida del servidor Oracle (mail.endonautas.cl quedó 503 tras la migración de jun 2026)
+_BASE = os.getenv('LISTMONK_URL', 'https://mail.146.181.39.4.sslip.io')
 _USER = 'api_claude'
 _TOKEN = 'lm_api_2b99334cb53a67a428a364049b45b986533908952a897102'
 
@@ -22,7 +24,7 @@ _PLAN_LISTS = {
 }
 
 WELCOME_TEMPLATE_ID = 7
-KPI_REPORT_TEMPLATE_ID = int(__import__('os').getenv('LISTMONK_TX_KPI_TEMPLATE_ID', '0'))
+KPI_REPORT_TEMPLATE_ID = int(os.getenv('LISTMONK_TX_KPI_TEMPLATE_ID', '0'))
 
 
 def _headers():
@@ -84,7 +86,7 @@ def send_weekly_kpi_email(html_body, escenario, week_number, franco_email=None):
     """Envía reporte KPI semanal vía Listmonk TX."""
     if not KPI_REPORT_TEMPLATE_ID:
         return
-    email = franco_email or __import__('os').getenv('FRANCO_EMAIL', 'fjeriacastro@gmail.com')
+    email = franco_email or os.getenv('FRANCO_EMAIL', 'fjeriacastro@gmail.com')
     try:
         requests.post(
             f'{_BASE}/api/tx',

@@ -24,7 +24,13 @@ def _summarize_previous_session(user):
         .order_by('-updated_at')
         .first()
     )
-    if not prev or prev.messages.count() < 4:
+    if not prev:
+        return
+    if prev.messages.count() < 4:
+        # sentinel '-': sesión breve, no resumible — sin esto queda en '' y se
+        # reintenta (y bloquea el drenaje de sesiones anteriores) en cada chat_new
+        prev.conflict_summary = '-'
+        prev.save(update_fields=['conflict_summary'])
         return
     from config.ai_client import call_ai
     transcript = '\n'.join(
@@ -41,9 +47,14 @@ def _summarize_previous_session(user):
     ], max_tokens=250)
     if 'RESUMEN:' in out and 'PREGUNTA:' in out:
         resumen, pregunta = out.split('PREGUNTA:', 1)
-        prev.conflict_summary = resumen.replace('RESUMEN:', '').strip()[:1000]
+        prev.conflict_summary = resumen.replace('RESUMEN:', '').strip()[:1000] or '-'
         prev.return_question = pregunta.strip()[:500]
         prev.save(update_fields=['conflict_summary', 'return_question'])
+    else:
+        # respuesta IA sin formato esperado: marcar con sentinel para no
+        # re-procesar esta sesión (y gastar tokens) en cada chat_new
+        prev.conflict_summary = '-'
+        prev.save(update_fields=['conflict_summary'])
 
 
 @login_required

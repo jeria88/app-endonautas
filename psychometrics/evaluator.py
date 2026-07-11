@@ -299,6 +299,12 @@ def evaluate_test(test_name, details):
     elif 'Coherencia' in test_name or 'SOC-29' in test_name:
         enriched = _eval_soc29(details)
     else:
+        # el dispatch es por substring del nombre: si un test se renombra cae
+        # aquí en silencio — dejar rastro para detectarlo
+        import logging
+        logging.getLogger(__name__).warning(
+            'evaluate_test: sin scorer específico para %r, usando genérico', test_name
+        )
         enriched = _eval_generic(details)
 
     # Post-procesamiento psicométrico: normalización Min-Max + recalcular polaridades y niveles

@@ -192,7 +192,17 @@ POST_OFFICE = {
         'EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend'
     ),
 }
+# SMTP (Brevo) — solo se usa si EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp-relay.brevo.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'hola@endonautas.cl')
+
+# Sitio público (landing) — usado en redirects fuera de la app
+PUBLIC_SITE_URL = os.getenv('PUBLIC_SITE_URL', 'https://endonautas.cl')
+LISTMONK_URL = os.getenv('LISTMONK_URL', 'https://mail.146.181.39.4.sslip.io')
 
 # Fractones
 FRACTON_REWARDS = {

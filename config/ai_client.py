@@ -103,7 +103,7 @@ def user_history_context(user):
         prev = (
             ChatSession.objects
             .filter(user=user)
-            .exclude(conflict_summary='')
+            .exclude(conflict_summary__in=['', '-'])  # '-' = sentinel sin resumen
             .order_by('-updated_at')
             .first()
         )
