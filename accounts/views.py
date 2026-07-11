@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.db.models import F
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .models import UserProfile
 
@@ -41,10 +42,13 @@ def home(request):
 def login_view(request):
     error = None
     if request.method == 'POST':
-        user = authenticate(request, email=request.POST['email'], password=request.POST['password'])
+        user = authenticate(request, email=request.POST.get('email', ''), password=request.POST.get('password', ''))
         if user:
             login(request, user)
-            return redirect(request.GET.get('next', 'dashboard'))
+            next_url = request.GET.get('next', '')
+            if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+                return redirect(next_url)
+            return redirect('dashboard')
         error = 'Credenciales incorrectas'
     return render(request, 'accounts/login.html', {'error': error})
 
@@ -64,8 +68,10 @@ def register_view(request):
     if request.method == 'POST':
         from django.contrib.auth import get_user_model
         User = get_user_model()
-        email = request.POST['email']
-        password = request.POST['password']
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '')
+        if not email or not password:
+            return render(request, 'accounts/register.html', {'error': 'Completa todos los campos'})
         if User.objects.filter(email=email).exists():
             return render(request, 'accounts/register.html', {'error': 'Email ya registrado'})
         user = User.objects.create_user(email=email, password=password,

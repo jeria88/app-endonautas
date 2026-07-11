@@ -6,18 +6,9 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'dev-insecure-key')
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+SECRET_KEY = os.environ['SECRET_KEY']  # sin default: si falta, la app no arranca
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-
-# Railway: allow all hosts for internal healthchecks; trust proxy for HTTPS
-_railway_domain = os.getenv('RAILWAY_PUBLIC_DOMAIN', '')
-if _railway_domain:
-    if _railway_domain not in ALLOWED_HOSTS:
-        ALLOWED_HOSTS.append(_railway_domain)
-    if '*' not in ALLOWED_HOSTS:
-        ALLOWED_HOSTS.append('*')
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 CSRF_TRUSTED_ORIGINS = [
     f'https://{h}' for h in ALLOWED_HOSTS
