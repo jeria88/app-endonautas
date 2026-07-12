@@ -53,7 +53,7 @@ Aplicación web de autoconocimiento construida con Django 6. Integra astrología
 |---------|-----|---------|
 | Umami | `https://analytics.endonautas.cl` | Analytics web (open source) |
 | Uptime Kuma | `https://status.endonautas.cl` | Monitoreo de uptime |
-| Listmonk | `https://mail.endonautas.cl` | Email marketing |
+| Listmonk | `https://mail.146.181.39.4.sslip.io` | Email marketing (antes `mail.endonautas.cl`, daba 503 — migrado 2026-07-11; la app lee `LISTMONK_URL` de env) |
 | Serpbear | `https://seo.endonautas.cl` | Seguimiento de keywords SEO |
 
 ### Credenciales de acceso
@@ -85,7 +85,7 @@ Script de tracking (ya integrado en ambos frontends):
 1. App Endonautas — `https://app.endonautas.cl`
 2. Landing — `https://endonautas.cl`
 3. Umami Analytics — `https://analytics.endonautas.cl`
-4. Listmonk Mail — `https://mail.endonautas.cl`
+4. Listmonk Mail — `https://mail.146.181.39.4.sslip.io` (antes `mail.endonautas.cl`, migrado 2026-07-11)
 5. Serpbear SEO — `https://seo.endonautas.cl`
 6. Coolify Panel — `http://146.181.39.4:8000`
 
