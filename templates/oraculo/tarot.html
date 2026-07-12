@@ -479,6 +479,13 @@ document.getElementById('tirarBtn').addEventListener('click', async () => {
       body: JSON.stringify({pregunta, tipo_tirada:tiradaActual}),
     });
     const data = await resp.json();
+    if (resp.status === 402 || data.error === 'upgrade_required') {
+      document.getElementById('emptyState').style.display = '';
+      document.getElementById('emptyState').innerHTML =
+        '<p style="color:var(--amber);font-size:0.9rem;line-height:1.55">Esta tirada es parte del plan Navegante.<br>' +
+        '<a href="/planes/" style="color:var(--calipso);text-decoration:underline">Ver plan Navegante →</a></p>';
+      return;
+    }
     if (!data.success) throw new Error(data.error || 'Error');
     mostrar(data);
   } catch(e) {

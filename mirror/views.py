@@ -12,7 +12,13 @@ from .models import BitacoraEntry, CategoriaNecesidad, ChatMessage, ChatSession,
 @login_required
 def espejo_home(request):
     sessions = ChatSession.objects.filter(user=request.user).prefetch_related('messages').order_by('-updated_at')[:20]
-    return render(request, 'mirror/home.html', {'sessions': sessions})
+    # ?s=<pk>: abrir esa sesión directo en la UI rica (el JS de home.html la
+    # auto-carga si está en el sidebar). Solo se acepta un pk numérico; la
+    # pertenencia la revalida chat_session_api al hacer el fetch.
+    active_pk = request.GET.get('s', '')
+    if not active_pk.isdigit():
+        active_pk = ''
+    return render(request, 'mirror/home.html', {'sessions': sessions, 'active_pk': active_pk})
 
 
 def _summarize_previous_session(user):
@@ -68,7 +74,7 @@ def chat_new(request):
         if existing:
             if is_ajax:
                 return JsonResponse({'pk': existing.pk, 'title': existing.title or 'Tu sesión de hoy', 'reused': True})
-            return redirect('espejo_chat', pk=existing.pk)
+            return redirect(f'/espejo/?s={existing.pk}')
     try:
         _summarize_previous_session(request.user)
     except Exception:
@@ -76,13 +82,16 @@ def chat_new(request):
     session = ChatSession.objects.create(user=request.user)
     if is_ajax:
         return JsonResponse({'pk': session.pk, 'title': session.title or 'Nueva conversación'})
-    return redirect('espejo_chat', pk=session.pk)
+    return redirect(f'/espejo/?s={session.pk}')
 
 
 @login_required
 def chat_session(request, pk):
-    session = get_object_or_404(ChatSession, pk=pk, user=request.user)
-    return render(request, 'mirror/chat.html', {'session': session})
+    # Antes renderizaba mirror/chat.html (UI degradada: sin sidebar/adjuntos/voz).
+    # Ahora redirige a la UI rica con la sesión abierta — un solo Espejo, sin
+    # importar por dónde se entre. Mantiene viva la URL /espejo/chat/<pk>/.
+    get_object_or_404(ChatSession, pk=pk, user=request.user)
+    return redirect(f'/espejo/?s={pk}')
 
 
 @login_required

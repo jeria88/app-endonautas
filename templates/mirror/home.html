@@ -372,6 +372,14 @@ document.querySelectorAll('.session-row').forEach(row => {
   row.removeAttribute('onclick');
 });
 
+// ?s=<pk>: abrir esa sesión al cargar (entrada desde el dashboard).
+// Si la sesión no está entre las 20 del sidebar, no hay fila → no-op.
+var _initialPk = '{{ active_pk }}';
+if (_initialPk) {
+  var _initRow = document.querySelector('.session-row[data-pk="' + _initialPk + '"]');
+  if (_initRow) loadSession(parseInt(_initialPk), _initRow);
+}
+
 var inputEl = document.getElementById('chat-input');
 inputEl.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }

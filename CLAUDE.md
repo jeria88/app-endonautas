@@ -203,7 +203,7 @@ upgrade_wall(request, 'navegante', 'Nombre del feature')  # devuelve HttpRespons
 - Forms de pago MP y SDK PayPal se renderizan solo autenticados
 - El cuerpo real vive en `templates/payments/_planes_body.html`, incluido en los blocks `content` (app) y `public_content` (anónimo) de `planes.html`
 - Al activar un plan (MP/PayPal, retorno y webhook) se llama `update_subscriber_lists()` de Listmonk — segmentación de email se actualiza sola
-- ⚠️ Discrepancia pendiente: la tabla comparativa dice "Espejo IA ilimitado" en Free, pero el gating real es 1 sesión/día 45 min — decidir cuál es la verdad y alinear
+- ✅ Resuelto (2026-07-11): la tabla comparativa (`_planes_body.html:131`) ya muestra Free = "1 sesión/día · 45 min", alineado al gating real de `mirror/views.py`. La nota de discrepancia previa estaba desactualizada.
 
 ### Sistema de tokens (desactivado)
 - `tokens/signals.py`: vaciado — no genera fractones

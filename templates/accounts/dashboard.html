@@ -32,7 +32,7 @@
 {% if ultima_sesion %}
 <div style="margin-bottom:1.5rem">
   <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);margin-bottom:0.5rem">Última sesión IA</div>
-  <a class="ultima-sesion" href="/espejo/chat/{{ ultima_sesion.pk }}/" onclick="spaGo(event,this)" data-tip="Retomar tu última conversación con el Espejo de Conflictos">
+  <a class="ultima-sesion" href="/espejo/?s={{ ultima_sesion.pk }}" onclick="spaGo(event,this)" data-tip="Retomar tu última conversación con el Espejo de Conflictos">
     <div style="width:34px;height:34px;border-radius:8px;background:var(--calipso-glow);border:1px solid rgba(126,204,205,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--calipso)">◈</div>
     <div style="flex:1;min-width:0">
       <div style="font-size:0.87rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ ultima_sesion.title|default:"Espejo de Conflictos" }}</div>
@@ -47,7 +47,7 @@
 <div class="panel" style="padding:1.25rem;margin-bottom:1.5rem;border-color:rgba(126,204,205,0.2)">
   <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--calipso);margin-bottom:0.9rem">Empieza aquí</div>
   <div style="display:flex;flex-direction:column;gap:0.65rem">
-    <a href="/espejo/chat/" onclick="spaGo(event,this)" style="display:flex;align-items:center;gap:0.9rem;padding:0.75rem;background:rgba(126,204,205,0.05);border:1px solid rgba(126,204,205,0.15);border-radius:10px;text-decoration:none;color:inherit;transition:border-color 0.15s" data-tip="Tu primer espejo — el Espejo de Conflictos escucha sin juzgar">
+    <a href="/espejo/" onclick="spaGo(event,this)" style="display:flex;align-items:center;gap:0.9rem;padding:0.75rem;background:rgba(126,204,205,0.05);border:1px solid rgba(126,204,205,0.15);border-radius:10px;text-decoration:none;color:inherit;transition:border-color 0.15s" data-tip="Tu primer espejo — el Espejo de Conflictos escucha sin juzgar">
       <div style="width:36px;height:36px;border-radius:8px;background:var(--calipso-glow);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--calipso);font-size:1.1rem">◈</div>
       <div><div style="font-size:0.88rem;font-weight:600">Abre una sesión con el Espejo</div><div style="font-size:0.74rem;color:var(--muted);margin-top:0.15rem">Comparte lo que te trae — sin guión</div></div>
     </a>

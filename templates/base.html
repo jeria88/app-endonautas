@@ -754,13 +754,14 @@ if (_aesthetic === 'cosmos') {
 }
 
 // ── SPA Navigation ──────────────────────────────────────────────────────────
-function spaGo(e, el) {
-  if (e) e.preventDefault();
-  if (window.__closeMobileSidebar) window.__closeMobileSidebar();
-  const url = el.href || el.dataset.href;
-  if (!url) return;
+// Núcleo de la SPA: fetch + swap de #page-content. Reusado por spaGo (click,
+// con pushState) y por el handler de popstate (atrás/adelante, sin pushState).
+function spaLoad(url, opts) {
+  opts = opts || {};
+  const push = opts.push !== false;
   const target = document.getElementById('page-content');
-  if (target) target.innerHTML = `
+  if (!target) { window.location.href = url; return; }
+  target.innerHTML = `
     <div style="padding:4px 0">
       <div class="skel" style="height:1.6rem;width:36%;margin-bottom:1.5rem"></div>
       <div class="skel" style="height:116px;border-radius:14px;margin-bottom:0.75rem"></div>
@@ -779,14 +780,14 @@ function spaGo(e, el) {
       if (!content) { window.location.href = url; return; }
       const target = document.getElementById('page-content');
       target.innerHTML = content.innerHTML;
-      history.pushState({}, '', finalUrl);
+      if (push) history.pushState({}, '', finalUrl);
       // Cosmos preset
-      const preset = el.dataset.preset ||
-        (window.presetForPath ? window.presetForPath(new URL(finalUrl, location.origin).pathname) : null);
+      const path = new URL(finalUrl, location.origin).pathname;
+      const preset = opts.preset ||
+        (window.presetForPath ? window.presetForPath(path) : null);
       if (preset && window.updateCosmosPreset) window.updateCosmosPreset(preset);
       if (preset) document.dispatchEvent(new CustomEvent('bg:preset', {detail: preset}));
       // Nav active state
-      const path = new URL(finalUrl, location.origin).pathname;
       document.querySelectorAll('.nav-link').forEach(l => {
         l.classList.toggle('active', l.getAttribute('href') === path);
       });
@@ -809,11 +810,22 @@ function spaGo(e, el) {
     })
     .catch(() => { window.location.href = url; });
 }
+
+function spaGo(e, el) {
+  if (e) e.preventDefault();
+  if (window.__closeMobileSidebar) window.__closeMobileSidebar();
+  const url = el.href || el.dataset.href;
+  if (!url) return;
+  spaLoad(url, {push: true, preset: el.dataset.preset});
+}
 window.spaGo = spaGo;
 document.addEventListener('DOMContentLoaded', function(){
   if (window.lucide) lucide.createIcons();
 });
-window.addEventListener('popstate', () => { window.location.reload(); });
+// Atrás/adelante del navegador: swap suave en vez de recarga completa (antes
+// hacía window.location.reload() → flash de Three.js/canvas). Sin pushState:
+// el historial ya lo movió el browser.
+window.addEventListener('popstate', () => { spaLoad(location.href, {push: false}); });
 </script>
 
 <!-- Onboarding por página -->

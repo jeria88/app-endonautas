@@ -56,7 +56,7 @@ def user_intent_context(user):
     Vacío si el usuario no completó el onboarding o no tiene prioridades.
     """
     try:
-        priorities = user.userprofile.onboarding_priorities or []
+        priorities = user.profile.onboarding_priorities or []
         if not priorities:
             return ''
         lines = '\n'.join(
