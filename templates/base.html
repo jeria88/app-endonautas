@@ -474,6 +474,65 @@
     {% block content %}{% endblock %}
   </main>
 </div>
+
+<!-- Reporte de bugs -->
+<button id="bug-btn" title="Reportar un problema" aria-label="Reportar un problema">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="6" width="8" height="14" rx="4"/><path d="M19 7l-3 2M5 7l3 2M19 19l-3-2M5 19l3-2M2 13h4M18 13h4M12 6V3"/></svg>
+</button>
+<div id="bug-modal" hidden>
+  <div class="panel" style="max-width:420px;width:calc(100vw - 32px);padding:20px">
+    <h3 style="font-family:var(--font-display);font-size:1rem;margin:0 0 4px">Reportar un problema</h3>
+    <p style="font-size:0.78rem;color:var(--muted);margin:0 0 12px">Cuéntanos qué pasó. Si puedes, adjunta capturas de pantalla.</p>
+    <textarea id="bug-desc" rows="4" placeholder="Qué estabas haciendo y qué salió mal…" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:#fff;padding:10px;font-size:0.85rem;resize:vertical"></textarea>
+    <input type="file" id="bug-files" accept="image/*" multiple style="margin:10px 0;font-size:0.78rem;color:var(--muted);max-width:100%">
+    <div id="bug-status" style="font-size:0.78rem;color:var(--calipso);min-height:1.2em;margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button id="bug-cancel" style="background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--muted);padding:8px 14px;cursor:pointer;font-size:0.82rem">Cancelar</button>
+      <button id="bug-send" style="background:var(--calipso);border:none;border-radius:10px;color:#0a0a12;padding:8px 16px;cursor:pointer;font-size:0.82rem;font-weight:600">Enviar</button>
+    </div>
+  </div>
+</div>
+<style>
+  #bug-btn { position:fixed; bottom:18px; right:18px; z-index:60; width:40px; height:40px; border-radius:50%;
+    background:var(--surface2); border:1px solid var(--border); color:var(--muted); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; backdrop-filter:blur(14px); transition:all .2s; }
+  #bug-btn:hover { border-color:var(--border-active); color:var(--calipso); }
+  #bug-modal { position:fixed; inset:0; z-index:61; background:rgba(0,0,0,0.55);
+    display:flex; align-items:center; justify-content:center; }
+  #bug-modal[hidden] { display:none; }
+</style>
+<script>
+(function(){
+  var btn = document.getElementById('bug-btn'); if (!btn) return;
+  var modal = document.getElementById('bug-modal');
+  var status = document.getElementById('bug-status');
+  btn.addEventListener('click', function(){ modal.hidden = false; });
+  document.getElementById('bug-cancel').addEventListener('click', function(){ modal.hidden = true; });
+  modal.addEventListener('click', function(e){ if (e.target === modal) modal.hidden = true; });
+  document.getElementById('bug-send').addEventListener('click', function(){
+    var desc = document.getElementById('bug-desc').value.trim();
+    if (!desc) { status.textContent = 'Describe el problema antes de enviar.'; return; }
+    var fd = new FormData();
+    fd.append('csrfmiddlewaretoken', document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '');
+    fd.append('descripcion', desc);
+    fd.append('pagina', location.pathname);
+    var files = document.getElementById('bug-files').files;
+    for (var i = 0; i < Math.min(files.length, 3); i++) fd.append('capturas', files[i]);
+    status.textContent = 'Enviando…';
+    fetch('/api/bug-report/', { method: 'POST', body: fd })
+      .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+      .then(function(res){
+        if (res.ok) {
+          status.textContent = '¡Gracias! Reporte enviado.';
+          document.getElementById('bug-desc').value = '';
+          document.getElementById('bug-files').value = '';
+          setTimeout(function(){ modal.hidden = true; status.textContent = ''; }, 1800);
+        } else { status.textContent = res.j.error || 'Error al enviar.'; }
+      })
+      .catch(function(){ status.textContent = 'Error de red. Intenta de nuevo.'; });
+  });
+})();
+</script>
 {% else %}
 <div id="page-content" style="position:relative;z-index:2;min-height:100vh;">
   {% block public_content %}{% endblock %}

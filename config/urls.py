@@ -7,6 +7,7 @@ from django.views.generic import TemplateView
 from community import views as community_views
 from mirror import views as mirror_views
 from payments.views import planes_views
+from reports import views as reports_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -35,6 +36,8 @@ urlpatterns = [
     path('pago/', include('payments.urls')),
     path('terminos/', TemplateView.as_view(template_name='legal/terminos.html'), name='terminos'),
     path('api/reports/', include('reports.urls')),
+    path('api/bug-report/', reports_views.bug_report, name='bug_report'),
+    path('api/bug-report/captura/<int:pk>/', reports_views.bug_screenshot, name='bug_screenshot'),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

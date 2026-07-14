@@ -1,10 +1,15 @@
 import json
+import logging
 import os
 
-from django.http import JsonResponse
-from django.views.decorators.http import require_GET
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.http import require_GET, require_POST
 
-from reports.models import KPISnapshot
+from reports.models import BugReport, BugScreenshot, KPISnapshot
+
+logger = logging.getLogger(__name__)
 
 
 def _auth_ok(request):
@@ -58,3 +63,39 @@ def weekly_latest(request):
         return JsonResponse(serialize(snaps[0]))
 
     return JsonResponse({'snapshots': [serialize(s) for s in snaps]})
+
+
+@login_required
+@require_POST
+def bug_report(request):
+    desc = (request.POST.get('descripcion') or '').strip()
+    if not desc:
+        return JsonResponse({'error': 'Describe el problema antes de enviar.'}, status=400)
+    files = request.FILES.getlist('capturas')[:3]
+    for f in files:
+        if f.size > 3 * 1024 * 1024:
+            return JsonResponse({'error': f'{f.name} supera 3MB.'}, status=400)
+        if not (f.content_type or '').startswith('image/'):
+            return JsonResponse({'error': f'{f.name} no es una imagen.'}, status=400)
+    try:
+        report = BugReport.objects.create(
+            user=request.user,
+            descripcion=desc,
+            pagina=request.POST.get('pagina', '')[:300],
+            user_agent=request.META.get('HTTP_USER_AGENT', '')[:400],
+        )
+        for f in files:
+            BugScreenshot.objects.create(
+                report=report, imagen=f.read(), content_type=f.content_type or 'image/png')
+    except Exception:
+        logger.exception("bug_report: fallo al guardar")
+        return JsonResponse({'error': 'No se pudo enviar el reporte. Intenta de nuevo.'}, status=500)
+    return JsonResponse({'ok': True})
+
+
+@staff_member_required
+def bug_screenshot(request, pk):
+    shot = BugScreenshot.objects.filter(pk=pk).first()
+    if not shot:
+        return HttpResponse(status=404)
+    return HttpResponse(bytes(shot.imagen), content_type=shot.content_type)
