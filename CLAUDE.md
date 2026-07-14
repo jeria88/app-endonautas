@@ -463,6 +463,17 @@ docker exec <container> python manage.py weekly_kpi --week 2026-W27 --dry-run
 
 ---
 
+## Reporte de bugs (in-app, 2026-07-14)
+
+Botón "Reportar un problema" (flotante abajo-derecha) en `templates/base.html`, solo rama
+autenticada — sobrevive a la navegación SPA (vive fuera de `#page-content`). Modelos en la app
+`reports`: `BugReport` (user FK, descripcion, pagina, user_agent, estado nuevo/revisado/resuelto,
+creado) + `BugScreenshot` (report FK, `imagen` BinaryField, content_type) — capturas en la BD,
+no en disco (media Coolify no persiste). Migración 0008. Vistas en `reports/views.py`:
+`bug_report` (`POST /api/bug-report/`, login_required, máx 3 img × 3MB) + `bug_screenshot`
+(`/api/bug-report/captura/<pk>/`, staff_member_required, sirve el binario para el admin).
+Revisión: Django admin (`/admin/reports/bugreport/`) con thumbnails inline y filtro por estado.
+
 ## Archivos clave
 
 | Archivo | Contenido |
