@@ -5,12 +5,15 @@ from django.urls import include, path
 from django.views.generic import TemplateView
 
 from community import views as community_views
+from config import wellknown
 from mirror import views as mirror_views
 from payments.views import planes_views
 from reports import views as reports_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('manifest.json', wellknown.manifest, name='manifest'),
+    path('.well-known/assetlinks.json', wellknown.assetlinks, name='assetlinks'),
     path('', include('accounts.urls')),
     path('tokens/', include('tokens.urls')),
     path('tests/', include('psychometrics.urls')),
