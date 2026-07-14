@@ -1311,15 +1311,21 @@ window.__switchAesthetic = function(name) {
 })();
 </script>
 
-<button id="pwa-install" hidden>Instalar app</button>
+<button id="pwa-install" data-context="{% if user.is_authenticated %}app{% else %}landing{% endif %}" hidden>Instalar app</button>
 <style>
 #pwa-install{position:fixed;left:16px;bottom:16px;z-index:60;padding:10px 16px;border:0;border-radius:12px;background:#7ECCCD;color:#03030a;font-weight:600;font-size:14px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.4)}
 #pwa-install[hidden]{display:none}
 </style>
 <script>
+// context=landing -> visible en cualquier tamano; context=app -> solo desktop
+// (se omite en smartphone <=768px). Siempre oculto si ya corre instalada.
 (function(){
   var btn=document.getElementById('pwa-install'),dp=null;
-  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e;btn.hidden=false;});
+  var isApp=btn.dataset.context==='app';
+  function smartphone(){return window.matchMedia('(max-width: 768px)').matches;}
+  function standalone(){return window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;}
+  function allowed(){return !standalone() && !(isApp && smartphone());}
+  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e;if(allowed())btn.hidden=false;});
   btn.addEventListener('click',function(){if(!dp)return;dp.prompt();dp.userChoice.then(function(){dp=null;btn.hidden=true;});});
   window.addEventListener('appinstalled',function(){btn.hidden=true;dp=null;});
 })();
