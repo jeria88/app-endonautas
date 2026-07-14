@@ -1,6 +1,6 @@
-"""PWA manifest + Digital Asset Links para la TWA de Play Store.
-Servidos en la raíz del dominio (requisito TWA), no bajo /static/."""
-from django.http import JsonResponse
+"""PWA manifest + service worker + Digital Asset Links.
+Servidos en la raíz del dominio (requisito TWA/PWA), no bajo /static/."""
+from django.http import HttpResponse, JsonResponse
 from django.templatetags.static import static
 from django.views.decorators.cache import cache_control
 
@@ -32,6 +32,21 @@ def manifest(request):
             {"src": static("img/icon-512-maskable.png"), "sizes": "512x512", "type": "image/png", "purpose": "maskable"},
         ],
     })
+
+
+SERVICE_WORKER_JS = """// PWA service worker minimo: habilita instalabilidad (Chrome exige un
+// handler de fetch). Passthrough a red; sin cache offline por ahora.
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
+self.addEventListener('fetch', () => {});
+"""
+
+
+def service_worker(request):
+    resp = HttpResponse(SERVICE_WORKER_JS, content_type="application/javascript")
+    resp["Service-Worker-Allowed"] = "/"
+    resp["Cache-Control"] = "no-cache"
+    return resp
 
 
 @cache_control(max_age=3600)

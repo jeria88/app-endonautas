@@ -13,6 +13,7 @@ from reports import views as reports_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('manifest.json', wellknown.manifest, name='manifest'),
+    path('sw.js', wellknown.service_worker, name='service_worker'),
     path('.well-known/assetlinks.json', wellknown.assetlinks, name='assetlinks'),
     path('', include('accounts.urls')),
     path('tokens/', include('tokens.urls')),
