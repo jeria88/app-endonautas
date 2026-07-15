@@ -1,4 +1,5 @@
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+from django.utils.http import url_has_allowed_host_and_scheme
 
 
 class SocialAccountAdapter(DefaultSocialAccountAdapter):
@@ -13,7 +14,9 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
                     return next_url
                 if plan in ('navegante', 'practicante'):
                     return '/planes/'
-                if next_url:
+                if next_url and url_has_allowed_host_and_scheme(
+                    next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+                ):
                     request.session['post_onboarding_next'] = next_url
                 return '/onboarding/'
         except Exception:

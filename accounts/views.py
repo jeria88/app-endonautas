@@ -104,7 +104,7 @@ def register_view(request):
             return redirect(next_url)
         if plan in ('navegante', 'practicante'):
             return redirect('/planes/')
-        if next_url:
+        if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
             request.session['post_onboarding_next'] = next_url
         return redirect('onboarding')
     return render(request, 'accounts/register.html')
@@ -230,5 +230,7 @@ def onboarding(request):
         profile.onboarding_complete    = True
         profile.save(update_fields=['onboarding_priorities', 'onboarding_entry_point', 'onboarding_complete'])
         next_url = request.session.pop('post_onboarding_next', '')
-        return redirect(next_url if next_url else 'dashboard')
+        if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+            return redirect(next_url)
+        return redirect('dashboard')
     return render(request, 'accounts/onboarding.html')
