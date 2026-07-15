@@ -643,6 +643,10 @@ const PRESETS = {
 };
 
 function initCosmosRenderer() {
+// Móvil (<768px): render aligerado — menos partículas, sin bloom, RAF pausable.
+// Desktop: sin cambios. STATIC_FRAME = móvil + usuario pidió menos movimiento.
+const IS_MOBILE = matchMedia('(max-width: 768px)').matches;
+const STATIC_FRAME = IS_MOBILE && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const _initialPreset = PRESETS[presetForPath(location.pathname)] || PRESETS.general;
 
 let scene, camera, renderer, composer, bloomPass, particleMaterial, clock;
@@ -660,21 +664,24 @@ camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight,
 camera.position.set(0, 20, 149);
 
 renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false });
-renderer.setPixelRatio(1.0);  // sin escala retina — mayor velocidad
+renderer.setPixelRatio(IS_MOBILE ? 0.75 : 1.0);  // móvil: menos píxeles a rasterizar
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.domElement.id = 'bh-canvas';
 container.appendChild(renderer.domElement);
 
 composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
-// Bloom a mitad de resolución — 4× menos píxeles en cada pass interno
-bloomPass = new UnrealBloomPass(
-  new THREE.Vector2(Math.round(window.innerWidth * 0.5), Math.round(window.innerHeight * 0.5)),
-  6.0, 0.70, 0.04
-);
-composer.addPass(bloomPass);
+// Bloom a mitad de resolución — 4× menos píxeles en cada pass interno.
+// En móvil se omite: es el pass más caro. bloomPass queda undefined → guards abajo.
+if (!IS_MOBILE) {
+  bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(Math.round(window.innerWidth * 0.5), Math.round(window.innerHeight * 0.5)),
+    6.0, 0.70, 0.04
+  );
+  composer.addPass(bloomPass);
+}
 
-const BH_R = 8, N = 75000, R_MIN = BH_R * 1.15, R_MAX = 130;
+const BH_R = 8, N = IS_MOBILE ? 18000 : 75000, R_MIN = BH_R * 1.15, R_MAX = 130;
 const geometry = new THREE.BufferGeometry();
 const positions = new Float32Array(N*3), colors   = new Float32Array(N*3);
 const angles    = new Float32Array(N),   radii    = new Float32Array(N);
@@ -786,7 +793,7 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
   composer.setSize(window.innerWidth, window.innerHeight);
-  bloomPass.resolution.set(Math.round(window.innerWidth * 0.5), Math.round(window.innerHeight * 0.5));
+  if (bloomPass) bloomPass.resolution.set(Math.round(window.innerWidth * 0.5), Math.round(window.innerHeight * 0.5));
 });
 
 // ── Scroll listeners para landing zoom ────────────────────────────────────────
@@ -800,8 +807,9 @@ document.addEventListener('scroll', e => {
 
 function lerp(a, b, t) { return a + (b - a) * t; }
 
-(function animate() {
-  requestAnimationFrame(animate);
+let _rafId = 0;
+function animate() {
+  if (!STATIC_FRAME) _rafId = requestAnimationFrame(animate);
   const elapsed = clock.getElapsedTime();
   targetX += (mouseX - targetX) * 0.038;
   targetY += (mouseY - targetY) * 0.038;
@@ -820,7 +828,7 @@ function lerp(a, b, t) { return a + (b - a) * t; }
   particleMaterial.uniforms.uSizeMult.value   = currentPreset.sizeMult;
   particleMaterial.uniforms.uSpeedInner.value = currentPreset.speedInner;
   particleMaterial.uniforms.uSpeedOuter.value = currentPreset.speedOuter;
-  bloomPass.strength = currentPreset.bloom;
+  if (bloomPass) bloomPass.strength = currentPreset.bloom;
   // Scroll+zoom landing: mismo cálculo que la plantilla de referencia
   const lp = document.getElementById('lp-wrap');
   let effectiveZ = currentPreset.camZ;
@@ -842,7 +850,17 @@ function lerp(a, b, t) { return a + (b - a) * t; }
   camera.lookAt(0, 0, 0);
   particleMaterial.uniforms.uTime.value = elapsed;
   composer.render();
-})();
+}
+animate();  // STATIC_FRAME → un frame sin loop; resto → RAF continuo
+
+// Móvil: pausa el RAF cuando la pestaña se oculta (rAF ya se frena solo, esto
+// lo garantiza y libera CPU). Desktop: sin listener → comportamiento intacto.
+if (IS_MOBILE) {
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { if (_rafId) { cancelAnimationFrame(_rafId); _rafId = 0; } }
+    else if (!_rafId && !STATIC_FRAME) { animate(); }
+  });
+}
 
 window.updateCosmosPreset = function(name) {
   const p = PRESETS[name] || PRESETS.general;
@@ -1209,12 +1227,16 @@ setTimeout(showPageOnboarding, 600);
   var DRAW_FNS    = [drawLiquid, drawObsidian, drawHex, drawFibo];
   var BLEND_MODES = ['lighter','source-over','lighter','lighter'];
 
-  var _lastFrame = 0;
+  // Móvil: RAF pausable; reduced-motion → un frame visible y detener.
+  var IS_MOBILE_M = matchMedia('(max-width: 768px)').matches;
+  var STATIC_M = IS_MOBILE_M && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var _lastFrame = 0, _rafM = 0, _drewOnce = false;
   function loop(ts) {
-    requestAnimationFrame(loop);
+    if (!(STATIC_M && _drewOnce)) _rafM = requestAnimationFrame(loop); else _rafM = 0;
     if (canvas.style.display === 'none') return;
     if (ts - _lastFrame < 34) return;  // cap ~30fps
     _lastFrame = ts;
+    if (STATIC_M) _drewOnce = true;
     tickTime(ts);
 
     ctx.globalCompositeOperation = 'source-over';
@@ -1257,7 +1279,13 @@ setTimeout(showPageOnboarding, 600);
     ctx.restore();
   }
 
-  requestAnimationFrame(loop);
+  _rafM = requestAnimationFrame(loop);
+  if (IS_MOBILE_M) {
+    document.addEventListener('visibilitychange', function(){
+      if (document.hidden) { if (_rafM) { cancelAnimationFrame(_rafM); _rafM = 0; } }
+      else if (!_rafM && !(STATIC_M && _drewOnce)) { _rafM = requestAnimationFrame(loop); }
+    });
+  }
 })();
 
 // ── Cambio de aesthetic en tiempo real (preview en perfil) ───────────────
