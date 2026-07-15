@@ -1317,14 +1317,12 @@ window.__switchAesthetic = function(name) {
 #pwa-install[hidden]{display:none}
 </style>
 <script>
-// context=landing -> visible en cualquier tamano; context=app -> solo desktop
-// (se omite en smartphone <=768px). Siempre oculto si ya corre instalada.
+// Visible SIEMPRE salvo si ya corre instalada (standalone) — sin distincion de
+// tamano ni de contexto. La data-context queda por compatibilidad, no afecta visibilidad.
 (function(){
   var btn=document.getElementById('pwa-install'),dp=null;
-  var isApp=btn.dataset.context==='app';
-  function smartphone(){return window.matchMedia('(max-width: 768px)').matches;}
   function standalone(){return window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;}
-  function allowed(){return !standalone() && !(isApp && smartphone());}
+  function allowed(){return !standalone();}
   window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e;if(allowed())btn.hidden=false;});
   btn.addEventListener('click',function(){if(!dp)return;dp.prompt();dp.userChoice.then(function(){dp=null;btn.hidden=true;});});
   window.addEventListener('appinstalled',function(){btn.hidden=true;dp=null;});
