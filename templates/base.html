@@ -2,7 +2,7 @@
 <html lang="es" data-aesthetic="{{ map_aesthetic|default:'cosmos' }}">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>{% block title %}Endonautas{% endblock %}</title>
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#03030a">
@@ -325,11 +325,49 @@
       .sidebar { position: fixed; top: 0; left: 0; transform: translateX(-100%); z-index: 20; }
       .sidebar.open { transform: translateX(0); box-shadow: 6px 0 48px rgba(0,0,0,0.6); }
       .sidebar-backdrop.open { display: block; }
-      .main-content { margin-left: 0; padding: 1rem 1rem 1rem 1rem; padding-top: calc(54px + 1rem); }
+      .main-content { margin-left: 0; padding: 1rem 1rem calc(64px + env(safe-area-inset-bottom)); padding-top: calc(54px + 1rem); }
       .mobile-topbar { display: flex; }
     }
     @media (max-width: 480px) {
-      .main-content { padding: calc(54px + 0.875rem) 0.875rem 1rem; }
+      .main-content { padding: calc(54px + 0.875rem) 0.875rem calc(64px + env(safe-area-inset-bottom)); }
+    }
+  </style>
+  <style data-global-mobile>
+    /* ── Bottom tab bar (móvil) ─────────────────────────────── */
+    .tabbar { display: none; }
+    @media (max-width: 768px) {
+      .tabbar {
+        display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 15;
+        background: rgba(6,4,12,0.92);
+        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        border-top: 1px solid var(--border);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      .tab-link {
+        flex: 1; flex-direction: column; align-items: center; justify-content: center;
+        gap: 3px; padding: 8px 0 6px; min-height: 52px; width: auto;
+        border-radius: 0; background: none; text-align: center;
+        font-size: 10px; font-weight: 500; color: var(--muted);
+      }
+      .tab-link:hover { background: none; color: var(--muted); }
+      .tab-link svg { width: 22px; height: 22px; opacity: 1; }
+      .tab-link.active { color: var(--calipso); background: none; border-left: none; font-weight: 600; }
+      .tab-link.active svg { color: var(--calipso); opacity: 1; }
+      .tab-link.active::before {
+        content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+        width: 26px; height: 2px; border-radius: 0 0 3px 3px;
+        background: var(--calipso); box-shadow: 0 0 8px rgba(126,204,205,0.6);
+      }
+      body.m-focus .tabbar { display: none; }
+      /* Botones flotantes: subirlos sobre la tab bar (body #x gana specificity a los <style> inline) */
+      body #bug-btn, body #pwa-install, body #page-onboarding {
+        bottom: calc(64px + env(safe-area-inset-bottom) + 14px);
+      }
+    }
+    /* Safe areas en PWA instalada (standalone) */
+    @media (display-mode: standalone) and (max-width: 768px) {
+      .mobile-topbar { padding-top: env(safe-area-inset-top); height: calc(54px + env(safe-area-inset-top)); }
+      .main-content { padding-top: calc(54px + env(safe-area-inset-top) + 1rem); }
     }
   </style>
   {% block extra_head %}{% endblock %}
@@ -478,6 +516,15 @@
     {% block content %}{% endblock %}
   </main>
 </div>
+
+<!-- Bottom tab bar (móvil) — fuera de #page-content: sobrevive a la SPA -->
+<nav class="tabbar" aria-label="Navegación principal">
+  <a class="nav-link tab-link" href="/dashboard/" data-preset="general" onclick="spaGo(event,this)"><i data-lucide="home"></i><span>Inicio</span></a>
+  <a class="nav-link tab-link" href="/oraculo/" data-preset="oraculo" onclick="spaGo(event,this)"><i data-lucide="eye"></i><span>Oráculo</span></a>
+  <a class="nav-link tab-link" href="/espejo/" data-preset="espejo" onclick="spaGo(event,this)"><i data-lucide="circle"></i><span>Espejo</span></a>
+  <a class="nav-link tab-link" href="/tests/" data-preset="tests" onclick="spaGo(event,this)"><i data-lucide="file-text"></i><span>Tests</span></a>
+  <a class="nav-link tab-link" href="/perfil/" data-preset="perfil" onclick="spaGo(event,this)"><i data-lucide="user"></i><span>Perfil</span></a>
+</nav>
 
 <!-- Reporte de bugs -->
 <button id="bug-btn" title="Reportar un problema" aria-label="Reportar un problema">
@@ -843,6 +890,8 @@ function spaLoad(url, opts) {
       if (!content) { window.location.href = url; return; }
       const target = document.getElementById('page-content');
       target.innerHTML = content.innerHTML;
+      // Modo foco móvil: oculta la tab bar en páginas inmersivas (Espejo, tests)
+      document.body.classList.toggle('m-focus', !!document.querySelector('#page-content [data-mobile-focus]'));
       if (push) history.pushState({}, '', finalUrl);
       // Cosmos preset
       const path = new URL(finalUrl, location.origin).pathname;
@@ -884,6 +933,12 @@ function spaGo(e, el) {
 window.spaGo = spaGo;
 document.addEventListener('DOMContentLoaded', function(){
   if (window.lucide) lucide.createIcons();
+  // Carga dura: la SPA no corrió, marcar tab activo + modo foco a mano
+  var path = location.pathname;
+  document.querySelectorAll('.tab-link').forEach(function(l){
+    l.classList.toggle('active', l.getAttribute('href') === path);
+  });
+  document.body.classList.toggle('m-focus', !!document.querySelector('#page-content [data-mobile-focus]'));
 });
 // Atrás/adelante del navegador: swap suave en vez de recarga completa (antes
 // hacía window.location.reload() → flash de Three.js/canvas). Sin pushState:
