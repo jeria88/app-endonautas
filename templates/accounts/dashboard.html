@@ -2,6 +2,7 @@
 {% block title %}Dashboard — Endonautas{% endblock %}
 {% block content %}
 <style data-page-style>
+.dash-today { display:none;font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);margin-bottom:0.5rem; }
 .dash-greeting { font-size:1.35rem;font-weight:700;color:#fff;letter-spacing:-0.02em; }
 .dash-frase { font-size:0.85rem;color:var(--calipso);font-style:italic;margin-top:0.25rem;line-height:1.5; }
 .shortcut-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:0.6rem; }
@@ -13,6 +14,9 @@
 .ultima-sesion { display:flex;align-items:center;gap:0.75rem;padding:0.85rem;background:rgba(126,204,205,0.05);border:1px solid rgba(126,204,205,0.15);border-radius:12px;text-decoration:none;color:inherit;transition:border-color 0.15s; }
 .ultima-sesion:hover { border-color:rgba(126,204,205,0.3); }
 .dash-panel-grid { display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem; }
+@media(max-width:768px){
+  .dash-today { display:block; }
+}
 @media(max-width:520px){
   .dash-panel-grid { grid-template-columns:1fr; }
   .shortcut-grid { grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); }
@@ -20,6 +24,7 @@
 </style>
 
 <div style="margin-bottom:1.5rem">
+  <div class="dash-today">{% now "l j \d\e F" %}</div>
   <div class="dash-greeting">Hola, {{ user.first_name|default:'Endonauta' }} ✦</div>
   <div class="dash-frase">{{ frase }}</div>
 </div>

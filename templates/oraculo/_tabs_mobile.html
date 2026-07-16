@@ -1,0 +1,6 @@
+{% comment %}Segmentado móvil de Oráculo — solo <768px (clase m-only). Estado activo server-rendered por página; la SPA lo refresca al swapear #page-content.{% endcomment %}
+<div class="orac-tabs m-only" role="tablist" aria-label="Tipo de oráculo">
+  <a href="/oraculo/tarot/" data-preset="oraculo" onclick="spaGo(event,this)" class="orac-tab{% if request.path == '/oraculo/tarot/' %} active{% endif %}">Tarot</a>
+  <a href="/oraculo/iching/" data-preset="oraculo" onclick="spaGo(event,this)" class="orac-tab{% if request.path == '/oraculo/iching/' %} active{% endif %}">I Ching</a>
+  <a href="/oraculo/fractal/" data-preset="oraculo" onclick="spaGo(event,this)" class="orac-tab{% if request.path == '/oraculo/fractal/' %} active{% endif %}">Fractal</a>
+</div>

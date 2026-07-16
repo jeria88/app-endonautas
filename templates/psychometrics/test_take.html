@@ -76,10 +76,22 @@
   border-color:var(--calipso);
   color:var(--calipso);
 }
+@media(max-width:768px){
+  .take-wrap{max-width:100%}
+  .question-block{padding:1.15rem}
+  .scale-btn{width:40px;height:40px}
+  .scale-row.s7 .scale-btn{width:34px;height:34px;font-size:0.75rem}
+  .scale-label{font-size:0.6rem;max-width:48px}
+  .binary-btn{flex:1;text-align:center;padding:0.7rem 0}
+  .binary-row{gap:0.75rem}
+  /* Enviar full-width y con aire de safe-area (modo foco oculta la tab bar) */
+  #test-form > div:last-child{padding-bottom:calc(1.5rem + env(safe-area-inset-bottom))}
+  #test-form > div:last-child .btn{width:100%}
+}
 </style>
 {% endblock %}
 {% block content %}
-<div class="take-wrap">
+<div class="take-wrap" data-mobile-focus>
   <div class="take-header">
     <a href="/tests/{{ test.slug }}/" onclick="spaGo(event,this)" style="color:var(--calipso);text-decoration:none;font-size:0.82rem">← {{ test.name }}</a>
     <h1 class="take-title" style="margin-top:0.75rem">{{ test.name }}</h1>

@@ -57,7 +57,19 @@
 .dot { width:5px;height:5px;background:var(--muted);border-radius:50%;animation:bounce 1.4s infinite both; }
 .dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
 @keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
-@media(max-width:768px){ .espejo-shell{grid-template-columns:1fr;height:calc(100vh - 54px - 2rem)}.sessions-panel{display:none} }
+.espejo-chips{display:none}
+@media(max-width:768px){
+  .espejo-shell{grid-template-columns:1fr;height:calc(100dvh - 54px - 1.75rem);border-radius:14px}
+  .sessions-panel{display:none}
+  .msg{max-width:90%}
+  /* Voz del Espejo: lectura serif itálica con acento calipso (mockup 05) */
+  .msg-assistant .msg-bubble{font-family:var(--font-editorial);font-style:italic;font-size:0.98rem;border-left:2px solid var(--calipso);border-bottom-left-radius:4px}
+  .chat-input-area{padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+  /* Chips de temas: prefill del input, atajo de entrada (mockup 05) */
+  .espejo-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:10px}
+  .espejo-chips::-webkit-scrollbar{display:none}
+  .espejo-chips button{flex:0 0 auto;background:rgba(126,204,205,0.06);border:1px solid rgba(126,204,205,0.2);color:var(--calipso);border-radius:16px;padding:6px 14px;font-size:0.78rem;font-family:var(--font-ui);cursor:pointer;white-space:nowrap}
+}
 .chat-input-area { padding:14px 20px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:0;flex-shrink:0; }
 .input-row { display:flex;gap:10px;align-items:flex-end; }
 .att-preview-wrap { display:none;align-items:center;gap:8px;padding:8px 12px;background:rgba(126,204,205,0.07);border:1px solid rgba(126,204,205,0.2);border-radius:8px;margin-bottom:10px; }
@@ -81,7 +93,7 @@
   <button class="menu-danger" onclick="dropdownAction('delete')" data-tip="Eliminar permanentemente esta conversación">Eliminar</button>
 </div>
 
-<div class="espejo-shell">
+<div class="espejo-shell" data-mobile-focus>
 
   <div class="sessions-panel">
     <div class="sessions-header">
@@ -134,6 +146,11 @@
 
     <div class="chat-input-area">
       <div id="att-preview-wrap" class="att-preview-wrap"></div>
+      <div class="espejo-chips">
+        <button type="button" onclick="chipFill('Quiero entender la ansiedad que estoy sintiendo.')">Ansiedad</button>
+        <button type="button" onclick="chipFill('Hay un sueño que quiero explorar.')">Sueños</button>
+        <button type="button" onclick="chipFill('Algo en un vínculo cercano me tiene en conflicto.')">Vínculos</button>
+      </div>
       <div class="input-row">
         <textarea id="chat-input" placeholder="Escribe tu mensaje..." rows="1"></textarea>
         <input type="file" id="file-input" accept="image/*,.pdf,.doc,.docx" hidden>
@@ -388,6 +405,13 @@ inputEl.addEventListener('input', () => {
   inputEl.style.height = 'auto';
   inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
 });
+
+// Chips de temas (móvil): prefill del input. sendMessage crea la sesión al enviar.
+window.chipFill = function(text) {
+  inputEl.value = text;
+  inputEl.focus();
+  inputEl.dispatchEvent(new Event('input'));
+};
 
 // ── Adjuntos ───────────────────────────────────────────────────
 document.getElementById('file-input').addEventListener('change', function() {
