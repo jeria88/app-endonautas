@@ -80,7 +80,7 @@
     }
 
     html, body {
-      height: 100%; width: 100vw;
+      height: 100%; width: 100%;
       background: var(--bg); color: var(--text);
       font-family: var(--font-ui); font-size: 15px;
     }
@@ -367,9 +367,15 @@
       }
       body.m-focus .tabbar { display: none; }
       body.m-focus .main-content { padding-bottom: env(safe-area-inset-bottom); }
+      /* Links del sidebar exclusivos de móvil (Mi Perfil): m-only revert daría inline */
+      .sidebar .nav-link.m-only { display: flex; }
       /* Botones flotantes: subirlos sobre la tab bar (body #x gana specificity a los <style> inline) */
       body #bug-btn, body #pwa-install, body #page-onboarding {
         bottom: calc(64px + env(safe-area-inset-bottom) + 14px);
+      }
+      /* En modo foco la tab bar no existe: no elevar los flotantes de más */
+      body.m-focus #bug-btn, body.m-focus #pwa-install, body.m-focus #page-onboarding {
+        bottom: calc(env(safe-area-inset-bottom) + 14px);
       }
     }
     /* Safe areas en PWA instalada (standalone) */
@@ -428,6 +434,10 @@
 
       <div class="nav-group">
         <div class="nav-label">Espacio Personal</div>
+        <a class="nav-link m-only" href="/perfil/" data-preset="perfil" onclick="spaGo(event,this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Mi Perfil
+        </a>
         <a class="nav-link" href="/bitacora/" data-preset="espejo" onclick="spaGo(event,this)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           Bitácora
@@ -531,7 +541,7 @@
   <a class="nav-link tab-link" href="/oraculo/" data-preset="oraculo" onclick="spaGo(event,this)"><i data-lucide="eye"></i><span>Oráculo</span></a>
   <a class="nav-link tab-link" href="/espejo/" data-preset="espejo" onclick="spaGo(event,this)"><i data-lucide="circle"></i><span>Espejo</span></a>
   <a class="nav-link tab-link" href="/tests/" data-preset="tests" onclick="spaGo(event,this)"><i data-lucide="file-text"></i><span>Tests</span></a>
-  <a class="nav-link tab-link" href="/perfil/" data-preset="perfil" onclick="spaGo(event,this)"><i data-lucide="user"></i><span>Perfil</span></a>
+  <button class="nav-link tab-link" type="button" onclick="if(window.__openMobileSidebar)window.__openMobileSidebar()" aria-label="Más opciones"><i data-lucide="menu"></i><span>Más</span></button>
 </nav>
 
 <!-- Reporte de bugs -->
@@ -892,6 +902,22 @@ if (_aesthetic === 'cosmos') {
 // ── SPA Navigation ──────────────────────────────────────────────────────────
 // Núcleo de la SPA: fetch + swap de #page-content. Reusado por spaGo (click,
 // con pushState) y por el handler de popstate (atrás/adelante, sin pushState).
+// Marca activo por prefijo con gana-el-más-largo: /tests/<slug>/ activa Tests,
+// /practicantes/fichas/ activa solo Fichas (no Portal). Los href terminan en "/".
+function markActiveNav(path) {
+  var links = document.querySelectorAll('.nav-link');
+  var best = 0;
+  var matches = function(h) { return h && h.length > 1 && (path === h || path.indexOf(h) === 0); };
+  links.forEach(function(l) {
+    var h = l.getAttribute('href');
+    if (matches(h)) best = Math.max(best, h.length);
+  });
+  links.forEach(function(l) {
+    var h = l.getAttribute('href');
+    l.classList.toggle('active', matches(h) && h.length === best);
+  });
+}
+
 function spaLoad(url, opts) {
   opts = opts || {};
   const push = opts.push !== false;
@@ -926,9 +952,7 @@ function spaLoad(url, opts) {
       if (preset && window.updateCosmosPreset) window.updateCosmosPreset(preset);
       if (preset) document.dispatchEvent(new CustomEvent('bg:preset', {detail: preset}));
       // Nav active state
-      document.querySelectorAll('.nav-link').forEach(l => {
-        l.classList.toggle('active', l.getAttribute('href') === path);
-      });
+      markActiveNav(path);
       // Page-specific styles
       document.querySelectorAll('style[data-page-style]').forEach(s => s.remove());
       doc.querySelectorAll('style[data-page-style]').forEach(s => {
@@ -960,10 +984,7 @@ window.spaGo = spaGo;
 document.addEventListener('DOMContentLoaded', function(){
   if (window.lucide) lucide.createIcons();
   // Carga dura: la SPA no corrió, marcar tab activo + modo foco a mano
-  var path = location.pathname;
-  document.querySelectorAll('.tab-link').forEach(function(l){
-    l.classList.toggle('active', l.getAttribute('href') === path);
-  });
+  markActiveNav(location.pathname);
   document.body.classList.toggle('m-focus', !!document.querySelector('#page-content [data-mobile-focus]'));
 });
 // Atrás/adelante del navegador: swap suave en vez de recarga completa (antes
@@ -1399,6 +1420,7 @@ window.__switchAesthetic = function(name) {
   });
 
   window.__closeMobileSidebar = closeSidebar;
+  window.__openMobileSidebar = openSidebar;
 })();
 </script>
 

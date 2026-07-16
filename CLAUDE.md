@@ -120,7 +120,8 @@ El context processor `accounts/context_processors.py` inyecta `map_aesthetic` en
 
 ### Fondo Cosmos (Three.js 0.160)
 - `UnrealBloomPass` + `EffectComposer` con WebGLRenderer
-- **Performance:** `renderer.setPixelRatio(1.0)`, bloom a 50% resolución, N=75k partículas
+- **Performance desktop:** `renderer.setPixelRatio(1.0)`, bloom a 50% resolución, N=75k partículas
+- **Performance móvil (≤768px, desde B2 2026-07):** N=18k, `setPixelRatio(0.75)`, SIN bloom (solo RenderPass), RAF pausado con `visibilitychange`; `prefers-reduced-motion` → un frame estático
 - Agujero negro kepleriano, presets por sección (cambia camZ, density, bloom, etc.)
 - Lazy init: si aesthetic≠cosmos, `window.__initCosmos` se llama solo al previsualizar
 - `window.__cosmosCanvas` guarda el canvas para show/hide

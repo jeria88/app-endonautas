@@ -42,7 +42,8 @@
 .msg-assistant .msg-bubble { background:rgba(0,0,0,0.5);border:1px solid var(--border);border-bottom-left-radius:4px; }
 .msg-time { font-size:0.65rem;color:var(--dim);margin-top:3px; }
 .msg-user .msg-time { text-align:right; }
-.chat-input-area { padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:flex-end;flex-shrink:0; }
+.chat-input-area { padding:14px 20px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:0;flex-shrink:0; }
+.input-row { display:flex;gap:10px;align-items:flex-end; }
 .chat-input-area textarea { flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-size:0.88rem;resize:none;font-family:var(--font-ui);outline:none;min-height:44px;max-height:120px;transition:border-color 0.2s; }
 .chat-input-area textarea:focus { border-color:var(--calipso); }
 .send-btn { width:44px;height:44px;background:var(--calipso);border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#000;flex-shrink:0;transition:opacity 0.15s; }
@@ -59,8 +60,16 @@
 @keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
 .espejo-chips{display:none}
 @media(max-width:768px){
-  .espejo-shell{grid-template-columns:1fr;height:calc(100dvh - 54px - 1.75rem);border-radius:14px}
+  .espejo-shell{grid-template-columns:1fr;height:calc(100dvh - 54px - 1.75rem);border-radius:14px;position:relative}
   .sessions-panel{display:none}
+  /* Historial como overlay full-screen sobre el chat (modo foco oculta la tab bar) */
+  .espejo-shell.sessions-open .sessions-panel{display:flex;position:absolute;inset:0;z-index:6;background:rgba(8,6,14,0.97);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-right:none}
+  .session-kebab{opacity:1}
+  /* Botones del topbar solo móvil: volver al inicio + abrir historial */
+  .espejo-back,.espejo-history{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:10px;background:none;border:none;color:var(--muted);cursor:pointer;flex-shrink:0}
+  .espejo-back{margin-left:-8px}
+  .espejo-history{margin-left:auto}
+  .sessions-close{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:10px;background:none;border:1px solid var(--border);color:var(--muted);cursor:pointer;flex-shrink:0;font-size:1rem}
   .msg{max-width:90%}
   /* Voz del Espejo: lectura serif itálica con acento calipso (mockup 05) */
   .msg-assistant .msg-bubble{font-family:var(--font-editorial);font-style:italic;font-size:0.98rem;border-left:2px solid var(--calipso);border-bottom-left-radius:4px}
@@ -70,8 +79,6 @@
   .espejo-chips::-webkit-scrollbar{display:none}
   .espejo-chips button{flex:0 0 auto;background:rgba(126,204,205,0.06);border:1px solid rgba(126,204,205,0.2);color:var(--calipso);border-radius:16px;padding:6px 14px;font-size:0.78rem;font-family:var(--font-ui);cursor:pointer;white-space:nowrap}
 }
-.chat-input-area { padding:14px 20px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:0;flex-shrink:0; }
-.input-row { display:flex;gap:10px;align-items:flex-end; }
 .att-preview-wrap { display:none;align-items:center;gap:8px;padding:8px 12px;background:rgba(126,204,205,0.07);border:1px solid rgba(126,204,205,0.2);border-radius:8px;margin-bottom:10px; }
 .att-preview-wrap.has-file { display:flex; }
 .att-thumb { width:36px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0; }
@@ -96,8 +103,9 @@
 <div class="espejo-shell" data-mobile-focus>
 
   <div class="sessions-panel">
-    <div class="sessions-header">
-      <button class="btn btn-primary btn-sm" style="width:100%;justify-content:center" id="btn-new-chat" onclick="newChat()" data-tip="Abre una nueva sesión de diálogo con el Espejo de Conflictos">
+    <div class="sessions-header" style="display:flex;gap:8px;align-items:stretch">
+      <button class="m-only sessions-close" type="button" onclick="toggleSessions()" aria-label="Cerrar historial">✕</button>
+      <button class="btn btn-primary btn-sm" style="flex:1;justify-content:center" id="btn-new-chat" onclick="newChat()" data-tip="Abre una nueva sesión de diálogo con el Espejo de Conflictos">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Nueva conversación
       </button>
@@ -122,11 +130,17 @@
 
   <div class="chat-area">
     <div class="chat-topbar">
+      <a class="m-only espejo-back" href="/dashboard/" data-preset="general" onclick="spaGo(event,this)" aria-label="Volver al inicio">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </a>
       <svg viewBox="0 0 24 24" fill="none" stroke="var(--calipso)" stroke-width="1.8" width="20" height="20"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      <div>
-        <div id="chat-title" style="font-family:var(--font-display);font-size:0.92rem;font-weight:600;color:#fff">Espejo de Conflictos</div>
+      <div style="min-width:0">
+        <div id="chat-title" style="font-family:var(--font-display);font-size:0.92rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Espejo de Conflictos</div>
         <div id="chat-subtitle" style="font-size:0.7rem;color:var(--muted)">Selecciona una sesión o inicia una nueva</div>
       </div>
+      <button class="m-only espejo-history" type="button" onclick="toggleSessions()" aria-label="Historial de conversaciones" title="Historial">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+      </button>
     </div>
 
     <div class="chat-messages" id="chat-messages">
@@ -263,6 +277,14 @@ async function dropdownAction(action) {
   }
 }
 
+// ── Historial móvil (overlay sobre el chat) ────────────────────
+window.toggleSessions = function() {
+  document.querySelector('.espejo-shell').classList.toggle('sessions-open');
+};
+function closeSessionsOverlay() {
+  document.querySelector('.espejo-shell').classList.remove('sessions-open');
+}
+
 // ── Chat core ──────────────────────────────────────────────────
 function enableChat(on) {
   document.getElementById('chat-input').disabled = !on;
@@ -355,6 +377,7 @@ async function newChat() {
     document.getElementById('chat-title').textContent = 'Nueva conversación';
     document.getElementById('chat-subtitle').textContent = 'Sesión activa';
     enableChat(true);
+    closeSessionsOverlay();
     document.getElementById('chat-input').focus();
   } finally {
     btn.disabled = false;
@@ -376,6 +399,7 @@ async function loadSession(pk, el) {
     document.getElementById('chat-subtitle').textContent = `${data.messages.length} mensajes`;
     data.messages.forEach(m => addBubble(m.role, m.content, m.created_at));
     enableChat(true);
+    closeSessionsOverlay();
     scrollBottom();
   } catch(e) { console.error(e); }
 }
