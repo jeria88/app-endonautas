@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import cancel_views, mp_views, paypal_views, taller_views
+from .views import bono_views, cancel_views, mp_views, paypal_views, taller_views
 
 urlpatterns = [
     # Cancelación de suscripción
@@ -30,4 +30,8 @@ urlpatterns = [
     # MercadoPago — seña de taller (checkout de invitado, sin cuenta previa)
     path('mp/taller/retorno/', taller_views.retorno, name='pago_mp_taller_retorno'),
     path('mp/taller/<str:slug>/', taller_views.reservar, name='pago_mp_taller_reservar'),
+
+    # MercadoPago — bono taller (QR post-taller, mes gratis Plan Practicante)
+    path('mp/bono-taller/retorno/', bono_views.retorno, name='pago_mp_bono_taller_retorno'),
+    path('mp/bono-taller/', bono_views.activar, name='pago_mp_bono_taller'),
 ]

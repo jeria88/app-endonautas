@@ -19,16 +19,22 @@ def _headers():
     }
 
 
-def create_preapproval(plan_slug, user, return_url):
+def create_preapproval(plan_slug, user, return_url, free_trial_months=None):
     plan = PLANS[plan_slug]
+    auto_recurring = {
+        'frequency': 1,
+        'frequency_type': 'months',
+        'transaction_amount': plan['price_clp'],
+        'currency_id': 'CLP',
+    }
+    if free_trial_months:
+        auto_recurring['free_trial'] = {
+            'frequency': free_trial_months,
+            'frequency_type': 'months',
+        }
     payload = {
         'reason': plan['title'],
-        'auto_recurring': {
-            'frequency': 1,
-            'frequency_type': 'months',
-            'transaction_amount': plan['price_clp'],
-            'currency_id': 'CLP',
-        },
+        'auto_recurring': auto_recurring,
         'payer_email': user.email,
         'back_url': return_url,
         'status': 'pending',
