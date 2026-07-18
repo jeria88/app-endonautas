@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 
-from .constants import PACKS, PLANS
+from .constants import PACKS, PLANS, TALLERES
 
 
 class Subscription(models.Model):
@@ -77,3 +77,34 @@ class FractonesPack(models.Model):
 
     def __str__(self):
         return f'{self.user.email} — {self.pack_slug} via {self.gateway} ({self.status})'
+
+
+class TallerReserva(models.Model):
+    """Seña de reserva de cupo para un taller presencial (pago único). Resto se paga presencial."""
+    TALLER_CHOICES = [(k, v['title']) for k, v in TALLERES.items()]
+
+    STATUS_PENDING = 'pending'
+    STATUS_PAID = 'paid'
+    STATUS_FAILED = 'failed'
+    STATUS_CHOICES = [('pending', 'Pendiente'), ('paid', 'Pagado'), ('failed', 'Fallido')]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='taller_reservas'
+    )
+    gateway = models.CharField(max_length=10)
+    taller_slug = models.CharField(max_length=40, choices=TALLER_CHOICES)
+    amount_local = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=3)
+    gateway_payment_id = models.CharField(max_length=200, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['gateway', 'gateway_payment_id']),
+        ]
+
+    def __str__(self):
+        return f'{self.user.email} — {self.taller_slug} via {self.gateway} ({self.status})'

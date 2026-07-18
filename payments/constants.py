@@ -19,6 +19,13 @@ PACKS = {
     },
 }
 
+TALLERES = {
+    'taller1-terapeutas': {
+        'title': 'Seña — Taller Terapeutas 1-ago (resto se paga presencial)',
+        'price_clp': 14990,
+    },
+}
+
 PLANS = {
     'navegante': {
         'title': 'Plan Navegante',

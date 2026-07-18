@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import cancel_views, mp_views, paypal_views
+from .views import cancel_views, mp_views, paypal_views, taller_views
 
 urlpatterns = [
     # Cancelación de suscripción
@@ -26,4 +26,8 @@ urlpatterns = [
     path('mp/pack/<str:slug>/', mp_views.pack, name='pago_mp_pack'),
     # MercadoPago — AJAX para crear preferencia (Wallet Brick)
     path('mp/api/preferencia/<str:slug>/', mp_views.api_preferencia_pack, name='pago_mp_api_preferencia'),
+
+    # MercadoPago — seña de taller (checkout de invitado, sin cuenta previa)
+    path('mp/taller/retorno/', taller_views.retorno, name='pago_mp_taller_retorno'),
+    path('mp/taller/<str:slug>/', taller_views.reservar, name='pago_mp_taller_reservar'),
 ]

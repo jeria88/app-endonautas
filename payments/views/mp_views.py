@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from ..constants import PACKS
-from ..models import FractonesPack, Subscription
+from ..models import FractonesPack, Subscription, TallerReserva
 from ..services import mp as mp_service
 from accounts.listmonk import update_subscriber_lists
 from tokens import service as token_service
@@ -282,18 +282,27 @@ def _handle_one_time_payment(payment_id):
         return
 
     metadata = payment.get('metadata', {})
-    pack_slug = metadata.get('pack_slug')
     user_id = metadata.get('user_id')
-
-    if not pack_slug or not user_id:
+    if not user_id:
         return
 
-    fp = FractonesPack.objects.filter(
-        user_id=user_id, gateway='mp', pack_slug=pack_slug, status='pending',
-    ).order_by('-created_at').first()
+    pack_slug = metadata.get('pack_slug')
+    taller_slug = metadata.get('taller_slug')
 
-    if fp:
-        fp.status = 'paid'
-        fp.gateway_payment_id = payment_id
-        fp.save(update_fields=['status', 'gateway_payment_id', 'updated_at'])
-        token_service.credit_permanent(fp.user, fp.fractones, reason=f'pack:{pack_slug}')
+    if pack_slug:
+        fp = FractonesPack.objects.filter(
+            user_id=user_id, gateway='mp', pack_slug=pack_slug, status='pending',
+        ).order_by('-created_at').first()
+        if fp:
+            fp.status = 'paid'
+            fp.gateway_payment_id = payment_id
+            fp.save(update_fields=['status', 'gateway_payment_id', 'updated_at'])
+            token_service.credit_permanent(fp.user, fp.fractones, reason=f'pack:{pack_slug}')
+    elif taller_slug:
+        tr = TallerReserva.objects.filter(
+            user_id=user_id, gateway='mp', taller_slug=taller_slug, status='pending',
+        ).order_by('-created_at').first()
+        if tr:
+            tr.status = 'paid'
+            tr.gateway_payment_id = payment_id
+            tr.save(update_fields=['status', 'gateway_payment_id', 'updated_at'])
