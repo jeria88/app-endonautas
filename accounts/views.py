@@ -218,6 +218,15 @@ def onboarding(request):
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
     if profile.onboarding_complete:
         return redirect('dashboard')
+
+    if profile.onboarding_entry_point == 'taller_terapeutas':
+        if request.method == 'POST':
+            profile.bio = request.POST.get('bio', '').strip()
+            profile.onboarding_complete = True
+            profile.save(update_fields=['bio', 'onboarding_complete'])
+            return redirect('practitioners_dashboard')
+        return render(request, 'accounts/onboarding_taller.html')
+
     if request.method == 'POST':
         import json as _json
         raw = request.POST.get('priorities', '')

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Bienvenido — Endonautas{% endblock %}
+
+{% block content %}
+<style data-page-style>
+.onb-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem 1rem; }
+.onb-box  { width:100%; max-width:520px; }
+.onb-logo { font-size:0.75rem; color:var(--dim); letter-spacing:0.18em; text-transform:uppercase; margin-bottom:2.5rem; }
+.onb-tagline {
+  font-family:var(--font-display); font-size:1.05rem; font-weight:700;
+  color:#fff; margin-bottom:0.65rem;
+}
+.onb-sub { font-size:0.82rem; color:var(--muted); line-height:1.7; margin-bottom:2rem; }
+.onb-label { font-size:0.78rem; color:var(--muted); margin-bottom:0.5rem; display:block; }
+.onb-textarea {
+  width:100%; min-height:140px; padding:0.9rem 1rem; border-radius:12px;
+  background:var(--surface); border:1px solid var(--border); color:#fff;
+  font-family:inherit; font-size:0.88rem; line-height:1.6; resize:vertical;
+  margin-bottom:1.5rem;
+}
+.onb-textarea:focus { outline:none; border-color:var(--border-active); }
+.onb-btn {
+  width:100%; padding:0.85rem; border-radius:12px; font-size:0.85rem;
+  font-family:var(--font-display); font-weight:700; letter-spacing:0.04em;
+  cursor:pointer; transition:all 0.2s; border:none;
+  background:var(--calipso); color:#0a0a14;
+}
+.onb-btn:hover { filter:brightness(1.1); }
+</style>
+
+<div class="onb-wrap">
+  <div class="onb-box">
+    <div class="onb-logo">endonautas ✦</div>
+    <div class="onb-tagline">Bienvenido a tu Portal Profesional</div>
+    <div class="onb-sub">
+      Contanos brevemente tu especialidad y enfoque de trabajo — esto es lo que vas a poder editar después desde tu perfil. Cuando termines, entrás directo a tu panel de practicante: directorio de clientes, agenda y tests asignables.
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <label class="onb-label" for="bio">Tu especialidad y enfoque</label>
+      <textarea class="onb-textarea" id="bio" name="bio" placeholder="Ej: Terapeuta gestáltica, trabajo con adultos en procesos de ansiedad y vínculos..."></textarea>
+      <button type="submit" class="onb-btn">Entrar a mi panel →</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

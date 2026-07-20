@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Activa tu mes gratis — Endonautas</title>
+  <title>Activa tu cuenta — Endonautas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -22,17 +22,17 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>Activa tu mes gratis</h1>
-    <p class="sub">Usa el mismo email con el que pagaste la seña del taller.</p>
+    <h1>Activa tu cuenta</h1>
+    <p class="sub">Usa el mismo email con el que pagaste la seña del taller. Vas a pagar los $39.990 restantes y tu Plan Practicante queda activo al instante.</p>
     {% if error %}
       <p class="error-msg">{{ error }}</p>
     {% endif %}
     <form method="POST" action="{% url 'pago_mp_bono_taller' %}">
       {% csrf_token %}
       <input type="email" name="email" placeholder="tu@email.com" autocomplete="email" required>
-      <button type="submit" class="btn">Activar Plan Practicante gratis</button>
+      <button type="submit" class="btn">Pagar $39.990 y activar mi cuenta</button>
     </form>
-    <p class="note">Vas a autorizar el cobro mensual con MercadoPago — el primer mes no se cobra.</p>
+    <p class="note">Vas a autorizar el cobro con MercadoPago — se cobra ahora, y luego $39.990/mes. Cancelás cuando quieras desde tu cuenta.</p>
   </div>
 </body>
 </html>

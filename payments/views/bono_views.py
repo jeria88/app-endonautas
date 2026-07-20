@@ -32,8 +32,10 @@ def _enviar_reset(request, user):
 
 
 def activar(request):
-    """QR genérico mostrado al final del taller presencial → esta página.
-    Sin login: correlaciona por email contra una TallerReserva ya paga."""
+    """QR mostrado al final del taller presencial → esta página. Cobra el primer
+    mes de Plan Practicante de inmediato (sin trial — el taller completo son
+    $44.990: $5.000 de seña + $39.990 acá). Sin login: correlaciona por email
+    contra una TallerReserva ya paga."""
     if request.method != 'POST':
         return render(request, 'payments/bono_taller.html', {})
 
@@ -59,7 +61,7 @@ def activar(request):
 
     try:
         preapproval_id, init_point = mp_service.create_preapproval(
-            plan_slug=_BONO_PLAN, user=user, return_url=return_url, free_trial_months=1,
+            plan_slug=_BONO_PLAN, user=user, return_url=return_url,
         )
     except Exception as e:
         logger.error(f'MP create_preapproval (bono taller) error: {e}')
@@ -96,7 +98,8 @@ def retorno(request):
                 sub.save(update_fields=['status', 'started_at', 'updated_at'])
                 profile = sub.user.profile
                 profile.plan = sub.plan
-                profile.save(update_fields=['plan'])
+                profile.onboarding_entry_point = 'taller_terapeutas'
+                profile.save(update_fields=['plan', 'onboarding_entry_point'])
                 update_subscriber_lists(sub.user.email, sub.plan)
                 token_service.renew_monthly(sub.user)
                 _enviar_reset(request, sub.user)
@@ -104,7 +107,7 @@ def retorno(request):
             return render(request, 'payments/resultado.html', {
                 'exito': True, 'es_suscripcion': True,
                 'plan': _BONO_PLAN, 'gateway': 'MercadoPago',
-                'mensaje': 'Mes gratis de Plan Practicante activado. Revisa tu email para definir tu contraseña y entrar.',
+                'mensaje': 'Pago confirmado — Plan Practicante activado. Revisa tu email para definir tu contraseña y entrar.',
             })
 
         elif mp_status == 'pending':
