@@ -223,7 +223,7 @@ Taller presencial de terapeutas/coaches (1-ago). Modelo de dos cobros, **$44.990
    - La confirmación de retorno correlaciona por `rid` (id de la reserva), nunca por `request.user` — evita loguear como otro usuario si el email ya existía
 
 2. **Cobro del resto — $39.990, vía QR post-taller** (`payments/views/bono_views.py::activar`)
-   - Al terminar el taller presencial, un QR lleva a `/pagos/bono-taller/` sin login — correlaciona por email contra una `TallerReserva` con `status='paid'`
+   - Al terminar el taller presencial, un QR lleva a `/pago/mp/bono-taller/` sin login — correlaciona por email contra una `TallerReserva` con `status='paid'`
    - Activa una suscripción real a Plan Practicante vía `mp_service.create_preapproval`, **sin trial**. Fix 2026-07-20: la versión original regalaba el primer mes (`free_trial_months=1`), lo que no coincidía con el modelo real de $44.990 — corregido a cobro inmediato
    - Al autorizar (`retorno()`), setea `profile.onboarding_entry_point = 'taller_terapeutas'`
 
