@@ -213,6 +213,25 @@ upgrade_wall(request, 'navegante', 'Nombre del feature')  # devuelve HttpRespons
 
 ---
 
+## Taller de Terapeutas — flujo de pago (2026-07-18/20)
+
+Taller presencial de terapeutas/coaches (1-ago). Modelo de dos cobros, **$44.990 total**:
+
+1. **Seña de reserva — $5.000** (`payments/views/taller_views.py::reservar`)
+   - Checkout de invitado sin cuenta previa: endpoint público (`@csrf_exempt`, la landing `taller-terapeutas.astro` del repo web envía el email por POST) crea usuario con password aleatoria + dispara reset de contraseña, y una `TallerReserva` (`payments/models.py`, pago único vía MP)
+   - `TALLERES` en `payments/constants.py` (slug `taller1-terapeutas`, `price_clp: 5000`)
+   - La confirmación de retorno correlaciona por `rid` (id de la reserva), nunca por `request.user` — evita loguear como otro usuario si el email ya existía
+
+2. **Cobro del resto — $39.990, vía QR post-taller** (`payments/views/bono_views.py::activar`)
+   - Al terminar el taller presencial, un QR lleva a `/pagos/bono-taller/` sin login — correlaciona por email contra una `TallerReserva` con `status='paid'`
+   - Activa una suscripción real a Plan Practicante vía `mp_service.create_preapproval`, **sin trial**. Fix 2026-07-20: la versión original regalaba el primer mes (`free_trial_months=1`), lo que no coincidía con el modelo real de $44.990 — corregido a cobro inmediato
+   - Al autorizar (`retorno()`), setea `profile.onboarding_entry_point = 'taller_terapeutas'`
+
+3. **Onboarding especializado** (`accounts/views.py::onboarding`, `templates/accounts/onboarding_taller.html`)
+   - Si `onboarding_entry_point == 'taller_terapeutas'`: salta el quiz de prioridades/autoconocimiento genérico, pide solo bio, y redirige directo a `practitioners_dashboard` (Portal Profesional)
+
+---
+
 ## Módulo Oráculo — detalles técnicos
 
 ### Tarot Terapéutico (Jodorowsky)

@@ -120,9 +120,124 @@ Registro de sesiones de desarrollo. Cada entrada refleja lo que se construyó, l
 
 ---
 
-## Sesión actual — Documentación
+## Sesión 9 — Documentación inicial (2026-06-18)
 
 **Qué se generó:**
 - `README.md` — documentación técnica completa de la app
 - `HISTORIAL.md` — este archivo
 - Análisis de errores: `ANALISIS_ERRORES.md`
+
+---
+
+## Sesión 10 — Oráculo completo: Tarot, I Ching, Fractal (2026-06-17 a 06-18)
+
+**Qué se construyó:**
+- Módulo `oraculo`: Tarot Terapéutico (Jodorowsky, 78 cartas + 6 tiradas nuevas), I Ching (64 hexagramas, líneas móviles), Oráculo Fractal (Arcanos + Sefirot, flip card)
+- Interpretación IA por oráculo (`oraculo/interpretations.py`), lectura de integración que sintetiza el arco completo sin repetir por carta
+- Rueda zodiacal SVG + Lucide icons en carta astral y Human Design
+- Animaciones de revelación: stagger por carta/línea, flip cards, fases de loading
+
+**Problemas resueltos (iterativos, muchos commits de ajuste fino):**
+- Datos visuales de cartas cotejados contra el libro Jodorowsky (3 rondas de corrección)
+- CSRF en los 3 oráculos, JSON crudo filtrado del panel (think-tags, max_tokens, fallback robusto)
+- Fallback estático completo si falla la IA
+
+---
+
+## Sesión 11 — Terapeuta Integral: wizard clínico (2026-06-17)
+
+**Qué se construyó:**
+- Módulo `terapeuta`: wizard de 5 pasos (autoconsulta simplificada + fichas clínicas para profesionales)
+- Fundamento pedagógico por instrucción terapéutica, propuesta terapéutica vía `openrouter/auto`
+
+**Problemas resueltos:**
+- 500 en transición paso2→paso3, doble submit en paso1, diagnósticos regenerados en cada GET del paso4
+
+---
+
+## Sesión 12 — Bitácora + Practitioners (2026-06-17)
+
+**Qué se construyó:**
+- Bitácora: CRUD con campos específicos por tipo de entrada, sueños integrados (se elimina Nauminto)
+- `practitioners`: dashboard de cliente + agenda mensual, visualizaciones simbólicas por marco terapéutico
+
+---
+
+## Sesión 13 — Regulación: catálogo de 12 momentos (2026-06-19)
+
+**Qué se construyó:**
+- Módulo `mirror`/regulación reescrito como catálogo de 12 momentos con flujo instructivo paso a paso
+- 26 animaciones premium Canvas 2D (incluye neon light tracing para Respiración Cuadrada) + SVG instructivos para 7 ejercicios kinesiológicos
+- `config/ai_client.py` — centraliza todas las llamadas IA de la app (antes dispersas por módulo)
+- Onboarding de 3 pantallas con drag-to-rank de prioridades + contexto IA
+
+---
+
+## Sesión 14 — Deploy Oracle/Coolify + Auth Google (2026-06-20 a 06-22)
+
+**Qué se cambió:**
+- Migración de infraestructura: Dockerfile + docker-compose para Oracle/Coolify (reemplaza Railway)
+- Google OAuth en login y registro (`ACCOUNT_USER_MODEL_USERNAME_FIELD=None` para User email-only)
+- Landing (`home.html`) eliminada de la app — migrada a Cloudflare Pages (repo separado)
+- Umami analytics, skeleton loaders, caching, optimistic reactions
+
+---
+
+## Sesión 15 — Sistema de pagos v1 + pivot a planes feature-based (2026-06-21 a 06-22)
+
+**Qué se construyó:**
+- PayPal + MercadoPago: botones de suscripción, Wallet Brick, packs de fractones
+- Página pública `/planes/`, checkout antes/después de onboarding, cancelar suscripción, eliminar cuenta
+- **Pivot de modelo económico:** economía de Fractones (tokens por acción) reemplazada por planes feature-based (free/navegante/practicante) — se elimina toda la UI de compra de fractones y tooltips de costo
+- Lead magnet: Mapa de Patrones Personales (3 tests gratis + IA)
+
+---
+
+## Sesión 16 — Espejo IA: RAG, Listmonk, memoria entre sesiones (2026-06-23 a 07-06)
+
+**Qué se construyó:**
+- RAG completo: `seed_knowledge` (101 chunks marcos teóricos) + `seed_endonautica_md` (38 chunks del libro) + `index_knowledge` (embeddings vía OpenRouter, DeepSeek no tiene API de embeddings)
+- Contexto acumulado real: onboarding + tests + bitácora + lectura de nacimiento + sesión anterior
+- Multimedia: adjuntos imagen/PDF/doc en el chat
+- Auto-suscripción a Listmonk + email de bienvenida al registrarse
+- System prompt reestructurado como arquitectura de modos (CRISIS > SÍNTOMA FÍSICO > REVELACIÓN), filtro determinístico anti-voseo, español neutro forzado en toda salida IA
+- `_summarize_previous_session()` — memoria entre sesiones vía `conflict_summary` + `return_question`
+
+---
+
+## Sesión 17 — Reports app: KPI semanal automático (2026-06-29)
+
+**Qué se construyó:**
+- Comando `weekly_kpi`: KPIs Django ORM + Listmonk + Umami + SerpBear + scraping RRSS (Instagram/Facebook via Meta Graph API, TikTok endpoint público, YouTube API v3, LinkedIn/TikTok via Playwright)
+- Top contenido por plataforma, clasificación de escenario (verde/amarillo/rojo), email semanal automático
+- Ver detalle completo en `CLAUDE.md`
+
+---
+
+## Sesión 18 — Seguridad, motor de scoring terapeuta, fixes UX (2026-07-03 a 07-12)
+
+**Qué se resolvió:**
+- Fix open redirect en login + defaults seguros en settings
+- `terapeuta`: catálogo data-driven + motor de scoring determinista (reemplaza heurística ad-hoc)
+- Migración Listmonk a URL sslip (dominio propio caído)
+- 6 fixes UX/UI: typo onboarding, Espejo unificado, tarot upsell, popstate sin flash
+
+---
+
+## Sesión 19 — Reporte de bugs in-app + PWA (2026-07-14 a 07-16)
+
+**Qué se construyó:**
+- Botón "Reportar un problema" (capturas + descripción, admin con thumbnails)
+- PWA: manifest + service worker + assetlinks para TWA (Play Store), botón "Instalar app"
+- Shell móvil: bottom tab bar, safe areas, modo foco, cosmos aligerado a 18k partículas sin bloom para ≤768px
+
+---
+
+## Sesión 20 — Monetización Taller de Terapeutas (2026-07-18 a 07-20)
+
+**Qué se construyó:**
+- Checkout de seña ($5.000) para el taller presencial del 1-ago, guest checkout sin cuenta previa (`payments/views/taller_views.py`, modelo `TallerReserva`)
+- Pivot de modelo: la seña baja y el QR mostrado al final del taller activa una suscripción real a Plan Practicante ($39.990/mes) — el taller completo son $44.990 (`payments/views/bono_views.py`)
+- Fix (07-20): el cobro post-taller regalaba el primer mes (`free_trial_months=1`) en vez de cobrar los $39.990 — no coincidía con el modelo real. Corregido a cobro inmediato sin trial.
+- Onboarding especializado: terapeutas activados vía QR saltan el quiz genérico de autoconocimiento y van directo al Portal Profesional (`onboarding_entry_point='taller_terapeutas'`)
+- Detalle completo de arquitectura en `CLAUDE.md` → sección "Taller de Terapeutas"
