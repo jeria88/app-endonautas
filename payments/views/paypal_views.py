@@ -9,8 +9,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from ..constants import PACKS
-from ..models import FractonesPack, Subscription
+from ..models import Subscription
 from ..services import paypal as paypal_service
 from accounts.listmonk import update_subscriber_lists
 from tokens import service as token_service
@@ -18,16 +17,15 @@ from tokens import service as token_service
 logger = logging.getLogger(__name__)
 
 _PLAN_SLUGS = frozenset(['navegante', 'practicante'])
-_PACK_SLUGS = frozenset(PACKS.keys())
 
 
 @login_required
 def suscribir(request, plan):
     if plan not in _PLAN_SLUGS:
-        return redirect('tokens_balance')
+        return redirect('planes')
 
     return_url = request.build_absolute_uri(reverse('pago_paypal_retorno')) + f'?plan={plan}'
-    cancel_url = request.build_absolute_uri(reverse('tokens_balance'))
+    cancel_url = request.build_absolute_uri(reverse('planes'))
 
     try:
         sub_id, approve_url = paypal_service.create_subscription(
@@ -89,121 +87,6 @@ def retorno_suscripcion(request):
     return render(request, 'payments/resultado.html', {
         'exito': False, 'mensaje': 'No se pudo confirmar el pago. Si ya fue cobrado, escríbenos.',
     })
-
-
-@login_required
-def pack(request, slug):
-    if slug not in _PACK_SLUGS:
-        return redirect('tokens_balance')
-
-    return_url = request.build_absolute_uri(reverse('pago_paypal_pack_retorno')) + f'?slug={slug}'
-    cancel_url = request.build_absolute_uri(reverse('tokens_balance'))
-
-    try:
-        order_id, approve_url = paypal_service.create_order(
-            pack_slug=slug,
-            return_url=return_url,
-            cancel_url=cancel_url,
-        )
-    except Exception as e:
-        logger.error(f'PayPal create_order error: {e}')
-        return render(request, 'payments/resultado.html', {
-            'exito': False, 'mensaje': 'No se pudo conectar con PayPal. Intenta de nuevo.',
-        })
-
-    pack_info = PACKS[slug]
-    FractonesPack.objects.create(
-        user=request.user, gateway='paypal', pack_slug=slug,
-        fractones=pack_info['fractones'],
-        amount_local=pack_info['price_usd'],
-        currency='USD',
-        gateway_payment_id=order_id,
-        status='pending',
-    )
-    return redirect(approve_url)
-
-
-@login_required
-def retorno_pack(request):
-    order_id = request.GET.get('token')
-    slug = request.GET.get('slug', '')
-
-    if not order_id:
-        return render(request, 'payments/resultado.html', {'exito': False})
-
-    try:
-        capture = paypal_service.capture_order(order_id)
-        if capture.get('status') == 'COMPLETED':
-            # Find pre-created record OR create one now (for client-side createOrder flow)
-            fp = FractonesPack.objects.filter(
-                user=request.user, gateway='paypal',
-                gateway_payment_id=order_id,
-            ).first()
-
-            if not fp:
-                pack_info = PACKS.get(slug)
-                if not pack_info:
-                    return render(request, 'payments/resultado.html', {
-                        'exito': False, 'mensaje': 'Pack inválido.',
-                    })
-                fp = FractonesPack(
-                    user=request.user, gateway='paypal', pack_slug=slug,
-                    fractones=pack_info['fractones'],
-                    amount_local=pack_info['price_usd'],
-                    currency='USD',
-                    gateway_payment_id=order_id,
-                    status='pending',
-                )
-                fp.save()
-
-            if fp.status != 'paid':
-                fp.status = 'paid'
-                fp.save(update_fields=['status', 'updated_at'])
-                token_service.credit_permanent(request.user, fp.fractones, reason=f'pack:{fp.pack_slug}')
-
-            return render(request, 'payments/resultado.html', {
-                'exito': True, 'es_pack': True,
-                'fractones': fp.fractones, 'gateway': 'PayPal',
-                'mensaje': f'+{fp.fractones} fractones permanentes acreditados.',
-            })
-    except Exception as e:
-        logger.error(f'PayPal retorno_pack error: {e}')
-
-    return render(request, 'payments/resultado.html', {
-        'exito': False, 'mensaje': 'No se pudo confirmar el pago. Si ya fue cobrado, escríbenos.',
-    })
-
-
-@login_required
-@require_POST
-def api_orden_pack(request, slug):
-    if slug not in _PACK_SLUGS:
-        return JsonResponse({'error': 'Pack inválido'}, status=400)
-
-    return_url = request.build_absolute_uri(reverse('pago_paypal_pack_retorno')) + f'?slug={slug}'
-    cancel_url = request.build_absolute_uri(reverse('tokens_balance'))
-
-    try:
-        order_id, _ = paypal_service.create_order(
-            pack_slug=slug,
-            return_url=return_url,
-            cancel_url=cancel_url,
-        )
-    except Exception as e:
-        logger.error(f'PayPal api_orden_pack error: {e}')
-        return JsonResponse({'error': 'No se pudo crear la orden'}, status=500)
-
-    pack_info = PACKS[slug]
-    FractonesPack.objects.filter(user=request.user, gateway='paypal', pack_slug=slug, status='pending').delete()
-    FractonesPack.objects.create(
-        user=request.user, gateway='paypal', pack_slug=slug,
-        fractones=pack_info['fractones'],
-        amount_local=pack_info['price_usd'],
-        currency='USD',
-        gateway_payment_id=order_id,
-        status='pending',
-    )
-    return JsonResponse({'order_id': order_id})
 
 
 @csrf_exempt

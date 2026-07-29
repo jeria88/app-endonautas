@@ -147,11 +147,7 @@ def perfil(request):
             request.user.first_name = request.POST['first_name']
             request.user.save(update_fields=['first_name'])
         return redirect('perfil')
-    from payments.constants import PACKS
-    return render(request, 'accounts/perfil.html', {
-        'profile': profile,
-        'packs': PACKS,
-    })
+    return render(request, 'accounts/perfil.html', {'profile': profile})
 
 
 @login_required
@@ -164,11 +160,9 @@ def eliminar_cuenta(request):
     if request.method == 'POST':
         email_confirm = request.POST.get('email_confirm', '').strip().lower()
         if email_confirm != request.user.email.lower():
-            from payments.constants import PACKS
             profile, _ = UserProfile.objects.get_or_create(user=request.user)
             return render(request, 'accounts/perfil.html', {
                 'profile': profile,
-                'packs': PACKS,
                 'delete_error': 'El email no coincide. Escribe exactamente tu email para confirmar.',
                 'show_delete_modal': True,
             })

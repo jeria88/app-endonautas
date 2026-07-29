@@ -5,7 +5,7 @@ import logging
 import requests
 from django.conf import settings
 
-from ..constants import PACKS, PLANS, TALLERES
+from ..constants import PLANS, TALLERES
 
 logger = logging.getLogger(__name__)
 
@@ -49,33 +49,6 @@ def get_preapproval(preapproval_id):
     resp = requests.get(f'{_BASE}/preapproval/{preapproval_id}', headers=_headers(), timeout=15)
     resp.raise_for_status()
     return resp.json()
-
-
-def create_preference(pack_slug, user, success_url, failure_url, pending_url):
-    pack = PACKS[pack_slug]
-    payload = {
-        'items': [{
-            'title': pack['title'],
-            'quantity': 1,
-            'unit_price': pack['price_clp'],
-            'currency_id': 'CLP',
-        }],
-        'payer': {'email': user.email},
-        'back_urls': {
-            'success': success_url,
-            'failure': failure_url,
-            'pending': pending_url,
-        },
-        'auto_return': 'approved',
-        'metadata': {
-            'pack_slug': pack_slug,
-            'user_id': str(user.pk),
-        },
-    }
-    resp = requests.post(f'{_BASE}/checkout/preferences', json=payload, headers=_headers(), timeout=15)
-    resp.raise_for_status()
-    data = resp.json()
-    return data['id'], data['init_point']
 
 
 def create_preference_taller(taller_slug, user, success_url, failure_url, pending_url):

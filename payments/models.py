@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 
-from .constants import PACKS, PLANS, TALLERES
+from .constants import PLANS, TALLERES
 
 
 class Subscription(models.Model):
@@ -49,7 +49,8 @@ class Subscription(models.Model):
 
 
 class FractonesPack(models.Model):
-    PACK_CHOICES = [(k, v['title']) for k, v in PACKS.items()]
+    """Histórico. Los packs ya no se venden: la moneda murió en ddba5b8 y su
+    checkout se retiró. El modelo queda para no perder las compras pasadas."""
 
     STATUS_PENDING = 'pending'
     STATUS_PAID = 'paid'
@@ -60,7 +61,7 @@ class FractonesPack(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='fractone_packs'
     )
     gateway = models.CharField(max_length=10)
-    pack_slug = models.CharField(max_length=20, choices=PACK_CHOICES)
+    pack_slug = models.CharField(max_length=20)
     fractones = models.IntegerField()
     amount_local = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=3)

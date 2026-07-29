@@ -204,7 +204,11 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'hola@endonautas.cl')
 PUBLIC_SITE_URL = os.getenv('PUBLIC_SITE_URL', 'https://endonautas.cl')
 LISTMONK_URL = os.getenv('LISTMONK_URL', 'https://mail.146.181.39.4.sslip.io')
 
-# Fractones
+# LEGACY — saldo interno sin uso desde ddba5b8 (2026-06-22). NO son precios ni
+# límites de producto: nadie gasta este saldo (`tokens.service.spend` no tiene
+# llamadores) ni se muestra en ninguna pantalla. La economía vigente es
+# feature-based por plan: ver `accounts/plan_utils.py`. Ejemplo del modelo real:
+# Free = 1 sesión de Espejo al día, 45 min (`mirror/views.py:72-76` y `:115`).
 FRACTON_REWARDS = {
     'test_completed': 8,
     'dimension_completed': 25,
@@ -228,7 +232,6 @@ PLAN_MONTHLY_TOKENS = {
     'free': 80,
     'navegante': 800,
     'practicante': 5000,
-    'empresa': 20000,
 }
 # Pagos — PayPal
 PAYPAL_CLIENT_ID = os.getenv('PAYPAL_CLIENT_ID', '')

@@ -306,18 +306,23 @@ Pagos: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MODE`, `PAYPAL_WEBHOO
 
 Cuando se modifica cualquier feature (costo, nombre, comportamiento, flujo), hay que revisar y actualizar **todos** los puntos donde esa feature tiene representación:
 
+> **No existen los Fractones.** La moneda interna fue reemplazada por acceso
+> feature-based por plan en `ddba5b8` (2026-06-22). El gating vive en
+> `accounts/plan_utils.py`. `settings.TOKEN_COSTS`/`FRACTON_REWARDS`/
+> `PLAN_MONTHLY_TOKENS` son saldo interno muerto: nadie los gasta ni los
+> muestra — **no son precios ni límites de producto**. Ejemplo del modelo real:
+> Free = 1 sesión de Espejo al día, 45 min (`mirror/views.py:72-76` y `:115`).
+
 | Touchpoint | Qué revisar |
 |------------|-------------|
-| `templates/payments/planes.html` | Precios, fractones incluidos, descripción de features por plan |
-| `templates/accounts/perfil.html` | Sección de suscripciones, packs, beneficios |
+| `templates/payments/planes.html` | Precios y qué desbloquea cada plan |
+| `accounts/plan_utils.py` | Gating real por plan (`plan_at_least`, tests/tiradas free) |
+| Vistas de cada módulo | El `upgrade_wall` de la feature tocada |
+| `templates/accounts/perfil.html` | Sección de suscripciones y beneficios |
 | `templates/accounts/dashboard.html` | Shortcuts, misiones visibles |
-| `templates/tokens/balance.html` | Tabla de costos, descripción de cada feature |
-| `data-ft-tip` / `data-tip` en templates | Tooltips deben reflejar el costo real actualizado |
-| `tokens/service.py` → `TOKEN_COSTS` | Costo real en código |
-| `settings.py` → `TOKEN_COSTS` | Costo en settings si está ahí |
-| `templates/terminos.astro` (landing) | Si el cambio afecta condiciones de uso |
+| Landing `endonautas-web` | `/planes/`, términos, y cualquier página que describa la oferta |
 | `templates/professionals/` | Si el cambio afecta a practicantes |
-| Este CLAUDE.md | Actualizar la sección de pendientes y costos |
+| Este CLAUDE.md | Actualizar la sección de pendientes |
 
 **Regla práctica:** antes de cerrar cualquier tarea que toque economía, UI o flujo de usuario, preguntar "¿hay algún tooltip, texto de planes, o referencia en otra página que describe esto?" Si la respuesta es sí, actualizar también.
 

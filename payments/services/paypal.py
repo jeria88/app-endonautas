@@ -3,7 +3,7 @@ import logging
 import requests
 from django.conf import settings
 
-from ..constants import PACKS, PLANS
+from ..constants import PLANS
 
 logger = logging.getLogger(__name__)
 
@@ -67,41 +67,6 @@ def get_subscription(subscription_id):
     resp = requests.get(
         f'{_base()}/v1/billing/subscriptions/{subscription_id}',
         headers=_headers(), timeout=15,
-    )
-    resp.raise_for_status()
-    return resp.json()
-
-
-def create_order(pack_slug, return_url, cancel_url):
-    pack = PACKS[pack_slug]
-    payload = {
-        'intent': 'CAPTURE',
-        'purchase_units': [{
-            'amount': {'currency_code': 'USD', 'value': pack['price_usd']},
-            'description': pack['title'],
-        }],
-        'application_context': {
-            'return_url': return_url,
-            'cancel_url': cancel_url,
-            'brand_name': 'Endonautas',
-            'shipping_preference': 'NO_SHIPPING',
-            'user_action': 'PAY_NOW',
-        },
-    }
-    resp = requests.post(
-        f'{_base()}/v2/checkout/orders',
-        json=payload, headers=_headers(), timeout=15,
-    )
-    resp.raise_for_status()
-    data = resp.json()
-    approve_url = next(lnk['href'] for lnk in data['links'] if lnk['rel'] == 'approve')
-    return data['id'], approve_url
-
-
-def capture_order(order_id):
-    resp = requests.post(
-        f'{_base()}/v2/checkout/orders/{order_id}/capture',
-        json={}, headers=_headers(), timeout=15,
     )
     resp.raise_for_status()
     return resp.json()

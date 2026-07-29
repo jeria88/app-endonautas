@@ -16,7 +16,6 @@ urlpatterns = [
     path('sw.js', wellknown.service_worker, name='service_worker'),
     path('.well-known/assetlinks.json', wellknown.assetlinks, name='assetlinks'),
     path('', include('accounts.urls')),
-    path('tokens/', include('tokens.urls')),
     path('tests/', include('psychometrics.urls')),
     path('espejo/', include('mirror.urls')),
     path('regulacion/', mirror_views.regulacion, name='regulacion'),
