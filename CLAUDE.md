@@ -16,6 +16,8 @@ Fueron migradas a URLs genéricas para uso compartido de todo el servidor Oracle
 
 **Corrección 2026-07-30:** este archivo tenía `serpbear.146.181.39.4.sslip.io` como "URL actual" — es incorrecta, ese host no tiene ninguna regla en Traefik (TLS inválido/503). La real, confirmada por labels de Traefik + curl 200, es `seo.146.181.39.4.sslip.io`. `app/reports/services/serpbear_metrics.py` y `content-studio/seo/publisher.py` apuntaban al host viejo — corregidos.
 
+**SerpBear configurado por completo 2026-07-30** (`SERPBEAR_API_KEY` en Coolify + `.env_endonautas`, dominio `endonautas.cl` + 25 keywords + scraper SerpApi vía SQLite directo — la API con API-key es solo lectura/cron, no permite crear dominios/keywords/settings). **Falta volumen persistente en el contenedor** (`Mounts: []`, un redeploy borraría todo). Detalle completo + comandos: `README.md` sección "SerpBear — configurado y verificado".
+
 ## Comando siempre: `python3 manage.py` (nunca `python`)
 
 ## Stack

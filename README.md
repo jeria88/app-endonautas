@@ -54,7 +54,7 @@ Aplicación web de autoconocimiento construida con Django 6. Integra astrología
 | Umami | `https://analytics.146.181.39.4.sslip.io` | Analytics web (open source). `analytics.endonautas.cl` está muerto (503) — **el script de tracking de ambos frontends apuntaba a ese dominio muerto hasta 2026-07-30**, así que no se estaba recolectando ninguna visita real; corregido en `Layout.astro` y `base.html`. |
 | Uptime Kuma | `https://status.146.181.39.4.sslip.io` | Monitoreo de uptime. `status.endonautas.cl` está muerto (503). |
 | Listmonk | `https://mail.146.181.39.4.sslip.io` | Email marketing (antes `mail.endonautas.cl`, daba 503 — migrado 2026-07-11; la app lee `LISTMONK_URL` de env) |
-| Serpbear | `https://seo.146.181.39.4.sslip.io` | Seguimiento de keywords SEO. `seo.endonautas.cl` está muerto (503) y el código apuntaba a `serpbear.146.181.39.4.sslip.io` (dominio sin regla Traefik) — corregido 2026-07-30. Falta `SERPBEAR_API_KEY` en el servidor (ver pendientes). |
+| Serpbear | `https://seo.146.181.39.4.sslip.io` | Seguimiento de keywords SEO. `seo.endonautas.cl` está muerto (503) y el código apuntaba a `serpbear.146.181.39.4.sslip.io` (dominio sin regla Traefik) — corregido 2026-07-30. `SERPBEAR_API_KEY` configurada, dominio `endonautas.cl` + 25 keywords cargadas, scraper SerpApi activo (`scrape_interval: weekly`). Falta volumen persistente (ver sección SerpBear abajo). |
 
 ### Credenciales de acceso
 
@@ -112,16 +112,24 @@ SMTP configurado con Brevo SMTP relay:
 
 **Templates TX:** ID 7 "Endonautas Base" — usar para emails automáticos vía `/api/tx`.
 
-### SerpBear — configurado
+### SerpBear — configurado y verificado 2026-07-30
 
-Dominio `endonautas.cl` agregado vía SQLite directo (la UI requiere JWT con env var `SECRET` que no coincide con `SECRETKEY` en el contenedor — workaround confirmado).
+**Estado real antes de esta fecha (corregido):** el dominio `endonautas.cl` **nunca había sido agregado** pese a lo que decía este README — SerpBear solo trackeaba `lideramas-web.pages.dev` y `acmeagents.team`, ambos con 0 keywords. `scraper_type` estaba en `"none"` (sin proveedor de scraping, nunca iba a haber datos). Código apuntaba además a un host sin ruta en Traefik (`serpbear.146.181.39.4.sslip.io` en vez de `seo.146.181.39.4.sslip.io`) y sin `SERPBEAR_API_KEY` configurada — la sección de KPI semanal reportaba "Sin datos" en silencio.
 
-Keywords configuradas basadas en estrategia SEO de 3 capas:
-- Capa 1 (autoconocimiento): términos base
-- Capa 2 (viaje interior): términos de proceso
-- Capa 3 (nivel de conciencia): términos de profundidad
+**Lo que se hizo (todo vía SSH, contenedor `jgpk6gjmj3pbee40vc5ijhwb-*`):**
+- Backup del `database.sqlite` real antes de tocar nada (`/tmp/serpbear_backup_*.sqlite` en el servidor).
+- Dominio `endonautas.cl` + 25 keywords agregadas directo en SQLite (la API con API-key es **solo lectura/cron** — crear dominios/keywords/settings requiere sesión de navegador, error real: `"This Route cannot be accessed with API."`). Keywords: 20 del funnel de contenido de `Plan/brand/seo-geo-strategy.md` (capas 1/2/3) + 5 nuevas del posicionamiento B2B actual (software para terapeutas, agenda, ficha clínica, tests, gestión de consulta).
+- `PRAGMA integrity_check` → `ok` antes de devolver el archivo; los otros 2 dominios verificados intactos.
+- Scraper configurado: **SerpApi** (free tier, 100 búsquedas/mes — key de Franco). `scraper_type: "serpapi"`.
+- ⚠️ **El campo real es `scaping_api`** (typo del propio SerpBear, no `scraping_api`) **y va cifrado con `Cryptr` usando el `SECRET` del contenedor** — texto plano no sirve, `cron.js` lo desencripta al leer `settings.json` (`cron.js:47-48`). Se verificó con roundtrip encrypt→decrypt antes de guardar.
+- `scrape_interval` corregido a `"weekly"` — no estaba seteado, caía al default `"daily"` (`cron.js:93`) que habría gastado 25 keywords/día ≈ 750/mes, muy por encima del free tier. `weekly` = ~100/mes, calza con las 25 keywords y con la cadencia de `weekly_kpi`.
+- `SERPBEAR_API_KEY` (la del contenedor SerpBear, ya existía como env var `APIKEY` ahí) copiada a `/home/ubuntu/.env_endonautas` (content-studio) y a Coolify (Django, vía API con token temporal de Franco) → ambos servicios redeployados y verificados (`GET /api/domains` con la key real → 200).
 
-Para agregar keywords nuevas: `docker exec -it <serpbear_container> sh`, modificar SQLite en `/app/data/database.sqlite`.
+**Pendiente de verificación real:** `/api/refresh` (trigger manual) también está bloqueado para API-key — el scrape real corre automático el próximo lunes medianoche (cron interno), o Franco lo dispara ahora mismo logueado en `seo.146.181.39.4.sslip.io` → `endonautas.cl` → refresh de una keyword.
+
+**⚠️ Riesgo de datos abierto:** el contenedor de SerpBear **no tiene ningún volumen persistente** (`docker inspect` → `Mounts: []`) — su SQLite vive solo en la capa del contenedor. Un redeploy/recreate futuro (update de imagen, etc.) borraría los 3 dominios + 25 keywords + toda esta config de scraper. La API de Coolify no expone gestión de storages (solo UI) — **falta que Franco agregue el volumen**: Coolify → app `serpbear` → tab Storages → Add, path `/app/data` → Redeploy.
+
+Para agregar keywords nuevas en el futuro (mismo workaround, la UI de administración también requiere sesión, no API-key): `docker cp` el sqlite afuera, editar con `sqlite3`, `docker cp` de vuelta, `docker restart`.
 
 ---
 
