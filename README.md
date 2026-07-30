@@ -49,22 +49,25 @@ Aplicación web de autoconocimiento construida con Django 6. Integra astrología
 
 ## Stack de herramientas (proyecto Herramientas)
 
-| Servicio | URL | Función |
+| Servicio | URL real (verificada 2026-07-30, 200) | Función |
 |---------|-----|---------|
-| Umami | `https://analytics.endonautas.cl` | Analytics web (open source) |
-| Uptime Kuma | `https://status.endonautas.cl` | Monitoreo de uptime |
+| Umami | `https://analytics.146.181.39.4.sslip.io` | Analytics web (open source). `analytics.endonautas.cl` está muerto (503) — **el script de tracking de ambos frontends apuntaba a ese dominio muerto hasta 2026-07-30**, así que no se estaba recolectando ninguna visita real; corregido en `Layout.astro` y `base.html`. |
+| Uptime Kuma | `https://status.146.181.39.4.sslip.io` | Monitoreo de uptime. `status.endonautas.cl` está muerto (503). |
 | Listmonk | `https://mail.146.181.39.4.sslip.io` | Email marketing (antes `mail.endonautas.cl`, daba 503 — migrado 2026-07-11; la app lee `LISTMONK_URL` de env) |
-| Serpbear | `https://seo.endonautas.cl` | Seguimiento de keywords SEO |
+| Serpbear | `https://seo.146.181.39.4.sslip.io` | Seguimiento de keywords SEO. `seo.endonautas.cl` está muerto (503) y el código apuntaba a `serpbear.146.181.39.4.sslip.io` (dominio sin regla Traefik) — corregido 2026-07-30. Falta `SERPBEAR_API_KEY` en el servidor (ver pendientes). |
 
 ### Credenciales de acceso
 
-> Guardar en gestor de contraseñas. No compartir.
+> ⚠️ Las contraseñas y el token de API de este bloque estuvieron en texto plano en este
+> archivo (commit `b1ad44f` y anteriores) — quedaron expuestos en el historial de git.
+> **Rotar en el panel de cada servicio** y guardar solo en gestor de contraseñas, nunca
+> aquí. No compartir.
 
 | Servicio | Usuario | Contraseña |
 |---------|---------|-----------|
-| Umami | admin | `Endo44e4e1af3cfda5e8!` |
-| Uptime Kuma | admin | `Endo2026Status!` |
-| Listmonk | admin | `Endo2026Mail!` |
+| Umami | admin | *(rotar — ver nota arriba)* |
+| Uptime Kuma | admin | *(rotar — ver nota arriba)* |
+| Listmonk | admin | *(rotar — ver nota arriba)* |
 | Serpbear | admin (UI) | configurar en primer acceso |
 
 ### Umami — sitios trackeados
@@ -74,9 +77,9 @@ Aplicación web de autoconocimiento construida con Django 6. Integra astrología
 | Landing (astro-endonautas) | `e03fa69e-9931-411c-9838-7f6ffea90426` |
 | App Django | `9aa0968f-0cd2-4c77-9c70-fbb745d31754` |
 
-Script de tracking (ya integrado en ambos frontends):
+Script de tracking (ya integrado en ambos frontends, corregido 2026-07-30 — apuntaba al dominio `.cl` muerto):
 ```html
-<script defer data-website-id="<SITE_ID>" src="https://analytics.endonautas.cl/script.js"></script>
+<script defer data-website-id="<SITE_ID>" src="https://analytics.146.181.39.4.sslip.io/script.js"></script>
 ```
 
 ### Uptime Kuma — monitores configurados
@@ -84,9 +87,9 @@ Script de tracking (ya integrado en ambos frontends):
 6 monitores activos (vía inserción directa en SQLite `/app/data/kuma.db`):
 1. App Endonautas — `https://app.endonautas.cl`
 2. Landing — `https://endonautas.cl`
-3. Umami Analytics — `https://analytics.endonautas.cl`
+3. Umami Analytics — `https://analytics.146.181.39.4.sslip.io` (antes `analytics.endonautas.cl`, muerto — corregido 2026-07-30)
 4. Listmonk Mail — `https://mail.146.181.39.4.sslip.io` (antes `mail.endonautas.cl`, migrado 2026-07-11)
-5. Serpbear SEO — `https://seo.endonautas.cl`
+5. Serpbear SEO — `https://seo.146.181.39.4.sslip.io` (antes `seo.endonautas.cl`, muerto — corregido 2026-07-30)
 6. Coolify Panel — `http://146.181.39.4:8000`
 
 ### Listmonk — configurado
@@ -105,7 +108,7 @@ SMTP configurado con Brevo SMTP relay:
 
 **Campañas email:** 9 drafts creados en Listmonk — 3 × Lanzamiento, 3 × Leads App, 3 × Practicantes. Activar desde el panel admin.
 
-**API programática:** usuario `api_claude` tipo `api` — token `lm_api_2b99334cb53a67a428a364049b45b986533908952a897102`.
+**API programática:** usuario `api_claude` tipo `api` — token *(rotar, quedó expuesto en git — ver nota de credenciales arriba; el nuevo token va solo en la env var del servidor, no en este doc)*.
 
 **Templates TX:** ID 7 "Endonautas Base" — usar para emails automáticos vía `/api/tx`.
 

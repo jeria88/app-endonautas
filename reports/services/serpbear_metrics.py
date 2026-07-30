@@ -1,12 +1,12 @@
 """
 Wrapper SerpBear API para posiciones SEO de keywords.
-API key obtenida en: https://serpbear.146.181.39.4.sslip.io → Settings → API Key
+API key obtenida en: https://seo.146.181.39.4.sslip.io → Settings → API Key
 """
 import os
 
 import requests
 
-_BASE = 'https://serpbear.146.181.39.4.sslip.io'
+_BASE = 'https://seo.146.181.39.4.sslip.io'
 
 _EMPTY = {'serpbear_keywords_top3': {}, 'serpbear_posicion_avg': 0, 'serpbear_subiendo': 0}
 

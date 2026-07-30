@@ -15,7 +15,7 @@ from django.core.management.base import BaseCommand
 
 from mirror.models import KnowledgeChunk
 
-PDF_PATH = '/home/nikka/Proyectos/endonautas/Legacy/assets/pdfs/endonautica-teoria-autoconocimiento.pdf'
+PDF_PATH = '/home/nikka/Proyectos/_archivo_ecosistema/endonautas-Legacy/assets/pdfs/endonautica-teoria-autoconocimiento.pdf'
 AUTHOR = 'Franco Jeria Castro'
 SOURCE = 'endonautica-pdf'
 CHUNK_SIZE = 700

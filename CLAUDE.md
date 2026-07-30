@@ -12,7 +12,9 @@ Fueron migradas a URLs genéricas para uso compartido de todo el servidor Oracle
 | Umami (analytics) | `analytics.endonautas.cl` | `https://analytics.146.181.39.4.sslip.io` |
 | Listmonk (email) | `mail.endonautas.cl` | `https://mail.146.181.39.4.sslip.io` |
 | Uptime Kuma (status) | `status.endonautas.cl` | `https://status.146.181.39.4.sslip.io` |
-| SerpBear (SEO) | `serpbear.endonautas.cl` | `https://serpbear.146.181.39.4.sslip.io` |
+| SerpBear (SEO) | `serpbear.endonautas.cl` | `https://seo.146.181.39.4.sslip.io` |
+
+**Corrección 2026-07-30:** este archivo tenía `serpbear.146.181.39.4.sslip.io` como "URL actual" — es incorrecta, ese host no tiene ninguna regla en Traefik (TLS inválido/503). La real, confirmada por labels de Traefik + curl 200, es `seo.146.181.39.4.sslip.io`. `app/reports/services/serpbear_metrics.py` y `content-studio/seo/publisher.py` apuntaban al host viejo — corregidos.
 
 ## Comando siempre: `python3 manage.py` (nunca `python`)
 
