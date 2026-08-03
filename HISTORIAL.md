@@ -241,3 +241,22 @@ Registro de sesiones de desarrollo. Cada entrada refleja lo que se construyó, l
 - Fix (07-20): el cobro post-taller regalaba el primer mes (`free_trial_months=1`) en vez de cobrar los $39.990 — no coincidía con el modelo real. Corregido a cobro inmediato sin trial.
 - Onboarding especializado: terapeutas activados vía QR saltan el quiz genérico de autoconocimiento y van directo al Portal Profesional (`onboarding_entry_point='taller_terapeutas'`)
 - Detalle completo de arquitectura en `CLAUDE.md` → sección "Taller de Terapeutas"
+
+---
+
+## Sesión 21 — Limpieza de moneda muerta, garantía de 30 días, fix de hosts (2026-07-29 a 07-30)
+
+**Qué se retiró:**
+- Checkout de packs de Fractones (`/pago/mp/pack/<slug>/`, `/pago/paypal/pack/<slug>/`) y sus vistas/servicios en `payments/` — moneda que ningún módulo gastaba desde el pivot a planes feature-based de `ddba5b8` (2026-06-22)
+- Rutas `/tokens/` completas (`tokens/urls.py`, `tokens/views.py`, templates `templates/tokens/*.html`) — ya solo redirigían a `/planes/`
+- `PLAN_MONTHLY_TOKENS` pierde la clave `'empresa'` (plan sin precio ni checkout); el bloque completo de settings queda marcado como saldo interno muerto, no precios
+- Dos bugs de paso corregidos: `perfil()` importaba `PACKS` en runtime para un template que no lo usa; el checkout de suscripción hacía `reverse('tokens_balance')`, que habría dado 500 al cobrar con la ruta ya retirada
+
+**Qué se agregó:**
+- Garantía de 30 días sin preguntas sobre el primer pago de una suscripción (Navegante o Practicante) — bloque en el checkout (`_planes_body.html`) y sección 4.1 nueva en `templates/legal/terminos.html`, con la frase de "no reembolsos" retirada por contradecirla
+
+**Fixes de infraestructura:**
+- Umami dejó de trackear visitas reales: el script en `base.html` apuntaba a `analytics.endonautas.cl` (dominio muerto, 503) — corregido a `analytics.146.181.39.4.sslip.io`
+- `reports/services/serpbear_metrics.py` apuntaba a un host sin regla en Traefik — corregido a `seo.146.181.39.4.sslip.io`
+- SerpBear quedó configurado por completo: dominio `endonautas.cl` + 25 keywords + scraper SerpApi vía SQLite directo (la API con API-key es solo lectura/cron). Pendiente: volumen persistente en el contenedor (un redeploy borraría la configuración)
+- `README.md` limpiado de contraseñas/tokens en texto plano y de dominios `.cl` muertos

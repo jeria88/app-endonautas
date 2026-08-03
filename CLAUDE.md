@@ -209,11 +209,12 @@ upgrade_wall(request, 'navegante', 'Nombre del feature')  # devuelve HttpRespons
 - El cuerpo real vive en `templates/payments/_planes_body.html`, incluido en los blocks `content` (app) y `public_content` (anónimo) de `planes.html`
 - Al activar un plan (MP/PayPal, retorno y webhook) se llama `update_subscriber_lists()` de Listmonk — segmentación de email se actualiza sola
 - ✅ Resuelto (2026-07-11): la tabla comparativa (`_planes_body.html:131`) ya muestra Free = "1 sesión/día · 45 min", alineado al gating real de `mirror/views.py`. La nota de discrepancia previa estaba desactualizada.
+- **Garantía de 30 días (2026-07-29, `95511d6`):** bloque visible bajo las tarjetas de plan (`_planes_body.html`, junto a los botones MP/PayPal) y sección 4.1 de `templates/legal/terminos.html` — devolución del 100% del primer pago si se pide dentro de los 30 días, una vez por cuenta, sobre la primera suscripción (Navegante o Practicante). No cubre la seña ni el bono del Taller de Terapeutas. Se retiró la frase "No ofrecemos reembolsos por períodos ya iniciados" de los términos por contradecir la garantía. El reembolso se pide por correo a `hola@endonautas.cl` (sin endpoint ni automatización — proceso manual).
 
 ### Sistema de tokens (desactivado)
+- **Las rutas `/tokens/` ya no existen** (`fe29fd5`/`bc2d109`, 2026-07-29): `tokens/views.py`, `tokens/urls.py` y los templates `templates/tokens/*.html` fueron eliminados junto con el checkout de packs de Fractones (`/pago/mp/pack/<slug>/`, `/pago/paypal/pack/<slug>/` y sus vistas/servicios en `payments/`) — moneda muerta que nadie gastaba. `config/urls.py` ya no incluye `tokens.urls`.
 - `tokens/signals.py`: vaciado — no genera fractones
-- `tokens/views.py`: redirige a /pagos/planes/
-- Tablas en BD (TokenBalance, Mission, TokenTransaction) sin uso activo — no tocar
+- Tablas en BD (TokenBalance, Mission, TokenTransaction, FractonesPack) sin uso activo — no tocar. `FractonesPack` conserva las compras históricas; solo perdió el `choices` del slug de pack (migración `payments/migrations/0003`, no destructiva)
 
 ---
 
