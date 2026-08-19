@@ -5,7 +5,7 @@ import logging
 import requests
 from django.conf import settings
 
-from ..constants import PLANS, TALLERES
+from ..constants import PLANS, PRODUCTS, TALLERES
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +69,33 @@ def create_preference_taller(taller_slug, user, success_url, failure_url, pendin
         'auto_return': 'approved',
         'metadata': {
             'taller_slug': taller_slug,
+            'user_id': str(user.pk),
+        },
+    }
+    resp = requests.post(f'{_BASE}/checkout/preferences', json=payload, headers=_headers(), timeout=15)
+    resp.raise_for_status()
+    data = resp.json()
+    return data['id'], data['init_point']
+
+
+def create_preference_product(product_slug, user, success_url, failure_url, pending_url):
+    product = PRODUCTS[product_slug]
+    payload = {
+        'items': [{
+            'title': product['title'],
+            'quantity': 1,
+            'unit_price': product['price_clp'],
+            'currency_id': 'CLP',
+        }],
+        'payer': {'email': user.email},
+        'back_urls': {
+            'success': success_url,
+            'failure': failure_url,
+            'pending': pending_url,
+        },
+        'auto_return': 'approved',
+        'metadata': {
+            'product_slug': product_slug,
             'user_id': str(user.pk),
         },
     }

@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 
-from .constants import PLANS, TALLERES
+from .constants import PLANS, PRODUCTS, TALLERES
 
 
 class Subscription(models.Model):
@@ -109,3 +109,76 @@ class TallerReserva(models.Model):
 
     def __str__(self):
         return f'{self.user.email} — {self.taller_slug} via {self.gateway} ({self.status})'
+
+
+class EbookOrder(models.Model):
+    """Compra única del ebook (checkout de invitado, mismo patrón que TallerReserva).
+    Soporta MP (CLP) y PayPal (USD). download_token se genera al confirmar el pago."""
+    PRODUCT_CHOICES = [(k, v['title']) for k, v in PRODUCTS.items()]
+
+    GATEWAY_CHOICES = [('paypal', 'PayPal'), ('mp', 'MercadoPago')]
+
+    STATUS_PENDING = 'pending'
+    STATUS_PAID = 'paid'
+    STATUS_FAILED = 'failed'
+    STATUS_DELIVERED = 'delivered'
+    STATUS_CHOICES = [
+        ('pending', 'Pendiente'),
+        ('paid', 'Pagado'),
+        ('failed', 'Fallido'),
+        ('delivered', 'Entregado'),
+    ]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='ebook_orders'
+    )
+    product_slug = models.CharField(max_length=40, choices=PRODUCT_CHOICES, default='endonautica-ebook')
+    gateway = models.CharField(max_length=10, choices=GATEWAY_CHOICES)
+    amount_local = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=3)
+    gateway_payment_id = models.CharField(max_length=200, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    canal_origen = models.CharField(max_length=40, blank=True)
+    download_token = models.CharField(max_length=64, blank=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['gateway', 'gateway_payment_id']),
+            models.Index(fields=['download_token']),
+        ]
+
+    def __str__(self):
+        return f'{self.user.email} — ebook via {self.gateway} ({self.status})'
+
+
+class EbookLead(models.Model):
+    """Captura post-test de heridas: quien pidió el PDF de su herida, con o sin compra
+    posterior. lead→contacto→pago(EbookOrder)→entrega, CRM mínimo vía Django admin."""
+    STATUS_NUEVO = 'nuevo'
+    STATUS_PDF_ENTREGADO = 'pdf_entregado'
+    STATUS_CONTACTADO = 'contactado'
+    STATUS_COMPRADO = 'comprado'
+    STATUS_CHOICES = [
+        ('nuevo', 'Nuevo'),
+        ('pdf_entregado', 'PDF entregado'),
+        ('contactado', 'Contactado'),
+        ('comprado', 'Comprado'),
+    ]
+
+    email = models.EmailField(blank=True)
+    whatsapp = models.CharField(max_length=30, blank=True)
+    herida = models.CharField(max_length=30, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='nuevo')
+    canal_origen = models.CharField(max_length=40, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.email or self.whatsapp} — {self.herida} ({self.status})'

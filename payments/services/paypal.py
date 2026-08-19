@@ -3,7 +3,7 @@ import logging
 import requests
 from django.conf import settings
 
-from ..constants import PLANS
+from ..constants import PLANS, PRODUCTS
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +61,43 @@ def create_subscription(plan_slug, return_url, cancel_url, user_email):
     data = resp.json()
     approve_url = next(lnk['href'] for lnk in data['links'] if lnk['rel'] == 'approve')
     return data['id'], approve_url
+
+
+def create_order(product_slug, return_url, cancel_url):
+    """Orders API v2 — pago único (distinto de Subscriptions API de arriba)."""
+    product = PRODUCTS[product_slug]
+    payload = {
+        'intent': 'CAPTURE',
+        'purchase_units': [{
+            'reference_id': product_slug,
+            'description': product['title'],
+            'amount': {'currency_code': 'USD', 'value': product['price_usd']},
+        }],
+        'application_context': {
+            'return_url': return_url,
+            'cancel_url': cancel_url,
+            'shipping_preference': 'NO_SHIPPING',
+            'user_action': 'PAY_NOW',
+            'brand_name': 'Endonautas',
+        },
+    }
+    resp = requests.post(
+        f'{_base()}/v2/checkout/orders',
+        json=payload, headers=_headers(), timeout=15,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    approve_url = next(lnk['href'] for lnk in data['links'] if lnk['rel'] == 'approve')
+    return data['id'], approve_url
+
+
+def capture_order(order_id):
+    resp = requests.post(
+        f'{_base()}/v2/checkout/orders/{order_id}/capture',
+        headers=_headers(), timeout=15,
+    )
+    resp.raise_for_status()
+    return resp.json()
 
 
 def get_subscription(subscription_id):
