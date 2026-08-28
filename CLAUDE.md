@@ -537,3 +537,75 @@ Revisión: Django admin (`/admin/reports/bugreport/`) con thumbnails inline y fi
 - Tests `custom`: herramientas de reflexión endonauta → **no son diagnóstico**
 - PHQ-9 en lugar de BDI-II (libre de copyright, Kroenke & Spitzer 2001)
 - Dirty Dozen en lugar de SD3 (Jonason & Webster 2010, 12 ítems)
+
+
+---
+
+## Ebook Endonautica — checkout, entrega y CRM (2026-08-27/28)
+
+Venta directa del libro **sin plataforma externa**: el checkout vive en esta app y cobra por
+MercadoPago (CLP) o PayPal (USD). Precio en `payments/constants.py::PRODUCTS` — `price_clp: 16990`,
+`price_usd: '17.00'`. La landing (`endonautas-web`) muestra los dos números: si cambian acá, cambian allá.
+
+### Flujo
+
+`/pago/ebook/comprar/{mp,paypal}/` (checkout de invitado, `@csrf_exempt`) → pasarela →
+`retorno_{mp,paypal}` **o** el webhook de MP → `_marcar_pagado` → email con links tokenizados.
+
+- **El webhook es la red de seguridad.** Si el comprador cierra la pestaña tras pagar, el retorno del
+  navegador nunca ocurre y la orden quedaba `pending` sin entregar. `create_preference_product`
+  manda `notification_url` al webhook que **ya existía** (`/pago/mp/webhook/`, con verificación HMAC)
+  y `_handle_one_time_payment` ramifica por `metadata.product_slug`. No hay ruta nueva: el
+  dispatcher es el mismo de packs y talleres. Idempotente porque filtra por `status=PENDING`.
+- **`_get_or_create_user(..., send_setup=False)`** para el ebook: quien compra un libro no pidió una
+  cuenta, y el mail de "restablece tu contraseña" confunde. La cuenta se crea en silencio.
+- **`settings.APP_BASE_URL`** (default `https://app.endonautas.cl`) existe porque el webhook entrega
+  sin `request`: sin ese fallback el email salía con un link **relativo**.
+
+### Entrega — dos formatos
+
+`payments/views/entrega.py::FORMATOS` mapea `pdf` y `epub`. **El PDF va primero en todos lados**:
+mucha gente no tiene lector de EPUB y un libro que no se abre termina en reembolso.
+
+- Rutas: `/pago/ebook/descargar/<token>/<formato>/` y la vieja `/pago/ebook/descargar/<token>/`, que
+  sigue sirviendo el EPUB **porque hay correos ya enviados con esa forma de URL**.
+- Los archivos viven en `payments/ebook_files/` y están **trackeados en git** (viajan en la imagen).
+  Se regeneran con `~/Proyectos/endonautas/ebook-venta/generar.sh` — ese script documenta la trampa
+  del pipeline: `pandoc --pdf-engine=typst` le pasa a typst rutas absolutas de su temporal para las
+  imágenes en base64 y falla con "file not found"; hay que extraer la media antes y compilar el
+  `.typ` a mano con el cwd dentro del temporal.
+- PDF: 205 páginas, maquetado con typst en 6×9" y EB Garamond (la misma tipografía de la landing).
+
+### ⚠️ `resultado.html` — el bug que hay que no repetir
+
+`base.html` renderiza `{% block content %}` **solo si el usuario está autenticado** (`:534`); para
+anónimos usa `{% block public_content %}` (`:607`). `resultado.html` definía solo el primero, y como
+el checkout del ebook y la seña del taller son **de invitado**, el comprador pagaba y recibía una
+página con `#page-content` de **87 bytes**: en blanco. Verificado en producción el 2026-08-28.
+
+El cuerpo vive ahora en `payments/_resultado_body.html` y la plantilla lo incluye desde **los dos**
+bloques, igual que `planes.html`. **Cualquier página que pueda ver un usuario sin sesión necesita los
+dos bloques.** Hay tests de regresión en `payments/tests.py::ResultadoVisibleParaInvitados`.
+
+La pantalla de éxito además entrega el libro ahí mismo (`download_url` / `download_url_epub`): hasta
+ese cambio el 100% de la entrega dependía del correo.
+
+### CRM de leads
+
+`EbookLead` se crea desde el test de heridas **y** desde el checkout (quien escribe su email y no
+paga es el lead más calificado del funnel y antes se perdía entero). Todos entran a Listmonk vía
+`accounts.listmonk.subscribe_user(email, list_ids=[LIST_LANZAMIENTO], attribs={...})` — la lista 8
+es la de leads sin cuenta, y la herida viaja como atributo para segmentar sin crear listas por origen.
+Si falla la entrega del PDF de la herida, se avisa a `settings.FRANCO_EMAIL` en vez de morir en el log.
+
+### Email — configuración real
+
+`EMAIL_BACKEND=post_office.EmailBackend` y el backend efectivo va en `POST_OFFICE['EMAIL_BACKEND']`,
+que sale de la env `EMAIL_BACKEND`. **Su default es `console`**: si esa env no está en Coolify, los
+correos se escriben en el log del contenedor y ningún comprador recibe nada — pasó, y el CRM marcaba
+los leads como entregados igual. Las tres env necesarias (`EMAIL_BACKEND`, `EMAIL_HOST_USER`,
+`EMAIL_HOST_PASSWORD`) se cargan **por la UI de Coolify, nunca por la API**, y un contenedor ya
+corriendo **no las toma**: hace falta redeploy.
+
+**Pendiente de entregabilidad (2026-08-28):** el SPF de `endonautas.cl` no incluye a Brevo y no hay
+DKIM (`brevo._domainkey` vacío). Los correos salen y llegan, pero con volumen se van a spam.
