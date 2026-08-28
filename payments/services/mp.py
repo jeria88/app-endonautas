@@ -78,7 +78,8 @@ def create_preference_taller(taller_slug, user, success_url, failure_url, pendin
     return data['id'], data['init_point']
 
 
-def create_preference_product(product_slug, user, success_url, failure_url, pending_url):
+def create_preference_product(product_slug, user, success_url, failure_url, pending_url,
+                              notification_url=None):
     product = PRODUCTS[product_slug]
     payload = {
         'items': [{
@@ -99,6 +100,10 @@ def create_preference_product(product_slug, user, success_url, failure_url, pend
             'user_id': str(user.pk),
         },
     }
+    # Sin esto la compra solo se confirma si el comprador vuelve del checkout: cerrar la
+    # pestaña tras pagar dejaba la orden 'pending' y el libro sin entregar.
+    if notification_url:
+        payload['notification_url'] = notification_url
     resp = requests.post(f'{_BASE}/checkout/preferences', json=payload, headers=_headers(), timeout=15)
     resp.raise_for_status()
     data = resp.json()

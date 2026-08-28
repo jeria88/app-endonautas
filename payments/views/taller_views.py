@@ -18,12 +18,17 @@ logger = logging.getLogger(__name__)
 _TALLER_SLUGS = frozenset(TALLERES.keys())
 
 
-def _get_or_create_user(request, email, first_name=''):
+def _get_or_create_user(request, email, first_name='', send_setup=True):
     """Cuenta automática para checkout de invitado. Si es nueva, dispara el flujo
     estándar de recuperación de contraseña para que el usuario la fije él mismo.
 
     NUNCA loguea la sesión como este user — si el email ya pertenece a una cuenta
     existente, eso sería iniciar sesión como otra persona sin verificar contraseña.
+
+    `send_setup=False` crea la cuenta en silencio (password aleatoria, sin email de
+    contraseña). Para compras donde el único email que corresponde es la entrega del
+    producto: el de "restablece tu contraseña" confunde a quien no pidió una cuenta.
+    La cuenta igual existe, así que "olvidé mi contraseña" funciona si después se registra.
     """
     User = get_user_model()
     user, created = User.objects.get_or_create(
@@ -32,6 +37,7 @@ def _get_or_create_user(request, email, first_name=''):
     if created:
         user.set_password(get_random_string(32))
         user.save(update_fields=['password'])
+    if created and send_setup:
         form = PasswordResetForm({'email': email})
         if form.is_valid():
             form.save(

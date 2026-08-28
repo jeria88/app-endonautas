@@ -1,6 +1,7 @@
 import logging
 import os
 
+from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.http import FileResponse, Http404
 from django.urls import reverse
@@ -26,11 +27,13 @@ def entregar_pdf_herida(lead):
         return False
 
     try:
-        subject = f'El mapa completo de tu herida'
+        subject = 'El mapa completo de tu herida'
         body_text = (
-            'Acá está el mapa completo de tu herida, en PDF — va adjunto.\n\n'
-            'Es un fragmento de Endonautica, el libro completo. Si querés el resto '
-            'del mapa, respondé este correo o escribinos por WhatsApp.\n\n'
+            'Aquí está el mapa completo de tu herida, en PDF — va adjunto.\n\n'
+            'Es un fragmento de Endonautica, el libro completo: 207 páginas con esta '
+            'herida y las otras cuatro, más el marco entero del viaje interior.\n\n'
+            'Si quieres el resto del mapa: https://endonautas.cl/ebook/?herida='
+            f'{lead.herida}\n\n'
             '— Franco'
         )
         msg = EmailMultiAlternatives(subject, body_text, to=[lead.email])
@@ -52,20 +55,41 @@ def entregar_ebook(order, request=None):
     (el registro queda visible en el admin para hacerlo a mano)."""
     try:
         path = reverse('descargar_ebook', args=[order.download_token])
-        download_url = request.build_absolute_uri(path) if request else path
-        subject = 'Tu ejemplar de Endonautica'
+        # El webhook de MP entrega sin request: ahí el link tiene que salir absoluto
+        # igual, o el comprador recibe un href relativo que no lleva a ninguna parte.
+        download_url = (
+            request.build_absolute_uri(path) if request
+            else f'{settings.APP_BASE_URL.rstrip("/")}{path}'
+        )
+        nombre = (order.user.first_name or '').strip()
+        saludo = f'Hola {nombre}.' if nombre else 'Hola.'
+        subject = 'Tu mapa llegó. Ahora empieza el viaje.'
         body_text = (
-            f'Gracias por tu compra.\n\n'
-            f'Acá está tu ejemplar de Endonautica: {download_url}\n\n'
-            f'Cualquier problema con la descarga, responde este correo o escríbenos por WhatsApp.\n\n'
-            f'— Franco'
+            f'{saludo}\n\n'
+            f'Aquí está tu ebook: {download_url}\n\n'
+            f'Antes de abrirlo, una advertencia honesta:\n\n'
+            f'Este no es un libro para leer una vez y guardar. Es un mapa para volver '
+            f'cuando te pierdas — y te vas a perder, porque así funciona el viaje interior.\n\n'
+            f'No lo leas como información. Léelo como si fuera un espejo.\n\n'
+            f'Cada concepto que te genere resistencia es información. Cada cosa que '
+            f'reconozcas en ti, también.\n\n'
+            f'Bienvenido al viaje.\n\n'
+            f'— Franco\n\n'
+            f'Si el link no funciona, responde este correo y lo resolvemos.'
         )
         body_html = (
-            f'<p>Gracias por tu compra.</p>'
-            f'<p>Acá está tu ejemplar de <strong>Endonautica</strong>:</p>'
-            f'<p><a href="{download_url}">Descargar el libro (EPUB)</a></p>'
-            f'<p>Cualquier problema con la descarga, responde este correo o escríbenos por WhatsApp.</p>'
+            f'<p>{saludo}</p>'
+            f'<p>Aquí está tu ebook:</p>'
+            f'<p><a href="{download_url}">Descargar <strong>Endonautica</strong> (EPUB)</a></p>'
+            f'<p>Antes de abrirlo, una advertencia honesta:</p>'
+            f'<p>Este no es un libro para leer una vez y guardar. Es un mapa para volver '
+            f'cuando te pierdas — y te vas a perder, porque así funciona el viaje interior.</p>'
+            f'<p>No lo leas como información. <strong>Léelo como si fuera un espejo.</strong></p>'
+            f'<p>Cada concepto que te genere resistencia es información. '
+            f'Cada cosa que reconozcas en ti, también.</p>'
+            f'<p>Bienvenido al viaje.</p>'
             f'<p>— Franco</p>'
+            f'<p style="color:#777;font-size:13px">Si el link no funciona, responde este correo y lo resolvemos.</p>'
         )
         msg = EmailMultiAlternatives(subject, body_text, to=[order.user.email])
         msg.attach_alternative(body_html, 'text/html')

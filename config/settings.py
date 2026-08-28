@@ -202,6 +202,9 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'hola@endonautas.cl')
 
 # Sitio público (landing) — usado en redirects fuera de la app
 PUBLIC_SITE_URL = os.getenv('PUBLIC_SITE_URL', 'https://endonautas.cl')
+# Esta app. Necesario para armar links absolutos fuera de un request (webhooks,
+# comandos de management): sin esto el email de entrega sale con un link relativo.
+APP_BASE_URL = os.getenv('APP_BASE_URL', 'https://app.endonautas.cl')
 LISTMONK_URL = os.getenv('LISTMONK_URL', 'https://mail.146.181.39.4.sslip.io')
 
 # LEGACY — saldo interno sin uso desde ddba5b8 (2026-06-22). NO son precios ni

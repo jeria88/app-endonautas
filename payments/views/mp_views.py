@@ -178,6 +178,21 @@ def _handle_one_time_payment(payment_id):
 
     pack_slug = metadata.get('pack_slug')
     taller_slug = metadata.get('taller_slug')
+    product_slug = metadata.get('product_slug')
+
+    if product_slug == 'endonautica-ebook':
+        # Red de seguridad del checkout del ebook: el retorno del navegador ya llama a
+        # _marcar_pagado, pero si el comprador cierra la pestaña tras pagar, esta es la
+        # única vía que entrega el libro. Idempotente: el filtro por status=PENDING hace
+        # que la segunda llamada (retorno o reintento de MP) no encuentre nada.
+        from ..models import EbookOrder
+        from .ebook_views import _marcar_pagado
+        order = EbookOrder.objects.filter(
+            user_id=user_id, gateway='mp', status=EbookOrder.STATUS_PENDING,
+        ).order_by('-created_at').first()
+        if order:
+            _marcar_pagado(order, str(payment_id))
+        return
 
     if pack_slug:
         fp = FractonesPack.objects.filter(

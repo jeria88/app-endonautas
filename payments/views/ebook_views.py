@@ -61,7 +61,9 @@ def comprar(request, gateway):
         })
 
     canal_origen = (request.POST.get('canal_origen') or '').strip()
-    user = _get_or_create_user(request, email, first_name=request.POST.get('first_name', ''))
+    user = _get_or_create_user(
+        request, email, first_name=request.POST.get('first_name', ''), send_setup=False,
+    )
     product = PRODUCTS[PRODUCT_SLUG]
 
     EbookOrder.objects.filter(user=user, gateway=gateway, status=EbookOrder.STATUS_PENDING).delete()
@@ -78,6 +80,7 @@ def comprar(request, gateway):
                 success_url=f'{base_url}?oid={order.pk}&status=success',
                 failure_url=f'{base_url}?oid={order.pk}&status=failure',
                 pending_url=f'{base_url}?oid={order.pk}&status=pending',
+                notification_url=request.build_absolute_uri(reverse('pago_mp_webhook')),
             )
         except Exception as e:
             logger.error(f'MP create_preference_product error: {e}')
