@@ -13,6 +13,14 @@ logger = logging.getLogger(__name__)
 EBOOK_FILES_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ebook_files')
 EPUB_PATH = os.path.join(EBOOK_FILES_DIR, 'endonautica.epub')
 
+# El PDF va primero en todos lados: mucha gente no tiene lector de EPUB, y un
+# libro que no se puede abrir es un reembolso. Se generan los dos con
+# `ebook-venta/generar.sh`.
+FORMATOS = {
+    'pdf':  ('endonautica.pdf',  'Endonautica.pdf',  'application/pdf'),
+    'epub': ('endonautica.epub', 'Endonautica.epub', 'application/epub+zip'),
+}
+
 
 def _avisar_fallo(lead, motivo):
     """Un lead que no recibe su PDF queda en 'nuevo' y hay que descubrirlo mirando
@@ -77,19 +85,23 @@ def entregar_ebook(order, request=None):
     la orden queda 'paid' igual y el fallback es entrega manual por WhatsApp
     (el registro queda visible en el admin para hacerlo a mano)."""
     try:
-        path = reverse('descargar_ebook', args=[order.download_token])
-        # El webhook de MP entrega sin request: ahí el link tiene que salir absoluto
-        # igual, o el comprador recibe un href relativo que no lleva a ninguna parte.
-        download_url = (
-            request.build_absolute_uri(path) if request
-            else f'{settings.APP_BASE_URL.rstrip("/")}{path}'
-        )
+        def url(formato):
+            path = reverse('descargar_ebook_formato', args=[order.download_token, formato])
+            # El webhook de MP entrega sin request: ahí el link tiene que salir
+            # absoluto igual, o el comprador recibe un href que no lleva a ningún lado.
+            return (request.build_absolute_uri(path) if request
+                    else f'{settings.APP_BASE_URL.rstrip("/")}{path}')
+
+        url_pdf, url_epub = url('pdf'), url('epub')
+        download_url = url_pdf
         nombre = (order.user.first_name or '').strip()
         saludo = f'Hola {nombre}.' if nombre else 'Hola.'
         subject = 'Tu mapa llegó. Ahora empieza el viaje.'
         body_text = (
             f'{saludo}\n\n'
-            f'Aquí está tu ebook: {download_url}\n\n'
+            f'Aquí está tu libro:\n\n'
+            f'  PDF (se abre en cualquier teléfono o computador): {url_pdf}\n'
+            f'  EPUB (para apps de lectura, si prefieres): {url_epub}\n\n'
             f'Antes de abrirlo, una advertencia honesta:\n\n'
             f'Este no es un libro para leer una vez y guardar. Es un mapa para volver '
             f'cuando te pierdas — y te vas a perder, porque así funciona el viaje interior.\n\n'
@@ -102,8 +114,11 @@ def entregar_ebook(order, request=None):
         )
         body_html = (
             f'<p>{saludo}</p>'
-            f'<p>Aquí está tu ebook:</p>'
-            f'<p><a href="{download_url}">Descargar <strong>Endonautica</strong> (EPUB)</a></p>'
+            f'<p>Aquí está tu libro, en los dos formatos:</p>'
+            f'<p><a href="{url_pdf}"><strong>Descargar en PDF</strong></a>'
+            f' — se abre en cualquier teléfono o computador.<br>'
+            f'<a href="{url_epub}">Descargar en EPUB</a>'
+            f' — para apps de lectura, si lo prefieres.</p>'
             f'<p>Antes de abrirlo, una advertencia honesta:</p>'
             f'<p>Este no es un libro para leer una vez y guardar. Es un mapa para volver '
             f'cuando te pierdas — y te vas a perder, porque así funciona el viaje interior.</p>'
@@ -128,15 +143,21 @@ def entregar_ebook(order, request=None):
     return True
 
 
-def descargar_ebook(request, token):
+def descargar_ebook(request, token, formato='epub'):
+    """`formato` por defecto es epub para no romper los links ya enviados por
+    email antes de que existiera el PDF."""
     order = EbookOrder.objects.filter(
         download_token=token,
         status__in=[EbookOrder.STATUS_PAID, EbookOrder.STATUS_DELIVERED],
     ).first()
     if not order:
         raise Http404('Link inválido o vencido.')
-    if not os.path.exists(EPUB_PATH):
+
+    archivo, nombre, tipo = FORMATOS.get(formato, FORMATOS['epub'])
+    ruta = os.path.join(EBOOK_FILES_DIR, archivo)
+    if not os.path.exists(ruta):
+        logger.error(f'descargar_ebook: falta {ruta} (order={order.pk})')
         raise Http404('Archivo no disponible — escríbenos por WhatsApp.')
     return FileResponse(
-        open(EPUB_PATH, 'rb'), as_attachment=True, filename='Endonautica.epub',
+        open(ruta, 'rb'), as_attachment=True, filename=nombre, content_type=tipo,
     )

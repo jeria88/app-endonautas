@@ -29,4 +29,6 @@ urlpatterns = [
     path('ebook/retorno/mp/', ebook_views.retorno_mp, name='pago_ebook_retorno_mp'),
     path('ebook/retorno/paypal/', ebook_views.retorno_paypal, name='pago_ebook_retorno_paypal'),
     path('ebook/descargar/<str:token>/', entrega.descargar_ebook, name='descargar_ebook'),
+    path('ebook/descargar/<str:token>/<str:formato>/', entrega.descargar_ebook,
+         name='descargar_ebook_formato'),
 ]

@@ -136,13 +136,13 @@ def comprar(request, gateway):
     return redirect(approve_url)
 
 
-def _download_url(order, request):
+def _download_url(order, request, formato='pdf'):
     """El token ya existe cuando se confirma el pago, así que la pantalla de éxito
     puede entregar el libro sin esperar al correo. Si el email se demora, cae en
     promociones o rebota, el comprador igual se va con el archivo."""
     if not order.download_token:
         return ''
-    path = reverse('descargar_ebook', args=[order.download_token])
+    path = reverse('descargar_ebook_formato', args=[order.download_token, formato])
     return request.build_absolute_uri(path)
 
 
@@ -174,7 +174,8 @@ def retorno_mp(request):
                     return render(request, 'payments/resultado.html', {
                         'exito': True, 'gateway': 'MercadoPago',
                         'mensaje': 'Pago confirmado. Aquí está tu libro.',
-                        'download_url': _download_url(order, request),
+                        'download_url': _download_url(order, request, 'pdf'),
+                'download_url_epub': _download_url(order, request, 'epub'),
                     })
         except Exception as e:
             logger.error(f'MP retorno_ebook error: {e}')
@@ -206,7 +207,8 @@ def retorno_paypal(request):
             return render(request, 'payments/resultado.html', {
                 'exito': True, 'gateway': 'PayPal',
                 'mensaje': 'Pago confirmado. Aquí está tu libro.',
-                'download_url': _download_url(order, request),
+                'download_url': _download_url(order, request, 'pdf'),
+                'download_url_epub': _download_url(order, request, 'epub'),
             })
     except Exception as e:
         logger.error(f'PayPal retorno_ebook error: {e}')

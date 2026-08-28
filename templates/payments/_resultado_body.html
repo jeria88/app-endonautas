@@ -14,11 +14,18 @@
       <p style="color:var(--muted);font-size:0.9rem;line-height:1.7;margin-bottom:2rem">{{ mensaje }}</p>
 
       {% if download_url %}
-        <div style="display:flex;flex-direction:column;gap:0.75rem;margin-bottom:1.5rem">
-          <a href="{{ download_url }}" class="btn btn-primary">Descargar el libro (EPUB)</a>
+        {# El PDF primero: se abre en cualquier teléfono. El EPUB es para quien
+           usa una app de lectura y lo prefiere. #}
+        <div style="display:flex;flex-direction:column;gap:0.75rem;margin-bottom:1.2rem">
+          <a href="{{ download_url }}" class="btn btn-primary">Descargar el libro (PDF)</a>
+          {% if download_url_epub %}
+            <a href="{{ download_url_epub }}" class="btn btn-ghost" style="font-size:0.82rem">
+              Prefiero el EPUB
+            </a>
+          {% endif %}
         </div>
         <p style="font-size:0.76rem;color:var(--muted);line-height:1.6;margin-bottom:2rem;opacity:.75">
-          También te lo enviamos a tu correo, con este mismo enlace para que puedas
+          También te lo enviamos a tu correo, con estos mismos enlaces para que puedas
           volver a descargarlo cuando quieras. Si no lo ves, revisa promociones o spam.
         </p>
       {% endif %}

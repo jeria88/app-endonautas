@@ -71,6 +71,28 @@ class EntregaDelEbook(TestCase):
         self.assertIn(f'{settings.APP_BASE_URL}/pago/ebook/descargar/', cuerpo)
         self.assertNotIn('href="/pago', mail.outbox[0].alternatives[0][0])
 
+    def test_entrega_los_dos_formatos(self):
+        """Mucha gente no tiene lector de EPUB: si el correo solo trae ese
+        formato, el libro no se abre y el reembolso es cuestión de tiempo."""
+        entregar_ebook(self.order, request=None)
+        cuerpo = mail.outbox[0].body
+        self.assertIn(f'/{self.order.download_token}/pdf/', cuerpo)
+        self.assertIn(f'/{self.order.download_token}/epub/', cuerpo)
+
+    def test_descarga_por_formato(self):
+        from payments.views.entrega import FORMATOS
+        for formato, (_, nombre, tipo) in FORMATOS.items():
+            r = self.client.get(reverse(
+                'descargar_ebook_formato', args=[self.order.download_token, formato]))
+            self.assertEqual(r.status_code, 200, formato)
+            self.assertEqual(r['Content-Type'], tipo)
+            self.assertIn(nombre, r['Content-Disposition'])
+        # El link viejo, sin formato, sigue entregando el EPUB: hay correos ya
+        # enviados con esa forma de URL.
+        r = self.client.get(reverse('descargar_ebook', args=[self.order.download_token]))
+        self.assertEqual(r.status_code, 200)
+        self.assertIn('Endonautica.epub', r['Content-Disposition'])
+
     def test_marcar_pagado_es_idempotente(self):
         """Webhook y retorno pueden llegar los dos: el segundo no debe re-entregar."""
         _marcar_pagado(self.order, 'pay-1')
