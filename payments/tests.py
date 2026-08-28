@@ -86,3 +86,35 @@ class EntregaDelEbook(TestCase):
         confunde a quien nunca pidió una cuenta."""
         _get_or_create_user(None, 'nuevo@test.cl', send_setup=False)
         self.assertEqual(len(mail.outbox), 0)
+
+
+class ResultadoVisibleParaInvitados(TestCase):
+    """El checkout del ebook y la seña del taller son de invitado, pero base.html
+    solo renderiza `content` si el usuario está autenticado. Sin `public_content`
+    el comprador pagaba y veía una página en blanco — pasó en producción."""
+
+    def test_anonimo_ve_el_resultado(self):
+        r = self.client.get(reverse('pago_ebook_retorno_mp'), {'status': 'failure'})
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Algo salió mal')
+
+    def test_anonimo_ve_el_boton_de_descarga(self):
+        user = get_user_model().objects.create(email='invitado@test.cl')
+        order = EbookOrder.objects.create(
+            user=user, gateway='mp', amount_local=16990, currency='CLP',
+            status=EbookOrder.STATUS_PAID, download_token='d' * 48,
+        )
+        # La vista de retorno exige llamar a MercadoPago, así que se renderiza el
+        # template directo con el mismo contexto que arma retorno_mp en el éxito.
+        from django.template.loader import render_to_string
+        from django.test import RequestFactory
+        from django.contrib.auth.models import AnonymousUser
+        req = RequestFactory().get('/')
+        req.user = AnonymousUser()
+        html = render_to_string('payments/resultado.html', {
+            'exito': True, 'gateway': 'MercadoPago',
+            'mensaje': 'Pago confirmado. Aquí está tu libro.',
+            'download_url': f'https://app.endonautas.cl/pago/ebook/descargar/{order.download_token}/',
+        }, request=req)
+        self.assertIn('Descargar el libro', html)
+        self.assertIn(order.download_token, html)

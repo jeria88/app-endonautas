@@ -1,0 +1,71 @@
+{% comment %}
+  Cuerpo compartido por las dos ramas de base.html. Va en un parcial porque el
+  checkout del ebook y la seña del taller son de INVITADO: sin esto el comprador
+  cae en la rama anónima, que renderiza `public_content`, y veía la página vacía.
+{% endcomment %}
+<div style="max-width:480px;margin:0 auto;padding:2rem 0">
+  <div class="panel" style="text-align:center;padding:2.5rem 2rem">
+
+    {% if exito and not pendiente %}
+      <div style="width:56px;height:56px;border-radius:50%;background:rgba(126,204,205,0.12);border:1px solid rgba(126,204,205,0.4);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:1.6rem">✓</div>
+      <h1 style="font-size:1.2rem;font-weight:700;color:var(--calipso);margin-bottom:0.6rem">
+        {% if es_suscripcion %}Plan activado{% else %}Pago confirmado{% endif %}
+      </h1>
+      <p style="color:var(--muted);font-size:0.9rem;line-height:1.7;margin-bottom:2rem">{{ mensaje }}</p>
+
+      {% if download_url %}
+        <div style="display:flex;flex-direction:column;gap:0.75rem;margin-bottom:1.5rem">
+          <a href="{{ download_url }}" class="btn btn-primary">Descargar el libro (EPUB)</a>
+        </div>
+        <p style="font-size:0.76rem;color:var(--muted);line-height:1.6;margin-bottom:2rem;opacity:.75">
+          También te lo enviamos a tu correo, con este mismo enlace para que puedas
+          volver a descargarlo cuando quieras. Si no lo ves, revisa promociones o spam.
+        </p>
+      {% endif %}
+
+      {% if gateway %}
+        <p style="font-size:0.72rem;color:var(--muted);margin-bottom:2rem;opacity:.6">Procesado via {{ gateway }}</p>
+      {% endif %}
+
+      <div style="display:flex;flex-direction:column;gap:0.75rem">
+        {% if user.is_authenticated %}
+          {% if not request.user.profile.onboarding_complete %}
+          <a href="/onboarding/" onclick="spaGo(event,this)" class="btn btn-primary">Personalizar mi experiencia →</a>
+          <a href="/" onclick="spaGo(event,this)" class="btn btn-ghost" style="font-size:0.82rem">Ir al inicio</a>
+          {% else %}
+          <a href="/" onclick="spaGo(event,this)" class="btn btn-primary">Ir al inicio</a>
+          <a href="/perfil/" onclick="spaGo(event,this)" class="btn btn-ghost" style="font-size:0.82rem">Ver mi perfil →</a>
+          {% endif %}
+        {% else %}
+          {# Invitado: no tiene perfil ni onboarding — los links de la app no le sirven. #}
+          <a href="https://endonautas.cl/" class="btn btn-ghost" style="font-size:0.82rem">Volver a Endonautas</a>
+        {% endif %}
+      </div>
+
+    {% elif pendiente %}
+      <div style="width:56px;height:56px;border-radius:50%;background:rgba(212,160,86,0.12);border:1px solid rgba(212,160,86,0.4);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:1.6rem">◑</div>
+      <h1 style="font-size:1.2rem;font-weight:700;color:var(--amber);margin-bottom:0.6rem">Pago en proceso</h1>
+      <p style="color:var(--muted);font-size:0.9rem;line-height:1.7;margin-bottom:2rem">{{ mensaje|default:"Te notificaremos cuando se confirme." }}</p>
+      {% if user.is_authenticated %}
+        <a href="/" onclick="spaGo(event,this)" class="btn btn-ghost">Volver al inicio</a>
+      {% else %}
+        <a href="https://endonautas.cl/" class="btn btn-ghost">Volver a Endonautas</a>
+      {% endif %}
+
+    {% else %}
+      <div style="width:56px;height:56px;border-radius:50%;background:rgba(201,123,132,0.12);border:1px solid rgba(201,123,132,0.4);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:1.6rem">✕</div>
+      <h1 style="font-size:1.2rem;font-weight:700;color:var(--rose);margin-bottom:0.6rem">Algo salió mal</h1>
+      <p style="color:var(--muted);font-size:0.9rem;line-height:1.7;margin-bottom:2rem">{{ mensaje|default:"No se pudo completar el pago." }}</p>
+      <div style="display:flex;flex-direction:column;gap:0.75rem">
+        <a href="javascript:history.back()" class="btn btn-ghost">Intentar de nuevo</a>
+        {% if user.is_authenticated %}
+          <a href="/" onclick="spaGo(event,this)" class="btn btn-ghost" style="font-size:0.82rem;opacity:.6">Ir al inicio</a>
+        {% else %}
+          {# Si ya pagó y algo falló, que tenga a dónde escribir — no un callejón sin salida. #}
+          <a href="https://wa.me/56938713033?text=Hola%20Franco%2C%20tuve%20un%20problema%20con%20el%20pago%20del%20ebook" class="btn btn-ghost" style="font-size:0.82rem">Escribirle a Franco</a>
+        {% endif %}
+      </div>
+    {% endif %}
+
+  </div>
+</div>

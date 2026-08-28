@@ -15,6 +15,9 @@ _TOKEN = 'lm_api_2b99334cb53a67a428a364049b45b986533908952a897102'
 LIST_USUARIOS_APP = 4
 LIST_LEADS_APP = 7
 LIST_PRACTICANTES = 5
+# Leads sin cuenta (test de heridas, checkout del ebook). Se segmenta por `attribs`
+# en vez de crear una lista por origen.
+LIST_LANZAMIENTO = 8
 
 _PLAN_LISTS = {
     'free':        [LIST_USUARIOS_APP, LIST_LEADS_APP],
@@ -32,21 +35,26 @@ def _headers():
     return {'Authorization': f'Basic {creds}', 'Content-Type': 'application/json'}
 
 
-def subscribe_user(email, plan='free', name=''):
-    """Suscribe al email en las listas correspondientes al plan dado."""
-    list_ids = _PLAN_LISTS.get(plan, [LIST_USUARIOS_APP])
+def subscribe_user(email, plan='free', name='', list_ids=None, attribs=None):
+    """Suscribe al email en las listas correspondientes al plan dado.
+
+    `list_ids` explícito gana sobre el plan — lo usan los leads sin cuenta, que no
+    tienen plan. `attribs` viaja como atributos del suscriptor para poder segmentar
+    después (p. ej. la herida que salió en el test) sin una lista por origen.
+    """
+    list_ids = list_ids or _PLAN_LISTS.get(plan, [LIST_USUARIOS_APP])
+    payload = {
+        'email': email,
+        'name': name or email.split('@')[0],
+        'status': 'enabled',
+        'lists': list_ids,
+        'preconfirm_subscriptions': True,
+    }
+    if attribs:
+        payload['attribs'] = attribs
     try:
         requests.post(
-            f'{_BASE}/api/subscribers',
-            json={
-                'email': email,
-                'name': name or email.split('@')[0],
-                'status': 'enabled',
-                'lists': list_ids,
-                'preconfirm_subscriptions': True,
-            },
-            headers=_headers(),
-            timeout=5,
+            f'{_BASE}/api/subscribers', json=payload, headers=_headers(), timeout=5,
         )
     except Exception:
         pass

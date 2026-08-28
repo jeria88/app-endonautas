@@ -6,6 +6,8 @@ from django.utils.crypto import get_random_string
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
+from accounts.listmonk import LIST_LANZAMIENTO, subscribe_user
+
 from ..constants import PRODUCTS
 from ..models import EbookLead, EbookOrder
 from ..services import mp as mp_service
@@ -39,6 +41,15 @@ def lead(request):
         from .entrega import entregar_pdf_herida
         entregar_pdf_herida(lead_obj)
 
+    # Sin esto el lead solo existe en el admin de Django: recibe el PDF y nada más.
+    # Es el activo más caro del funnel, así que entra a la lista de email desde el
+    # primer contacto. La herida viaja como atributo para poder segmentar después.
+    if email:
+        subscribe_user(
+            email, list_ids=[LIST_LANZAMIENTO],
+            attribs={'herida': herida, 'origen': canal_origen},
+        )
+
     return render(request, 'payments/resultado.html', {
         'exito': True,
         'mensaje': 'Listo. Revisa tu email en los próximos minutos con el mapa completo de tu herida.',
@@ -65,6 +76,18 @@ def comprar(request, gateway):
         request, email, first_name=request.POST.get('first_name', ''), send_setup=False,
     )
     product = PRODUCTS[PRODUCT_SLUG]
+
+    # Quien llega al checkout y no termina de pagar es el lead más calificado que
+    # hay, y hasta ahora solo dejaba una EbookOrder 'pending' que nadie mira.
+    # `_marcar_pagado` lo pasa a 'comprado' al confirmarse, así que si vuelve y
+    # paga, el estado se corrige solo.
+    if not EbookLead.objects.filter(email=email).exists():
+        EbookLead.objects.create(
+            email=email, canal_origen=canal_origen or 'checkout',
+            status=EbookLead.STATUS_CONTACTADO,
+        )
+    subscribe_user(email, list_ids=[LIST_LANZAMIENTO],
+                   attribs={'origen': canal_origen or 'checkout'})
 
     EbookOrder.objects.filter(user=user, gateway=gateway, status=EbookOrder.STATUS_PENDING).delete()
 
@@ -113,6 +136,16 @@ def comprar(request, gateway):
     return redirect(approve_url)
 
 
+def _download_url(order, request):
+    """El token ya existe cuando se confirma el pago, así que la pantalla de éxito
+    puede entregar el libro sin esperar al correo. Si el email se demora, cae en
+    promociones o rebota, el comprador igual se va con el archivo."""
+    if not order.download_token:
+        return ''
+    path = reverse('descargar_ebook', args=[order.download_token])
+    return request.build_absolute_uri(path)
+
+
 def retorno_mp(request):
     payment_id = request.GET.get('payment_id') or request.GET.get('collection_id')
     status = request.GET.get('status') or request.GET.get('collection_status')
@@ -140,7 +173,8 @@ def retorno_mp(request):
                     _marcar_pagado(order, str(payment_id), request)
                     return render(request, 'payments/resultado.html', {
                         'exito': True, 'gateway': 'MercadoPago',
-                        'mensaje': 'Pago confirmado. Revisa tu email — te llega el libro en unos minutos.',
+                        'mensaje': 'Pago confirmado. Aquí está tu libro.',
+                        'download_url': _download_url(order, request),
                     })
         except Exception as e:
             logger.error(f'MP retorno_ebook error: {e}')
@@ -171,7 +205,8 @@ def retorno_paypal(request):
             _marcar_pagado(order, order.gateway_payment_id, request)
             return render(request, 'payments/resultado.html', {
                 'exito': True, 'gateway': 'PayPal',
-                'mensaje': 'Pago confirmado. Revisa tu email — te llega el libro en unos minutos.',
+                'mensaje': 'Pago confirmado. Aquí está tu libro.',
+                'download_url': _download_url(order, request),
             })
     except Exception as e:
         logger.error(f'PayPal retorno_ebook error: {e}')

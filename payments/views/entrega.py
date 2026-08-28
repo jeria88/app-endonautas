@@ -14,6 +14,27 @@ EBOOK_FILES_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'eboo
 EPUB_PATH = os.path.join(EBOOK_FILES_DIR, 'endonautica.epub')
 
 
+def _avisar_fallo(lead, motivo):
+    """Un lead que no recibe su PDF queda en 'nuevo' y hay que descubrirlo mirando
+    el admin. Avisar es la diferencia entre reenviarlo a mano hoy o perderlo."""
+    try:
+        from django.core.mail import mail_admins, send_mail
+        destino = getattr(settings, 'FRANCO_EMAIL', '')
+        cuerpo = (
+            f'No se pudo entregar el PDF de la herida.\n\n'
+            f'Lead: {lead.pk} — {lead.email}\nHerida: {lead.herida}\n'
+            f'Origen: {lead.canal_origen}\nMotivo: {motivo}\n\n'
+            f'Reenviar a mano desde el admin.'
+        )
+        if destino:
+            send_mail('[Endonautas] Lead sin PDF', cuerpo,
+                      settings.DEFAULT_FROM_EMAIL, [destino], fail_silently=True)
+        else:
+            mail_admins('[Endonautas] Lead sin PDF', cuerpo, fail_silently=True)
+    except Exception:
+        pass
+
+
 def entregar_pdf_herida(lead):
     """Envía por email el PDF 'mapa de tu herida' generado por
     `manage.py generar_pdfs_heridas` desde heridas.ts. Nunca lanza — si falla,
@@ -24,6 +45,7 @@ def entregar_pdf_herida(lead):
     pdf_path = os.path.join(EBOOK_FILES_DIR, f'mapa-herida-{lead.herida}.pdf')
     if not os.path.exists(pdf_path):
         logger.error(f'entregar_pdf_herida: no existe {pdf_path} (lead={lead.pk})')
+        _avisar_fallo(lead, f'no existe el PDF {pdf_path}')
         return False
 
     try:
@@ -42,6 +64,7 @@ def entregar_pdf_herida(lead):
         msg.send(fail_silently=False)
     except Exception as e:
         logger.error(f'entregar_pdf_herida error (lead={lead.pk}): {e}')
+        _avisar_fallo(lead, str(e))
         return False
 
     lead.status = EbookLead.STATUS_PDF_ENTREGADO
