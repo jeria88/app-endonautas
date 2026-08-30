@@ -1,108 +1,99 @@
 {% load static %}<!DOCTYPE html>
-<html lang="es" data-aesthetic="{{ map_aesthetic|default:'cosmos' }}">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>{% block title %}Endonautas{% endblock %}</title>
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#03030a">
+  <meta name="theme-color" content="#14100c">
   <link rel="icon" type="image/png" href="{% static 'img/icon-192.png' %}">
   <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}</script>
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-      }
-    }
-  </script>
+  <script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('endo-theme')||'dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <style data-global>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
 
+    /* ── Sistema de tokens: glass / "Vidrio ámbar". Dark = default.
+       Mismos valores que endonautas-web/src/styles/tokens.css ── */
     :root {
-      --bg: #030306;
-      --bg-deep: #010103;
-      --surface: rgba(12,10,20,0.90);
-      --surface2: rgba(20,17,35,0.94);
-      --border: rgba(255,255,255,0.08);
-      --border-active: rgba(255,255,255,0.18);
+      --bg: #14100c;
+      --bg-deep: #0d0a06;
+      --surface: #20190f;
+      --surface2: #2c2213;
+      --border: #453720;
+      --border-active: #5c4a2c;
 
-      --text: #eceaef;
-      --muted: #848296;
-      --dim: #484658;
+      --text: #f4efe6;
+      --muted: #c3b39a;
+      --dim: #8a7a60;
 
-      --calipso: #7ECCCD;
-      --calipso-glow: rgba(126,204,205,0.15);
-      --amber: #d4a056;
-      --amber-glow: rgba(212,160,86,0.15);
-      --rose: #c97b84;
-      --rose-glow: rgba(201,123,132,0.15);
-      --violet: #9b8ec4;
-      --violet-glow: rgba(155,142,196,0.15);
-      --green: #7ec49b;
+      --calipso: #e0a24a;
+      --calipso-glow: rgba(224,162,74,0.15);
+      --amber: #e0a24a;
+      --amber-glow: rgba(224,162,74,0.15);
+      --rose: #df7a6a;
+      --rose-glow: rgba(223,122,106,0.15);
+      --violet: #c99a6a;
+      --violet-glow: rgba(201,154,106,0.15);
+      --green: #7cc98a;
 
-      /* Aliases usados en templates de polaridad */
+      /* Aliases usados en templates de polaridad (4 hues distinguibles) */
       --accent: var(--calipso);
       --accent2: var(--violet);
       --luz-intensa: #f0c040;
-      --luz: var(--calipso);
-      --transicion: var(--amber);
-      --sombra: var(--violet);
-      --sombra-dom: var(--rose);
+      --luz: #7cc98a;
+      --transicion: #e6b955;
+      --sombra: #c99a6a;
+      --sombra-dom: #df7a6a;
 
-      --font-ui: 'Plus Jakarta Sans', system-ui, sans-serif;
-      --font-display: 'Space Grotesk', system-ui, sans-serif;
-      --font-editorial: 'EB Garamond', Georgia, serif;
+      --glass: color-mix(in srgb, var(--surface) 72%, transparent);
+
+      --font-ui: 'Hanken Grotesk', system-ui, sans-serif;
+      --font-display: 'Bricolage Grotesque', 'Hanken Grotesk', system-ui, sans-serif;
+      --font-editorial: 'Bricolage Grotesque', Georgia, serif;
       --sidebar-w: 280px;
-      --radius: 16px;
+      --radius: 14px;
     }
 
-    /* Paletas de color (override de acentos según preferencia del usuario) */
-    [data-palette="aurora"] {
-      --calipso: #6B73FF; --calipso-glow: rgba(107,115,255,0.15);
-      --accent: var(--calipso);
-    }
-    [data-palette="terra"] {
-      --calipso: #C8965A; --calipso-glow: rgba(200,150,90,0.15);
-      --accent: var(--calipso);
-    }
-    [data-palette="obsidian"] {
-      --calipso: #A78BFA; --calipso-glow: rgba(167,139,250,0.15);
-      --accent: var(--calipso);
-    }
-    [data-palette="sakura"] {
-      --calipso: #F06292; --calipso-glow: rgba(240,98,146,0.15);
-      --accent: var(--calipso);
+    :root[data-theme="light"] {
+      --bg: #f5efe3;
+      --bg-deep: #ece2cd;
+      --surface: #fdf9f0;
+      --surface2: #ece2cd;
+      --border: #d9c9a8;
+      --border-active: #c4ad82;
+
+      --text: #241c12;
+      --muted: #6a5c45;
+      --dim: #8a7757;
+
+      --calipso: #a4641a;
+      --calipso-glow: rgba(164,100,26,0.12);
+      --amber: #a4641a;
+      --amber-glow: rgba(164,100,26,0.12);
+      --rose: #a8443a;
+      --violet: #8a5f17;
+      --green: #3f7a4d;
+
+      --luz: #3f7a4d;
+      --transicion: #8a5f17;
+      --sombra: #8a6b3a;
+      --sombra-dom: #a8443a;
+
+      --glass: color-mix(in srgb, var(--surface) 82%, transparent);
     }
 
     html, body {
       height: 100%; width: 100%;
       background: var(--bg); color: var(--text);
       font-family: var(--font-ui); font-size: 15px;
+      transition: background 0.3s ease, color 0.3s ease;
     }
     /* App shell (logueado): sin overflow en body */
     body.app-mode { overflow: hidden; height: 100vh; }
-
-    /* ── Cosmos background ─────────────────────────────────── */
-    #cosmos-bg-container { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
-    #bh-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-    #cosmos-overlay {
-      position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none;
-      background: rgba(3,3,6,0.45);
-      backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
-      transition: background 0.5s ease, backdrop-filter 0.5s ease;
-    }
-    /* Mandala/tunnel: ocultar cosmos; mostrar velo de contraste */
-    html[data-aesthetic="mandala"] #cosmos-bg-container { display: none; }
-    #mandala-overlay {
-      position: fixed; inset: 0; z-index: 1; pointer-events: none; display: none;
-      background: rgba(3, 3, 6, 0.44);
-    }
-    html[data-aesthetic="mandala"] #mandala-overlay { display: block; }
 
     /* ── App shell ─────────────────────────────────────────── */
     .app-shell { display: flex; height: 100vh; width: 100vw; position: relative; z-index: 2; }
@@ -110,7 +101,7 @@
     /* ── Sidebar ───────────────────────────────────────────── */
     .sidebar {
       width: var(--sidebar-w); flex-shrink: 0;
-      background: rgba(8,6,12,0.85);
+      background: var(--glass);
       backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
       border-right: 1px solid var(--border);
       display: flex; flex-direction: column;
@@ -129,7 +120,7 @@
     }
     .sidebar-logo-text h1 {
       font-family: var(--font-display); font-size: 1.1rem; font-weight: 700;
-      letter-spacing: -0.01em; color: #fff;
+      letter-spacing: -0.01em; color: var(--text);
     }
     .sidebar-logo-text span {
       font-size: 0.62rem; font-weight: 600; letter-spacing: 0.08em;
@@ -153,18 +144,18 @@
     .nav-link:hover { background: rgba(255,255,255,0.04); color: var(--text); }
     .nav-link:hover svg { opacity: 0.9; }
     .nav-link.active {
-      background: rgba(126,204,205,0.09); color: var(--calipso); font-weight: 600;
+      background: rgba(224,162,74,0.09); color: var(--calipso); font-weight: 600;
       border-left: 2.5px solid var(--calipso);
     }
     .nav-link.active svg { color: var(--calipso); opacity: 1; }
 
     .sidebar-bottom { margin-top: auto; border-top: 1px solid var(--border); padding: 16px 12px 12px; }
     .sidebar-user { font-size: 0.82rem; color: var(--muted); padding: 4px 4px 8px; }
-    .sidebar-user strong { color: #fff; display: block; font-size: 0.9rem; font-weight: 600; font-family: var(--font-display); }
+    .sidebar-user strong { color: var(--text); display: block; font-size: 0.9rem; font-weight: 600; font-family: var(--font-display); }
     .sidebar-user .plan-tag { font-size: 0.7rem; color: var(--calipso); font-weight: 500; }
     .token-badge {
       display: inline-flex; align-items: center; gap: 4px;
-      background: var(--calipso-glow); border: 1px solid rgba(126,204,205,0.25);
+      background: var(--calipso-glow); border: 1px solid rgba(224,162,74,0.25);
       border-radius: 20px; padding: 2px 10px; font-size: 0.72rem; color: var(--calipso); margin-top: 5px;
       font-family: var(--font-display); font-weight: 600;
     }
@@ -173,13 +164,12 @@
     .main-content {
       flex: 1; height: 100vh; overflow-y: auto;
       padding: 36px 40px; position: relative;
-      background: rgba(3,3,6,0.28);
+      background: transparent;
     }
 
-    /* ── Cards / Panels ────────────────────────────────────── */
+    /* ── Cards / Panels (superficie opaca — sin blur en contenido/datos) ── */
     .panel, .card {
       background: var(--surface);
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
       border: 1px solid var(--border);
       border-radius: var(--radius); padding: 24px;
       transition: border-color 0.3s;
@@ -192,7 +182,7 @@
       font-family: var(--font-display); font-size: 0.63rem; font-weight: 700;
       letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px;
     }
-    .tag-calipso { background: var(--calipso-glow); color: var(--calipso); border: 1px solid rgba(126,204,205,0.2); }
+    .tag-calipso { background: var(--calipso-glow); color: var(--calipso); border: 1px solid rgba(224,162,74,0.2); }
     .tag-amber   { background: var(--amber-glow);   color: var(--amber);   border: 1px solid rgba(212,160,86,0.2);  }
     .tag-violet  { background: var(--violet-glow);  color: var(--violet);  border: 1px solid rgba(155,142,196,0.2); }
     .tag-rose    { background: var(--rose-glow);    color: var(--rose);    border: 1px solid rgba(201,123,132,0.2); }
@@ -207,15 +197,15 @@
     .btn-sm { padding: 6px 14px; font-size: 0.8rem; border-radius: 6px; }
     .btn-lg { padding: 14px 28px; font-size: 1rem; }
     .btn-primary { background: var(--calipso); color: var(--bg); }
-    .btn-primary:hover { background: #95e1e0; box-shadow: 0 0 16px rgba(126,204,205,0.3); }
+    .btn-primary:hover { background: #ecb668; box-shadow: 0 0 16px rgba(224,162,74,0.3); }
     .btn-secondary, .btn-outline {
       background: transparent; border: 1px solid var(--border-active); color: var(--text);
     }
-    .btn-secondary:hover, .btn-outline:hover { border-color: #fff; background: rgba(255,255,255,0.05); }
+    .btn-secondary:hover, .btn-outline:hover { border-color: var(--text); background: rgba(255,255,255,0.05); }
     .btn-ghost, .btn-calipso {
-      background: var(--calipso-glow); color: var(--calipso); border: 1px solid rgba(126,204,205,0.3);
+      background: var(--calipso-glow); color: var(--calipso); border: 1px solid rgba(224,162,74,0.3);
     }
-    .btn-ghost:hover, .btn-calipso:hover { background: rgba(126,204,205,0.25); border-color: var(--calipso); }
+    .btn-ghost:hover, .btn-calipso:hover { background: rgba(224,162,74,0.25); border-color: var(--calipso); }
     .btn-gold { background: var(--amber); color: var(--bg); }
     .btn-gold:hover { background: #e9b46c; box-shadow: 0 0 16px rgba(212,160,86,0.3); }
 
@@ -238,7 +228,7 @@
 
     /* ── Badges ────────────────────────────────────────────── */
     .badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; font-family: var(--font-display); }
-    .badge-validado  { background: var(--calipso-glow); color: var(--calipso); border: 1px solid rgba(126,204,205,0.3); }
+    .badge-validado  { background: var(--calipso-glow); color: var(--calipso); border: 1px solid rgba(224,162,74,0.3); }
     .badge-adaptado  { background: var(--amber-glow);   color: var(--amber);   border: 1px solid rgba(212,160,86,0.3);  }
     .badge-endonauta { background: var(--violet-glow);  color: var(--violet);  border: 1px solid rgba(155,142,196,0.3); }
 
@@ -274,12 +264,12 @@
     /* ── Alerts ────────────────────────────────────────────── */
     .alert { padding: 12px 16px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 1rem; }
     .alert-error   { background: rgba(201,123,132,0.12); border: 1px solid rgba(201,123,132,0.3); color: #e09098; }
-    .alert-success { background: var(--calipso-glow);    border: 1px solid rgba(126,204,205,0.25); color: var(--calipso); }
+    .alert-success { background: var(--calipso-glow);    border: 1px solid rgba(224,162,74,0.25); color: var(--calipso); }
 
     /* ── Typography helpers ────────────────────────────────── */
     h1,h2,h3,h4 { font-family: var(--font-display); }
     .page-header { margin-bottom: 28px; }
-    .page-header h2 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; color: #fff; margin-bottom: 6px; }
+    .page-header h2 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text); margin-bottom: 6px; }
     .page-header p { color: var(--muted); font-size: 0.92rem; }
     .eyebrow {
       font-family: var(--font-display); font-size: 0.72rem; font-weight: 700;
@@ -297,7 +287,7 @@
     .bar-sombra-dominante { background: var(--rose); }
 
     /* ── Stats ─────────────────────────────────────────────── */
-    .stat-value { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; color: #fff; display: block; }
+    .stat-value { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; color: var(--text); display: block; }
     .stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
 
     /* ── Mobile top bar ───────────────────────────────────── */
@@ -317,7 +307,7 @@
     .mobile-nav-toggle:active { background: rgba(255,255,255,0.06); }
     .sidebar-backdrop {
       display: none; position: fixed; inset: 0; z-index: 19;
-      background: rgba(3,3,6,0.68); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+      background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
     }
 
     /* ── Responsive ────────────────────────────────────────── */
@@ -342,7 +332,7 @@
       /* Segmentado de Oráculo (Tarot · I Ching · Fractal) */
       .orac-tabs { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 4px; margin-bottom: 1rem; }
       .orac-tab { flex: 1; text-align: center; padding: 9px 0; border-radius: 9px; font-size: 0.82rem; font-weight: 600; color: var(--muted); text-decoration: none; transition: background 0.18s, color 0.18s; }
-      .orac-tab.active { background: var(--calipso-glow); color: var(--calipso); box-shadow: inset 0 0 0 1px rgba(126,204,205,0.3); }
+      .orac-tab.active { background: var(--calipso-glow); color: var(--calipso); box-shadow: inset 0 0 0 1px rgba(224,162,74,0.3); }
       .tabbar {
         display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 15;
         background: rgba(6,4,12,0.92);
@@ -363,7 +353,7 @@
       .tab-link.active::before {
         content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
         width: 26px; height: 2px; border-radius: 0 0 3px 3px;
-        background: var(--calipso); box-shadow: 0 0 8px rgba(126,204,205,0.6);
+        background: var(--calipso); box-shadow: 0 0 8px rgba(224,162,74,0.6);
       }
       body.m-focus .tabbar { display: none; }
       body.m-focus .main-content { padding-bottom: env(safe-area-inset-bottom); }
@@ -387,19 +377,34 @@
   {% block extra_head %}{% endblock %}
   <script defer data-website-id="9aa0968f-0cd2-4c77-9c70-fbb745d31754" src="https://analytics.146.181.39.4.sslip.io/script.js"></script>
 </head>
-<body data-aesthetic="{{ map_aesthetic|default:'cosmos' }}" data-palette="{{ user.profile.color_palette|default:'cosmos' }}"{% if user.is_authenticated %} class="app-mode"{% endif %}>
+<body{% if user.is_authenticated %} class="app-mode"{% endif %}>
 
-<div id="cosmos-bg-container"><div id="cosmos-overlay"></div></div>
-<canvas id="tunnel-bg" aria-hidden="true" style="position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;display:none"></canvas>
-<div id="mandala-overlay" aria-hidden="true"></div>
+<button type="button" id="theme-toggle" aria-label="Cambiar tema claro/oscuro"
+  style="position:fixed;z-index:9500;bottom:4.2rem;left:1rem;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:9px;background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--border);color:var(--muted);cursor:pointer;padding:0">
+  <svg id="tt-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  <svg id="tt-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+</button>
+<script>
+(function(){
+  var b=document.getElementById('theme-toggle');
+  function sync(){var l=document.documentElement.getAttribute('data-theme')==='light';document.getElementById('tt-sun').style.display=l?'block':'none';document.getElementById('tt-moon').style.display=l?'none':'block';}
+  sync();
+  b.addEventListener('click',function(){
+    var n=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';
+    document.documentElement.setAttribute('data-theme',n);
+    try{localStorage.setItem('endo-theme',n);}catch(e){}
+    sync();
+  });
+})();
+</script>
 
 {% if user.is_authenticated %}
 <div class="mobile-topbar">
   <button class="mobile-nav-toggle" id="mobile-ham" aria-label="Abrir menú" aria-expanded="false">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
   </button>
-  <span style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;color:#fff;letter-spacing:-0.01em;flex:1;text-align:center">Endonautas</span>
-  <a href="/planes/" onclick="spaGo(event,this)" style="display:flex;align-items:center;gap:4px;font-size:0.72rem;color:var(--calipso);text-decoration:none;background:var(--calipso-glow);border:1px solid rgba(126,204,205,0.25);border-radius:20px;padding:4px 10px;white-space:nowrap;flex-shrink:0;text-transform:capitalize">{{ user_plan }}</a>
+  <span style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;color:var(--text);letter-spacing:-0.01em;flex:1;text-align:center">Endonautas</span>
+  <a href="/planes/" onclick="spaGo(event,this)" style="display:flex;align-items:center;gap:4px;font-size:0.72rem;color:var(--calipso);text-decoration:none;background:var(--calipso-glow);border:1px solid rgba(224,162,74,0.25);border-radius:20px;padding:4px 10px;white-space:nowrap;flex-shrink:0;text-transform:capitalize">{{ user_plan }}</a>
 </div>
 <div class="app-shell">
   <nav class="sidebar">
@@ -506,7 +511,7 @@
           {{ user.first_name|first|default:user.email|first|upper }}
         </div>
         <div style="flex:1;min-width:0">
-          <div style="font-family:var(--font-display);font-size:0.875rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ user.first_name|default:user.email }}</div>
+          <div style="font-family:var(--font-display);font-size:0.875rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ user.first_name|default:user.email }}</div>
           <div style="font-size:0.68rem;color:var(--calipso);font-weight:500;text-transform:capitalize">Mi Cuenta · {{ user_plan }}</div>
         </div>
         <form method="post" action="/logout/" style="margin:0;flex-shrink:0">
@@ -552,7 +557,7 @@
   <div class="panel" style="max-width:420px;width:calc(100vw - 32px);padding:20px">
     <h3 style="font-family:var(--font-display);font-size:1rem;margin:0 0 4px">Reportar un problema</h3>
     <p style="font-size:0.78rem;color:var(--muted);margin:0 0 12px">Cuéntanos qué pasó. Si puedes, adjunta capturas de pantalla.</p>
-    <textarea id="bug-desc" rows="4" placeholder="Qué estabas haciendo y qué salió mal…" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:#fff;padding:10px;font-size:0.85rem;resize:vertical"></textarea>
+    <textarea id="bug-desc" rows="4" placeholder="Qué estabas haciendo y qué salió mal…" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px;font-size:0.85rem;resize:vertical"></textarea>
     <input type="file" id="bug-files" accept="image/*" multiple style="margin:10px 0;font-size:0.78rem;color:var(--muted);max-width:100%">
     <div id="bug-status" style="font-size:0.78rem;color:var(--calipso);min-height:1.2em;margin-bottom:8px"></div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
@@ -612,292 +617,7 @@
   @keyframes spin { 100% { transform: rotate(360deg); } }
 </style>
 
-<script type="module" data-global>
-// ── Cosmos Three.js — Agujero Negro Kepleriano ──────────────────────────────
-import * as THREE from 'three';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-
-// presetForPath siempre exportado — necesario para SPA nav con cualquier aesthetic
-function presetForPath(path) {
-  if (path === '/' || path === '')                              return 'landing';
-  if (/\/(login|registro|bienvenido)/.test(path))              return 'onboarding';
-  if (/\/espejo/.test(path))                                   return 'espejo';
-  if (/\/(tests|psychometrics|mapa)/.test(path))               return 'tests';
-  if (/\/nacimiento/.test(path))                               return 'nacimiento';
-  if (/\/regulacion/.test(path))                               return 'regulacion';
-  if (/\/suenos/.test(path))                                   return 'suenos';
-  if (/\/perfil-social/.test(path))                            return 'perfil';
-  if (/\/comunidad/.test(path))                                return 'comunidad';
-  if (/\/foros/.test(path))                                    return 'foros';
-  if (/\/mensajes/.test(path))                                 return 'mensajes';
-  if (/\/configuracion/.test(path))                            return 'configuracion';
-  if (/\/practicantes/.test(path))                             return 'practicantes';
-  if (/\/terapeuta/.test(path))                                return 'terapeuta';
-  if (/\/oraculo/.test(path))                                  return 'oraculo';
-  return 'general';
-}
-window.presetForPath = presetForPath;
-
-// ── Presets por sección ────────────────────────────────────────────────
-const PRESETS = {
-  landing:      { bhr:4.0, density:0.22, sizeMult:2.20, bloom:7.5, speedInner:1.80, speedOuter:0.04, camZ:180, camAng:8  },
-  onboarding:   { bhr:4.0, density:0.32, sizeMult:0.90, bloom:6.0, speedInner:3.05, speedOuter:0.05, camZ:149, camAng:4  },
-  comunidad:    { bhr:4.0, density:0.35, sizeMult:1.70, bloom:6.5, speedInner:2.10, speedOuter:0.04, camZ:140, camAng:20 },
-  perfil:       { bhr:4.0, density:0.25, sizeMult:2.00, bloom:8.5, speedInner:2.20, speedOuter:0.05, camZ:145, camAng:72 },
-  foros:        { bhr:4.0, density:0.40, sizeMult:1.60, bloom:5.5, speedInner:2.40, speedOuter:0.05, camZ:128, camAng:28 },
-  mensajes:     { bhr:4.0, density:0.25, sizeMult:1.70, bloom:6.0, speedInner:2.10, speedOuter:0.04, camZ:140, camAng:20 },
-  configuracion:{ bhr:4.0, density:0.32, sizeMult:1.80, bloom:6.0, speedInner:3.05, speedOuter:0.05, camZ:149, camAng:16 },
-  tests:        { bhr:4.0, density:0.55, sizeMult:1.40, bloom:5.0, speedInner:2.00, speedOuter:0.05, camZ:118, camAng:32 },
-  espejo:       { bhr:4.0, density:0.18, sizeMult:2.40, bloom:9.5, speedInner:4.50, speedOuter:0.05, camZ:149, camAng:85 },
-  regulacion:   { bhr:4.0, density:0.15, sizeMult:2.50, bloom:8.5, speedInner:1.00, speedOuter:0.02, camZ:130, camAng:45 },
-  suenos:       { bhr:4.0, density:0.20, sizeMult:2.00, bloom:7.0, speedInner:1.50, speedOuter:0.03, camZ:160, camAng:22 },
-  nacimiento:   { bhr:4.0, density:0.20, sizeMult:1.60, bloom:7.5, speedInner:1.20, speedOuter:0.03, camZ:220, camAng:4  },
-  practicantes: { bhr:4.0, density:0.50, sizeMult:1.65, bloom:5.8, speedInner:2.30, speedOuter:0.05, camZ:125, camAng:35 },
-  terapeuta:    { bhr:4.0, density:0.28, sizeMult:1.90, bloom:7.0,  speedInner:1.40, speedOuter:0.03, camZ:155, camAng:22 },
-  oraculo:      { bhr:4.0, density:0.16, sizeMult:2.80, bloom:11.0, speedInner:0.70, speedOuter:0.02, camZ:195, camAng:6  },
-  general:      { bhr:4.0, density:0.32, sizeMult:1.80, bloom:6.0, speedInner:3.05, speedOuter:0.05, camZ:149, camAng:16 },
-};
-
-function initCosmosRenderer() {
-// Móvil (<768px): render aligerado — menos partículas, sin bloom, RAF pausable.
-// Desktop: sin cambios. STATIC_FRAME = móvil + usuario pidió menos movimiento.
-const IS_MOBILE = matchMedia('(max-width: 768px)').matches;
-const STATIC_FRAME = IS_MOBILE && matchMedia('(prefers-reduced-motion: reduce)').matches;
-const _initialPreset = PRESETS[presetForPath(location.pathname)] || PRESETS.general;
-
-let scene, camera, renderer, composer, bloomPass, particleMaterial, clock;
-let mouseX = 0, mouseY = 0, targetX = 0, targetY = 0;
-let currentPreset = { ..._initialPreset };
-let targetPreset  = { ..._initialPreset };
-let lerpBoost = 0;
-let cosmosScrollY = 0;  // scroll+zoom landing (actualizado por listeners)
-
-const container = document.getElementById('cosmos-bg-container');
-if (!container) return;
-
-scene  = new THREE.Scene();
-camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.1, 3000);
-camera.position.set(0, 20, 149);
-
-renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false });
-renderer.setPixelRatio(IS_MOBILE ? 0.75 : 1.0);  // móvil: menos píxeles a rasterizar
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.domElement.id = 'bh-canvas';
-container.appendChild(renderer.domElement);
-
-composer = new EffectComposer(renderer);
-composer.addPass(new RenderPass(scene, camera));
-// Bloom a mitad de resolución — 4× menos píxeles en cada pass interno.
-// En móvil se omite: es el pass más caro. bloomPass queda undefined → guards abajo.
-if (!IS_MOBILE) {
-  bloomPass = new UnrealBloomPass(
-    new THREE.Vector2(Math.round(window.innerWidth * 0.5), Math.round(window.innerHeight * 0.5)),
-    6.0, 0.70, 0.04
-  );
-  composer.addPass(bloomPass);
-}
-
-const BH_R = 8, N = IS_MOBILE ? 18000 : 75000, R_MIN = BH_R * 1.15, R_MAX = 130;
-const geometry = new THREE.BufferGeometry();
-const positions = new Float32Array(N*3), colors   = new Float32Array(N*3);
-const angles    = new Float32Array(N),   radii    = new Float32Array(N);
-const speeds    = new Float32Array(N),   sizes    = new Float32Array(N);
-const randoms   = new Float32Array(N);
-
-for (let i = 0; i < N; i++) {
-  const r = Math.random() < 0.72
-    ? R_MIN + Math.pow(Math.random(), 2.0) * 52
-    : 52 + Math.random() * (R_MAX - 52);
-  const a    = Math.random() * Math.PI * 2;
-  const norm = (r - R_MIN) / (R_MAX - R_MIN);
-  const y    = (Math.random() - 0.5) * r * (0.04 + norm * 0.55);
-  positions[i*3]   = Math.cos(a) * r;
-  positions[i*3+1] = y;
-  positions[i*3+2] = Math.sin(a) * r;
-  const brightness = Math.max(0.18, 1.0 - norm * 0.82);
-  colors[i*3] = colors[i*3+1] = colors[i*3+2] = brightness;
-  angles[i]  = a;
-  radii[i]   = r;
-  speeds[i]  = (1.0 / Math.sqrt(r)) * 2.4 * (0.85 + Math.random() * 0.30);
-  sizes[i]   = 0.10 + norm * norm * 2.80 + Math.random() * (0.20 + norm * 1.0);
-  randoms[i] = Math.random();
-}
-
-geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-geometry.setAttribute('color',    new THREE.BufferAttribute(colors,    3));
-geometry.setAttribute('aAngle',   new THREE.BufferAttribute(angles,    1));
-geometry.setAttribute('aRadius',  new THREE.BufferAttribute(radii,     1));
-geometry.setAttribute('aSpeed',   new THREE.BufferAttribute(speeds,    1));
-geometry.setAttribute('aSize',    new THREE.BufferAttribute(sizes,     1));
-geometry.setAttribute('aRand',    new THREE.BufferAttribute(randoms,   1));
-
-// Paleta → color de glow de partículas
-const GLOW_COLORS = {
-  cosmos:   new THREE.Color(0.88, 0.92, 1.00),  // blanco-azul estelar
-  aurora:   new THREE.Color(0.42, 0.45, 1.00),  // azul-índigo
-  terra:    new THREE.Color(0.90, 0.62, 0.28),  // ámbar dorado
-  obsidian: new THREE.Color(0.65, 0.54, 0.98),  // violeta
-  sakura:   new THREE.Color(0.94, 0.38, 0.57),  // rosa
-};
-const _initPalette = document.body.dataset.palette || 'cosmos';
-const _initGlow = (GLOW_COLORS[_initPalette] || GLOW_COLORS.cosmos).clone();
-
-particleMaterial = new THREE.ShaderMaterial({
-  uniforms: {
-    uTime:       { value: 0 },
-    uBHR:        { value: currentPreset.bhr },
-    uSpeedInner: { value: currentPreset.speedInner },
-    uSpeedOuter: { value: currentPreset.speedOuter },
-    uSizeMult:   { value: currentPreset.sizeMult },
-    uDensity:    { value: currentPreset.density },
-    uGlowColor:  { value: _initGlow },
-  },
-  vertexShader: `
-    uniform float uTime, uBHR, uSpeedInner, uSpeedOuter, uSizeMult, uDensity;
-    attribute float aAngle, aRadius, aSpeed, aSize, aRand;
-    varying vec3 vColor;
-    void main() {
-      if (aRand > uDensity || aRadius < uBHR) {
-        gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
-        gl_PointSize = 0.0;
-        return;
-      }
-      vColor = color;
-      float norm = clamp((aRadius - 9.2) / (130.0 - 9.2), 0.0, 1.0);
-      float speedMult = mix(uSpeedInner, uSpeedOuter, norm);
-      float a = aAngle - uTime * aSpeed * speedMult;
-      vec3 p = position;
-      p.x = cos(a) * aRadius;
-      p.z = sin(a) * aRadius;
-      p.y += sin(a * 3.0 + aRadius * 0.10) * (aRadius * 0.006);
-      vec4 mv = modelViewMatrix * vec4(p, 1.0);
-      gl_PointSize = aSize * uSizeMult * (120.0 / -mv.z);
-      gl_Position = projectionMatrix * mv;
-    }
-  `,
-  fragmentShader: `
-    uniform vec3 uGlowColor;
-    varying vec3 vColor;
-    void main() {
-      vec2 uv = gl_PointCoord - 0.5;
-      float d = length(uv);
-      if (d > 0.5) discard;
-      // Tint: brightness drives intensity, palette drives hue
-      vec3 tinted = vColor.r * uGlowColor;
-      gl_FragColor = vec4(tinted, smoothstep(0.5, 0.04, d) * 0.92);
-    }
-  `,
-  transparent: true,
-  blending: THREE.AdditiveBlending,
-  depthWrite: false,
-  vertexColors: true
-});
-
-const field = new THREE.Points(geometry, particleMaterial);
-field.rotation.x = 0.10;
-field.rotation.z = -0.03;
-scene.add(field);
-
-clock = new THREE.Clock();
-
-document.addEventListener('mousemove', e => {
-  mouseX = (e.clientX / window.innerWidth  - 0.5) * 2;
-  mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
-});
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  composer.setSize(window.innerWidth, window.innerHeight);
-  if (bloomPass) bloomPass.resolution.set(Math.round(window.innerWidth * 0.5), Math.round(window.innerHeight * 0.5));
-});
-
-// ── Scroll listeners para landing zoom ────────────────────────────────────────
-// Captura scroll en lp-wrap (overflow interno) Y en window (fallback)
-window.addEventListener('scroll', () => { cosmosScrollY = window.scrollY; }, { passive: true });
-document.addEventListener('scroll', e => {
-  const t = e.target;
-  if (t && t.id === 'lp-wrap') cosmosScrollY = t.scrollTop;
-  else if (!t || t === document || t === document.documentElement) cosmosScrollY = window.scrollY;
-}, { passive: true, capture: true });
-
-function lerp(a, b, t) { return a + (b - a) * t; }
-
-let _rafId = 0;
-function animate() {
-  if (!STATIC_FRAME) _rafId = requestAnimationFrame(animate);
-  const elapsed = clock.getElapsedTime();
-  targetX += (mouseX - targetX) * 0.038;
-  targetY += (mouseY - targetY) * 0.038;
-  lerpBoost = Math.max(0, lerpBoost - 0.005);
-  const L = 0.018 + (0.50 - 0.018) * lerpBoost;
-  currentPreset.bhr        = lerp(currentPreset.bhr,        targetPreset.bhr,        L);
-  currentPreset.density    = lerp(currentPreset.density,    targetPreset.density,    L);
-  currentPreset.sizeMult   = lerp(currentPreset.sizeMult,   targetPreset.sizeMult,   L);
-  currentPreset.bloom      = lerp(currentPreset.bloom,      targetPreset.bloom,      L);
-  currentPreset.speedInner = lerp(currentPreset.speedInner, targetPreset.speedInner, L);
-  currentPreset.speedOuter = lerp(currentPreset.speedOuter, targetPreset.speedOuter, L);
-  currentPreset.camZ       = lerp(currentPreset.camZ,       targetPreset.camZ,       L);
-  currentPreset.camAng     = lerp(currentPreset.camAng,     targetPreset.camAng,     L);
-  particleMaterial.uniforms.uBHR.value        = currentPreset.bhr;
-  particleMaterial.uniforms.uDensity.value    = currentPreset.density;
-  particleMaterial.uniforms.uSizeMult.value   = currentPreset.sizeMult;
-  particleMaterial.uniforms.uSpeedInner.value = currentPreset.speedInner;
-  particleMaterial.uniforms.uSpeedOuter.value = currentPreset.speedOuter;
-  if (bloomPass) bloomPass.strength = currentPreset.bloom;
-  // Scroll+zoom landing: mismo cálculo que la plantilla de referencia
-  const lp = document.getElementById('lp-wrap');
-  let effectiveZ = currentPreset.camZ;
-  if (lp) {
-    const maxScroll = Math.max(
-      lp.scrollHeight - lp.clientHeight,
-      document.documentElement.scrollHeight - window.innerHeight,
-      1
-    );
-    const ratio = Math.max(0, Math.min(cosmosScrollY / maxScroll, 1));
-    effectiveZ = 180 - (ratio * 130);  // idéntico a la plantilla: 180→50
-  } else {
-    cosmosScrollY = 0;  // reset al salir de la landing
-  }
-  const angRad = currentPreset.camAng * Math.PI / 180;
-  camera.position.x = Math.sin(elapsed * 0.036) * 3.0 + targetX * 4.5;
-  camera.position.y = effectiveZ * Math.sin(angRad) + Math.sin(elapsed * 0.022) * 1.5 - targetY * 2.5;
-  camera.position.z = effectiveZ * Math.cos(angRad);
-  camera.lookAt(0, 0, 0);
-  particleMaterial.uniforms.uTime.value = elapsed;
-  composer.render();
-}
-animate();  // STATIC_FRAME → un frame sin loop; resto → RAF continuo
-
-// Móvil: pausa el RAF cuando la pestaña se oculta (rAF ya se frena solo, esto
-// lo garantiza y libera CPU). Desktop: sin listener → comportamiento intacto.
-if (IS_MOBILE) {
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) { if (_rafId) { cancelAnimationFrame(_rafId); _rafId = 0; } }
-    else if (!_rafId && !STATIC_FRAME) { animate(); }
-  });
-}
-
-window.updateCosmosPreset = function(name) {
-  const p = PRESETS[name] || PRESETS.general;
-  targetPreset = { ...p };
-  lerpBoost = 1.0;
-};
-window.updateCosmosGlow = function(palette) {
-  const c = GLOW_COLORS[palette] || GLOW_COLORS.cosmos;
-  if (particleMaterial) particleMaterial.uniforms.uGlowColor.value.copy(c);
-};
-window.__cosmosCanvas = renderer.domElement;
-} // end initCosmosRenderer
-
-const _aesthetic = document.body.dataset.aesthetic || 'cosmos';
-if (_aesthetic === 'cosmos') {
-  initCosmosRenderer();
-} else {
-  window.__initCosmos = initCosmosRenderer;
-}
+<script data-global>
 
 // ── SPA Navigation ──────────────────────────────────────────────────────────
 // Núcleo de la SPA: fetch + swap de #page-content. Reusado por spaGo (click,
@@ -945,12 +665,7 @@ function spaLoad(url, opts) {
       // Modo foco móvil: oculta la tab bar en páginas inmersivas (Espejo, tests)
       document.body.classList.toggle('m-focus', !!document.querySelector('#page-content [data-mobile-focus]'));
       if (push) history.pushState({}, '', finalUrl);
-      // Cosmos preset
       const path = new URL(finalUrl, location.origin).pathname;
-      const preset = opts.preset ||
-        (window.presetForPath ? window.presetForPath(path) : null);
-      if (preset && window.updateCosmosPreset) window.updateCosmosPreset(preset);
-      if (preset) document.dispatchEvent(new CustomEvent('bg:preset', {detail: preset}));
       // Nav active state
       markActiveNav(path);
       // Page-specific styles
@@ -994,7 +709,7 @@ window.addEventListener('popstate', () => { spaLoad(location.href, {push: false}
 </script>
 
 <!-- Onboarding por página -->
-<div id="page-onboarding" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:900;max-width:300px;background:rgba(8,6,12,0.95);border:1px solid rgba(126,204,205,0.25);border-radius:16px;padding:1.1rem 1.25rem;backdrop-filter:blur(20px);box-shadow:0 8px 40px rgba(0,0,0,0.5)">
+<div id="page-onboarding" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:900;max-width:300px;background:var(--surface);border:1px solid rgba(224,162,74,0.25);border-radius:16px;padding:1.1rem 1.25rem;backdrop-filter:blur(20px);box-shadow:0 8px 40px rgba(0,0,0,0.5)">
   <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem;margin-bottom:0.5rem">
     <span style="font-size:0.62rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--calipso)">Guía</span>
     <button onclick="dismissOnboarding()" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:0.85rem;padding:0;line-height:1">✕</button>
@@ -1042,308 +757,11 @@ setTimeout(showPageOnboarding, 600);
 
 {% block extra_js %}{% endblock %}
 
-<!-- FONDO — Túnel Psicodélico Canvas 2D (aesthetic=mandala) ──────── -->
-<script>
-(function () {
-  var canvas = document.getElementById('tunnel-bg');
-  if (!canvas) return;
-  if (document.body.dataset.aesthetic === 'mandala') canvas.style.display = 'block';
-  window.__tunnelCanvas = canvas;
-  var ctx = canvas.getContext('2d');
-  var W, H;
-  // Media resolución de píxeles — CSS lo estira al 100%; 4× menos píxeles a renderizar
-  function resize() {
-    W = canvas.width  = Math.round(window.innerWidth  * 0.5);
-    H = canvas.height = Math.round(window.innerHeight * 0.5);
-  }
-  canvas.style.imageRendering = 'auto';
-  window.addEventListener('resize', resize); resize();
-
-  var PHI = 1.61803398875, PI = Math.PI, E = Math.E;
-  var SQ2 = Math.sqrt(2), SQ3 = Math.sqrt(3), SQ7 = Math.sqrt(7), SQ11 = Math.sqrt(11);
-
-  function chaos(t, s) {
-    return s * (0.38*Math.sin(t*PI*0.3731) + 0.26*Math.sin(t*PHI*0.6247)
-              + 0.19*Math.sin(t*E*0.4153)  + 0.11*Math.sin(t*SQ7*0.5289)
-              + 0.06*Math.sin(t*SQ11*0.7013));
-  }
-
-  var T = 0, lastTs = 0;
-  function tickTime(ts) {
-    var dt = Math.min((ts - lastTs) / 1000, 0.05); lastTs = ts;
-    var pulse = Math.max(0.2, 1 + 0.45*Math.sin(T*PI*0.3731) + 0.30*Math.sin(T*PHI*0.6247)
-                                 + 0.20*Math.sin(T*E*0.4153)  + 0.12*chaos(T*SQ3, 1));
-    T += dt * P.speed * pulse;
-  }
-
-  var SCENE_PRESETS = [
-    { speed: 0.2, curve: 0.01, bank: 0.26 },
-    { speed: 3.6, curve: 0.01, bank: 0.03 },
-    { speed: 1.3, curve: 0.02, bank: 0.0  },
-    { speed: 3.0, curve: 0.01, bank: 0.0  },
-  ];
-  var P = { speed: 0.2, curve: 0.01, bank: 0.26 };
-
-  var SECTION_SCENE = {
-    landing:       0,
-    general:       0,
-    onboarding:    0,
-    configuracion: 0,
-    mensajes:      0,
-    foros:         0,
-    regulacion:    0,
-    comunidad:     2,
-    tests:         2,
-    practicantes:  2,
-    nacimiento:    3,
-    oraculo:       3,
-    suenos:        3,
-    espejo:        1,
-    perfil:        1,
-    terapeuta:     1,
-  };
-
-  var currentScene = 0;
-  var portalTarget = -1;
-  var portalStart  = 0;
-  var PORTAL_DUR   = 2200;
-
-  function setSection(sectionName) {
-    var target = (SECTION_SCENE[sectionName] !== undefined) ? SECTION_SCENE[sectionName] : 0;
-    if (target === currentScene && portalTarget < 0) return;
-    if (target === currentScene) return;
-    Object.assign(P, SCENE_PRESETS[target]);
-    portalTarget = target;
-    portalStart  = performance.now();
-  }
-
-  document.addEventListener('bg:preset', function (e) { setSection(e.detail); });
-
-  // Preset inicial según URL — inlineado porque el módulo Three.js aún no exportó presetForPath
-  (function () {
-    var path = location.pathname;
-    var sec;
-    if (path === '/' || path === '')                             sec = 'landing';
-    else if (/\/(login|registro|bienvenido)/.test(path))        sec = 'onboarding';
-    else if (/\/espejo/.test(path))                             sec = 'espejo';
-    else if (/\/(tests|psychometrics|mapa)/.test(path))         sec = 'tests';
-    else if (/\/nacimiento/.test(path))                         sec = 'nacimiento';
-    else if (/\/regulacion/.test(path))                         sec = 'regulacion';
-    else if (/\/suenos/.test(path))                             sec = 'suenos';
-    else if (/\/perfil/.test(path))                             sec = 'perfil';
-    else if (/\/comunidad/.test(path))                          sec = 'comunidad';
-    else if (/\/foros/.test(path))                              sec = 'foros';
-    else if (/\/mensajes/.test(path))                           sec = 'mensajes';
-    else if (/\/configuracion/.test(path))                      sec = 'configuracion';
-    else if (/\/practicantes/.test(path))                       sec = 'practicantes';
-    else if (/\/terapeuta/.test(path))                          sec = 'terapeuta';
-    else if (/\/oraculo/.test(path))                            sec = 'oraculo';
-    else                                                         sec = 'general';
-    currentScene = (SECTION_SCENE[sec] !== undefined) ? SECTION_SCENE[sec] : 0;
-    Object.assign(P, SCENE_PRESETS[currentScene]);
-  })();
-
-  // ── Escena 0: Corriente Acuática ─────────────────────────────────────
-  var liquidGrid = [];
-  for (var li = 0; li <= 34; li++) {
-    var lrow = [];
-    for (var lj = 0; lj <= 26; lj++) lrow.push({ u:(li/34)*6*PI-4.0, v:(lj/26)*2*PI });
-    liquidGrid.push(lrow);
-  }
-  function drawLiquid(t, cx, cy, scl) {
-    var twist   = Math.sin(t*PHI*0.5)*2.5 + chaos(t*0.3, 0.8);
-    var density = 3 + Math.sin(t*SQ3*0.3)*1.5;
-    var s = scl * 0.8;
-    ctx.lineWidth = 1.0;
-    for (var i = 0; i < 34; i++) for (var j = 0; j < 26; j++) {
-      if (!liquidGrid[i+1] || !liquidGrid[i+1][j+1]) continue;
-      var p   = liquidGrid[i][j];
-      var act = Math.sin((p.u - t*3.0)*density)*Math.cos(p.v*density + t*3.0*twist*0.2);
-      if (act < -0.3) continue;
-      var pts = [liquidGrid[i][j],liquidGrid[i+1][j],liquidGrid[i+1][j+1],liquidGrid[i][j+1]].map(function(pt){
-        var mV = pt.v + Math.sin(pt.u - t*1.5)*0.2;
-        var r  = Math.exp(pt.u*0.35)*s;
-        return { x: cx+r*Math.cos(mV), y: cy+r*Math.sin(mV), r: r };
-      });
-      if (pts[0].r < 1.5) continue;
-      var hue = (190 + act*50 - p.u*15 + t*60) % 360;
-      ctx.fillStyle   = 'hsla('+hue+',80%,'+(50+act*30)+'%,'+(0.35+act*0.5)+')';
-      ctx.strokeStyle = 'rgba(255,255,255,'+(0.05+act*0.18)+')';
-      ctx.beginPath();
-      ctx.moveTo(pts[0].x,pts[0].y); ctx.lineTo(pts[1].x,pts[1].y);
-      ctx.lineTo(pts[2].x,pts[2].y); ctx.lineTo(pts[3].x,pts[3].y);
-      ctx.closePath(); ctx.fill(); ctx.stroke();
-    }
-  }
-
-  // ── Escena 1: Obsidiana ───────────────────────────────────────────────
-  var obsGeo = [];
-  for (var oi = 0; oi < 26; oi++) for (var oj = 0; oj < 20; oj++)
-    obsGeo.push({ u:(oi/26)*4*PI, v:(oj/20)*2*PI });
-  function drawObsidian(t, cx, cy, scl) {
-    var freq  = 3.5 + Math.sin(t*SQ3*0.3)*2.2;
-    var angle = t*SQ2*0.15 + chaos(t*0.1, 0.4);
-    ctx.lineWidth = 1.5;
-    for (var k = 0; k < obsGeo.length; k++) {
-      var p    = obsGeo[k];
-      var infU = (p.u + t*0.6) % (4*PI);
-      var r    = Math.exp(infU*0.35)*scl*0.65;
-      if (r < 2.0) continue;
-      var light = Math.pow((Math.cos(freq*(Math.cos(angle)*infU+Math.sin(angle)*p.v)-t*2.5)+1)/2, 5);
-      var arc   = (2*PI)/32, a1=p.v-arc*0.52, a2=p.v+arc*0.52, rOut=r+r*0.45;
-      var fog   = Math.min(1, r/(W*0.25));
-      ctx.beginPath();
-      ctx.moveTo(cx+r*Math.cos(a1),cy+r*Math.sin(a1)); ctx.lineTo(cx+r*Math.cos(a2),cy+r*Math.sin(a2));
-      ctx.lineTo(cx+rOut*Math.cos(a2),cy+rOut*Math.sin(a2)); ctx.lineTo(cx+rOut*Math.cos(a1),cy+rOut*Math.sin(a1));
-      ctx.closePath();
-      ctx.fillStyle   = 'hsla(275,'+(light>0.8?0:light*40)+'%,'+((4+light*90)*fog)+'%,1)';
-      ctx.strokeStyle = 'rgba(0,0,0,'+(0.8*fog)+')';
-      ctx.fill(); ctx.stroke();
-      if (light > 0.9) { ctx.strokeStyle='rgba(255,255,255,'+fog+')'; ctx.stroke(); }
-    }
-  }
-
-  // ── Escena 2: Hexagonal ───────────────────────────────────────────────
-  var hexPts = [];
-  for (var hi = 0; hi < 38; hi++) for (var hj = 0; hj < 38; hj++)
-    hexPts.push({ u:(hi/38)*4*PI, v:(hj/38)*2*PI });
-  function drawHex(t, cx, cy, scl) {
-    var A=t*PHI*0.2, ha2=A+PI/3, ha3=A-PI/3;
-    var freq=4+Math.sin(t*SQ7*0.5)*3.2+chaos(t*0.2,1.0);
-    for (var k = 0; k < hexPts.length; k++) {
-      var p=hexPts[k], r=Math.exp(p.u*0.3)*scl;
-      if (r<2.0) continue;
-      var w1=Math.cos(freq*(Math.cos(A)*p.u+Math.sin(A)*p.v)+t*1.5);
-      var w2=Math.cos(freq*(Math.cos(ha2)*p.u+Math.sin(ha2)*p.v)-t*1.5);
-      var w3=Math.cos(freq*(Math.cos(ha3)*p.u+Math.sin(ha3)*p.v)+t*0.75);
-      var act=(w1+w2+w3)/3; if (act<0) continue;
-      var x=cx+r*Math.cos(p.v), y=cy+r*Math.sin(p.v);
-      var size=(r/scl)*1.5*(act+0.2);
-      ctx.fillStyle='hsla('+((act*360+t*80)%360)+',90%,'+(40+act*30)+'%,0.9)';
-      ctx.beginPath();
-      for (var m = 0; m < 6; m++) {
-        var ang=m*(PI/3)+p.v;
-        if (m===0) ctx.moveTo(x+size*Math.cos(ang),y+size*Math.sin(ang));
-        else       ctx.lineTo(x+size*Math.cos(ang),y+size*Math.sin(ang));
-      }
-      ctx.closePath(); ctx.fill();
-    }
-  }
-
-  // ── Escena 3: Fibonacci ───────────────────────────────────────────────
-  var fiboPts = (function(){
-    var pts=[], N=650;
-    for (var i=1; i<=N; i++) pts.push({ angle:i*137.5*(PI/180), z:(i/N)*100, hueOffset:i*0.5 });
-    return pts;
-  })();
-  function drawFibo(t, cx, cy) {
-    var R=800, rot=t*0.8;
-    for (var k = 0; k < fiboPts.length; k++) {
-      var p=fiboPts[k];
-      p.z -= 0.52; if (p.z<=0) p.z+=100;
-      var persp=10/p.z; if (persp<0||persp>15) continue;
-      var ang=p.angle+rot, x=cx+R*persp*Math.cos(ang), y=cy+R*persp*Math.sin(ang);
-      var size=Math.max(0.5,40*persp), fog=Math.min(1,persp*0.5);
-      var hue=(p.hueOffset+t*80)%360;
-      ctx.fillStyle='hsla('+hue+',80%,60%,'+fog+')';
-      ctx.beginPath(); ctx.arc(x,y,size,0,2*PI); ctx.fill();
-      var xO=cx+R*persp*0.92*Math.cos(ang-0.04), yO=cy+R*persp*0.92*Math.sin(ang-0.04);
-      ctx.strokeStyle='hsla('+hue+',80%,60%,'+(fog*0.6)+')'; ctx.lineWidth=size*0.8;
-      ctx.beginPath(); ctx.moveTo(xO,yO); ctx.lineTo(x,y); ctx.stroke();
-    }
-  }
-
-  var DRAW_FNS    = [drawLiquid, drawObsidian, drawHex, drawFibo];
-  var BLEND_MODES = ['lighter','source-over','lighter','lighter'];
-
-  // Móvil: RAF pausable; reduced-motion → un frame visible y detener.
-  var IS_MOBILE_M = matchMedia('(max-width: 768px)').matches;
-  var STATIC_M = IS_MOBILE_M && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var _lastFrame = 0, _rafM = 0, _drewOnce = false;
-  function loop(ts) {
-    if (!(STATIC_M && _drewOnce)) _rafM = requestAnimationFrame(loop); else _rafM = 0;
-    if (canvas.style.display === 'none') return;
-    if (ts - _lastFrame < 34) return;  // cap ~30fps
-    _lastFrame = ts;
-    if (STATIC_M) _drewOnce = true;
-    tickTime(ts);
-
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.fillStyle = 'rgba(0,0,0,0.28)';
-    ctx.fillRect(0,0,W,H);
-
-    var amp  = P.curve;
-    var cx   = W/2 + Math.sin(T*PI*0.2273)*W*amp + Math.sin(T*PHI*0.1431)*W*amp*1.55;
-    var cy   = H/2 + Math.cos(T*PHI*0.2917)*H*amp + Math.cos(T*E*0.1697)*H*amp*1.55;
-    var bank = chaos(T*0.18, P.bank);
-    var scl  = Math.min(W,H)*0.05;
-
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(bank);
-
-    if (portalTarget >= 0) {
-      var fp   = Math.min(1, (ts - portalStart) / PORTAL_DUR);
-      var maxR = Math.sqrt(W*W+H*H);
-      var curR = maxR * Math.pow(fp, 2.8);
-
-      ctx.globalCompositeOperation = BLEND_MODES[currentScene];
-      DRAW_FNS[currentScene](T, 0, 0, scl);
-
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.beginPath(); ctx.arc(0,0,curR,0,2*PI); ctx.fillStyle='#000'; ctx.fill();
-
-      ctx.save();
-      ctx.beginPath(); ctx.arc(0,0,curR,0,2*PI); ctx.clip();
-      ctx.globalCompositeOperation = BLEND_MODES[portalTarget];
-      DRAW_FNS[portalTarget](T, 0, 0, scl);
-      ctx.restore();
-
-      if (fp >= 1) { currentScene = portalTarget; portalTarget = -1; }
-    } else {
-      ctx.globalCompositeOperation = BLEND_MODES[currentScene];
-      DRAW_FNS[currentScene](T, 0, 0, scl);
-    }
-
-    ctx.restore();
-  }
-
-  _rafM = requestAnimationFrame(loop);
-  if (IS_MOBILE_M) {
-    document.addEventListener('visibilitychange', function(){
-      if (document.hidden) { if (_rafM) { cancelAnimationFrame(_rafM); _rafM = 0; } }
-      else if (!_rafM && !(STATIC_M && _drewOnce)) { _rafM = requestAnimationFrame(loop); }
-    });
-  }
-})();
-
-// ── Cambio de aesthetic en tiempo real (preview en perfil) ───────────────
-window.__switchAesthetic = function(name) {
-  document.body.dataset.aesthetic = name;
-  document.documentElement.dataset.aesthetic = name;
-  var tunCanvas   = window.__tunnelCanvas  || document.getElementById('tunnel-bg');
-  var cosContainer = document.getElementById('cosmos-bg-container');
-  if (tunCanvas)    tunCanvas.style.display    = 'none';
-  if (cosContainer) cosContainer.style.display = 'none';
-  if (name === 'mandala') {
-    if (tunCanvas) tunCanvas.style.display = 'block';
-  } else if (name === 'cosmos') {
-    if (cosContainer) cosContainer.style.display = '';
-    if (window.__cosmosCanvas) {
-      window.__cosmosCanvas.style.display = 'block';
-    } else if (window.__initCosmos) {
-      var _init = window.__initCosmos;
-      window.__initCosmos = null;
-      _init();
-    }
-  }
-};
-</script>
 
 <!-- Tooltips globales: data-tip="desc" para info -->
 <div id="ft-tip" style="position:fixed;z-index:9999;pointer-events:none;opacity:0;transition:opacity .15s;max-width:230px"></div>
 <style>
-#ft-tip { background:rgba(8,6,18,0.96);border:1px solid rgba(126,204,205,0.25);border-radius:10px;padding:9px 13px;box-shadow:0 4px 24px rgba(0,0,0,0.5); }
+#ft-tip { background:var(--glass);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:10px;padding:9px 13px;box-shadow:0 4px 24px rgba(0,0,0,0.5); }
 #ft-tip .ft-desc { font-size:.75rem;color:var(--muted);line-height:1.45; }
 </style>
 <script>
@@ -1426,7 +844,7 @@ window.__switchAesthetic = function(name) {
 
 <button id="pwa-install" data-context="{% if user.is_authenticated %}app{% else %}landing{% endif %}" hidden>Instalar app</button>
 <style>
-#pwa-install{position:fixed;left:16px;bottom:16px;z-index:60;padding:10px 16px;border:0;border-radius:12px;background:#7ECCCD;color:#03030a;font-weight:600;font-size:14px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+#pwa-install{position:fixed;left:16px;bottom:16px;z-index:60;padding:10px 16px;border:0;border-radius:12px;background:var(--calipso);color:#14100c;font-weight:600;font-size:14px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.4)}
 #pwa-install[hidden]{display:none}
 </style>
 <script>

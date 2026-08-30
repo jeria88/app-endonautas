@@ -8,7 +8,7 @@
 .plan-price-clp { font-size:1.4rem;font-weight:700;color:#fff;line-height:1 }
 .plan-price-usd { font-size:.75rem;color:var(--dim);margin-top:.15rem }
 .plan-divider { height:1px;background:var(--border) }
-.btn-actual { display:block;padding:.55rem .9rem;border-radius:10px;font-size:.78rem;font-weight:600;text-align:center;background:rgba(126,204,205,.06);border:1px solid rgba(126,204,205,.15);color:var(--calipso);cursor:default }
+.btn-actual { display:block;padding:.55rem .9rem;border-radius:10px;font-size:.78rem;font-weight:600;text-align:center;background:rgba(224,162,74,.06);border:1px solid rgba(224,162,74,.15);color:var(--calipso);cursor:default }
 .btn-mp-official { display:flex;align-items:center;justify-content:center;gap:.55rem;width:100%;padding:.58rem 1rem;border-radius:10px;background:#009EE3;border:none;cursor:pointer;font-family:inherit;font-size:.8rem;font-weight:700;color:#fff;letter-spacing:.01em;transition:filter .15s; }
 .btn-mp-official:hover { filter:brightness(.9); }
 .pp-sdk-wrap { min-height:44px; }
@@ -53,7 +53,7 @@
     </div>
 
     <!-- Navegante -->
-    <div class="panel plan-card" style="padding:1.25rem;border-color:rgba(126,204,205,.2)">
+    <div class="panel plan-card" style="padding:1.25rem;border-color:rgba(224,162,74,.2)">
       {% if plan_actual == 'navegante' %}<div class="plan-badge">Tu plan actual</div>{% endif %}
       <div>
         <div class="plan-name">Navegante</div>
@@ -65,7 +65,7 @@
       </div>
       <div class="plan-divider"></div>
       {% if not user.is_authenticated %}
-        <a href="/registro/?plan=navegante" class="btn-mp-official" style="text-decoration:none;justify-content:center">Crear cuenta y comenzar</a>
+        <a href="/registro/?plan=navegante" class="btn btn-primary" style="width:100%;text-decoration:none;justify-content:center">Crear cuenta y comenzar</a>
       {% elif plan_actual == 'navegante' %}
         <div class="btn-actual">Plan actual</div>
       {% elif plan_actual != 'practicante' %}
@@ -83,7 +83,7 @@
     </div>
 
     <!-- Practicante -->
-    <div class="panel plan-card" style="padding:1.25rem;border-color:rgba(155,142,196,.25)">
+    <div class="panel plan-card" style="padding:1.25rem;border-color:rgba(201,154,106,.25)">
       {% if plan_actual == 'practicante' %}<div class="plan-badge" style="background:var(--violet,#9b8ec4)">Tu plan actual</div>{% endif %}
       <div>
         <div class="plan-name" style="color:var(--violet,#9b8ec4)">Practicante</div>
@@ -95,9 +95,9 @@
       </div>
       <div class="plan-divider"></div>
       {% if not user.is_authenticated %}
-        <a href="/registro/?plan=practicante" class="btn-mp-official" style="text-decoration:none;justify-content:center">Crear cuenta y comenzar</a>
+        <a href="/registro/?plan=practicante" class="btn btn-primary" style="width:100%;text-decoration:none;justify-content:center">Crear cuenta y comenzar</a>
       {% elif plan_actual == 'practicante' %}
-        <div class="btn-actual" style="border-color:rgba(155,142,196,.25);color:var(--violet,#9b8ec4)">Plan actual</div>
+        <div class="btn-actual" style="border-color:rgba(201,154,106,.25);color:var(--violet,#9b8ec4)">Plan actual</div>
       {% else %}
         <form action="/pago/mp/suscribir/practicante/" method="post" style="margin:0">
           {% csrf_token %}
@@ -112,7 +112,7 @@
 
   </div>
 
-  <div class="panel" style="padding:1rem 1.25rem;margin-top:1rem;border-color:rgba(126,204,205,.28);background:rgba(126,204,205,.04)">
+  <div class="panel" style="padding:1rem 1.25rem;margin-top:1rem;border-color:rgba(224,162,74,.28);background:rgba(224,162,74,.04)">
     <div style="font-size:.85rem;font-weight:700;color:var(--calipso);margin-bottom:.35rem">30 días de garantía, sin preguntas</div>
     <div style="font-size:.8rem;color:var(--dim);line-height:1.65">
       Si dentro de los 30 días de tu primer pago decides que no es para ti, escribes a

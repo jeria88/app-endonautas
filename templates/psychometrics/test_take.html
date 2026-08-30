@@ -11,7 +11,7 @@
 .progress-sticky {
   position:sticky;top:0;z-index:10;
   background:rgba(0,0,0,0.92);
-  backdrop-filter:blur(10px);
+  
   padding:0.75rem 0;
   margin-bottom:1.5rem;
   border-bottom:1px solid var(--border);
@@ -22,14 +22,14 @@
 
 .question-block {
   background:var(--surface);
-  backdrop-filter:blur(14px);
+  
   border:1px solid var(--border);
   border-radius:var(--radius);
   padding:1.5rem;
   margin-bottom:1rem;
   transition:border-color 0.2s;
 }
-.question-block.answered { border-color:rgba(126,204,205,0.3); }
+.question-block.answered { border-color:rgba(224,162,74,0.3); }
 .question-text { font-size:0.95rem;line-height:1.6;margin-bottom:1.25rem; }
 .q-num { color:var(--calipso);font-weight:700;margin-right:0.35rem; }
 
@@ -49,11 +49,11 @@
   user-select:none;
 }
 .scale-btn-wrap input:checked ~ .scale-btn {
-  background:rgba(126,204,205,0.18);
+  background:rgba(224,162,74,0.18);
   border-color:var(--calipso);
   color:var(--calipso);
 }
-.scale-btn:hover { border-color:rgba(126,204,205,0.5);color:var(--text); }
+.scale-btn:hover { border-color:rgba(224,162,74,0.5);color:var(--text); }
 .scale-label { font-size:0.65rem;color:var(--muted);text-align:center;line-height:1.2;max-width:54px; }
 
 /* Escala 7 — botones más pequeños */
@@ -72,7 +72,7 @@
   transition:all 0.15s;
 }
 .binary-btn-wrap input:checked ~ .binary-btn {
-  background:rgba(126,204,205,0.18);
+  background:rgba(224,162,74,0.18);
   border-color:var(--calipso);
   color:var(--calipso);
 }

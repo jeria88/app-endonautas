@@ -2,9 +2,9 @@
 {% block title %}Terapeuta Integral — Endonautas{% endblock %}
 {% block content %}
 <style data-page-style>
-.consulta-row { background:var(--surface);backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:1rem;text-decoration:none;color:inherit;transition:border-color 0.2s; }
+.consulta-row { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:1rem;text-decoration:none;color:inherit;transition:border-color 0.2s; }
 .consulta-row:hover { border-color:var(--border-active); }
-.cr-badge { width:36px;height:36px;border-radius:8px;background:var(--calipso-glow);border:1px solid rgba(126,204,205,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.8rem;font-weight:700;color:var(--calipso); }
+.cr-badge { width:36px;height:36px;border-radius:8px;background:var(--calipso-glow);border:1px solid rgba(224,162,74,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.8rem;font-weight:700;color:var(--calipso); }
 .cr-body { flex:1;min-width:0; }
 .cr-title { font-weight:600;font-size:0.92rem;margin-bottom:2px; }
 .cr-meta { font-size:0.72rem;color:var(--muted); }
@@ -32,10 +32,10 @@
       {% if c.paso_actual >= 5 %}Completa{% else %}Paso {{ c.paso_actual }}/5{% endif %}
     </div>
     <div style="display:flex;gap:0.25rem;flex-shrink:0">
-      <a href="/terapeuta/{{ c.id }}/detalle/" onclick="spaGo(event,this)" style="font-size:0.72rem;color:var(--calipso);text-decoration:none;padding:0.3rem 0.6rem;border:1px solid rgba(126,204,205,0.25);border-radius:6px">Ver</a>
+      <a href="/terapeuta/{{ c.id }}/detalle/" onclick="spaGo(event,this)" style="font-size:0.72rem;color:var(--calipso);text-decoration:none;padding:0.3rem 0.6rem;border:1px solid rgba(224,162,74,0.25);border-radius:6px">Ver</a>
       <form method="post" action="/terapeuta/{{ c.id }}/eliminar/" style="display:inline" onsubmit="return confirm('¿Eliminar consulta?')">
         {% csrf_token %}
-        <button type="submit" style="font-size:0.72rem;color:var(--rose);background:none;border:1px solid rgba(201,123,132,0.25);border-radius:6px;padding:0.3rem 0.6rem;cursor:pointer">✕</button>
+        <button type="submit" style="font-size:0.72rem;color:var(--rose);background:none;border:1px solid rgba(223,122,106,0.25);border-radius:6px;padding:0.3rem 0.6rem;cursor:pointer">✕</button>
       </form>
     </div>
   </div>

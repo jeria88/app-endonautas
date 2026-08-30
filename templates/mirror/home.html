@@ -2,14 +2,14 @@
 {% block title %}Espejo de Conflictos — Endonautas{% endblock %}
 {% block content %}
 <style data-page-style>
-.espejo-shell { display:grid;grid-template-columns:260px 1fr;height:calc(100vh - 5rem);border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--surface);backdrop-filter:blur(14px); }
+.espejo-shell { display:grid;grid-template-columns:260px 1fr;height:calc(100vh - 5rem);border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--surface);}
 .sessions-panel { border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden; }
 .sessions-header { padding:14px;border-bottom:1px solid var(--border);flex-shrink:0; }
 .sessions-list { flex:1;overflow-y:auto; }
 .session-row { display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;transition:background 0.15s;border-bottom:1px solid rgba(255,255,255,0.03);position:relative; }
-.session-row:hover { background:rgba(126,204,205,0.05); }
-.session-row.active { background:rgba(126,204,205,0.09);border-left:2.5px solid var(--calipso); }
-.session-icon { width:32px;height:32px;border-radius:8px;background:var(--calipso-glow);border:1px solid rgba(126,204,205,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+.session-row:hover { background:rgba(224,162,74,0.05); }
+.session-row.active { background:rgba(224,162,74,0.09);border-left:2.5px solid var(--calipso); }
+.session-icon { width:32px;height:32px;border-radius:8px;background:var(--calipso-glow);border:1px solid rgba(224,162,74,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0; }
 .session-info { flex:1;min-width:0; }
 .session-name { font-size:0.82rem;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
 .session-meta { font-size:0.68rem;color:var(--dim);margin-top:1px; }
@@ -24,7 +24,7 @@
 .session-dropdown button, .session-dropdown a { display:block;width:100%;padding:8px 12px;background:none;border:none;color:var(--text);font-size:0.83rem;text-align:left;cursor:pointer;border-radius:6px;text-decoration:none;transition:background 0.1s;font-family:var(--font-ui); }
 .session-dropdown button:hover, .session-dropdown a:hover { background:rgba(255,255,255,0.07); }
 .session-dropdown .menu-danger { color:var(--rose); }
-.session-dropdown .menu-danger:hover { background:rgba(201,123,132,0.1); }
+.session-dropdown .menu-danger:hover { background:rgba(223,122,106,0.1); }
 .menu-sep { height:1px;background:var(--border);margin:4px 0; }
 
 /* Rename inline input */
@@ -38,7 +38,7 @@
 .msg-user { align-self:flex-end; }
 .msg-assistant { align-self:flex-start; }
 .msg-bubble { padding:0.8rem 1rem;border-radius:14px;font-size:0.88rem;line-height:1.65; }
-.msg-user .msg-bubble { background:rgba(126,204,205,0.12);border:1px solid rgba(126,204,205,0.22);border-bottom-right-radius:4px; }
+.msg-user .msg-bubble { background:rgba(224,162,74,0.12);border:1px solid rgba(224,162,74,0.22);border-bottom-right-radius:4px; }
 .msg-assistant .msg-bubble { background:rgba(0,0,0,0.5);border:1px solid var(--border);border-bottom-left-radius:4px; }
 .msg-time { font-size:0.65rem;color:var(--dim);margin-top:3px; }
 .msg-user .msg-time { text-align:right; }
@@ -51,7 +51,7 @@
 .send-btn:disabled { opacity:0.4;cursor:not-allowed; }
 .mic-btn { width:38px;height:38px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);flex-shrink:0;transition:background 0.15s,color 0.15s; }
 .mic-btn:hover { background:rgba(255,255,255,0.1);color:var(--text); }
-.mic-btn.recording { background:rgba(201,123,132,0.18);border-color:rgba(201,123,132,0.5);color:var(--rose);animation:mic-pulse 1s ease infinite; }
+.mic-btn.recording { background:rgba(223,122,106,0.18);border-color:rgba(223,122,106,0.5);color:var(--rose);animation:mic-pulse 1s ease infinite; }
 @keyframes mic-pulse { 0%,100%{opacity:1} 50%{opacity:0.55} }
 .typing-row { display:none;align-items:center;gap:5px;color:var(--muted);font-size:0.8rem;padding:4px 0;align-self:flex-start; }
 .typing-row.show { display:flex; }
@@ -63,7 +63,7 @@
   .espejo-shell{grid-template-columns:1fr;height:calc(100dvh - 54px - 1.75rem);border-radius:14px;position:relative}
   .sessions-panel{display:none}
   /* Historial como overlay full-screen sobre el chat (modo foco oculta la tab bar) */
-  .espejo-shell.sessions-open .sessions-panel{display:flex;position:absolute;inset:0;z-index:6;background:rgba(8,6,14,0.97);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-right:none}
+  .espejo-shell.sessions-open .sessions-panel{display:flex;position:absolute;inset:0;z-index:6;background:rgba(8,6,14,0.97);-webkit-border-right:none}
   .session-kebab{opacity:1}
   /* Botones del topbar solo móvil: volver al inicio + abrir historial */
   .espejo-back,.espejo-history{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:10px;background:none;border:none;color:var(--muted);cursor:pointer;flex-shrink:0}
@@ -77,9 +77,9 @@
   /* Chips de temas: prefill del input, atajo de entrada (mockup 05) */
   .espejo-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:10px}
   .espejo-chips::-webkit-scrollbar{display:none}
-  .espejo-chips button{flex:0 0 auto;background:rgba(126,204,205,0.06);border:1px solid rgba(126,204,205,0.2);color:var(--calipso);border-radius:16px;padding:6px 14px;font-size:0.78rem;font-family:var(--font-ui);cursor:pointer;white-space:nowrap}
+  .espejo-chips button{flex:0 0 auto;background:rgba(224,162,74,0.06);border:1px solid rgba(224,162,74,0.2);color:var(--calipso);border-radius:16px;padding:6px 14px;font-size:0.78rem;font-family:var(--font-ui);cursor:pointer;white-space:nowrap}
 }
-.att-preview-wrap { display:none;align-items:center;gap:8px;padding:8px 12px;background:rgba(126,204,205,0.07);border:1px solid rgba(126,204,205,0.2);border-radius:8px;margin-bottom:10px; }
+.att-preview-wrap { display:none;align-items:center;gap:8px;padding:8px 12px;background:rgba(224,162,74,0.07);border:1px solid rgba(224,162,74,0.2);border-radius:8px;margin-bottom:10px; }
 .att-preview-wrap.has-file { display:flex; }
 .att-thumb { width:36px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0; }
 .att-name { flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.78rem;color:var(--muted); }
@@ -87,7 +87,7 @@
 .att-remove:hover { color:var(--rose); }
 .clip-btn { width:38px;height:38px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);flex-shrink:0;transition:background 0.15s,color 0.15s; }
 .clip-btn:hover { background:rgba(255,255,255,0.1);color:var(--text); }
-.clip-btn.has-file { border-color:rgba(126,204,205,0.4);color:var(--calipso); }
+.clip-btn.has-file { border-color:rgba(224,162,74,0.4);color:var(--calipso); }
 .msg-img { max-width:200px;max-height:160px;border-radius:8px;display:block;margin-top:6px; }
 .msg-doc { display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:6px;font-size:0.75rem;color:var(--muted);margin-top:6px; }
 </style>

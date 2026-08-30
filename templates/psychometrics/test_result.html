@@ -8,8 +8,8 @@
 
 /* Crisis alert */
 .crisis-alert {
-  background:rgba(201,123,132,0.1);
-  border:1px solid rgba(201,123,132,0.35);
+  background:rgba(223,122,106,0.1);
+  border:1px solid rgba(223,122,106,0.35);
   border-radius:var(--radius);
   padding:1.25rem 1.5rem;
   margin-bottom:1.5rem;
@@ -21,7 +21,7 @@
 /* Dimension cards */
 .dim-card {
   background:var(--surface);
-  backdrop-filter:blur(14px);
+  
   border:1px solid var(--border);
   border-radius:var(--radius);
   padding:1.25rem 1.5rem;
@@ -46,10 +46,10 @@
   border-radius:6px;
 }
 .pol-luz_intensa  { background:rgba(240,192,64,0.15);color:#f0c040; }
-.pol-luz          { background:rgba(126,204,205,0.15);color:var(--calipso); }
+.pol-luz          { background:rgba(224,162,74,0.15);color:var(--calipso); }
 .pol-transicion   { background:rgba(212,160,86,0.15);color:var(--amber); }
-.pol-sombra       { background:rgba(155,142,196,0.15);color:var(--violet); }
-.pol-sombra_dominante { background:rgba(201,123,132,0.15);color:var(--rose); }
+.pol-sombra       { background:rgba(201,154,106,0.15);color:var(--violet); }
+.pol-sombra_dominante { background:rgba(223,122,106,0.15);color:var(--rose); }
 
 .bar-section { margin-bottom:0.75rem; }
 .bar-meta { display:flex;justify-content:space-between;font-size:0.72rem;color:var(--muted);margin-bottom:0.3rem; }
@@ -77,7 +77,7 @@
 /* Conclusion box */
 .conclusion-box {
   background:var(--surface);
-  backdrop-filter:blur(14px);
+  
   border:1px solid var(--border);
   border-left:3px solid var(--calipso);
   border-radius:var(--radius);
@@ -90,8 +90,8 @@
 
 /* AI insight */
 .insight-box {
-  background:rgba(126,204,205,0.05);
-  border:1px solid rgba(126,204,205,0.2);
+  background:rgba(224,162,74,0.05);
+  border:1px solid rgba(224,162,74,0.2);
   border-radius:var(--radius);
   padding:1.25rem 1.5rem;
   font-size:0.9rem;
@@ -172,7 +172,7 @@
   {% endif %}
 
   {% if result.test.instrument_type == 'clinical' %}
-  <div style="font-size:0.75rem;color:var(--text);margin-bottom:1.5rem;padding:0.75rem;border:1px solid var(--border);border-left:3px solid var(--calipso);border-radius:8px;line-height:1.5;background:rgba(126,204,205,0.06);">
+  <div style="font-size:0.75rem;color:var(--text);margin-bottom:1.5rem;padding:0.75rem;border:1px solid var(--border);border-left:3px solid var(--calipso);border-radius:8px;line-height:1.5;background:rgba(224,162,74,0.06);">
     ✓ Este instrumento posee <strong>validación científica y clínica estandarizada</strong>. Es una herramienta de alta precisión diagnóstica.
   </div>
   {% else %}
@@ -191,17 +191,17 @@
     {% if user_plan != 'free' %}
     <a href="?ai=1" class="btn btn-ghost" style="font-size:0.85rem" data-tip="Análisis personalizado de tus resultados con recomendaciones específicas para este test">✦ Generar insight IA</a>
     {% else %}
-    <div style="background:rgba(126,204,205,0.05);border:1px solid rgba(126,204,205,0.15);border-radius:12px;padding:1.25rem 1.5rem">
+    <div style="background:rgba(224,162,74,0.05);border:1px solid rgba(224,162,74,0.15);border-radius:12px;padding:1.25rem 1.5rem">
       <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--calipso);margin-bottom:0.6rem">✦ Insight IA</div>
       <p style="font-size:0.86rem;color:rgba(255,255,255,0.6);line-height:1.6;margin-bottom:1rem">¿Qué significa este resultado para ti específicamente? El insight IA analiza tus respuestas y genera un reflejo personalizado — qué patrones emergen y qué observar esta semana.</p>
-      <a href="/planes/" onclick="spaGo(event,this)" style="display:inline-flex;align-items:center;gap:0.4rem;background:rgba(126,204,205,0.12);border:1px solid rgba(126,204,205,0.3);border-radius:8px;padding:0.5rem 1rem;font-size:0.8rem;font-weight:600;color:var(--calipso);text-decoration:none">Activar Navegante · desde $10 USD/mes →</a>
+      <a href="/planes/" onclick="spaGo(event,this)" style="display:inline-flex;align-items:center;gap:0.4rem;background:rgba(224,162,74,0.12);border:1px solid rgba(224,162,74,0.3);border-radius:8px;padding:0.5rem 1rem;font-size:0.8rem;font-weight:600;color:var(--calipso);text-decoration:none">Activar Navegante · desde $10 USD/mes →</a>
     </div>
     {% endif %}
   </div>
   {% endif %}
 
   {% if result.test.slug == 'big-five-inventario-de-personalidad' or result.test.slug == 'heridas-de-la-infancia-lise-bourbeau' or result.test.slug == 'dirty-dozen-triada-oscura' %}
-  <div style="background:rgba(126,204,205,0.05);border:1px solid rgba(126,204,205,0.12);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+  <div style="background:rgba(224,162,74,0.05);border:1px solid rgba(224,162,74,0.12);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
     <p style="font-size:0.82rem;color:var(--muted);margin:0">Este test es parte del <strong style="color:rgba(255,255,255,0.7)">Mapa de Patrones</strong></p>
     <a href="/tests/mapa-patrones/" onclick="spaGo(event,this)" style="font-size:0.8rem;font-weight:600;color:var(--calipso);text-decoration:none;white-space:nowrap">Ver mi progreso →</a>
   </div>

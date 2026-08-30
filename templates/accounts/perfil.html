@@ -10,7 +10,7 @@
 }
 .avatar-wrap { position:relative;width:70px;height:70px; }
 .avatar-img { width:70px;height:70px;border-radius:50%;object-fit:cover;border:2px solid var(--border); }
-.avatar-placeholder { width:70px;height:70px;border-radius:50%;background:var(--calipso-glow);border:2px solid rgba(126,204,205,0.2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--calipso); }
+.avatar-placeholder { width:70px;height:70px;border-radius:50%;background:var(--calipso-glow);border:2px solid rgba(224,162,74,0.2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--calipso); }
 .avatar-upload-btn { position:absolute;bottom:0;right:0;width:20px;height:20px;background:var(--calipso);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;color:#000; }
 .aesthetic-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem; }
 .aes-card { border:1px solid var(--border);border-radius:10px;padding:0.6rem 0.4rem;text-align:center;cursor:pointer;transition:border-color 0.15s; }
@@ -88,47 +88,11 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label" style="margin-bottom:0.6rem">Fondo visual</label>
-        <div class="aesthetic-grid">
-          {% for val, label in profile.AESTHETIC_CHOICES %}
-          <label class="aes-card {% if profile.map_aesthetic == val %}active{% endif %}" onclick="this.closest('.aesthetic-grid').querySelectorAll('.aes-card').forEach(c=>c.classList.remove('active'));this.classList.add('active');if(window.__switchAesthetic)window.__switchAesthetic(this.querySelector('input').value)">
-            <input type="radio" name="map_aesthetic" value="{{ val }}" {% if profile.map_aesthetic == val %}checked{% endif %}>
-            <span class="aes-icon">{% if val == 'cosmos' %}✦{% elif val == 'mandala' %}◎{% elif val == 'archipielago' %}◈{% else %}⬡{% endif %}</span>
-            <span class="aes-name">{{ label }}</span>
-          </label>
-          {% endfor %}
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" style="margin-bottom:0.6rem">Color del glow de partículas</label>
-        <div class="palette-grid">
-          <label class="pal-card {% if profile.color_palette == 'cosmos' or not profile.color_palette %}active{% endif %}" onclick="this.closest('.palette-grid').querySelectorAll('.pal-card').forEach(c=>c.classList.remove('active'));this.classList.add('active');if(window.updateCosmosGlow)updateCosmosGlow(this.querySelector('input').value)">
-            <input type="radio" name="color_palette" value="cosmos" {% if profile.color_palette == 'cosmos' or not profile.color_palette %}checked{% endif %}>
-            <div class="pal-dot" style="background:linear-gradient(135deg,#7ECCCD,#9b8ec4)"></div>
-            <span class="pal-name">Cosmos</span>
-          </label>
-          <label class="pal-card {% if profile.color_palette == 'aurora' %}active{% endif %}" onclick="this.closest('.palette-grid').querySelectorAll('.pal-card').forEach(c=>c.classList.remove('active'));this.classList.add('active');if(window.updateCosmosGlow)updateCosmosGlow(this.querySelector('input').value)">
-            <input type="radio" name="color_palette" value="aurora" {% if profile.color_palette == 'aurora' %}checked{% endif %}>
-            <div class="pal-dot" style="background:linear-gradient(135deg,#6B73FF,#48E4C8)"></div>
-            <span class="pal-name">Aurora</span>
-          </label>
-          <label class="pal-card {% if profile.color_palette == 'terra' %}active{% endif %}" onclick="this.closest('.palette-grid').querySelectorAll('.pal-card').forEach(c=>c.classList.remove('active'));this.classList.add('active');if(window.updateCosmosGlow)updateCosmosGlow(this.querySelector('input').value)">
-            <input type="radio" name="color_palette" value="terra" {% if profile.color_palette == 'terra' %}checked{% endif %}>
-            <div class="pal-dot" style="background:linear-gradient(135deg,#d4a056,#7ec49b)"></div>
-            <span class="pal-name">Tierra</span>
-          </label>
-          <label class="pal-card {% if profile.color_palette == 'obsidian' %}active{% endif %}" onclick="this.closest('.palette-grid').querySelectorAll('.pal-card').forEach(c=>c.classList.remove('active'));this.classList.add('active');if(window.updateCosmosGlow)updateCosmosGlow(this.querySelector('input').value)">
-            <input type="radio" name="color_palette" value="obsidian" {% if profile.color_palette == 'obsidian' %}checked{% endif %}>
-            <div class="pal-dot" style="background:linear-gradient(135deg,#4A4A6A,#9b8ec4)"></div>
-            <span class="pal-name">Obsidiana</span>
-          </label>
-          <label class="pal-card {% if profile.color_palette == 'sakura' %}active{% endif %}" onclick="this.closest('.palette-grid').querySelectorAll('.pal-card').forEach(c=>c.classList.remove('active'));this.classList.add('active');if(window.updateCosmosGlow)updateCosmosGlow(this.querySelector('input').value)">
-            <input type="radio" name="color_palette" value="sakura" {% if profile.color_palette == 'sakura' %}checked{% endif %}>
-            <div class="pal-dot" style="background:linear-gradient(135deg,#c97b84,#d4a056)"></div>
-            <span class="pal-name">Sakura</span>
-          </label>
-        </div>
+        <label class="form-label" style="margin-bottom:0.6rem">Tema</label>
+        <p style="font-size:0.82rem;color:var(--muted);line-height:1.5">
+          El botón de sol/luna (abajo a la izquierda) cambia entre claro y oscuro.
+          La preferencia se guarda en este dispositivo.
+        </p>
       </div>
 
       <div style="display:flex;gap:0.75rem;align-items:center;margin-top:1rem">
@@ -203,7 +167,7 @@
         <span>Solicitar mis datos</span>
         <span style="font-size:0.75rem;opacity:0.5">→</span>
       </a>
-      <button onclick="document.getElementById('modal-delete').style.display='flex'" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:0.55rem 0;background:none;border:none;cursor:pointer;color:rgba(201,123,132,0.7);font-size:0.82rem;font-family:inherit;margin-top:0.1rem" data-tip="Elimina permanentemente tu cuenta y todos tus datos — esta acción no se puede deshacer">
+      <button onclick="document.getElementById('modal-delete').style.display='flex'" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:0.55rem 0;background:none;border:none;cursor:pointer;color:rgba(223,122,106,0.7);font-size:0.82rem;font-family:inherit;margin-top:0.1rem" data-tip="Elimina permanentemente tu cuenta y todos tus datos — esta acción no se puede deshacer">
         <span>Eliminar mi cuenta</span>
         <span style="font-size:0.75rem;opacity:0.5">→</span>
       </button>
@@ -217,10 +181,10 @@
 
 <!-- Modal eliminar cuenta -->
 <div id="modal-delete" style="display:{% if show_delete_modal %}flex{% else %}none{% endif %};position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:900;align-items:center;justify-content:center;padding:1rem" onclick="if(event.target===this)this.style.display='none'">
-  <div style="background:#0e0c1a;border:1px solid rgba(201,123,132,0.2);border-radius:16px;padding:2rem;max-width:420px;width:100%">
-    <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:0.5rem">Eliminar mi cuenta</div>
+  <div style="background:#0e0c1a;border:1px solid rgba(223,122,106,0.2);border-radius:16px;padding:2rem;max-width:420px;width:100%">
+    <div style="font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:0.5rem">Eliminar mi cuenta</div>
     <p style="font-size:0.83rem;color:rgba(255,255,255,0.45);line-height:1.7;margin-bottom:1.25rem">
-      Esta acción es <strong style="color:rgba(201,123,132,0.8)">irreversible</strong>. Se borrarán todos tus datos: perfil, tests, sesiones con el Espejo, sueños y bitácoras. Los pagos realizados no son reembolsables.<br><br>
+      Esta acción es <strong style="color:rgba(223,122,106,0.8)">irreversible</strong>. Se borrarán todos tus datos: perfil, tests, sesiones con el Espejo, sueños y bitácoras. Los pagos realizados no son reembolsables.<br><br>
       Si tienes suscripción activa, será cancelada automáticamente.
     </p>
     {% if delete_error %}
