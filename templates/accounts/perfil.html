@@ -5,25 +5,11 @@
 .perfil-wrap { max-width:100%; }
 @media(max-width:640px) {
   .perfil-grid { grid-template-columns:1fr !important; }
-  .aesthetic-grid { grid-template-columns:repeat(2,1fr); }
-  .palette-grid { grid-template-columns:repeat(3,1fr); }
 }
 .avatar-wrap { position:relative;width:70px;height:70px; }
 .avatar-img { width:70px;height:70px;border-radius:50%;object-fit:cover;border:2px solid var(--border); }
 .avatar-placeholder { width:70px;height:70px;border-radius:50%;background:var(--calipso-glow);border:2px solid rgba(224,162,74,0.2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--calipso); }
-.avatar-upload-btn { position:absolute;bottom:0;right:0;width:20px;height:20px;background:var(--calipso);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;color:#000; }
-.aesthetic-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem; }
-.aes-card { border:1px solid var(--border);border-radius:10px;padding:0.6rem 0.4rem;text-align:center;cursor:pointer;transition:border-color 0.15s; }
-.aes-card.active { border-color:var(--calipso); }
-.aes-card input { display:none; }
-.aes-icon { font-size:1.1rem;display:block;margin-bottom:0.2rem; }
-.aes-name { font-size:0.68rem;color:var(--muted); }
-.palette-grid { display:grid;grid-template-columns:repeat(5,1fr);gap:0.5rem; }
-.pal-card { border:2px solid var(--border);border-radius:10px;padding:0.55rem 0.3rem;text-align:center;cursor:pointer;transition:border-color 0.15s; }
-.pal-card.active { border-color:var(--calipso); }
-.pal-card input { display:none; }
-.pal-dot { width:26px;height:26px;border-radius:50%;margin:0 auto 0.25rem; }
-.pal-name { font-size:0.62rem;color:var(--muted); }
+.avatar-upload-btn { position:absolute;bottom:0;right:0;width:20px;height:20px;background:var(--calipso);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.7rem;color:var(--bg); }
 /* compact pay buttons (sidebar) */
 .cpay { display:flex;flex-direction:column;align-items:center;gap:0.18rem;flex:1;padding:0.45rem 0.3rem;border-radius:8px;font-size:0.7rem;font-weight:600;text-decoration:none;transition:opacity .15s;text-align:center; }
 .cpay:hover { opacity:.75; }
