@@ -403,7 +403,10 @@
   <button class="mobile-nav-toggle" id="mobile-ham" aria-label="Abrir menú" aria-expanded="false">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
   </button>
-  <span style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;color:var(--text);letter-spacing:-0.01em;flex:1;text-align:center">Endonautas</span>
+  <span style="display:flex;align-items:center;gap:8px;flex:1;justify-content:center">
+    <img src="{% static 'img/logo-alt.png' %}" alt="" width="22" height="22" style="object-fit:contain">
+    <span style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;color:var(--text);letter-spacing:-0.01em">Endonautas</span>
+  </span>
   <a href="/planes/" onclick="spaGo(event,this)" style="display:flex;align-items:center;gap:4px;font-size:0.72rem;color:var(--calipso);text-decoration:none;background:var(--calipso-glow);border:1px solid rgba(224,162,74,0.25);border-radius:20px;padding:4px 10px;white-space:nowrap;flex-shrink:0;text-transform:capitalize">{{ user_plan }}</a>
 </div>
 <div class="app-shell">
