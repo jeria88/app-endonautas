@@ -4,7 +4,7 @@
 <style data-page-style>
 .pillar {
   background:var(--surface);
-  backdrop-filter:blur(14px);
+  
   border:1px solid var(--border);
   border-radius:var(--radius);
   padding:1rem;
@@ -25,7 +25,7 @@
   background:var(--surface);
   transition:border-color 0.3s;
 }
-.dw-cycle.current { border-color:rgba(126,204,205,0.4);background:rgba(126,204,205,0.06); }
+.dw-cycle.current { border-color:rgba(224,162,74,0.4);background:rgba(224,162,74,0.06); }
 </style>
 
 <div>
@@ -121,7 +121,7 @@
           <span style="color:var(--calipso);font-size:0.8rem">{{ cycle.elem_stem }}</span>
           <span style="color:var(--violet);font-size:0.8rem">{{ cycle.animal }} · {{ cycle.elem_branch }}</span>
           <span style="margin-left:auto;color:var(--dim);font-size:0.75rem;white-space:nowrap">{{ cycle.age_start }}–{{ cycle.age_end }} años · {{ cycle.year_start }}–{{ cycle.year_end }}</span>
-          {% if cycle.is_current %}<span style="font-size:0.7rem;color:var(--calipso);font-weight:600;background:rgba(126,204,205,0.12);padding:2px 8px;border-radius:20px">Ahora</span>{% endif %}
+          {% if cycle.is_current %}<span style="font-size:0.7rem;color:var(--calipso);font-weight:600;background:rgba(224,162,74,0.12);padding:2px 8px;border-radius:20px">Ahora</span>{% endif %}
         </div>
         {% if cycle.meaning %}<div style="font-size:0.77rem;color:var(--muted);line-height:1.5;margin-top:0.4rem;padding-top:0.4rem;border-top:1px solid var(--border)">{{ cycle.meaning }}</div>{% endif %}
       </div>
@@ -136,7 +136,7 @@
   {% endif %}
 
   {% if report.ai_reading %}
-  <div style="background:rgba(126,204,205,0.06);border:1px solid rgba(126,204,205,0.2);border-radius:14px;padding:1.25rem;font-size:0.9rem;line-height:1.7">
+  <div style="background:rgba(224,162,74,0.06);border:1px solid rgba(224,162,74,0.2);border-radius:14px;padding:1.25rem;font-size:0.9rem;line-height:1.7">
     <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--calipso);margin-bottom:0.75rem">◎ Lectura endonauta</div>
     {{ report.ai_reading|linebreaksbr }}
   </div>

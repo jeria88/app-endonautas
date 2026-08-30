@@ -7,7 +7,7 @@
 .detail-meta { display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;margin-bottom:1.5rem; }
 .detail-panel {
   background:var(--surface);
-  backdrop-filter:blur(14px);
+  
   border:1px solid var(--border);
   border-radius:var(--radius);
   padding:1.5rem;
@@ -64,7 +64,7 @@
   {% endif %}
 
   {% if test.instrument_type == 'clinical' %}
-  <div class="disclaimer" style="border-left-color: var(--calipso); background: rgba(126,204,205,0.06); color: var(--text);">
+  <div class="disclaimer" style="border-left-color: var(--calipso); background: rgba(224,162,74,0.06); color: var(--text);">
     ✓ Este instrumento posee <strong>validación científica y clínica estandarizada</strong>. Es una herramienta de alta precisión diagnóstica.
   </div>
   {% else %}

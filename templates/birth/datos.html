@@ -70,7 +70,7 @@ document.getElementById('city-input').addEventListener('input', function() {
         const opt = document.createElement('div');
         opt.style.cssText = 'padding:0.6rem 1rem;cursor:pointer;font-size:0.85rem;border-bottom:1px solid var(--border)';
         opt.textContent = item.display_name;
-        opt.addEventListener('mouseenter', () => opt.style.background = 'rgba(126,204,205,0.1)');
+        opt.addEventListener('mouseenter', () => opt.style.background = 'rgba(224,162,74,0.1)');
         opt.addEventListener('mouseleave', () => opt.style.background = '');
         opt.addEventListener('click', () => {
           document.getElementById('city-input').value = item.display_name.split(',')[0];
