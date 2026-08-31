@@ -334,20 +334,48 @@ Cuando se modifica cualquier feature (costo, nombre, comportamiento, flujo), hay
 
 ---
 
-## Email marketing (Listmonk — al 2026-06-23)
+## Email marketing (al 2026-08-31)
 
-Listas activas:
-| Lista | ID | UUID |
-|-------|----|------|
-| Usuarios App | 4 | — |
-| Practicantes | 5 | `574f7450-0663-4848-95e5-8ebe4765a33a` |
-| Leads App | 7 | — |
-| Lanzamiento | 8 | `431ebe70-b897-416b-9016-daea6acc030c` |
+### Transporte
+SMTP Brevo `smtp-relay.brevo.com:587` (login `aaccf1001@smtp-brevo.com`), env vars en Coolify.
+**Verificado 2026-08-31: autentica en plan free** (`.send()` OK, sin 535 — el `CORREO.md` de orquesta
+que decía lo contrario era un lío de credenciales viejo). Backend efectivo `POST_OFFICE['EMAIL_BACKEND']`
+= `smtp` en prod. DNS de `endonautas.cl`: DKIM `brevo1`/`brevo2._domainkey` publicado y activo, DMARC
+`p=none` → Brevo, `brevo-code` presente. **Falta `include:spf.brevo.com` en el SPF** (pendiente Franco,
+panel Cloudflare) — no bloquea: con DKIM alineado, DMARC pasa igual.
 
-9 campañas email en draft en Listmonk — activar desde `https://mail.endonautas.cl`.
-Secuencias: 3 emails × Lanzamiento (leads sin cuenta), 3 × Leads App (free → Navegante), 3 × Practicantes (terapeutas).
+### Campaña del ebook — motor Django (NO Listmonk, NO Brevo automation)
+Todo el email marketing del ebook vive en `payments/` y lo dirige el estado de `EbookOrder`/`EbookLead`.
+Decisión 2026-08-31: una sola campaña, sin plataforma externa. Ver `payments/funnel_emails.py`,
+`payments/management/commands/run_ebook_funnel.py` (cron `*/30` en el host Oracle), y el plan
+`plans/endonautas/2026-08-31-email-marketing-una-campana.md`.
 
-SMTP Brevo: `smtp-relay.brevo.com:587` · login `aaccf1001@smtp-brevo.com` · verificado con smtplib.
+- **3 ramas, 8 emails** (2 ya existían inline en `entrega.py`):
+  - A · nutrición del test: T1 (`entregar_pdf_herida`, inmediato) · **T2** (+2d) · **T3** (+4d) — T2/T3
+    personalizados por herida desde `ebook_files/heridas.json`.
+  - B · carrito abandonado: **A1** (+1h) · **A2** (+24h) — trigger `EbookOrder` pending sin pago.
+  - C · post-compra: P1 (`entregar_ebook`, inmediato) · **P2** (+3d) · **P3** (+7d, pitch Círculo).
+- **Precedencia anti-nag**: inició checkout → la rama A se corta; compró → arrancan P2/P3, paran A y B.
+- **Idempotencia**: `EbookFunnelEmail(email, step)` unique. **Baja**: `EbookOptOut` + view
+  `/pago/ebook/baja/<token firmado>/` + headers `List-Unsubscribe` / One-Click.
+- `run_ebook_funnel` también reconcilia PayPal (`EbookOrder` paypal+pending que nunca se capturó porque
+  el comprador cerró la pestaña → `paypal_service.get_order` → captura/entrega).
+- **El comprador/lead del ebook YA NO recibe el welcome de la app**: `accounts/signals.suppress_listmonk_welcome`
+  se activa en `_get_or_create_user(send_setup=False)`.
+
+### Listmonk (gestor de listas — sigue vivo para el SaaS, no para el ebook)
+| Lista | ID |
+|-------|----|
+| Usuarios App | 4 |
+| Practicantes | 5 |
+| Leads App | 7 |
+| Lanzamiento | 8 |
+
+`https://mail.146.181.39.4.sslip.io`. **Las 13 campañas draft se borraron el 2026-08-31** (estrategia
+abandonada; backup en `endonautas-rework/listmonk-campaigns-backup-2026-08-31.json`). El lead del ebook
+sigue entrando a la lista 8 como registro CRM (vía `subscribe_user` en `ebook_views.comprar`/`lead`),
+sin campaña cableada. ⚠️ `WELCOME_TEMPLATE_ID = 7` apunta a un template tipo *campaign*, no *tx* — el
+welcome de Listmonk probablemente falla en silencio; irrelevante para el ebook ahora que está suprimido.
 
 ### Módulo programático: `accounts/listmonk.py`
 
@@ -581,5 +609,7 @@ los leads como entregados igual. Las tres env necesarias (`EMAIL_BACKEND`, `EMAI
 `EMAIL_HOST_PASSWORD`) se cargan **por la UI de Coolify, nunca por la API**, y un contenedor ya
 corriendo **no las toma**: hace falta redeploy.
 
-**Pendiente de entregabilidad (2026-08-28):** el SPF de `endonautas.cl` no incluye a Brevo y no hay
-DKIM (`brevo._domainkey` vacío). Los correos salen y llegan, pero con volumen se van a spam.
+**Entregabilidad (act. 2026-08-31):** el DKIM de Brevo SÍ está publicado (`brevo1`/`brevo2._domainkey`
+— el `brevo._domainkey` singular que se revisaba está vacío pero no es el selector activo). DMARC pasa
+por alineación de DKIM. Único pendiente: `include:spf.brevo.com` en el SPF (Franco, panel Cloudflare).
+El transporte SMTP se verificó funcionando el 2026-08-31.
