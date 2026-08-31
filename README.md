@@ -102,7 +102,7 @@ SMTP configurado con Brevo SMTP relay:
 | Lista | ID | UUID | Descripción |
 |-------|----|------|-------------|
 | Usuarios App | 4 | — | Registrados en app.endonautas.cl |
-| Practicantes | 5 | `574f7450-0663-4848-95e5-8ebe4765a33a` | Leads de /profesionales/ (captura landing B2B) |
+| Practicantes | 5 | `574f7450-0663-4848-95e5-8ebe4765a33a` | Leads de /para-terapeutas/ (captura landing SaaS) |
 | Leads App | 7 | — | Usuarios free → upgrade Navegante |
 | Lanzamiento | 8 | `431ebe70-b897-416b-9016-daea6acc030c` | Leads de la landing principal |
 
@@ -289,7 +289,7 @@ Análisis estático al 2026-06-20 — `codegraph init`:
 
 **Modelo UserProfile** (OneToOne a User):
 - `plan`: free / navegante / practicante / empresa
-- `map_aesthetic`: cosmos / mandala / archipielago / arbol
+- `map_aesthetic`: LEGACY — campo en BD sin uso desde el rework glass (2026-08-30)
 - `onboarding_completed`, `onboarding_step`
 - Campos Hotmart: `hotmart_purchase_id`, `hotmart_product_id`, `plan_expires_at`
 
@@ -528,57 +528,39 @@ Sistema de Fractones desactivado. Las tablas (`TokenBalance`, `TokenTransaction`
 
 ---
 
-## Sistema visual — Fondos animados
+## Sistema visual — "Vidrio ámbar" (rework 2026-08-30)
 
-La app tiene dos fondos intercambiables controlados por `UserProfile.map_aesthetic`.
+**Se apagó el cosmos.** No hay Three.js, ni el túnel Canvas 2D, ni `__switchAesthetic`, ni las
+paletas `[data-palette]`. La SPA nav (`spaGo`/`spaLoad`) se preservó — ya no dispara `bg:preset`.
+Plan: `~/plans/endonautas/2026-08-30-rework-glass-fase-b.md`.
 
-`<body data-aesthetic="{{ map_aesthetic }}">` — JS y CSS leen este atributo.
-
-### Fondo Cosmos (aesthetic = `cosmos`)
-- Three.js 0.160 con `UnrealBloomPass` + `EffectComposer`
-- Agujero negro kepleriano con 75k partículas en espiral
-- **Performance:** `pixelRatio=1.0`, bloom a 50% resolución, 75k partículas
-- Presets por sección: cambia densidad, camZ, tamaño de partículas según URL
-- Lazy init: en modo mandala, `window.__initCosmos` guarda la función pero no la ejecuta hasta que se pida previsualización
-
-### Fondo Mandala (aesthetic = `mandala`)
-- Canvas 2D `#tunnel-bg` al 50% de resolución nativa
-- **30fps cap** para no competir con el hilo principal
-- 4 escenas / secciones: Corriente Acuática (0), Obsidiana (1), Hexagonal (2), Fibonacci (3)
-- Transición portal entre escenas: círculo negro expansivo de 2200ms
-- Overlay de contraste: `#mandala-overlay` con `rgba(3,3,6,0.44)` z-index:1
-
-### Event system para SPA
-```javascript
-// Al navegar (spaGo), se dispara:
-document.dispatchEvent(new CustomEvent('bg:preset', { detail: preset }))
-// Cosmos escucha vía window.updateCosmosPreset(preset)
-// Túnel escucha vía document.addEventListener('bg:preset', ...)
-```
-
-### Preview en perfil
-`window.__switchAesthetic(name)` — cambia el fondo en tiempo real al hacer click en las cards de aesthetic en `/perfil/`, sin recargar.
-
----
-
-## Sistema de diseño (CSS tokens)
-
-La app usa variables CSS globales definidas en `base.html`:
+### Tokens — `:root` inline en `base.html` (mismos valores que `endonautas-web/src/styles/tokens.css`)
+Los **nombres de token no cambiaron** (`--calipso`, `--surface`, `--text`, `--muted`, `--border`…);
+solo los valores. La app se re-tematizó en una edición.
 
 ```css
---surface: rgba(12,10,20,0.76)      /* cards principales */
---surface2: rgba(20,17,35,0.85)     /* cards secundarias */
---border: rgba(255,255,255,0.08)    /* bordes sutiles */
---border-active: rgba(126,204,205,0.3)
---radius: 16px
---calipso: #7ECCCD                  /* acento primario */
---violet: #9b8ec4                   /* acento secundario */
---rose: #c97b84
---amber: #d4a056
---sidebar-w: 280px
+/* DARK (default) */
+--bg: #14100c              /* fondo */
+--surface: #20190f         /* cards — OPACO, sin blur */
+--border: #453720
+--text: #f4efe6  --muted: #c3b39a  --dim: #8a7a60
+--calipso: #e0a24a         /* = --accent = --amber (ámbar) */
+--calipso-glow: rgba(224,162,74,.15)
+/* polaridad de tests: */
+--luz: #7cc98a  --transicion: #e6b955  --sombra: #c99a6a  --sombra-dom: #df7a6a
+--font-ui: 'Hanken Grotesk'  --font-display: 'Bricolage Grotesque'
+--radius: 14px  --sidebar-w: 280px
+
+/* LIGHT — :root[data-theme="light"] */
+--bg: #f5efe3  --surface: #fdf9f0  --text: #241c12  --calipso: #a4641a
 ```
 
-Clase `.panel`: `background:var(--surface); backdrop-filter:blur(14px); border:1px solid var(--border); border-radius:var(--radius); padding:24px`
+- **`.panel` / `.card`:** `background: var(--surface)` **opaco, sin `backdrop-filter`**. El blur
+  quedó solo en cromo elevado (sidebar, mobile-topbar, tabbar, modales, `#page-onboarding`).
+- **Toggle claro/oscuro:** botón sol/luna flotante (`#theme-toggle`, abajo-izquierda) + script
+  anti-flash en el `<head>` (`localStorage['endo-theme']`, default `'dark'`).
+- **`UserProfile.map_aesthetic` / `color_palette`:** campos aún en la BD (migraciones), **sin uso**.
+  `perfil.html` ya no tiene el switch de estética/paleta.
 
 Navegación SPA: `spaGo(event, el)` — intercepta clicks de `<a>` y carga contenido vía fetch sin recargar la página.
 

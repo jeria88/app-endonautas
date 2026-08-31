@@ -26,7 +26,7 @@ Fueron migradas a URLs genéricas para uso compartido de todo el servidor Oracle
 - WhiteNoise para static files
 - DeepSeek API (key en `.env`) para IA
 - kerykeion 5.12.8 (astrología), sxtwl 2.0.7 (Saju/BaZi), timezonefinder (zonas horarias)
-- Three.js 0.160 (fondo cosmos), Canvas 2D (fondo mandala/túnel)
+- Sin Three.js ni Canvas de fondo desde 2026-08-30 (rework glass/vidrio-ámbar). Ver "Sistema visual".
 - Repo: github.com/jeria88/app-endonautas
 
 ## Arrancar el servidor
@@ -62,8 +62,8 @@ python3 manage.py seed_fractal_cards # pobla cartas fractales
 ```python
 user          OneToOne → User
 plan          free / navegante / practicante / empresa
-map_aesthetic cosmos / mandala         # controla el fondo visual
-color_palette cosmos / aurora / terra / obsidian / sakura  # glow de partículas cosmos
+map_aesthetic cosmos / mandala         # LEGACY: campo en BD pero nadie lo lee (rework 08-30)
+color_palette cosmos / aurora / ...  # LEGACY: campo en BD, sin uso (rework 08-30)
 avatar        ImageField(upload_to='avatars/')
 bio           TextField
 onboarding_complete  BooleanField
@@ -110,69 +110,44 @@ user FK, title, content, tags, dream_date, is_lucid, reality_check
 
 ---
 
-## Sistema visual — Dos fondos
+## Sistema visual — glass / "Vidrio ámbar" (rework 2026-08-30)
 
-### Arquitectura general
-`<body data-aesthetic="{{ map_aesthetic }}">` — JS y CSS leen esto.
+**Se apagó el cosmos.** No hay Three.js, ni el túnel Canvas 2D, ni `__switchAesthetic`, ni las
+4 paletas `[data-palette]`. El módulo del cosmos (`base.html:615-994` viejo) se borró; la **SPA
+nav** que vivía adentro se extrajo a un `<script>` propio y sigue funcionando (`spaGo`/`spaLoad`
+/`markActiveNav`/`popstate` + el swap de `<style data-page-style>`). El plan del rework:
+`plans/endonautas/2026-08-30-rework-glass-fase-b.md`.
 
+### Tokens — `:root` inline en `base.html` (mismos valores que `endonautas-web/src/styles/tokens.css`)
+Los **nombres de token no cambiaron** (`--calipso`, `--surface`, `--text`, `--muted`, `--border`,
+etc.) — solo los valores. Así toda la app se re-tematizó en una edición.
 ```
-html[data-aesthetic="cosmos"]  → Three.js activo, mandala oculto
-html[data-aesthetic="mandala"] → Túnel Canvas activo, Three.js suspendido
+DARK (default):  --bg #14100c · --surface #20190f (opaco) · --border #453720
+                 --text #f4efe6 · --muted #c3b39a · --dim #8a7a60
+                 --calipso #e0a24a (= --accent = --amber, ámbar) · --calipso-glow rgba(224,162,74,.15)
+                 polaridad: --luz #7cc98a · --transicion #e6b955 · --sombra #c99a6a · --sombra-dom #df7a6a
+LIGHT (:root[data-theme="light"]):  --bg #f5efe3 · --surface #fdf9f0 · --text #241c12 · --calipso #a4641a
 ```
+- **Tipografía:** `--font-ui` = Hanken Grotesk, `--font-display` = Bricolage Grotesque.
+  (`--font-editorial` sigue apuntando a Bricolage — EB Garamond salió.)
+- **`.panel` / `.card`:** superficie **opaca** (`var(--surface)`), **sin `backdrop-filter`**. El
+  blur quedó solo en cromo elevado: sidebar, mobile-topbar, tabbar, modales, `#page-onboarding`,
+  `#ft-tip`, `#bug-btn`.
 
-El context processor `accounts/context_processors.py` inyecta `map_aesthetic` en todos los templates. Registrado en `settings.TEMPLATES`.
+### Toggle de tema
+Botón sol/luna flotante (`#theme-toggle`, abajo-izquierda, `z-index:9500`, sobre el `#pwa-install`)
++ script anti-flash en el `<head>` (`localStorage['endo-theme']`, default `'dark'`). Sin distinción
+logueado/anónimo. `perfil.html` ya no tiene el switch de estética/paleta — solo una nota que apunta
+al botón.
 
-### Fondo Cosmos (Three.js 0.160)
-- `UnrealBloomPass` + `EffectComposer` con WebGLRenderer
-- **Performance desktop:** `renderer.setPixelRatio(1.0)`, bloom a 50% resolución, N=75k partículas
-- **Performance móvil (≤768px, desde B2 2026-07):** N=18k, `setPixelRatio(0.75)`, SIN bloom (solo RenderPass), RAF pausado con `visibilitychange`; `prefers-reduced-motion` → un frame estático
-- Agujero negro kepleriano, presets por sección (cambia camZ, density, bloom, etc.)
-- Lazy init: si aesthetic≠cosmos, `window.__initCosmos` se llama solo al previsualizar
-- `window.__cosmosCanvas` guarda el canvas para show/hide
-
-### Fondo Mandala (Canvas 2D)
-- Canvas `#tunnel-bg` al 50% de resolución, estirado con CSS `width:100%;height:100%`
-- **30fps cap:** `if (ts - _lastFrame < 34) return;`
-- 4 escenas, mapeadas a secciones:
-  - 0 → `landing/general/onboarding` (Corriente Acuática — grid líquido)
-  - 1 → `espejo/perfil/terapeuta` (Obsidiana — geometría angular)
-  - 2 → `tests/comunidad/practicantes` (Hexagonal — hex grid)
-  - 3 → `nacimiento/oraculo/suenos` (Fibonacci — espiral áurea)
-- Transición portal: círculo negro expansivo 2200ms
-- Overlay oscuro: `#mandala-overlay` (`rgba(3,3,6,0.44)`, z-index:1) para legibilidad
+### `map_aesthetic` / `color_palette` (campos de `UserProfile`)
+**Los campos SIGUEN en la BD** (por migraciones), pero **ya nadie los lee**. `context_processors.py`
+todavía inyecta `map_aesthetic` (inofensivo). Limpieza pendiente, baja prioridad.
 
 ### SPA Navigation
-`spaGo()` en base.html: fetch + swap `#page-content`.
-Al navegar:
-1. Swapea `<style data-page-style>` de la nueva página
-2. Llama `window.presetForPath(path)` → devuelve preset según URL
-3. `window.updateCosmosPreset(preset)` si está activo
-4. `document.dispatchEvent(new CustomEvent('bg:preset', {detail: preset}))` — el túnel escucha este evento
-
-### Live preview en perfil
-```javascript
-window.__switchAesthetic = function(name) {
-  // Cambia data-aesthetic en body y html
-  // Muestra/oculta tunnel canvas o cosmos container
-  // Lazy init cosmos si se activa por primera vez
-};
-```
-Las cards de aesthetic en `perfil.html` llaman `__switchAesthetic` en onclick.
-
-### CSS tokens globales
-```css
---surface: rgba(12,10,20,0.76)
---surface2: rgba(20,17,35,0.85)
---border: rgba(255,255,255,0.08)
---border-active: rgba(126,204,205,0.3)
---radius: 16px
---calipso: #7ECCCD          /* acento primario */
---violet: #9b8ec4
---rose: #c97b84
---amber: #d4a056
---sidebar-w: 280px
-```
-Clase `.panel`: glassmorphism oscuro con `backdrop-filter:blur(14px)`.
+`spaGo()` / `spaLoad()` en `base.html`: `fetch` con `X-Requested-With` → swap de `#page-content`
++ swap de `<style data-page-style>` + re-ejecución de `<script>` del fragmento + `markActiveNav`.
+Ya no llama `updateCosmosPreset` ni dispara `bg:preset`.
 
 ---
 
@@ -417,11 +392,10 @@ send_welcome_email(email, name='')
    - DERS-16: actualmente 8 ítems, versión validada tiene 16 en likert5
    - PSQI: suma simple, scoring real tiene 7 componentes ponderados
 
-5. **Fondos árbol y archipiélago** — en AESTHETIC_CHOICES pero sin implementación visual
-
 ### Baja prioridad
-6. Eliminar theme switcher temporal de `base.html` (hardcodear paleta definitiva)
-7. OAuth Google (panel admin)
+6. ~~Eliminar theme switcher temporal de `base.html`~~ ✅ RESUELTO 2026-08-30 (rework glass — cosmos + paletas + switch fuera; ahora toggle claro/oscuro)
+7. Limpiar `map_aesthetic`/`color_palette` de `UserProfile` + `context_processors.py` (campos muertos tras el rework)
+8. OAuth Google (panel admin)
 
 ---
 
@@ -508,7 +482,7 @@ Revisión: Django admin (`/admin/reports/bugreport/`) con thumbnails inline y fi
 
 | Archivo | Contenido |
 |---------|-----------|
-| `templates/base.html` | CSS global, SPA nav, Three.js cosmos, túnel mandala, `__switchAesthetic` |
+| `templates/base.html` | CSS global (tokens ámbar dark+light), SPA nav, toggle de tema. Sin cosmos. |
 | `accounts/context_processors.py` | Inyecta `map_aesthetic` y `color_palette` en todos los templates |
 | `accounts/models.py` | User (email-based), UserProfile |
 | `accounts/views.py` | Auth, perfil, onboarding |
@@ -574,7 +548,7 @@ mucha gente no tiene lector de EPUB y un libro que no se abre termina en reembol
   del pipeline: `pandoc --pdf-engine=typst` le pasa a typst rutas absolutas de su temporal para las
   imágenes en base64 y falla con "file not found"; hay que extraer la media antes y compilar el
   `.typ` a mano con el cwd dentro del temporal.
-- PDF: 205 páginas, maquetado con typst en 6×9" y EB Garamond (la misma tipografía de la landing).
+- PDF: 205 páginas, typst 6×9" EB Garamond, **CON las 5 láminas de capítulo** (`ebook-venta/img/cap1-5.jpg`). El que se entregaba antes del 08-30 no las tenía — se copió el ilustrado (7,4 MB).
 
 ### ⚠️ `resultado.html` — el bug que hay que no repetir
 
