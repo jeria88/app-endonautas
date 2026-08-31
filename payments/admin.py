@@ -1,6 +1,9 @@
 from django.contrib import admin
 
-from .models import EbookLead, EbookOrder, FractonesPack, Subscription, TallerReserva
+from .models import (
+    EbookFunnelEmail, EbookLead, EbookOptOut, EbookOrder, FractonesPack,
+    Subscription, TallerReserva,
+)
 
 
 @admin.register(Subscription)
@@ -41,3 +44,18 @@ class EbookLeadAdmin(admin.ModelAdmin):
     list_filter = ('herida', 'status', 'canal_origen')
     search_fields = ('email', 'whatsapp')
     readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(EbookFunnelEmail)
+class EbookFunnelEmailAdmin(admin.ModelAdmin):
+    list_display = ('email', 'step', 'sent_at')
+    list_filter = ('step',)
+    search_fields = ('email',)
+    readonly_fields = ('email', 'step', 'sent_at')
+
+
+@admin.register(EbookOptOut)
+class EbookOptOutAdmin(admin.ModelAdmin):
+    list_display = ('email', 'created_at')
+    search_fields = ('email',)
+    readonly_fields = ('created_at',)

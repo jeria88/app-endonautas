@@ -182,3 +182,45 @@ class EbookLead(models.Model):
 
     def __str__(self):
         return f'{self.email or self.whatsapp} — {self.herida} ({self.status})'
+
+
+class EbookFunnelEmail(models.Model):
+    """Un email de la campaña del ebook ya enviado a una dirección. La unicidad
+    (email, step) es la idempotencia del comando `run_ebook_funnel`: si la fila
+    existe, ese paso no se vuelve a mandar. Los pasos T1/P1 no se registran acá —
+    salen inline desde las views y no los toca el comando."""
+    STEP_CHOICES = [
+        ('T2', 'Test · ciclo de control (+2d)'),
+        ('T3', 'Test · inercia e invitación (+4d)'),
+        ('A1', 'Carrito · a la hora'),
+        ('A2', 'Carrito · a las 24 h'),
+        ('P2', 'Post-compra · resistencia (+3d)'),
+        ('P3', 'Post-compra · el mapa no es el territorio (+7d)'),
+    ]
+
+    email = models.EmailField()
+    step = models.CharField(max_length=2, choices=STEP_CHOICES)
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-sent_at']
+        constraints = [
+            models.UniqueConstraint(fields=['email', 'step'], name='funnel_email_una_vez_por_paso'),
+        ]
+
+    def __str__(self):
+        return f'{self.email} — {self.step} ({self.sent_at:%Y-%m-%d})'
+
+
+class EbookOptOut(models.Model):
+    """Baja de la campaña del ebook. El comando `run_ebook_funnel` no manda ningún
+    paso a un email que esté acá. No afecta la entrega del libro (P1) ni el PDF del
+    test (T1): esos son transaccionales, respuesta directa a una acción del usuario."""
+    email = models.EmailField(unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.email

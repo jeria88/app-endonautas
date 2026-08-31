@@ -1,3 +1,4 @@
+import contextlib
 import logging
 
 from django.contrib.auth import get_user_model
@@ -31,9 +32,16 @@ def _get_or_create_user(request, email, first_name='', send_setup=True):
     La cuenta igual existe, así que "olvidé mi contraseña" funciona si después se registra.
     """
     User = get_user_model()
-    user, created = User.objects.get_or_create(
-        email=email, defaults={'first_name': first_name},
-    )
+    # El post_save de User dispara el welcome de Listmonk. Para el checkout de
+    # invitado del ebook (`send_setup=False`) eso es ruido: se compró un libro, no
+    # se dio de alta en el SaaS. El guard tiene que envolver al `get_or_create`
+    # porque el signal corre síncrono dentro del `.save()`.
+    from accounts.signals import suppress_listmonk_welcome
+    guard = suppress_listmonk_welcome() if not send_setup else contextlib.nullcontext()
+    with guard:
+        user, created = User.objects.get_or_create(
+            email=email, defaults={'first_name': first_name},
+        )
     if created:
         user.set_password(get_random_string(32))
         user.save(update_fields=['password'])

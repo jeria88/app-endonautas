@@ -1,5 +1,7 @@
 import logging
 
+from django.core import signing
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils.crypto import get_random_string
@@ -215,6 +217,34 @@ def retorno_paypal(request):
 
     return render(request, 'payments/resultado.html', {
         'exito': False, 'mensaje': 'No se pudo confirmar el pago. Si ya fue cobrado, escríbenos.',
+    })
+
+
+@csrf_exempt
+def baja(request, token):
+    """Baja de la campaña de emails del ebook. Acepta:
+      - GET  → click humano desde el pie del correo, muestra confirmación.
+      - POST → 'one-click unsubscribe' (RFC 8058), el cliente de correo lo dispara
+               solo desde el header List-Unsubscribe-Post.
+    No toca la entrega del libro ni el PDF del test: eso es transaccional."""
+    from ..funnel_emails import BAJA_SALT
+    from ..models import EbookOptOut
+    try:
+        email = signing.loads(token, salt=BAJA_SALT, max_age=60 * 60 * 24 * 120)
+    except signing.BadSignature:
+        if request.method == 'POST':
+            return HttpResponse(status=400)
+        return render(request, 'payments/resultado.html', {
+            'exito': False, 'mensaje': 'El link no es válido o venció.',
+        })
+
+    EbookOptOut.objects.get_or_create(email=email.strip().lower())
+    if request.method == 'POST':
+        return HttpResponse(status=200)
+    return render(request, 'payments/resultado.html', {
+        'exito': True,
+        'mensaje': 'Listo. No te escribimos más sobre el libro. '
+                   'Si ya lo compraste, la entrega y los links de descarga no cambian.',
     })
 
 

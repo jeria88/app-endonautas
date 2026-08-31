@@ -11,7 +11,12 @@ from django.core import mail
 from django.test import SimpleTestCase, TestCase
 from django.urls import NoReverseMatch, reverse
 
-from .models import EbookOrder
+from datetime import timedelta
+
+from django.core.management import call_command
+from django.utils import timezone
+
+from .models import EbookFunnelEmail, EbookLead, EbookOptOut, EbookOrder
 from .views.ebook_views import _marcar_pagado
 from .views.entrega import entregar_ebook
 from .views.taller_views import _get_or_create_user
@@ -140,3 +145,103 @@ class ResultadoVisibleParaInvitados(TestCase):
         }, request=req)
         self.assertIn('Descargar el libro', html)
         self.assertIn(order.download_token, html)
+
+
+class CampanaDelEbook(TestCase):
+    """`run_ebook_funnel` — las 3 ramas, la precedencia anti-nag y la idempotencia."""
+
+    def _lead(self, email, herida='abandono', edad_dias=5, status=EbookLead.STATUS_PDF_ENTREGADO):
+        lead = EbookLead.objects.create(email=email, herida=herida, status=status)
+        EbookLead.objects.filter(pk=lead.pk).update(
+            created_at=timezone.now() - timedelta(days=edad_dias))
+        return lead
+
+    def _order(self, email, status, edad_horas=0, gateway='mp', delivered_hace_dias=None):
+        user, _ = get_user_model().objects.get_or_create(email=email)
+        o = EbookOrder.objects.create(
+            user=user, gateway=gateway, amount_local=16990, currency='CLP', status=status,
+            download_token=('x' * 48) if status != EbookOrder.STATUS_PENDING else '',
+        )
+        campos = {}
+        if edad_horas:
+            campos['created_at'] = timezone.now() - timedelta(hours=edad_horas)
+        if delivered_hace_dias is not None:
+            campos['delivered_at'] = timezone.now() - timedelta(days=delivered_hace_dias)
+        if campos:
+            EbookOrder.objects.filter(pk=o.pk).update(**campos)
+        return EbookOrder.objects.get(pk=o.pk)
+
+    def test_carrito_manda_el_test_se_corta(self):
+        """Si hay una EbookOrder para ese email (aunque sea pending), la nutrición
+        del test no le manda nada — recibe el carrito."""
+        self._lead('dobles@test.cl', edad_dias=5)
+        self._order('dobles@test.cl', EbookOrder.STATUS_PENDING, edad_horas=2)
+        call_command('run_ebook_funnel')
+        pasos = set(EbookFunnelEmail.objects.filter(email='dobles@test.cl')
+                    .values_list('step', flat=True))
+        self.assertIn('A1', pasos)
+        self.assertNotIn('T2', pasos)
+        self.assertNotIn('T3', pasos)
+
+    def test_comprador_no_recibe_carrito_ni_test(self):
+        self._lead('compro@test.cl', edad_dias=6)
+        self._order('compro@test.cl', EbookOrder.STATUS_PENDING, edad_horas=30)   # una pending vieja
+        self._order('compro@test.cl', EbookOrder.STATUS_DELIVERED, delivered_hace_dias=1)
+        call_command('run_ebook_funnel')
+        pasos = set(EbookFunnelEmail.objects.filter(email='compro@test.cl')
+                    .values_list('step', flat=True))
+        self.assertEqual(pasos & {'A1', 'A2', 'T2', 'T3'}, set())
+
+    def test_post_compra_por_antiguedad(self):
+        self._order('lector@test.cl', EbookOrder.STATUS_DELIVERED, delivered_hace_dias=1)
+        call_command('run_ebook_funnel')
+        self.assertFalse(EbookFunnelEmail.objects.filter(email='lector@test.cl').exists())
+        EbookOrder.objects.filter(user__email='lector@test.cl').update(
+            delivered_at=timezone.now() - timedelta(days=4))
+        call_command('run_ebook_funnel')
+        pasos = set(EbookFunnelEmail.objects.filter(email='lector@test.cl')
+                    .values_list('step', flat=True))
+        self.assertEqual(pasos, {'P2'})
+
+    def test_nutricion_del_test_personalizada(self):
+        self._lead('curioso@test.cl', herida='traicion', edad_dias=5)
+        call_command('run_ebook_funnel')
+        pasos = set(EbookFunnelEmail.objects.filter(email='curioso@test.cl')
+                    .values_list('step', flat=True))
+        self.assertEqual(pasos, {'T2', 'T3'})
+        cuerpos = ' '.join(m.body for m in mail.outbox)
+        self.assertIn('traición', cuerpos.lower())
+        self.assertIn('Controladora', cuerpos)
+
+    def test_idempotente(self):
+        self._lead('repe@test.cl', edad_dias=5)
+        call_command('run_ebook_funnel')
+        n1 = len(mail.outbox)
+        call_command('run_ebook_funnel')
+        self.assertEqual(len(mail.outbox), n1)
+        self.assertEqual(
+            EbookFunnelEmail.objects.filter(email='repe@test.cl', step='T2').count(), 1)
+
+    def test_optout_corta_todo(self):
+        EbookOptOut.objects.create(email='fuera@test.cl')
+        self._lead('fuera@test.cl', edad_dias=5)
+        self._order('nada@test.cl', EbookOrder.STATUS_DELIVERED, delivered_hace_dias=8)
+        EbookOptOut.objects.create(email='nada@test.cl')
+        call_command('run_ebook_funnel')
+        self.assertFalse(EbookFunnelEmail.objects.exists())
+
+    def test_franco_excluido(self):
+        self._lead(settings.FRANCO_EMAIL, edad_dias=5)
+        call_command('run_ebook_funnel')
+        self.assertFalse(EbookFunnelEmail.objects.exists())
+
+    def test_baja_desde_token_firmado(self):
+        from django.core import signing
+        from payments.funnel_emails import BAJA_SALT
+        token = signing.dumps('adios@test.cl', salt=BAJA_SALT)
+        r = self.client.get(reverse('pago_ebook_baja', args=[token]))
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(EbookOptOut.objects.filter(email='adios@test.cl').exists())
+        # one-click POST no revienta por CSRF
+        r2 = self.client.post(reverse('pago_ebook_baja', args=[token]))
+        self.assertEqual(r2.status_code, 200)

@@ -100,6 +100,18 @@ def capture_order(order_id):
     return resp.json()
 
 
+def get_order(order_id):
+    """Estado de una Order v2. Usado por la reconciliación de `run_ebook_funnel`
+    para el caso 'pagó por PayPal y cerró la pestaña': status APPROVED (aprobó pero
+    no se capturó) o COMPLETED (ya capturada)."""
+    resp = requests.get(
+        f'{_base()}/v2/checkout/orders/{order_id}',
+        headers=_headers(), timeout=15,
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+
 def get_subscription(subscription_id):
     resp = requests.get(
         f'{_base()}/v1/billing/subscriptions/{subscription_id}',

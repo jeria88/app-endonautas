@@ -31,4 +31,5 @@ urlpatterns = [
     path('ebook/descargar/<str:token>/', entrega.descargar_ebook, name='descargar_ebook'),
     path('ebook/descargar/<str:token>/<str:formato>/', entrega.descargar_ebook,
          name='descargar_ebook_formato'),
+    path('ebook/baja/<str:token>/', ebook_views.baja, name='pago_ebook_baja'),
 ]

@@ -57,13 +57,16 @@ def entregar_pdf_herida(lead):
         return False
 
     try:
+        sitio = settings.PUBLIC_SITE_URL.rstrip('/')
         subject = 'El mapa completo de tu herida'
         body_text = (
-            'Aquí está el mapa completo de tu herida, en PDF — va adjunto.\n\n'
-            'Es un fragmento de Endonautica, el libro completo: 207 páginas con esta '
-            'herida y las otras cuatro, más el marco entero del viaje interior.\n\n'
-            'Si quieres el resto del mapa: https://endonautas.cl/ebook/?herida='
-            f'{lead.herida}\n\n'
+            'Aquí va, en PDF adjunto: el mapa completo de tu herida principal — cómo se '
+            'formó, la máscara que armaste encima y qué la sostiene hoy.\n\n'
+            'Es un fragmento de La Endonáutica. El libro entero trae esta herida y las '
+            'otras cuatro, más el marco completo del viaje interior: 205 páginas, mi '
+            'sistema para leerte con precisión.\n\n'
+            'Si quieres dejar de operar desde esta herida, el resto del mapa está aquí '
+            f'(con la página adaptada a tu perfil):\n{sitio}/?herida={lead.herida}\n\n'
             '— Franco'
         )
         msg = EmailMultiAlternatives(subject, body_text, to=[lead.email])
