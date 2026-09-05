@@ -62,7 +62,7 @@ def entregar_pdf_herida(lead):
         body_text = (
             'Aquí va, en PDF adjunto: el mapa completo de tu herida principal — cómo se '
             'formó, la máscara que armaste encima y qué la sostiene hoy.\n\n'
-            'Es un fragmento de La Endonáutica. El libro entero trae esta herida y las '
+            'Es un fragmento de Endonáutica. El libro entero trae esta herida y las '
             'otras cuatro, más el marco completo del viaje interior: 205 páginas, mi '
             'sistema para leerte con precisión.\n\n'
             'Si quieres dejar de operar desde esta herida, el resto del mapa está aquí '
