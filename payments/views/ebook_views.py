@@ -178,6 +178,7 @@ def retorno_mp(request):
                         'mensaje': 'Pago confirmado. Aquí está tu libro.',
                         'download_url': _download_url(order, request, 'pdf'),
                 'download_url_epub': _download_url(order, request, 'epub'),
+                        'monto': str(order.amount_local), 'moneda': order.currency,
                     })
         except Exception as e:
             logger.error(f'MP retorno_ebook error: {e}')
@@ -211,6 +212,7 @@ def retorno_paypal(request):
                 'mensaje': 'Pago confirmado. Aquí está tu libro.',
                 'download_url': _download_url(order, request, 'pdf'),
                 'download_url_epub': _download_url(order, request, 'epub'),
+                'monto': str(order.amount_local), 'moneda': order.currency,
             })
     except Exception as e:
         logger.error(f'PayPal retorno_ebook error: {e}')

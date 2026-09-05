@@ -28,6 +28,15 @@
           También te lo enviamos a tu correo, con estos mismos enlaces para que puedas
           volver a descargarlo cuando quieras. Si no lo ves, revisa promociones o spam.
         </p>
+        {% if monto %}
+          {# Purchase real del ebook — atado a download_url + monto para no contar
+             como venta una seña de taller o una suscripción (mismo template). #}
+          <script>
+            if (window.fbq) {
+              window.fbq('track', 'Purchase', { value: {{ monto }}, currency: '{{ moneda }}' });
+            }
+          </script>
+        {% endif %}
       {% endif %}
 
       {% if gateway %}

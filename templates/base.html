@@ -376,6 +376,24 @@
   </style>
   {% block extra_head %}{% endblock %}
   <script defer data-website-id="9aa0968f-0cd2-4c77-9c70-fbb745d31754" src="https://analytics.146.181.39.4.sslip.io/script.js"></script>
+
+  <!-- Meta Pixel (pixel endonautas.com, dataset 860717205439662) — init aquí (fuera de
+       cualquier block, se hereda siempre); el evento Purchase real vive en
+       payments/_resultado_body.html, atado a compra confirmada del ebook. -->
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '860717205439662');
+    fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=860717205439662&ev=PageView&noscript=1" /></noscript>
 </head>
 <body{% if user.is_authenticated %} class="app-mode"{% endif %}>
 
