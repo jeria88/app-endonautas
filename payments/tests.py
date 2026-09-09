@@ -12,6 +12,7 @@ from django.test import SimpleTestCase, TestCase
 from django.urls import NoReverseMatch, reverse
 
 from datetime import timedelta
+from unittest import mock
 
 from django.core.management import call_command
 from django.utils import timezone
@@ -113,6 +114,46 @@ class EntregaDelEbook(TestCase):
         confunde a quien nunca pidió una cuenta."""
         _get_or_create_user(None, 'nuevo@test.cl', send_setup=False)
         self.assertEqual(len(mail.outbox), 0)
+
+
+class MetaCapiEnvioDePurchase(TestCase):
+    """CAPI es redundante al pixel — nunca debe romper la entrega del libro si
+    falla, y el payload tiene que traer lo que Meta necesita para deduplicar
+    contra el evento client-side y atribuir la venta."""
+
+    def setUp(self):
+        self.user = get_user_model().objects.create(email='comprador@test.cl')
+        self.order = EbookOrder.objects.create(
+            user=self.user, gateway='mp', amount_local=17000, currency='CLP',
+            status=EbookOrder.STATUS_PAID, download_token='t' * 48,
+        )
+
+    @mock.patch('payments.services.meta_capi.requests.post')
+    def test_sin_token_no_llama_a_la_red(self, mock_post):
+        from payments.services import meta_capi
+        meta_capi.send_purchase(self.order)
+        mock_post.assert_not_called()
+
+    @mock.patch('payments.services.meta_capi.requests.post')
+    def test_payload_correcto(self, mock_post):
+        from payments.services import meta_capi
+        mock_post.return_value = mock.Mock(status_code=200)
+        with self.settings(META_CAPI_ACCESS_TOKEN='tok', META_PIXEL_ID='860717205439662'):
+            meta_capi.send_purchase(self.order)
+        self.assertTrue(mock_post.called)
+        payload = mock_post.call_args.kwargs['json']['data'][0]
+        self.assertEqual(payload['event_name'], 'Purchase')
+        self.assertEqual(payload['event_id'], f'purchase-{self.order.pk}')
+        self.assertEqual(payload['custom_data']['value'], 17000.0)
+        self.assertEqual(payload['custom_data']['currency'], 'CLP')
+        self.assertEqual(payload['user_data']['em'], [meta_capi._hash('comprador@test.cl')])
+
+    @mock.patch('payments.services.meta_capi.requests.post')
+    def test_marcar_pagado_no_revienta_si_capi_falla(self, mock_post):
+        mock_post.side_effect = Exception('timeout de la API de Meta')
+        with self.settings(META_CAPI_ACCESS_TOKEN='tok'):
+            _marcar_pagado(self.order, 'pay-1')
+        self.assertEqual(len(mail.outbox), 1)  # el libro se entrega igual
 
 
 class ResultadoVisibleParaInvitados(TestCase):

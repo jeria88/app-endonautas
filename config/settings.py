@@ -246,6 +246,10 @@ PAYPAL_WEBHOOK_ID = os.getenv('PAYPAL_WEBHOOK_ID', '')
 MERCADOPAGO_ACCESS_TOKEN = os.getenv('MERCADOPAGO_ACCESS_TOKEN', '')
 MERCADOPAGO_WEBHOOK_SECRET = os.getenv('MERCADOPAGO_WEBHOOK_SECRET', '')
 
+# Meta Ads — Conversions API (evento Purchase server-side, redundante al pixel)
+META_CAPI_ACCESS_TOKEN = os.getenv('META_CAPI_ACCESS_TOKEN', '')
+META_PIXEL_ID = os.getenv('META_PIXEL_ID', '860717205439662')
+
 # Reports — KPI automático semanal
 KPI_API_TOKEN = os.getenv('KPI_API_TOKEN', '')
 UMAMI_API_KEY = os.getenv('UMAMI_API_KEY', '')

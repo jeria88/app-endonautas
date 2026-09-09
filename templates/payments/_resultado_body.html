@@ -33,7 +33,7 @@
              como venta una seña de taller o una suscripción (mismo template). #}
           <script>
             if (window.fbq) {
-              window.fbq('track', 'Purchase', { value: {{ monto }}, currency: '{{ moneda }}' });
+              window.fbq('track', 'Purchase', { value: {{ monto }}, currency: '{{ moneda }}' }, { eventID: 'purchase-{{ order_id }}' });
             }
           </script>
         {% endif %}

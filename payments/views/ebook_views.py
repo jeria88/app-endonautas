@@ -179,6 +179,7 @@ def retorno_mp(request):
                         'download_url': _download_url(order, request, 'pdf'),
                 'download_url_epub': _download_url(order, request, 'epub'),
                         'monto': str(order.amount_local), 'moneda': order.currency,
+                        'order_id': order.pk,
                     })
         except Exception as e:
             logger.error(f'MP retorno_ebook error: {e}')
@@ -213,6 +214,7 @@ def retorno_paypal(request):
                 'download_url': _download_url(order, request, 'pdf'),
                 'download_url_epub': _download_url(order, request, 'epub'),
                 'monto': str(order.amount_local), 'moneda': order.currency,
+                'order_id': order.pk,
             })
     except Exception as e:
         logger.error(f'PayPal retorno_ebook error: {e}')
@@ -258,5 +260,9 @@ def _marcar_pagado(order, gateway_payment_id, request=None):
     EbookLead.objects.filter(email=order.user.email).exclude(
         status=EbookLead.STATUS_COMPRADO,
     ).update(status=EbookLead.STATUS_COMPRADO)
+
+    from ..services import meta_capi
+    meta_capi.send_purchase(order, request)
+
     from .entrega import entregar_ebook
     entregar_ebook(order, request)
