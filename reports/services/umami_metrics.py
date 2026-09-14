@@ -46,8 +46,8 @@ def fetch_week_stats(week_start):
         fuentes = _parse_fuentes(referrers_raw)
         rrss = _parse_rrss(referrers_raw)
         return {
-            'visitas_landing': stats.get('pageviews', {}).get('value', 0),
-            'visitas_unicas': stats.get('visitors', {}).get('value', 0),
+            'visitas_landing': stats.get('pageviews', 0),
+            'visitas_unicas': stats.get('visitors', 0),
             'fuentes_top': fuentes,
             **rrss,
         }
