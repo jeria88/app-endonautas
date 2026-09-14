@@ -69,9 +69,12 @@ def _get_stats(start_at, end_at, headers):
 
 
 def _get_referrers_raw(start_at, end_at, headers):
+    # El endpoint /referrers de la doc vieja no existe en esta versión de Umami
+    # (Next.js devuelve 404 HTML, no JSON) — el equivalente real es /metrics
+    # con type=referrer. Verificado contra la API en vivo, 2026-09-14.
     r = requests.get(
-        f'{_BASE}/api/websites/{_WEBSITE_ID}/referrers',
-        params={'startAt': start_at, 'endAt': end_at, 'limit': 20},
+        f'{_BASE}/api/websites/{_WEBSITE_ID}/metrics',
+        params={'startAt': start_at, 'endAt': end_at, 'type': 'referrer', 'limit': 20},
         headers=headers,
         timeout=8,
     )
