@@ -12,6 +12,7 @@ from accounts.listmonk import LIST_LANZAMIENTO, subscribe_user
 
 from ..constants import PRODUCTS
 from ..models import EbookLead, EbookOrder
+from ..services import harness
 from ..services import mp as mp_service
 from ..services import paypal as paypal_service
 from .taller_views import _get_or_create_user
@@ -42,6 +43,10 @@ def lead(request):
     if email and herida:
         from .entrega import entregar_pdf_herida
         entregar_pdf_herida(lead_obj)
+    harness.emitir('lead_nuevo', {
+        'email': email, 'telefono': whatsapp, 'fuente': 'test-heridas',
+        'herida': herida, 'canal_origen': canal_origen,
+    }, dedupe_key=f'ebooklead-{lead_obj.pk}')
 
     # Sin esto el lead solo existe en el admin de Django: recibe el PDF y nada más.
     # Es el activo más caro del funnel, así que entra a la lista de email desde el
@@ -93,11 +98,19 @@ def comprar(request, gateway):
 
     EbookOrder.objects.filter(user=user, gateway=gateway, status=EbookOrder.STATUS_PENDING).delete()
 
+    def _avisar_checkout(order):
+        harness.emitir('checkout_iniciado', {
+            'email': email, 'nombre': request.POST.get('first_name', ''), 'fuente': 'checkout-ebook',
+            'canal_origen': canal_origen,
+        }, datos={'producto': PRODUCT_SLUG, 'pasarela': gateway, 'order_id': order.pk},
+            dedupe_key=f'ebookorder-{order.pk}-checkout')
+
     if gateway == 'mp':
         order = EbookOrder.objects.create(
             user=user, gateway='mp', amount_local=product['price_clp'], currency='CLP',
             status=EbookOrder.STATUS_PENDING, canal_origen=canal_origen,
         )
+        _avisar_checkout(order)
         base_url = request.build_absolute_uri(reverse('pago_ebook_retorno_mp'))
         try:
             preference_id, init_point = mp_service.create_preference_product(
@@ -121,6 +134,7 @@ def comprar(request, gateway):
         user=user, gateway='paypal', amount_local=product['price_usd'], currency='USD',
         status=EbookOrder.STATUS_PENDING, canal_origen=canal_origen,
     )
+    _avisar_checkout(order)
     base_url = request.build_absolute_uri(reverse('pago_ebook_retorno_paypal'))
     try:
         paypal_order_id, approve_url = paypal_service.create_order(
@@ -263,6 +277,14 @@ def _marcar_pagado(order, gateway_payment_id, request=None):
 
     from ..services import meta_capi
     meta_capi.send_purchase(order, request)
+
+    harness.emitir('venta', {'email': order.user.email, 'fuente': 'checkout-ebook'},
+                   monto_clp=harness.a_clp(order.amount_local, order.currency),
+                   datos={'producto': PRODUCT_SLUG, 'pasarela': order.gateway,
+                          'external_ref': gateway_payment_id, 'moneda': order.currency,
+                          'monto_original': str(order.amount_local)},
+                   dedupe_key=f'ebookorder-{order.pk}-venta',
+                   atribucion=f'externo:{order.canal_origen or "directo"}')
 
     from .entrega import entregar_ebook
     entregar_ebook(order, request)

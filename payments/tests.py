@@ -286,3 +286,66 @@ class CampanaDelEbook(TestCase):
         # one-click POST no revienta por CSRF
         r2 = self.client.post(reverse('pago_ebook_baja', args=[token]))
         self.assertEqual(r2.status_code, 200)
+
+
+class AvisosAlHarness(TestCase):
+    """La app le cuenta al CRM de ACME Agents lo que pasa en el funnel del ebook.
+
+    Sin HARNESS_API_KEY es no-op, y el harness caído nunca puede costar un lead ni una venta.
+    """
+
+    def _capturar(self):
+        enviados = []
+        inmediato = lambda target, args, daemon: mock.Mock(start=lambda: target(*args))  # noqa: E731
+        p1 = mock.patch('payments.services.harness.threading.Thread', side_effect=inmediato)
+        p2 = mock.patch('payments.services.harness.requests.post',
+                        side_effect=lambda url, json, timeout, headers:
+                        enviados.append(json) or mock.Mock(status_code=200))
+        p1.start(); p2.start()
+        self.addCleanup(p1.stop); self.addCleanup(p2.stop)
+        return enviados
+
+    def test_sin_api_key_no_envia(self):
+        from payments.services import harness
+        enviados = self._capturar()
+        with mock.patch.dict('os.environ', {'HARNESS_API_KEY': ''}):
+            self.assertFalse(harness.emitir('lead_nuevo', {'email': 'a@b.cl'}))
+        self.assertEqual(enviados, [])
+
+    def test_lead_del_test_de_heridas(self):
+        enviados = self._capturar()
+        with mock.patch.dict('os.environ', {'HARNESS_API_KEY': 'k'}), \
+                mock.patch('payments.views.entrega.entregar_pdf_herida'), \
+                mock.patch('payments.views.ebook_views.subscribe_user'):
+            self.client.post(reverse('pago_ebook_lead'),
+                             {'email': 'Lead@Test.cl', 'herida': 'abandono'})
+        self.assertEqual(len(enviados), 1)
+        ev = enviados[0]
+        self.assertEqual(ev['tipo'], 'lead_nuevo')
+        self.assertEqual(ev['contacto']['email'], 'lead@test.cl')
+        self.assertEqual(ev['contacto']['herida'], 'abandono')
+        self.assertNotIn('telefono', ev['contacto'], 'los vacíos no viajan')
+        self.assertTrue(ev['dedupe_key'].startswith('ebooklead-'))
+
+    def test_venta_con_monto_y_atribucion(self):
+        enviados = self._capturar()
+        user = get_user_model().objects.create(email='comprador@test.cl')
+        order = EbookOrder.objects.create(
+            user=user, gateway='paypal', amount_local='17.00', currency='USD',
+            status=EbookOrder.STATUS_PENDING, canal_origen='ads-abandono',
+        )
+        with mock.patch.dict('os.environ', {'HARNESS_API_KEY': 'k'}), \
+                mock.patch('payments.services.meta_capi.send_purchase'):
+            _marcar_pagado(order, 'PAY-9')
+        venta = [e for e in enviados if e.get('tipo') == 'venta']  # requests.post se parcha global
+        self.assertEqual(len(venta), 1)
+        self.assertEqual(venta[0]['monto_clp'], 17 * 950)
+        self.assertEqual(venta[0]['datos']['external_ref'], 'PAY-9')
+        self.assertEqual(venta[0]['datos']['moneda'], 'USD')
+        self.assertEqual(venta[0]['atribucion'], 'externo:ads-abandono')
+
+    def test_harness_caido_no_rompe_la_venta(self):
+        from payments.services import harness
+        with mock.patch.dict('os.environ', {'HARNESS_API_KEY': 'k'}), \
+                mock.patch('payments.services.harness.requests.post', side_effect=OSError('caído')):
+            harness.emitir('venta', {'email': 'a@b.cl'}, monto_clp=1, sync=True)  # no lanza
