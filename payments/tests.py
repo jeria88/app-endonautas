@@ -495,3 +495,17 @@ class EndpointsDelHarness(AvisosAlHarness):
             Comment.objects.create(post=post, author=miembro, content='Yo repito…')
         tipos = [(e['tipo'], e['contacto']['email']) for e in enviados if e.get('tipo')]
         self.assertEqual(tipos, [('actividad_comunidad', 'm@t.cl')], 'lo del dueño no cuenta como actividad')
+
+
+class VentasParaConciliar(TestCase):
+    def test_lista_ventas_pagadas_con_la_misma_referencia(self):
+        u = get_user_model().objects.create(email='v@t.cl')
+        EbookOrder.objects.create(user=u, gateway='mp', amount_local=16990, currency='CLP',
+                                  status=EbookOrder.STATUS_PAID, gateway_payment_id='pay-77', download_token='t' * 48)
+        EbookOrder.objects.create(user=u, gateway='mp', amount_local=16990, currency='CLP', status='pending')
+        hoy = timezone.localdate().isoformat()
+        with mock.patch.dict('os.environ', {'HARNESS_API_KEY': 'k'}):
+            self.assertEqual(self.client.get(reverse('harness_ventas'), {'desde': hoy, 'hasta': hoy}).status_code, 401)
+            r = self.client.get(reverse('harness_ventas'), {'desde': hoy, 'hasta': hoy}, HTTP_AUTHORIZATION='Bearer k')
+        self.assertEqual(r.json()['ventas'], [{'pasarela': 'mp', 'external_ref': 'pay-77', 'producto': 'endonautica-ebook',
+                                               'monto_clp': 16990, 'email': 'v@t.cl', 'fecha': hoy}])

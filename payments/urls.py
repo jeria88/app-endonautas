@@ -27,6 +27,7 @@ urlpatterns = [
     # Ebook Endonautica — lead post-test, checkout de invitado (MP + PayPal)
     path('harness/reenviar-acceso/', harness_api.reenviar_acceso, name='harness_reenviar_acceso'),
     path('harness/comunidad/publicar/', harness_api.comunidad_publicar, name='harness_comunidad_publicar'),
+    path('harness/ventas/', harness_api.ventas, name='harness_ventas'),
     path('consultoria/', consultoria_views.pagina, name='consultoria'),
     path('consultoria/reservar/', consultoria_views.reservar, name='consultoria_reservar'),
     path('consultoria/retorno/mp/', consultoria_views.retorno_mp, name='consultoria_retorno_mp'),

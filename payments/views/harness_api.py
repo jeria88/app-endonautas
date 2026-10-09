@@ -66,3 +66,40 @@ def comunidad_publicar(request):
     post = Post.objects.create(author=autor, content=f'{titulo}\n\n{contenido}')
     url = f"{settings.APP_BASE_URL.rstrip('/')}{reverse('community_post_detail', args=[post.pk])}"
     return JsonResponse({'post_id': post.pk, 'url': url})
+
+
+@csrf_exempt
+def ventas(request):
+    """GET /pago/harness/ventas/?desde=AAAA-MM-DD&hasta=AAAA-MM-DD — ventas pagadas para conciliar.
+    `external_ref` y `pasarela` son los mismos que mandan los avisos al harness (venta), así el
+    harness reconoce las que ya tiene y agrega solo las que se perdieron."""
+    if not _autorizado(request):
+        return JsonResponse({'error': 'no autorizado'}, status=401)
+    from datetime import date, timedelta
+
+    from ..constants import PLANS
+    from ..models import ConsultoriaReserva, Subscription
+    from ..services.harness import a_clp
+    try:
+        desde = date.fromisoformat(request.GET.get('desde', ''))
+        hasta = date.fromisoformat(request.GET.get('hasta', '')) + timedelta(days=1)
+    except ValueError:
+        return JsonResponse({'error': 'desde/hasta inválidos (AAAA-MM-DD)'}, status=422)
+    out = []
+    for o in EbookOrder.objects.filter(status__in=[EbookOrder.STATUS_PAID, EbookOrder.STATUS_DELIVERED],
+                                       updated_at__date__gte=desde, updated_at__date__lt=hasta).select_related('user'):
+        out.append({'pasarela': o.gateway, 'external_ref': o.gateway_payment_id, 'producto': 'endonautica-ebook',
+                    'monto_clp': a_clp(o.amount_local, o.currency), 'email': o.user.email,
+                    'fecha': o.updated_at.date().isoformat()})
+    for r in ConsultoriaReserva.objects.filter(status=ConsultoriaReserva.STATUS_PAID, updated_at__date__gte=desde,
+                                               updated_at__date__lt=hasta).select_related('user'):
+        out.append({'pasarela': 'mp', 'external_ref': r.gateway_payment_id, 'producto': 'consultoria-60',
+                    'monto_clp': int(r.amount_local), 'email': r.user.email, 'fecha': r.updated_at.date().isoformat()})
+    for s in Subscription.objects.filter(status=Subscription.STATUS_ACTIVE, updated_at__date__gte=desde,
+                                         updated_at__date__lt=hasta).select_related('user'):
+        plan = PLANS.get(s.plan, {})
+        monto = plan.get('price_clp') if s.gateway == 'mp' else a_clp(plan.get('price_usd', '0'), 'USD')
+        out.append({'pasarela': s.gateway, 'external_ref': s.gateway_subscription_id or f'sub-{s.pk}',
+                    'producto': f'plan-{s.plan}', 'monto_clp': monto, 'email': s.user.email,
+                    'fecha': s.updated_at.date().isoformat()})
+    return JsonResponse({'ventas': [v for v in out if v['external_ref']]})
