@@ -383,3 +383,79 @@ class PlanesAvisanAlHarness(AvisosAlHarness):
         self.assertEqual(venta['monto_clp'], 9990)
         self.assertEqual(venta['datos']['producto'], 'plan-navegante')
         self.assertEqual(venta['contacto']['nombre'], 'Pía')
+
+
+class ConsultoriaAgendaYPago(AvisosAlHarness):
+    """Agenda propia + pago MP de la consultoría: horarios, reserva, confirmación y avisos."""
+
+    def setUp(self):
+        from datetime import time
+        from .models import DisponibilidadConsultoria
+        for d in range(7):  # todos los días 10:00–12:00 → 2 bloques por día
+            DisponibilidadConsultoria.objects.create(dia_semana=d, hora_inicio=time(10), hora_fin=time(12))
+
+    def test_bloques_y_ocupados(self):
+        from .consultoria import disponibles
+        from .models import ConsultoriaReserva
+        libres = disponibles()
+        self.assertTrue(libres)
+        self.assertTrue(all(s >= timezone.now() + timedelta(hours=24) for s in libres), 'respeta la anticipación')
+        user = get_user_model().objects.create(email='x@test.cl')
+        ConsultoriaReserva.objects.create(user=user, inicio=libres[0], amount_local=29990, status='paid')
+        ConsultoriaReserva.objects.create(user=user, inicio=libres[1], amount_local=29990)  # pendiente reciente
+        restantes = disponibles()
+        self.assertNotIn(libres[0], restantes)
+        self.assertNotIn(libres[1], restantes, 'un pago pendiente reciente aparta el horario')
+
+    def test_pagina_publica_y_reserva(self):
+        from .consultoria import disponibles
+        from .models import ConsultoriaReserva
+        r = self.client.get(reverse('consultoria'))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Reservar y pagar $29.990')
+        enviados = self._capturar()
+        slot = disponibles()[0]
+        r = self.client.post(reverse('consultoria_reservar'), {'inicio': 'no-es-fecha', 'nombre': 'Ana', 'email': 'a@test.cl'})
+        self.assertIn('err=horario', r['Location'])
+        with mock.patch.dict('os.environ', {'HARNESS_API_KEY': 'k'}), \
+                mock.patch('payments.services.mp.create_preference_product', return_value=('pref-1', 'https://mp/checkout')):
+            r = self.client.post(reverse('consultoria_reservar'),
+                                 {'inicio': slot.isoformat(), 'nombre': 'Ana', 'email': 'A@test.cl', 'motivo': 'ansiedad'})
+        self.assertEqual(r['Location'], 'https://mp/checkout')
+        res = ConsultoriaReserva.objects.get(user__email='a@test.cl')
+        self.assertEqual((res.status, res.motivo, res.inicio), ('pending', 'ansiedad', slot))
+        self.assertEqual([e['tipo'] for e in enviados if e.get('tipo')], ['checkout_iniciado'])
+
+    def test_pago_confirma_avisa_y_no_duplica(self):
+        from .consultoria import disponibles
+        from .models import ConsultoriaReserva
+        from .views.consultoria_views import _marcar_pagada
+        enviados = self._capturar()
+        slot = disponibles()[0]
+        u1, u2 = (get_user_model().objects.create(email=e, first_name='N') for e in ('u1@test.cl', 'u2@test.cl'))
+        r1 = ConsultoriaReserva.objects.create(user=u1, inicio=slot, amount_local=29990)
+        r2 = ConsultoriaReserva.objects.create(user=u2, inicio=slot, amount_local=29990)
+        with mock.patch.dict('os.environ', {'HARNESS_API_KEY': 'k'}):
+            self.assertTrue(_marcar_pagada(r1, 'pay-1'))
+            self.assertFalse(_marcar_pagada(r1, 'pay-1'), 'el retorno y el webhook no confirman dos veces')
+            self.assertFalse(_marcar_pagada(r2, 'pay-2'), 'un segundo pago del mismo horario no lo duplica')
+        r2.refresh_from_db()
+        self.assertEqual(r2.status, 'cancelled')
+        tipos = [e['tipo'] for e in enviados if e.get('tipo')]
+        self.assertEqual(tipos, ['venta', 'consultoria_agendada', 'escalado_al_dueño'])
+        self.assertEqual([e for e in enviados if e.get('tipo') == 'venta'][0]['monto_clp'], 29990)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('quedó agendada', mail.outbox[0].body)
+
+    def test_webhook_confirma_si_cierra_la_pestana(self):
+        from .consultoria import disponibles
+        from .models import ConsultoriaReserva
+        from .views.mp_views import _handle_one_time_payment
+        u = get_user_model().objects.create(email='w@test.cl')
+        res = ConsultoriaReserva.objects.create(user=u, inicio=disponibles()[0], amount_local=29990)
+        pago = {'status': 'approved', 'metadata': {'product_slug': 'consultoria-60', 'user_id': str(u.pk),
+                                                  'reserva_id': str(res.pk)}}
+        with mock.patch('payments.services.mp.get_payment', return_value=pago):
+            _handle_one_time_payment('pay-9')
+        res.refresh_from_db()
+        self.assertEqual(res.status, 'paid')

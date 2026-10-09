@@ -194,6 +194,19 @@ def _handle_one_time_payment(payment_id):
             _marcar_pagado(order, str(payment_id))
         return
 
+    if product_slug == 'consultoria-60':
+        # Red de seguridad de la consultoría (mismo criterio que el ebook): si el cliente cierra
+        # la pestaña tras pagar, el webhook la confirma. Idempotente por status=PENDING.
+        from ..models import ConsultoriaReserva
+        from .consultoria_views import _marcar_pagada
+        reserva = ConsultoriaReserva.objects.filter(
+            pk=metadata.get('reserva_id') or 0, user_id=user_id,
+            status=ConsultoriaReserva.STATUS_PENDING,
+        ).first()
+        if reserva:
+            _marcar_pagada(reserva, str(payment_id))
+        return
+
     if pack_slug:
         fp = FractonesPack.objects.filter(
             user_id=user_id, gateway='mp', pack_slug=pack_slug, status='pending',

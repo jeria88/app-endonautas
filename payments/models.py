@@ -224,3 +224,56 @@ class EbookOptOut(models.Model):
 
     def __str__(self):
         return self.email
+
+
+class DisponibilidadConsultoria(models.Model):
+    """Bloque semanal en que Franco atiende consultorías (se edita en el admin). Los horarios
+    ofrecidos son bloques de CONSULTORIA_MIN dentro de cada franja activa."""
+    DIAS = [(0, 'Lunes'), (1, 'Martes'), (2, 'Miércoles'), (3, 'Jueves'), (4, 'Viernes'),
+            (5, 'Sábado'), (6, 'Domingo')]
+
+    dia_semana = models.PositiveSmallIntegerField(choices=DIAS)
+    hora_inicio = models.TimeField()
+    hora_fin = models.TimeField()
+    activo = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['dia_semana', 'hora_inicio']
+        verbose_name = 'disponibilidad de consultoría'
+        verbose_name_plural = 'disponibilidad de consultoría'
+
+    def __str__(self):
+        return f'{self.get_dia_semana_display()} {self.hora_inicio:%H:%M}–{self.hora_fin:%H:%M}'
+
+
+class ConsultoriaReserva(models.Model):
+    STATUS_PENDING = 'pending'
+    STATUS_PAID = 'paid'
+    STATUS_CANCELLED = 'cancelled'
+    STATUS_CHOICES = [('pending', 'Pago pendiente'), ('paid', 'Pagada'), ('cancelled', 'Cancelada')]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                             related_name='consultorias')
+    inicio = models.DateTimeField()
+    duracion_min = models.PositiveSmallIntegerField(default=60)
+    amount_local = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=3, default='CLP')
+    gateway = models.CharField(max_length=10, default='mp')
+    gateway_payment_id = models.CharField(max_length=200, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    motivo = models.TextField(blank=True, help_text='Qué quiere trabajar (lo escribe al reservar).')
+    canal_origen = models.CharField(max_length=40, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-inicio']
+        constraints = [
+            # Nunca dos consultorías pagadas en el mismo horario, aunque llegue el webhook y el
+            # retorno a la vez para dos personas distintas.
+            models.UniqueConstraint(fields=['inicio'], condition=models.Q(status='paid'),
+                                    name='consultoria_un_pago_por_horario'),
+        ]
+
+    def __str__(self):
+        return f'{self.user.email} — {self.inicio:%Y-%m-%d %H:%M} ({self.status})'

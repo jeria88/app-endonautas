@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Consultoría — Endonautas{% endblock %}
+{# Dos bloques, como planes.html y resultado.html: base.html solo pinta `content` con sesión,
+   y quien reserva una consultoría casi siempre llega sin cuenta. #}
+{% block content %}{% include "payments/_consultoria_body.html" %}{% endblock %}
+{% block public_content %}
+<div style="padding:3rem 1.25rem">
+  {% include "payments/_consultoria_body.html" %}
+</div>
+{% endblock %}

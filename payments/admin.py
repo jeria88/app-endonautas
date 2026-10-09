@@ -1,7 +1,8 @@
 from django.contrib import admin
 
 from .models import (
-    EbookFunnelEmail, EbookLead, EbookOptOut, EbookOrder, FractonesPack,
+    ConsultoriaReserva, DisponibilidadConsultoria, EbookFunnelEmail, EbookLead, EbookOptOut,
+    EbookOrder, FractonesPack,
     Subscription, TallerReserva,
 )
 
@@ -59,3 +60,17 @@ class EbookOptOutAdmin(admin.ModelAdmin):
     list_display = ('email', 'created_at')
     search_fields = ('email',)
     readonly_fields = ('created_at',)
+
+
+@admin.register(DisponibilidadConsultoria)
+class DisponibilidadConsultoriaAdmin(admin.ModelAdmin):
+    list_display = ('dia_semana', 'hora_inicio', 'hora_fin', 'activo')
+    list_editable = ('activo',)
+
+
+@admin.register(ConsultoriaReserva)
+class ConsultoriaReservaAdmin(admin.ModelAdmin):
+    list_display = ('inicio', 'user', 'status', 'amount_local', 'canal_origen', 'created_at')
+    list_filter = ('status',)
+    search_fields = ('user__email',)
+    date_hierarchy = 'inicio'

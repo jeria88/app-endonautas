@@ -79,7 +79,7 @@ def create_preference_taller(taller_slug, user, success_url, failure_url, pendin
 
 
 def create_preference_product(product_slug, user, success_url, failure_url, pending_url,
-                              notification_url=None):
+                              notification_url=None, extra_metadata=None):
     product = PRODUCTS[product_slug]
     payload = {
         'items': [{
@@ -98,6 +98,7 @@ def create_preference_product(product_slug, user, success_url, failure_url, pend
         'metadata': {
             'product_slug': product_slug,
             'user_id': str(user.pk),
+            **(extra_metadata or {}),   # p. ej. reserva_id de la consultoría
         },
     }
     # Sin esto la compra solo se confirma si el comprador vuelve del checkout: cerrar la

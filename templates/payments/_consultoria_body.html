@@ -1,0 +1,45 @@
+<div style="max-width:560px;margin:0 auto;padding:2rem 0">
+  <div class="panel" style="padding:2rem 1.6rem">
+    <h1 style="font-size:1.3rem;font-weight:700;color:var(--calipso);margin-bottom:.4rem">Consultoría 1:1 con Franco</h1>
+    <p style="color:var(--muted);font-size:.92rem;line-height:1.7;margin-bottom:1.4rem">
+      {{ minutos }} minutos por videollamada para mirar contigo lo que se repite en tu vida. {{ precio }} CLP.
+    </p>
+
+    {% if error %}<p style="color:var(--sombra-dom);font-size:.88rem;margin-bottom:1rem">{{ error }}</p>{% endif %}
+
+    {% if por_dia %}
+    <form method="post" action="{% url 'consultoria_reservar' %}">
+      {% csrf_token %}
+      <input type="hidden" name="canal_origen" value="{{ request.GET.origen|default:'' }}">
+      <fieldset style="border:none;padding:0;margin:0 0 1.2rem">
+        <legend style="font-weight:600;margin-bottom:.6rem">Elige un horario (hora de Chile)</legend>
+        {% for dia in por_dia %}
+          <p style="font-size:.85rem;color:var(--muted);margin:.8rem 0 .4rem;text-transform:capitalize">{{ dia.fecha }}</p>
+          <div style="display:flex;flex-wrap:wrap;gap:.5rem">
+            {% for s in dia.slots %}
+              <label style="display:inline-flex;align-items:center;gap:.35rem;padding:.55rem .8rem;border:1px solid var(--border);border-radius:10px;cursor:pointer;min-height:44px">
+                <input type="radio" name="inicio" value="{{ s.iso }}" required> {{ s.hora }}
+              </label>
+            {% endfor %}
+          </div>
+        {% endfor %}
+      </fieldset>
+      <label style="display:block;font-size:.85rem;margin-bottom:.3rem" for="c-nombre">Tu nombre</label>
+      <input id="c-nombre" name="nombre" required maxlength="80" class="input" style="width:100%;margin-bottom:.8rem">
+      <label style="display:block;font-size:.85rem;margin-bottom:.3rem" for="c-email">Tu email</label>
+      <input id="c-email" name="email" type="email" required class="input" style="width:100%;margin-bottom:.8rem">
+      <label style="display:block;font-size:.85rem;margin-bottom:.3rem" for="c-motivo">¿Qué te gustaría trabajar? (opcional)</label>
+      <textarea id="c-motivo" name="motivo" rows="3" maxlength="1000" class="input" style="width:100%;margin-bottom:1.2rem"></textarea>
+      <button type="submit" class="btn btn-primary" style="width:100%">Reservar y pagar {{ precio }}</button>
+      <p style="font-size:.76rem;color:var(--muted);margin-top:.8rem;line-height:1.6">
+        El pago es con MercadoPago. El horario queda apartado 30 minutos mientras pagas; al confirmarse, te llega un email.
+      </p>
+    </form>
+    {% else %}
+      <p style="color:var(--muted);font-size:.92rem;line-height:1.7">
+        No hay horarios disponibles en este momento. Escríbeme a
+        <a href="mailto:hola@endonautas.cl" style="color:var(--calipso)">hola@endonautas.cl</a> y lo coordinamos.
+      </p>
+    {% endif %}
+  </div>
+</div>
