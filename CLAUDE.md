@@ -613,3 +613,28 @@ corriendo **no las toma**: hace falta redeploy.
 — el `brevo._domainkey` singular que se revisaba está vacío pero no es el selector activo). DMARC pasa
 por alineación de DKIM. Único pendiente: `include:spf.brevo.com` en el SPF (Franco, panel Cloudflare).
 El transporte SMTP se verificó funcionando el 2026-08-31.
+
+---
+
+## Harness de ACME Agents — integración (2026-10-08)
+
+La app le avisa al CRM del tenant endonautas en acmeagents.team (`payments/services/harness.py`,
+no-op sin `HARNESS_API_KEY`, en hilo aparte: el harness caído nunca frena un pago):
+- Ebook: `lead_nuevo` (test de heridas), `checkout_iniciado`, `venta` (`ebook_views.py`).
+- Planes de la app: `payments/signals.py` (una sola señal sobre `Subscription`): creada pending →
+  `checkout_iniciado`; pasa a active → `venta`.
+- Consultoría: ver abajo.
+- **Corte de los emails del ebook**: `run_ebook_funnel --solo-reconciliar` deja de mandar las 3 ramas
+  (pasan a secuencias del harness) y sigue reconciliando PayPal. El corte lo hace
+  `content-studio/scripts/corte_secuencias_endonautas.sh` cambiando `~/scripts/run_ebook_funnel.sh` en
+  Oracle. **No agregar la opción a mano** sin activar las secuencias del harness: los emails dejarían de salir.
+- Coolify despliega esta app solo al pushear a `main` (verificado 2026-10-08).
+
+## Consultoría 1:1 (2026-10-08)
+`/pago/consultoria/` — $29.990 CLP / 60 min, solo MercadoPago, agenda propia (patrón del checkout del
+ebook). Horarios = bloques de 60 min de `DisponibilidadConsultoria` (admin), desde +24 h hasta +14 días;
+una reserva pendiente aparta el horario 30 min. Pago → retorno **o** webhook (`product_slug=consultoria-60`,
+`reserva_id` en la metadata) → `_marcar_pagada`: email de confirmación + `venta` + `consultoria_agendada`
+(el harness avisa al dueño por Telegram). Constraint: nunca dos pagadas en el mismo horario; el choque
+se cancela y se escala al dueño para devolver. `settings.CONSULTORIA_LINK` (opcional) = enlace de la
+videollamada en el email. **Sin disponibilidad cargada la página dice "no hay horarios".**
