@@ -362,3 +362,24 @@ class FunnelSoloReconciliar(TestCase):
         self.assertEqual(len(mail.outbox), 0)
         call_command('run_ebook_funnel')
         self.assertEqual(EbookFunnelEmail.objects.filter(step='T2').count(), 1, 'sin la opción, sigue igual')
+
+
+class PlanesAvisanAlHarness(AvisosAlHarness):
+    """Las suscripciones a planes de la app avisan checkout y venta al CRM, una vez cada uno."""
+
+    def test_checkout_y_venta_de_plan(self):
+        from .models import Subscription
+        enviados = self._capturar()
+        user = get_user_model().objects.create(email='plan@test.cl', first_name='Pía')
+        with mock.patch.dict('os.environ', {'HARNESS_API_KEY': 'k'}):
+            sub = Subscription.objects.create(user=user, gateway='mp', plan='navegante', status='pending',
+                                              gateway_subscription_id='pre-1')
+            sub.status = 'active'
+            sub.save()
+            sub.save()  # guardar de nuevo una activa no es otra venta
+        tipos = [e['tipo'] for e in enviados if e.get('tipo')]
+        self.assertEqual(tipos, ['checkout_iniciado', 'venta'])
+        venta = [e for e in enviados if e.get('tipo') == 'venta'][0]
+        self.assertEqual(venta['monto_clp'], 9990)
+        self.assertEqual(venta['datos']['producto'], 'plan-navegante')
+        self.assertEqual(venta['contacto']['nombre'], 'Pía')
