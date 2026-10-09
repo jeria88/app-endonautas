@@ -349,3 +349,16 @@ class AvisosAlHarness(TestCase):
         with mock.patch.dict('os.environ', {'HARNESS_API_KEY': 'k'}), \
                 mock.patch('payments.services.harness.requests.post', side_effect=OSError('caído')):
             harness.emitir('venta', {'email': 'a@b.cl'}, monto_clp=1, sync=True)  # no lanza
+
+
+class FunnelSoloReconciliar(TestCase):
+    """Tras el corte al harness, el cron sigue reconciliando PayPal pero no manda la campaña."""
+
+    def test_no_envia_emails(self):
+        EbookLead.objects.create(email='t@test.cl', herida='abandono', status=EbookLead.STATUS_NUEVO)
+        EbookLead.objects.filter(email='t@test.cl').update(created_at=timezone.now() - timedelta(days=3))
+        call_command('run_ebook_funnel', '--solo-reconciliar')
+        self.assertEqual(EbookFunnelEmail.objects.count(), 0)
+        self.assertEqual(len(mail.outbox), 0)
+        call_command('run_ebook_funnel')
+        self.assertEqual(EbookFunnelEmail.objects.filter(step='T2').count(), 1, 'sin la opción, sigue igual')

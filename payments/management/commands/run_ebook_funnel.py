@@ -28,11 +28,21 @@ PAID_STATES = [EbookOrder.STATUS_PAID, EbookOrder.STATUS_DELIVERED]
 class Command(BaseCommand):
     help = 'Envía los emails diferidos de la campaña del ebook.'
 
+    def add_arguments(self, parser):
+        # Corte al harness de ACME Agents (2026-10-08): las 3 ramas pasan a ser secuencias del
+        # tenant endonautas en el harness. La reconciliación de PayPal sigue aquí, porque es de la
+        # app y no de la campaña. Ver plans/acmeagents/2026-10-08-harness-etapa4-ventas.md § Corte.
+        parser.add_argument('--solo-reconciliar', action='store_true',
+                            help='Solo reconcilia PayPal; no envía los emails de la campaña.')
+
     def handle(self, *args, **opts):
         now = timezone.now()
         r = {}
 
         r['paypal_reconciliado'] = self._reconciliar_paypal(now)
+        if opts.get('solo_reconciliar'):
+            self.stdout.write(f'[run_ebook_funnel] {now:%Y-%m-%d %H:%M} {r} (solo reconciliar)')
+            return
 
         # Rama C · post-compra
         r['P2'] = self._post_compra('P2', now - timedelta(days=3), now - timedelta(days=30), fe.enviar_P2)
