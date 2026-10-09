@@ -638,3 +638,9 @@ una reserva pendiente aparta el horario 30 min. Pago → retorno **o** webhook (
 (el harness avisa al dueño por Telegram). Constraint: nunca dos pagadas en el mismo horario; el choque
 se cancela y se escala al dueño para devolver. `settings.CONSULTORIA_LINK` (opcional) = enlace de la
 videollamada en el email. **Sin disponibilidad cargada la página dice "no hay horarios".**
+
+## Harness — soporte y comunidad (2026-10-09)
+- `payments/views/harness_api.py`: `POST /pago/harness/reenviar-acceso/` (reenvía los links de la
+  última compra pagada del ebook) y `POST /pago/harness/comunidad/publicar/` (publica en el feed a
+  nombre de `FRANCO_EMAIL`). Auth: `Bearer <HARNESS_API_KEY>` (la misma api_key del tenant).
+- `community/signals.py`: post, comentario y foro de un miembro → `actividad_comunidad` (no cuenta al dueño).
