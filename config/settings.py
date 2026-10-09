@@ -202,6 +202,9 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'hola@endonautas.cl')
 
 # Sitio público (landing) — usado en redirects fuera de la app
 PUBLIC_SITE_URL = os.getenv('PUBLIC_SITE_URL', 'https://endonautas.cl')
+# Enlace fijo de la videollamada de la consultoría (opcional). Sin él, el email de confirmación
+# dice que Franco manda el enlace antes de la sesión.
+CONSULTORIA_LINK = os.getenv('CONSULTORIA_LINK', '')
 # Esta app. Necesario para armar links absolutos fuera de un request (webhooks,
 # comandos de management): sin esto el email de entrega sale con un link relativo.
 APP_BASE_URL = os.getenv('APP_BASE_URL', 'https://app.endonautas.cl')
