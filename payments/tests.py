@@ -459,3 +459,39 @@ class ConsultoriaAgendaYPago(AvisosAlHarness):
             _handle_one_time_payment('pay-9')
         res.refresh_from_db()
         self.assertEqual(res.status, 'paid')
+
+
+class EndpointsDelHarness(AvisosAlHarness):
+    """Lo que el harness le pide a la app: reenviar un acceso y publicar en la comunidad."""
+
+    def _post(self, nombre, body, clave='k'):
+        import json as _json
+        return self.client.post(reverse(nombre), _json.dumps(body), content_type='application/json',
+                                HTTP_AUTHORIZATION=f'Bearer {clave}')
+
+    def test_reenviar_acceso(self):
+        with mock.patch.dict('os.environ', {'HARNESS_API_KEY': 'k'}):
+            self.assertEqual(self._post('harness_reenviar_acceso', {'email': 'x@t.cl'}, clave='mala').status_code, 401)
+            self.assertFalse(self._post('harness_reenviar_acceso', {'email': 'nadie@t.cl'}).json()['resuelto'])
+            u = get_user_model().objects.create(email='compro@t.cl')
+            EbookOrder.objects.create(user=u, gateway='mp', amount_local=16990, currency='CLP',
+                                      status=EbookOrder.STATUS_PAID, download_token='t' * 48)
+            r = self._post('harness_reenviar_acceso', {'email': 'Compro@t.cl'}).json()
+        self.assertTrue(r['resuelto'])
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('/pago/ebook/descargar/', mail.outbox[0].body)
+
+    def test_publicar_en_comunidad_y_actividad(self):
+        from community.models import Comment, Post
+        enviados = self._capturar()
+        franco = get_user_model().objects.create(email=settings.FRANCO_EMAIL)
+        with mock.patch.dict('os.environ', {'HARNESS_API_KEY': 'k'}):
+            r = self._post('harness_comunidad_publicar', {'titulo': 'Pregunta de la semana', 'contenido': '¿Qué repites?'})
+            self.assertEqual(r.status_code, 200)
+            post = Post.objects.get(pk=r.json()['post_id'])
+            self.assertEqual(post.author, franco)
+            self.assertIn('/post/', r.json()['url'])
+            miembro = get_user_model().objects.create(email='m@t.cl', first_name='Mía')
+            Comment.objects.create(post=post, author=miembro, content='Yo repito…')
+        tipos = [(e['tipo'], e['contacto']['email']) for e in enviados if e.get('tipo')]
+        self.assertEqual(tipos, [('actividad_comunidad', 'm@t.cl')], 'lo del dueño no cuenta como actividad')

@@ -1,7 +1,7 @@
 from django.urls import path
 
-from .views import (bono_views, cancel_views, consultoria_views, ebook_views, entrega, mp_views,
-                    paypal_views, taller_views)
+from .views import (bono_views, cancel_views, consultoria_views, ebook_views, entrega, harness_api,
+                    mp_views, paypal_views, taller_views)
 
 urlpatterns = [
     # Cancelación de suscripción
@@ -25,6 +25,8 @@ urlpatterns = [
     path('mp/bono-taller/', bono_views.activar, name='pago_mp_bono_taller'),
 
     # Ebook Endonautica — lead post-test, checkout de invitado (MP + PayPal)
+    path('harness/reenviar-acceso/', harness_api.reenviar_acceso, name='harness_reenviar_acceso'),
+    path('harness/comunidad/publicar/', harness_api.comunidad_publicar, name='harness_comunidad_publicar'),
     path('consultoria/', consultoria_views.pagina, name='consultoria'),
     path('consultoria/reservar/', consultoria_views.reservar, name='consultoria_reservar'),
     path('consultoria/retorno/mp/', consultoria_views.retorno_mp, name='consultoria_retorno_mp'),
