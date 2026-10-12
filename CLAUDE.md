@@ -631,6 +631,9 @@ no-op sin `HARNESS_API_KEY`, en hilo aparte: el harness caído nunca frena un pa
 - Coolify despliega esta app solo al pushear a `main` (verificado 2026-10-08).
 
 ## Consultoría 1:1 (2026-10-08)
+> **2026-10-12: la página pública redirige a `endonautas.cl/circulo/`** — la sesión individual ya no se
+> vende suelta, solo dentro del plan Inmersión del Círculo (decisión de Franco). `reservar`/`retorno`/webhook
+> siguen vivos; para reactivar, borrar el `return redirect(...)` al inicio de `consultoria_views.pagina`.
 `/pago/consultoria/` — $29.990 CLP / 60 min, solo MercadoPago, agenda propia (patrón del checkout del
 ebook). Horarios = bloques de 60 min de `DisponibilidadConsultoria` (admin), desde +24 h hasta +14 días;
 una reserva pendiente aparta el horario 30 min. Pago → retorno **o** webhook (`product_slug=consultoria-60`,

@@ -33,6 +33,10 @@ def _fmt(dt) -> str:
 
 
 def pagina(request):
+    # 2026-10-12: la sesión individual ya no se vende suelta — solo dentro del plan Inmersión
+    # del Círculo (decisión de Franco). La página pública redirige; reservar/retorno siguen vivos
+    # para no romper pagos en curso. Para reactivarla, borrar este return.
+    return redirect('https://endonautas.cl/circulo/')
     slots = disponibles()
     por_dia = {}
     for s in slots:

@@ -411,8 +411,8 @@ class ConsultoriaAgendaYPago(AvisosAlHarness):
         from .consultoria import disponibles
         from .models import ConsultoriaReserva
         r = self.client.get(reverse('consultoria'))
-        self.assertEqual(r.status_code, 200)
-        self.assertContains(r, 'Reservar y pagar $29.990')
+        # 2026-10-12: la sesión individual solo se vende dentro del plan Inmersión del Círculo.
+        self.assertRedirects(r, 'https://endonautas.cl/circulo/', fetch_redirect_response=False)
         enviados = self._capturar()
         slot = disponibles()[0]
         r = self.client.post(reverse('consultoria_reservar'), {'inicio': 'no-es-fecha', 'nombre': 'Ana', 'email': 'a@test.cl'})
