@@ -1,7 +1,7 @@
 import logging
 
 from django.core import signing
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils.crypto import get_random_string
@@ -25,15 +25,22 @@ PRODUCT_SLUG = 'endonautica-ebook'
 @csrf_exempt
 @require_POST
 def lead(request):
-    """Captura post-test de heridas: pide email o WhatsApp a cambio del PDF de la herida."""
+    """Captura post-test de heridas y autoestima: pide email o WhatsApp a cambio del PDF del mapa."""
     email = (request.POST.get('email') or '').strip().lower()
     whatsapp = (request.POST.get('whatsapp') or '').strip()
     herida = (request.POST.get('herida') or '').strip()
     canal_origen = (request.POST.get('canal_origen') or 'test-heridas').strip()
+    wants_json = (
+        request.headers.get('x-requested-with') == 'XMLHttpRequest' or
+        'application/json' in request.headers.get('accept', '') or
+        request.POST.get('format') == 'json'
+    )
 
     if not email and not whatsapp:
+        if wants_json:
+            return JsonResponse({'exito': False, 'mensaje': 'Necesitamos un email o WhatsApp para enviarte el mapa.'}, status=400)
         return render(request, 'payments/resultado.html', {
-            'exito': False, 'mensaje': 'Necesitamos un email o WhatsApp para enviarte el mapa.',
+            'exito': False, 'es_lead': True, 'mensaje': 'Necesitamos un email o WhatsApp para enviarte el mapa.',
         })
 
     lead_obj = EbookLead.objects.create(
@@ -44,7 +51,7 @@ def lead(request):
         from .entrega import entregar_pdf_herida
         entregar_pdf_herida(lead_obj)
     harness.emitir('lead_nuevo', {
-        'email': email, 'telefono': whatsapp, 'fuente': 'test-heridas',
+        'email': email, 'telefono': whatsapp, 'fuente': canal_origen,
         'herida': herida, 'canal_origen': canal_origen,
     }, dedupe_key=f'ebooklead-{lead_obj.pk}')
 
@@ -62,8 +69,13 @@ def lead(request):
         if canal_origen == 'test-autoestima'
         else 'Listo. Revisa tu email en los próximos minutos con el mapa completo de tu herida.'
     )
+
+    if wants_json:
+        return JsonResponse({'exito': True, 'mensaje': mensaje})
+
     return render(request, 'payments/resultado.html', {
         'exito': True,
+        'es_lead': True,
         'mensaje': mensaje,
     })
 

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Pago — Endonautas{% endblock %}
+{% block title %}{% if es_lead %}Tu mapa va en camino — Endonautas{% else %}Pago — Endonautas{% endif %}{% endblock %}
 {# Mismo patrón que planes.html: base.html solo renderiza `content` para usuarios
    autenticados, y estos checkouts son de invitado. Sin `public_content` el
    comprador del ebook veía la página vacía después de pagar. #}

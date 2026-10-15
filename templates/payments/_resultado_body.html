@@ -9,7 +9,7 @@
     {% if exito and not pendiente %}
       <div style="width:56px;height:56px;border-radius:50%;background:rgba(224,162,74,0.12);border:1px solid rgba(224,162,74,0.4);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:1.6rem">✓</div>
       <h1 style="font-size:1.2rem;font-weight:700;color:var(--calipso);margin-bottom:0.6rem">
-        {% if es_suscripcion %}Plan activado{% else %}Pago confirmado{% endif %}
+        {% if es_lead %}Tu mapa va en camino{% elif es_suscripcion %}Plan activado{% else %}Pago confirmado{% endif %}
       </h1>
       <p style="color:var(--muted);font-size:0.9rem;line-height:1.7;margin-bottom:2rem">{{ mensaje }}</p>
 
