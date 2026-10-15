@@ -50,14 +50,28 @@ def entregar_pdf_herida(lead):
     if not lead.email:
         return False
 
-    pdf_path = os.path.join(EBOOK_FILES_DIR, f'mapa-herida-{lead.herida}.pdf')
-    if not os.path.exists(pdf_path):
-        logger.error(f'entregar_pdf_herida: no existe {pdf_path} (lead={lead.pk})')
-        _avisar_fallo(lead, f'no existe el PDF {pdf_path}')
-        return False
+    sitio = settings.PUBLIC_SITE_URL.rstrip('/')
+    is_autoestima = lead.canal_origen == 'test-autoestima' or os.path.exists(
+        os.path.join(EBOOK_FILES_DIR, f'mapa-autoestima-{lead.herida}.pdf')
+    )
 
-    try:
-        sitio = settings.PUBLIC_SITE_URL.rstrip('/')
+    if is_autoestima:
+        pdf_filename = f'mapa-autoestima-{lead.herida}.pdf'
+        pdf_path = os.path.join(EBOOK_FILES_DIR, pdf_filename)
+        subject = 'Tu mapa de autoestima y autoconcepto'
+        body_text = (
+            'Aquí va, en PDF adjunto: tu mapa de autoestima y autoconcepto — el mecanismo '
+            'inconsciente que aprendiste en la infancia y cómo empezar a desactivarlo.\n\n'
+            'Es un fragmento práctico de La Endonáutica. El libro entero contiene el marco '
+            'completo: el autoconcepto, el punto de vista del observador, autorregulación y '
+            'las 5 heridas de infancia: 205 páginas escritas por Franco Jeria.\n\n'
+            'Si quieres empezar a transformar tu relación contigo mismo, el mapa completo está aquí:\n'
+            f'{sitio}/#comprar\n\n'
+            '— Franco'
+        )
+    else:
+        pdf_filename = f'mapa-herida-{lead.herida}.pdf'
+        pdf_path = os.path.join(EBOOK_FILES_DIR, pdf_filename)
         subject = 'El mapa completo de tu herida'
         body_text = (
             'Aquí va, en PDF adjunto: el mapa completo de tu herida principal — cómo se '
@@ -69,9 +83,16 @@ def entregar_pdf_herida(lead):
             f'(con la página adaptada a tu perfil):\n{sitio}/?herida={lead.herida}\n\n'
             '— Franco'
         )
+
+    if not os.path.exists(pdf_path):
+        logger.error(f'entregar_pdf_herida: no existe {pdf_path} (lead={lead.pk})')
+        _avisar_fallo(lead, f'no existe el PDF {pdf_path}')
+        return False
+
+    try:
         msg = EmailMultiAlternatives(subject, body_text, to=[lead.email])
         with open(pdf_path, 'rb') as f:
-            msg.attach(f'mapa-herida-{lead.herida}.pdf', f.read(), 'application/pdf')
+            msg.attach(pdf_filename, f.read(), 'application/pdf')
         msg.send(fail_silently=False)
     except Exception as e:
         logger.error(f'entregar_pdf_herida error (lead={lead.pk}): {e}')

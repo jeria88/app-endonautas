@@ -57,9 +57,14 @@ def lead(request):
             attribs={'herida': herida, 'origen': canal_origen},
         )
 
+    mensaje = (
+        'Listo. Revisa tu email en los próximos minutos con tu mapa de autoestima y autoconcepto.'
+        if canal_origen == 'test-autoestima'
+        else 'Listo. Revisa tu email en los próximos minutos con el mapa completo de tu herida.'
+    )
     return render(request, 'payments/resultado.html', {
         'exito': True,
-        'mensaje': 'Listo. Revisa tu email en los próximos minutos con el mapa completo de tu herida.',
+        'mensaje': mensaje,
     })
 
 
